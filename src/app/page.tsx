@@ -1,3 +1,4 @@
+import HubTemplate from "@/templates/hubTemplate";
 import { getContent } from "@/utils/functions";
 
 export default async function Home() {
@@ -8,8 +9,6 @@ export default async function Home() {
   ]);
 
   return (
-    <div>
-      data nordeste
-    </div>
+    <HubTemplate />
   );
 }

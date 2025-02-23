@@ -43,7 +43,7 @@ export interface ISocialMedia {
   size: number;
 }
 
-export interface IOCAChannel {
+export interface ISudeneChannel {
   name: string;
   href: string;
   icon: string;
