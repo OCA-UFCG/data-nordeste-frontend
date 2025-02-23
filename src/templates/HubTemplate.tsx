@@ -1,10 +1,6 @@
 import Footer from "@/components/Footer/Footer";
 
-const HubTemplate = ({
-    backThumb = false,
-  }: {
-    backThumb?: boolean;
-  }) => {
+const HubTemplate = () => {
     return (
       <>
         <Footer />

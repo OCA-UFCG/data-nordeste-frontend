@@ -1,18 +1,16 @@
-
 import {
-    Wrapper,
-    Divider,
-    Sections,
-    NavSections,
-    SectionTitle,
-    SocialMedia,
-    SocialMediasContainer,
-    LogoImage,
-    SocialMediaName,
-  } from "./Footer.styles";
-  import { Icon } from "../Icon/Icon";
-  import { channels, sections } from "@/utils/constants";
-
+  Wrapper,
+  Divider,
+  Sections,
+  NavSections,
+  SectionTitle,
+  SocialMedia,
+  SocialMediasContainer,
+  LogoImage,
+  SocialMediaName,
+} from "./Footer.styles";
+import { Icon } from "../Icon/Icon";
+import { channels, sections } from "@/utils/constants";
 
 const Footer = () => {
     return (
