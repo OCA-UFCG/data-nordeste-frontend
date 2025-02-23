@@ -24,4 +24,3 @@ export const capitalize = (inputString: string): string => {
 
   return capitalizedWords.join(" ");
 };
-

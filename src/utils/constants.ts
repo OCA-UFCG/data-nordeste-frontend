@@ -1,13 +1,9 @@
 import {
-    IEEInfo,
-    ISudeneChannel,
-    ISections,
-    INews,
-    IContactStatus,
-  } from "./interfaces";
+  ISudeneChannel,
+  ISections,
+} from "./interfaces";
 
 export const channels: ISudeneChannel[] = [
-
   {
     name: "@sudenebr",
     href: "https://www.youtube.com/@sudenebr",
@@ -23,26 +19,25 @@ export const channels: ISudeneChannel[] = [
   },
 
   {
-      name: "@sudenebr",
-      href: "https://www.instagram.com/sudenebr",
-      icon: "instagram",
-      size: 27,
+    name: "@sudenebr",
+    href: "https://www.instagram.com/sudenebr",
+    icon: "instagram",
+    size: 27,
   },
-
 ];
 
 export const sections: ISections = {
-    home: {
-      name: "Início",
-      path: "/",
-    },
-    highlight: {
-      name: "Projetos em destaque",
-      path: "/highlights"
-    },
+  home: {
+    name: "Início",
+    path: "/",
+  },
+  highlight: {
+    name: "Projetos em destaque",
+    path: "/highlights",
+  },
 
-    multithemed: {
-      name: "Material multitemático",
-      path: "/multithemed" 
-    }
-  };
+  multithemed: {
+    name: "Material multitemático",
+    path: "/multithemed",
+  },
+};

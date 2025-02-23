@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import styled from "styled-components";
 import Link from "next/link";
 import { Icon } from "../Icon/Icon";
@@ -28,10 +28,10 @@ export const Sections = styled.div`
   justify-content: flex-end;
   align-items: flex-end;
   gap: 1.3rem;
-  box-sizing: border-box; 
+  box-sizing: border-box;
 
   @media (max-width: 800px) {
-    flex-direction: column;  
+    flex-direction: column;
     align-items: center;
     margin-top: 1rem;
     width: 100%;
@@ -40,7 +40,7 @@ export const Sections = styled.div`
 
 export const Divider = styled.div`
   width: 30vw;
-  height: 2px; 
+  height: 2px;
   background-color: ${({ theme }) => theme.colors.white};
   margin: 0.8rem 0;
 
@@ -72,7 +72,7 @@ export const SectionTitle = styled(Link)`
     align-self: center;
   }
 
-   &:hover {
+  &:hover {
     opacity: 0.6;
   }
 `;
@@ -93,22 +93,22 @@ export const SocialMediasContainer = styled.div`
   display: flex;
   gap: 1rem;
   align-items: center;
-  max-width: 100%; 
-  flex-wrap: wrap; 
+  max-width: 100%;
+  flex-wrap: wrap;
 
   @media (max-width: 800px) {
     align-self: center;
-    justify-content: center; 
+    justify-content: center;
   }
 `;
 
-export const SocialMediaName =  styled.span`
-    display: flex;
-    color: ${({ theme }) => theme.colors.white};
-    font-size: 16px;
-    letter-spacing: 0.8px;
-    align-items: flex-end;
-`
+export const SocialMediaName = styled.span`
+  display: flex;
+  color: ${({ theme }) => theme.colors.white};
+  font-size: 16px;
+  letter-spacing: 0.8px;
+  align-items: flex-end;
+`;
 
 export const SocialMedia = styled(Link)`
   display: flex;
