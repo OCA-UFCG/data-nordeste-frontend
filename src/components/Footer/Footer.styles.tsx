@@ -93,12 +93,12 @@ export const SocialMediasContainer = styled.div`
   display: flex;
   gap: 1rem;
   align-items: center;
-  max-width: 100%; // Garante que o container não ultrapasse a largura da div pai
-  flex-wrap: wrap; // Permite que os itens quebrem para a próxima linha se necessário
+  max-width: 100%; 
+  flex-wrap: wrap; 
 
   @media (max-width: 800px) {
     align-self: center;
-    justify-content: center; // Centraliza os itens horizontalmente
+    justify-content: center; 
   }
 `;
 

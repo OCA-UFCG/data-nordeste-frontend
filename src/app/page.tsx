@@ -1,4 +1,4 @@
-import HubTemplate from "@/templates/hubTemplate";
+import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/functions";
 
 export default async function Home() {
