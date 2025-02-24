@@ -1,8 +1,8 @@
-import { ContentWrapper, LogoImage } from "./Banner.styles";
+import { ContentWrapper, LogoImage } from "./InitialBanner.styles";
 import { SectionHeader } from "@/components/SectionHeader/SectionHeader";
 import { ISectionHeader } from "@/utils/interfaces";
 
-const Banner = ({
+const InitialBanner = ({
   sectionHead,
   reduced = false,
 }: {
@@ -31,4 +31,4 @@ const Banner = ({
   );
 };
 
-export default Banner;
+export default InitialBanner;

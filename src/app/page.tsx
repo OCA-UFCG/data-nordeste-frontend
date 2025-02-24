@@ -1,8 +1,8 @@
 import { getContent } from "@/utils/functions";
-import BannerSection from "@/components/BannerSection/BannerSection";
+import InitialBannerSection from "@/components/InitialBannerSection/InitialBannerSection";
 
 export default async function Home() {
   const { sectionHead } = await getContent(["sectionHead"]);
 
-  return <BannerSection sectionHead={sectionHead} />;
+  return <InitialBannerSection sectionHead={sectionHead} />;
 }
