@@ -1,15 +1,8 @@
 import { getContent } from "@/utils/functions";
+import BannerSection from "@/components/BannerSection/BannerSection";
 
 export default async function Home() {
-  const {
-  
-  } = await getContent([
+  const { sectionHead } = await getContent(["sectionHead"]);
 
-  ]);
-
-  return (
-    <div>
-      data nordeste
-    </div>
-  );
+  return <BannerSection sectionHead={sectionHead} />;
 }
