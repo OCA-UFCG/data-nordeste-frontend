@@ -11,7 +11,6 @@ const HubTemplate = async ({
   backThumb?: boolean;
 }) => {
   const { header } = await getContent(["header"]);
-  console.log(header);
 
   return (
     <>

@@ -6,8 +6,6 @@ import { ISection } from "@/utils/interfaces";
 import Link from "next/link";
 
 const HeaderSection = ({ content }: { content: { fields: ISection }[] }) => {
-  console.log(content);
-
   return (
     <Wrapper>
       <HeaderModal content={content} />
