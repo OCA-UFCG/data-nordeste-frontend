@@ -1,15 +1,12 @@
 import { getContent } from "@/utils/functions";
+import HubTemplate from "@/templates/hubTemplate";
 
 export default async function Home() {
-  const {
-  
-  } = await getContent([
-
-  ]);
+  const {} = await getContent([]);
 
   return (
-    <div>
-      data nordeste
-    </div>
+    <HubTemplate>
+      <div>Data nordeste</div>
+    </HubTemplate>
   );
 }
