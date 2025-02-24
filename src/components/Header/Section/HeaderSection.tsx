@@ -1,13 +1,20 @@
 "use client";
 
 import HeaderModal from "@/components/Header/Modal/HeaderModal";
-import { MainHeader, Wrapper } from "./HeaderSection.styles";
+import { Logo, MainHeader, Wrapper } from "./HeaderSection.styles";
+import { ISection } from "@/utils/interfaces";
+import Link from "next/link";
 
-const HeaderSection = () => {
+const HeaderSection = ({ content }: { content: { fields: ISection }[] }) => {
+  console.log(content);
+
   return (
     <Wrapper>
-      <HeaderModal />
-      <MainHeader />
+      <HeaderModal content={content} />
+      <Link href="/">
+        <Logo src="/logo.png" alt="datane logo" width={45} height={45} />
+      </Link>
+      <MainHeader content={content} />
     </Wrapper>
   );
 };

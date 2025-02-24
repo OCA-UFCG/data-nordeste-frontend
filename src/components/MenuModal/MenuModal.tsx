@@ -6,6 +6,9 @@ import {
   MenuImage,
   ModalWrapper,
   RetractIcon,
+  LogoContainer,
+  Logo,
+  Name,
 } from "./MenuModal.styles";
 
 const MenuModal = ({
@@ -45,7 +48,11 @@ const MenuModal = ({
         position={position}
       >
         <HeadWrapper>
-          <div>LOGO</div>
+          <LogoContainer>
+            <Logo src="/logo.png" alt="datane logo" width={45} height={45} />
+            <Name>DataNE</Name>
+          </LogoContainer>
+
           <div onClick={updateRetracted}>
             <RetractIcon id="retract" size={20} position={position} />
           </div>

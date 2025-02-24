@@ -68,5 +68,6 @@ export const HeaderItem = styled.a`
     opacity: 0.6;
     font-weight: bold;
     border-color: #444;
+    padding-left: 0.5rem;
   }
 `;

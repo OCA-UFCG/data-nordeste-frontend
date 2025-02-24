@@ -7,20 +7,21 @@ import {
   NavList,
   Navbar,
 } from "./HeaderModal.styles";
-import { sections } from "@/utils/constants";
 import { ISection } from "@/utils/interfaces";
 import { useState } from "react";
 
-const NavItem = ({ item }: { item: ISection }) => {
-  if (!item.children) {
-    return <HeaderItem href={item.path}>{item.name}</HeaderItem>;
+const NavItem = ({ item }: { item: { fields: ISection } }) => {
+  const { children, path, name } = item.fields;
+
+  if (!children) {
+    return <HeaderItem href={path}>{name}</HeaderItem>;
   }
 
   return (
     <ItemWrapper>
-      <HeaderItem href={item.path}>{item.name}</HeaderItem>
+      <HeaderItem href={path}>{name}</HeaderItem>
       <ChildrenWrapper>
-        {Object.entries(item.children).map(([key, child]) => (
+        {children.map((child, key) => (
           <NavItem key={key} item={child} />
         ))}
       </ChildrenWrapper>
@@ -28,14 +29,14 @@ const NavItem = ({ item }: { item: ISection }) => {
   );
 };
 
-const HeaderModal = () => {
+const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
   const [retracted, setRetracted] = useState<boolean>(true);
 
   return (
     <Modal retracted={retracted} setRetracted={setRetracted}>
       <Navbar>
         <NavList>
-          {Object.entries(sections).map(([key, item]) => (
+          {content.map((item, key) => (
             <NavItem key={key} item={item} />
           ))}
         </NavList>

@@ -8,8 +8,9 @@ import {
 import { Icon } from "../Icon/Icon";
 import Link from "next/link";
 
-export const Dropdown = ({ item }: { item: ISection }) => {
-  const { name, path, children } = item;
+export const Dropdown = ({ item }: { item: { fields: ISection } }) => {
+  console.log(item);
+  const { name, path, children } = item.fields;
 
   if (!children) {
     return (
@@ -30,7 +31,7 @@ export const Dropdown = ({ item }: { item: ISection }) => {
       {children && (
         <Wrapper>
           <ChildrenWrapper>
-            {Object.entries(children).map(([key, item]) => (
+            {children.map((item, key) => (
               <Dropdown key={key} item={item} />
             ))}
           </ChildrenWrapper>

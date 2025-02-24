@@ -1,7 +1,9 @@
 export interface ISection {
   name: string;
-  path?: string;
-  children?: { [key: string]: ISection };
+  id: string;
+  path: string;
+  appears: boolean;
+  children?: { fields: ISection }[];
 }
 
 export interface ISections {

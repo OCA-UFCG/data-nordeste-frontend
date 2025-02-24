@@ -36,6 +36,7 @@ export const LogoContainer = styled(Link)`
   align-items: center;
   gap: 0.5rem;
   text-decoration: none;
+  pointer-events: all;
   width: fit-content;
 `;
 

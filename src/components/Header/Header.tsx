@@ -1,3 +1,4 @@
+import { ISection } from "@/utils/interfaces";
 import {
   Logo,
   NavList,
@@ -8,9 +9,14 @@ import {
   Gov,
 } from "./Header.styles";
 import { Dropdown } from "@/components/Dropdown/Dropdown";
-import { sections } from "@/utils/constants";
 
-const Header = (props?: any) => {
+const Header = ({
+  content,
+  ...props
+}: {
+  content: { fields: ISection }[];
+  props?: any;
+}) => {
   return (
     <Wrapper {...props}>
       <LogoContainer href="/">
@@ -19,12 +25,15 @@ const Header = (props?: any) => {
       </LogoContainer>
       <Navbar>
         <NavList>
-          {Object.entries(sections).map(([key, item]) => (
-            <Dropdown item={item} key={key} />
-          ))}
+          {content
+            .sort((a, b) => a.fields.name.localeCompare(b.fields.name))
+            .filter((a) => a.fields.appears)
+            .map((item, key) => (
+              <Dropdown item={item} key={key} />
+            ))}
         </NavList>
       </Navbar>
-      <LogoContainer href="/">
+      <LogoContainer target="_blank" href="https://www.gov.br/sudene/pt-br">
         <Gov src="/gov.png" alt="datane logo" width={110} height={40} />
       </LogoContainer>
     </Wrapper>

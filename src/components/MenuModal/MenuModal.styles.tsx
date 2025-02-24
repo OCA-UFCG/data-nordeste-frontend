@@ -135,3 +135,21 @@ export const RetractImage = styled(Image)<{ position: string }>`
 export const ContentWrapper = styled.div`
   padding: 1rem 0 0.5rem;
 `;
+
+export const LogoContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+export const Logo = styled(Image)`
+  width: 2rem;
+  height: 2rem;
+  pointer-events: all;
+
+  @media screen and (min-width: 1000px) {
+    display: none;
+  }
+`;
+
+export const Name = styled.span``;
