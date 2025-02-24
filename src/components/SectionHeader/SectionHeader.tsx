@@ -1,6 +1,7 @@
 import { SectionTitle } from "@/app/globalStyles";
 import { SubTitle, Wrapper } from "./SectionHeader.styles";
 import { ISectionHeader } from "@/utils/interfaces";
+import { capitalize } from "@/utils/functions";
 
 export const SectionHeader = ({
   id,
@@ -44,7 +45,7 @@ export const SectionHeader = ({
         fontStyle={titleFontStyle}
         reduced={reduced}
       >
-        {title}
+        {reduced ? capitalize(title) : title}
       </SectionTitle>
       {!reduced && subtitle && (
         <SubTitle

@@ -20,10 +20,10 @@ const InitialBanner = ({
         alignment="center"
         id="initialBanner"
         sectionHead={sectionHead}
-        titleFontWeight="900"
+        titleFontWeight={reduced ? "700" : "900"}
         titleFontSize={reduced ? "1.5rem" : "2.5rem"}
         subtitleFontStyle="italic"
-        subtitleFontSize={reduced ? "1.5rem" : "2rem"}
+        subtitleFontSize={"2rem"}
         letterSpacingSub="0"
         reduced={reduced}
       />

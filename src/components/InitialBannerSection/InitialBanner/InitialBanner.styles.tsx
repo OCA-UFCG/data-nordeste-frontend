@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 export const LogoImage = styled(Icon)`
   @media (max-width: 800px) {
-    max-width: 80%;
+    max-width: 70vw;
   }
 `;
 
