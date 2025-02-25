@@ -63,10 +63,3 @@ export const SubTitle = styled.h2`
   font-weight: 500;
   font-style: italic;
 `;
-
-export const TitleWrapper = styled.div<{ alignment: string }>`
-  display: flex;
-  flex-flow: column;
-  gap: 2rem;
-  align-items: ${({ alignment }) => alignment};
-`;
