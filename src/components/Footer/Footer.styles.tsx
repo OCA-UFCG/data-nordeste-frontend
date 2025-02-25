@@ -60,7 +60,6 @@ export const SectionTitle = styled(Link)`
 
   text-decoration: none;
   transition: 0.2s;
-  font-size: 1.1rem;
   margin-bottom: 1px;
 
   @media (max-width: 800px) {
@@ -79,7 +78,7 @@ export const NavSections = styled.div`
   flex-direction: column;
   justify-content: flex-end;
   align-items: flex-end;
-  gap: 1.3rem;
+  gap: 1rem;
 
   @media (max-width: 800px) {
     text-align: center;
@@ -102,7 +101,7 @@ export const SocialMediasContainer = styled.div`
 export const SocialMediaName = styled.span`
   display: flex;
   color: ${({ theme }) => theme.colors.white};
-  font-size: 16px;
+  font-size: 0.75rem;
   letter-spacing: 0.8px;
   align-items: flex-end;
 `;
@@ -117,12 +116,5 @@ export const SocialMedia = styled(Link)`
 
   &:hover {
     opacity: 0.6;
-  }
-
-  img {
-    cursor: pointer;
-    max-width: 1.75rem;
-    max-height: 1.75rem;
-    filter: brightness(0) invert(1);
   }
 `;
