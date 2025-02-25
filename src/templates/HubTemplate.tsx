@@ -2,6 +2,7 @@ import HeaderSection from "@/components/Header/Section/HeaderSection";
 import { Main } from "@/app/globalStyles";
 import React, { ReactNode } from "react";
 import { getContent } from "@/utils/functions";
+import Footer from "@/components/Footer/Footer";
 
 const HubTemplate = async ({
   children,
@@ -18,6 +19,7 @@ const HubTemplate = async ({
       <Main id="root" backThumb={backThumb.toString()}>
         {children}
       </Main>
+      <Footer content={header} />
     </>
   );
 };

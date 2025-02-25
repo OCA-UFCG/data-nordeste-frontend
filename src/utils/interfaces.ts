@@ -1,3 +1,10 @@
+export interface ISudeneChannel {
+  name: string;
+  href: string;
+  icon: string;
+  size?: number;
+}
+
 export interface ISection {
   name: string;
   id: string;

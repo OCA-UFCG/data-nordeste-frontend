@@ -1,8 +1,5 @@
-import { getContent } from "@/utils/functions";
-import HubTemplate from "@/templates/hubTemplate";
+import HubTemplate from "@/templates/HubTemplate";
 
 export default async function Home() {
-  const {} = await getContent([]);
-
-  return <HubTemplate></HubTemplate>;
+  return <HubTemplate />;
 }
