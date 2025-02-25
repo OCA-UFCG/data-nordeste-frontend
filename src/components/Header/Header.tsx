@@ -11,9 +11,11 @@ import {
 import { Dropdown } from "@/components/Dropdown/Dropdown";
 
 const Header = ({
+  title,
   content,
   ...props
 }: {
+  title: string;
   content: { fields: ISection }[];
   props?: any;
 }) => {
@@ -21,7 +23,7 @@ const Header = ({
     <Wrapper {...props}>
       <LogoContainer href="/">
         <Logo src="/logo.png" alt="datane logo" width={45} height={45} />
-        <Name>Data Nordeste</Name>
+        <Name>{title}</Name>
       </LogoContainer>
       <Navbar>
         <NavList>

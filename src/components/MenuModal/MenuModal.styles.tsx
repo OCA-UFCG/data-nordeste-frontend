@@ -151,5 +151,3 @@ export const Logo = styled(Image)`
     display: none;
   }
 `;
-
-export const Name = styled.span``;

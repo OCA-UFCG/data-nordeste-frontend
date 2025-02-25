@@ -220,8 +220,8 @@ export const Main = styled.main<{ backThumb: string }>`
   box-sizing: border-box;
   transition: 0.3s;
 
-  background-image: url(${({ backThumb }) =>
-    backThumb === "true" ? "background.png" : "padrao-verde.png"});
+  /* background-image: url(${({ backThumb }) =>
+    backThumb === "true" ? "background.png" : "padrao-verde.png"}); */
 
   background-size: ${({ backThumb }) => backThumb === "false" && "60vw"};
   background-repeat: ${({ backThumb }) =>

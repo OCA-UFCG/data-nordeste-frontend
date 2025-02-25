@@ -8,7 +8,6 @@ import {
   RetractIcon,
   LogoContainer,
   Logo,
-  Name,
 } from "./MenuModal.styles";
 
 const MenuModal = ({
@@ -50,7 +49,6 @@ const MenuModal = ({
         <HeadWrapper>
           <LogoContainer>
             <Logo src="/logo.png" alt="datane logo" width={45} height={45} />
-            <Name>DataNE</Name>
           </LogoContainer>
 
           <div onClick={updateRetracted}>

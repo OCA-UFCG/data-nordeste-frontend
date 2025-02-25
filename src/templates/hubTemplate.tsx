@@ -7,14 +7,14 @@ const HubTemplate = async ({
   children,
   backThumb = false,
 }: {
-  children: ReactNode;
+  children?: ReactNode;
   backThumb?: boolean;
 }) => {
-  const { header } = await getContent(["header"]);
+  const { header, sectionHead } = await getContent(["header", "sectionHead"]);
 
   return (
     <>
-      <HeaderSection content={header} />
+      <HeaderSection title={sectionHead[0].fields.title} content={header} />
       <Main id="root" backThumb={backThumb.toString()}>
         {children}
       </Main>

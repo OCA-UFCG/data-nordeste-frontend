@@ -4,9 +4,5 @@ import HubTemplate from "@/templates/hubTemplate";
 export default async function Home() {
   const {} = await getContent([]);
 
-  return (
-    <HubTemplate>
-      <div>Data nordeste</div>
-    </HubTemplate>
-  );
+  return <HubTemplate></HubTemplate>;
 }

@@ -13,9 +13,6 @@ export const Wrapper = styled.div`
   position: sticky;
   z-index: 1;
   pointer-events: none;
-  background-image: url("padrao-verde.png");
-  background-size: 60vw;
-  background-repeat: repeat;
 `;
 
 export const Logo = styled(Image)`
