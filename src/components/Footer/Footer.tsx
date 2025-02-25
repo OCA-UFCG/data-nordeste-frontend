@@ -10,17 +10,23 @@ import {
   SocialMediaName,
 } from "./Footer.styles";
 import { Icon } from "../Icon/Icon";
-import { channels, sections } from "@/utils/constants";
+import { channels } from "@/utils/constants";
+import { ISection } from "@/utils/interfaces";
 
-const Footer = () => {
+const Footer = ({ content }: { content: { fields: ISection }[] }) => {
+  const filteredData = content
+    .filter((item) => item.fields.appears)
+    .sort((a, b) => a.fields.name.localeCompare(b.fields.name))
+    .map(({ fields: { name, id, path } }) => ({ name, id, path }));
+
   return (
     <Wrapper>
       <LogoImage id="logo-sudene" width={311} height={100} />
       <Sections>
         <NavSections>
-          {Object.entries(sections).map(([key, item]) => (
-            <SectionTitle key={key} href={item.path || ""}>
-              {item.name}
+          {filteredData.map(({ id, path, name }) => (
+            <SectionTitle key={id} href={path}>
+              {name}
             </SectionTitle>
           ))}
         </NavSections>

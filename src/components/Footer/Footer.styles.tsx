@@ -50,11 +50,8 @@ export const Divider = styled.div`
 `;
 
 export const LogoImage = styled(Icon)`
-  transform: scale(1.6);
-
-  @media (max-width: 1080px) {
-    transform: scale(1.2);
-  }
+  height: fit-content;
+  width: 24rem;
 `;
 
 export const SectionTitle = styled(Link)`
@@ -94,11 +91,11 @@ export const SocialMediasContainer = styled.div`
   gap: 1rem;
   align-items: center;
   max-width: 100%;
-  flex-wrap: wrap;
 
   @media (max-width: 800px) {
     align-self: center;
     justify-content: center;
+    flex-wrap: wrap;
   }
 `;
 
@@ -115,6 +112,7 @@ export const SocialMedia = styled(Link)`
   gap: 0.5rem;
   transition: 0.2s;
   text-decoration: none;
+  align-items: center;
   color: ${({ theme }) => theme.colors.white};
 
   &:hover {

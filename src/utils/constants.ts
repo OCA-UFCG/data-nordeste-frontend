@@ -1,7 +1,4 @@
-import {
-  ISudeneChannel,
-  ISections,
-} from "./interfaces";
+import { ISudeneChannel } from "./interfaces";
 
 export const channels: ISudeneChannel[] = [
   {
@@ -25,19 +22,3 @@ export const channels: ISudeneChannel[] = [
     size: 27,
   },
 ];
-
-export const sections: ISections = {
-  home: {
-    name: "Início",
-    path: "/",
-  },
-  highlight: {
-    name: "Projetos em destaque",
-    path: "/highlights",
-  },
-
-  multithemed: {
-    name: "Material multitemático",
-    path: "/multithemed",
-  },
-};
