@@ -28,7 +28,7 @@ export const theme: DefaultTheme = {
     maroon: "#8f4456",
     white: "white",
     black: "#1F1F1F",
-    "dark-gray": "#444444",
+    "dark-gray": "#242424",
     gray: "#858585",
     orange: "#AA633B",
     yellow: "#CEA15B",

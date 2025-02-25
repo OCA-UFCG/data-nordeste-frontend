@@ -10,7 +10,7 @@ export interface ISection {
   id: string;
   path: string;
   appears: boolean;
-  children?: { field: ISection }[];
+  children?: { fields: ISection }[];
 }
 
 export interface ISections {
