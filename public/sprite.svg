@@ -1,0 +1,36 @@
+<!-- sprite.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <symbol viewBox="0 0 18 18" id="instagram">
+            <path
+                d="M1 5C1 3.93913 1.42143 2.92172 2.17157 2.17157C2.92172 1.42143 3.93913 1 5 1H13C14.0609 1 15.0783 1.42143 15.8284 2.17157C16.5786 2.92172 17 3.93913 17 5V13C17 14.0609 16.5786 15.0783 15.8284 15.8284C15.0783 16.5786 14.0609 17 13 17H5C3.93913 17 2.92172 16.5786 2.17157 15.8284C1.42143 15.0783 1 14.0609 1 13V5Z"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path
+                d="M6 9C6 9.79565 6.31607 10.5587 6.87868 11.1213C7.44129 11.6839 8.20435 12 9 12C9.79565 12 10.5587 11.6839 11.1213 11.1213C11.6839 10.5587 12 9.79565 12 9C12 8.20435 11.6839 7.44129 11.1213 6.87868C10.5587 6.31607 9.79565 6 9 6C8.20435 6 7.44129 6.31607 6.87868 6.87868C6.31607 7.44129 6 8.20435 6 9Z"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M13.5 4.5V4.51" stroke="white" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+        </symbol>
+
+        <symbol viewBox="0 0 22 18" id="youtube">
+            <path
+                d="M1 5C1 3.93913 1.42143 2.92172 2.17157 2.17157C2.92172 1.42143 3.93913 1 5 1H17C18.0609 1 19.0783 1.42143 19.8284 2.17157C20.5786 2.92172 21 3.93913 21 5V13C21 14.0609 20.5786 15.0783 19.8284 15.8284C19.0783 16.5786 18.0609 17 17 17H5C3.93913 17 2.92172 16.5786 2.17157 15.8284C1.42143 15.0783 1 14.0609 1 13V5Z"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M9 6L14 9L9 12V6Z" stroke="white" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+        </symbol>
+
+        <symbol viewBox="0 0 13 20" id="facebook">
+            <path
+                d="M1 8V12H4V19H8V12H11L12 8H8V6C8 5.73478 8.10536 5.48043 8.29289 5.29289C8.48043 5.10536 8.73478 5 9 5H12V1H9C7.67392 1 6.40215 1.52678 5.46447 2.46447C4.52678 3.40215 4 4.67392 4 6V8H1Z"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+
+        <defs>
+            <symbol viewBox="0 0 311 100" id="logo-sudene">
+                <image href="logo-sudene.png" width="311" height="100" />
+            </symbol>
+        </defs>
+        <use href="#logo-sudene" />
+    </defs>
+</svg>
