@@ -166,6 +166,12 @@ export const GlobalStyles = createGlobalStyle`
     width: 100%;
     min-height: 100svh;
     justify-content: space-between;
+    background-image: url("background.png");
+
+    background-size: 150vh;
+    background-repeat: repeat;
+    background-blend-mode: color;
+    background-position: bottom;
   }
   ol, ul {
     margin-left: 1rem;
@@ -229,14 +235,6 @@ export const Main = styled.main<{ backThumb: string }>`
 
   box-sizing: border-box;
   transition: 0.3s;
-
-  /* background-image: url(${({ backThumb }) =>
-    backThumb === "true" ? "background.png" : "padrao-verde.png"}); */
-
-  background-size: ${({ backThumb }) => backThumb === "false" && "60vw"};
-  background-repeat: ${({ backThumb }) =>
-    backThumb === "true" ? "repeat-x" : "repeat"};
-  background-position: bottom;
 `;
 
 export const Section = styled.section<{ full?: string }>`
@@ -251,14 +249,19 @@ export const Section = styled.section<{ full?: string }>`
     full !== "false" ? "100%" : "var(--main-section-width)"};
 `;
 
-export const SectionTitle = styled.h2<{ variation?: "black" | "white" }>`
-  font-size: 1.75rem;
-  font-weight: bold;
+export const SectionTitle = styled.h2<{
+  fontSize: string;
+  fontWeight: string;
+  fontStyle: string;
+  reduced: boolean;
+}>`
+  font-size: ${({ fontSize }) => fontSize};
+  font-weight: ${({ fontWeight }) => fontWeight};
   text-align: center;
   padding-bottom: 0.25rem;
+  letter-spacing: 5%;
   width: fit-content;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.green};
-  color: ${({ theme, variation }) => theme.colors[variation || "black"]};
+  color: ${({ theme }) => theme.colors.black};
 `;
 
 export const LinkButton = styled(Link)`
