@@ -31,7 +31,8 @@ export const Projects = styled.div`
   display: flex;
   gap: 1rem;
   max-width: 100%;
-  width: fit-content;
+  width: 100%;
+  justify-content: center;
   flex-wrap: wrap;
 
   @media screen and (max-width: 800px) {

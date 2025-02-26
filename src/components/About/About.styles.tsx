@@ -24,6 +24,10 @@ export const ContentWrapper = styled.div`
   border-radius: 8px;
   backdrop-filter: blur(5px);
   background-color: ${({ theme }) => theme.colors.green}10;
+
+  @media (max-width: 800px) {
+    padding: 3rem 2rem;
+  }
 `;
 
 export const Title = styled.h2`
@@ -32,14 +36,21 @@ export const Title = styled.h2`
   font-weight: bold;
   text-align: center;
   max-width: 1200px;
+
+  @media (max-width: 800px) {
+    font-size: 1.3rem;
+  }
 `;
 
 export const Subtitle = styled.p`
   margin: 0;
-  font-size: 1rem;
   text-align: center;
   letter-spacing: 1px;
   max-width: 1200px;
+
+  @media (max-width: 800px) {
+    font-size: 0.9rem;
+  }
 `;
 
 export const Button = styled(Link)`
