@@ -19,10 +19,12 @@ export const Header = styled.div`
 export const Title = styled.h2`
   font-size: 1.5rem;
   font-weight: bold;
+  text-align: center;
 `;
 export const Subtitle = styled.p`
   max-width: 50rem;
   text-align: center;
+  padding: 0 1rem;
 `;
 
 export const Projects = styled.div`

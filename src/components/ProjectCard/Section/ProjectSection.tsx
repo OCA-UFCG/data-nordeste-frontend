@@ -21,8 +21,6 @@ export const ProjectSection = ({
     subtitle: "",
   };
 
-  console.log(header);
-
   return (
     <Wrapper id={id}>
       <Header>
