@@ -8,7 +8,8 @@ export const Wrapper = styled.div`
   display: flex;
   flex-flow: column;
   max-width: 20rem;
-  min-width: 12rem;
+  width: 100%;
+  min-width: 16rem;
   gap: 0.5rem;
 `;
 
@@ -37,7 +38,6 @@ export const Thumb = styled(Image)`
 export const InfoWrapper = styled.details`
   display: flex;
   flex-flow: column;
-  gap: 0.5rem;
 `;
 
 export const Checkbox = styled.input``;
@@ -46,6 +46,7 @@ export const TitleWrapper = styled.summary`
   display: flex;
   align-items: center;
   width: 100%;
+  gap: 1rem;
   justify-content: space-between;
   cursor: pointer;
   transition: 0.3s;
@@ -72,6 +73,7 @@ export const Description = styled.p`
   font-size: 0.8rem;
   transition: 300ms;
   line-height: 1rem;
+  margin-top: 0.5rem;
 
   ${InfoWrapper}[open] > & {
     animation: fall 1000ms ease-in-out;
