@@ -5,7 +5,11 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { Providers } from "./Providers";
 
 const NEXT_PUBLIC_GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
-const lato = Lato({ weight: "400", subsets: ["latin"] });
+const lato = Lato({
+  weight: ["400", "700", "900"],
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+});
 
 export const metadata: Metadata = {
   title: "Data Nordeste",

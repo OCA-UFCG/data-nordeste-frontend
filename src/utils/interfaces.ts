@@ -16,3 +16,11 @@ export interface ISection {
 export interface ISections {
   [key: string]: ISection;
 }
+
+export interface ISectionHeader {
+  fields: {
+    id: string;
+    title: string;
+    subtitle?: string;
+  };
+}
