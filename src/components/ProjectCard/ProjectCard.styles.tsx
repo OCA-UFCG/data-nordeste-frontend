@@ -17,7 +17,7 @@ export const Link = styled.a`
   overflow: hidden;
   box-shadow: 0px 0px 2px #616161;
   width: 100%;
-  height: 100%;
+  height: auto;
   margin: 0;
   padding: 0;
 `;
