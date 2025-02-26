@@ -31,9 +31,9 @@ const InitialBannerSection = ({
         <ContentWrapper reduced={reduced}>
           <LogoImage
             id="logo-datane"
-            width={reduced ? 62 : 350}
-            height={reduced ? 62 : 350}
-            reduced={true}
+            width={reduced ? 62 : 300}
+            height={reduced ? 62 : 300}
+            reduced={reduced}
           />
 
           <SectionTitle reduced={reduced}>

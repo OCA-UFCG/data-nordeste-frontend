@@ -14,12 +14,7 @@ export const MainWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2.5rem;
-  width: 30rem;
-
-  @media (max-width: 800px) {
-    width: 20rem;
-  }
+  max-width: 45rem
 `;
 
 export const ContentWrapper = styled.div<{ reduced: boolean }>`
@@ -27,9 +22,9 @@ export const ContentWrapper = styled.div<{ reduced: boolean }>`
   flex-direction: ${({ reduced }) => (reduced ? "row" : "column")};
   align-items: center;
   justify-content: center;
-  gap: ${({ reduced }) => (reduced ? "1rem" : "2rem")};
+  gap: 1rem;
   flex-wrap: wrap;
-  width: ${({ reduced }) => (reduced ? "auto" : "60rem")};
+  width: 100%;
 
   @media (max-width: 1000px) {
     justify-content: center;
@@ -46,7 +41,7 @@ export const LogoImage = styled(Icon)<{ reduced: boolean }>`
 `;
 
 export const SectionTitle = styled.h2<{ reduced: boolean }>`
-  font-size: ${({ reduced }) => (reduced ? "1.5rem" : "2.5rem")};
+  font-size: ${({ reduced }) => (reduced ? "1.5rem" : "2rem")};
   font-weight: ${({ reduced }) => (reduced ? "700" : "900")};
   text-align: center;
   letter-spacing: 5%;
@@ -59,7 +54,7 @@ export const SubTitle = styled.h2`
   align-self: center;
   text-align: center;
   width: fit-content;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 500;
   font-style: italic;
 `;
