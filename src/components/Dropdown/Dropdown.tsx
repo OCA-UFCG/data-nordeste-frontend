@@ -25,7 +25,7 @@ export const Dropdown = ({ item }: { item: { fields: ISection } }) => {
     <NavItem>
       <ItemContent>
         {path ? <Link href={path}>{name}</Link> : <span>{name}</span>}
-        <Icon id="arrow-head" width={11} height={9} />
+        <Icon id="expand" size={11} />
       </ItemContent>
       {children && (
         <Wrapper>

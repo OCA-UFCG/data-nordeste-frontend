@@ -28,7 +28,7 @@ export const NavItem = styled.li`
 
 export const ItemContent = styled.div`
   display: flex;
-  gap: 0.25rem;
+  gap: 0.5rem;
   align-items: center;
   transition: 0.3s;
   color: ${({ theme }) => theme.colors.black};
