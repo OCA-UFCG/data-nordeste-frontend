@@ -153,6 +153,12 @@ export const GlobalStyles = createGlobalStyle`
     width: 100%;
     min-height: 100svh;
     justify-content: space-between;
+    background-image: url("background.png");
+
+    background-size: 150vh;
+    background-repeat: repeat;
+    background-blend-mode: color;
+    background-position: bottom;
   }
   ol, ul {
     margin-left: 1rem;
@@ -219,14 +225,6 @@ export const Main = styled.main<{ backThumb: string }>`
 
   box-sizing: border-box;
   transition: 0.3s;
-
-  /* background-image: url(${({ backThumb }) =>
-    backThumb === "true" ? "background.png" : "padrao-verde.png"}); */
-
-  background-size: ${({ backThumb }) => backThumb === "false" && "60vw"};
-  background-repeat: ${({ backThumb }) =>
-    backThumb === "true" ? "repeat-x" : "repeat"};
-  background-position: bottom;
 `;
 
 export const Section = styled.section<{ full?: string }>`
