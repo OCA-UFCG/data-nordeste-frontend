@@ -24,7 +24,7 @@ export const theme: DefaultTheme = {
   colors: {
     wine: "#A65E5F",
     darkgreen: "#5B8951",
-    green: "#778C61",
+    green: "#4E8648",
     maroon: "#8f4456",
     white: "white",
     black: "#1F1F1F",

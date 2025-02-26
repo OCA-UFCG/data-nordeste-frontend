@@ -29,3 +29,11 @@ export interface Project {
     };
   };
 }
+
+export interface ISectionHeader {
+  fields: {
+    id: string;
+    title: string;
+    subtitle?: string;
+  };
+}
