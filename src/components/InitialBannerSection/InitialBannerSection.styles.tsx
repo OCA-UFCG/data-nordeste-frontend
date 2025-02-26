@@ -14,7 +14,7 @@ export const MainWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 45rem
+  max-width: 45rem;
 `;
 
 export const ContentWrapper = styled.div<{ reduced: boolean }>`
