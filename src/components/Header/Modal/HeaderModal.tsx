@@ -36,9 +36,12 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
     <Modal retracted={retracted} setRetracted={setRetracted}>
       <Navbar>
         <NavList>
-          {content.map((item, key) => (
-            <NavItem key={key} item={item} />
-          ))}
+          {content
+            .sort((a, b) => a.fields.name.localeCompare(b.fields.name))
+            .filter((a) => a.fields.appears)
+            .map((item, key) => (
+              <NavItem key={key} item={item} />
+            ))}
         </NavList>
       </Navbar>
     </Modal>
