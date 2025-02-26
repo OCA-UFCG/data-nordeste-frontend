@@ -16,3 +16,16 @@ export interface ISection {
 export interface ISections {
   [key: string]: ISection;
 }
+
+export interface Project {
+  name: string;
+  description: string;
+  link: string;
+  thumb: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
+}

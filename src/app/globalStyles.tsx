@@ -117,6 +117,19 @@ export const GlobalStyles = createGlobalStyle`
         transform: scale(1);
       }
     }
+
+    @keyframes fall {
+      0% {
+        top: -100px;
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        top: 50%;
+      }
+    }
   }
 
   
@@ -179,9 +192,6 @@ export const GlobalStyles = createGlobalStyle`
     margin-bottom: 1rem;
     text-align: justify;
     line-height: 1.5rem;
-  }
-  details {
-    display: none;
   }
 
   .maplibregl-popup-content, .maplibregl-popup-tip {
