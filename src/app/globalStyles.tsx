@@ -232,9 +232,11 @@ export const Main = styled.main<{ backThumb: string }>`
   flex-flow: column;
   align-items: center;
   width: 100%;
+  gap: 2rem;
 
   box-sizing: border-box;
   transition: 0.3s;
+  margin-bottom: 2rem;
 `;
 
 export const Section = styled.section<{ full?: string }>`

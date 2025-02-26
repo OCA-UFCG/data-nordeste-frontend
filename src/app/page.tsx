@@ -1,10 +1,15 @@
-import { getContent } from "@/utils/functions";
+import { ProjectSection } from "@/components/ProjectCard/Section/ProjectSection";
 import HubTemplate from "@/templates/HubTemplate";
-import InitialBannerSection from "@/components/InitialBannerSection/InitialBannerSection";
+import { getContent } from "@/utils/functions";
+import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/About/About";
+import InitialBannerSection from "@/components/InitialBannerSection/InitialBannerSection";
 
 export default async function Home() {
-  const { sectionHead } = await getContent(["sectionHead"]);
+  const { partners, sectionHead } = await getContent([
+    "partners",
+    "sectionHead",
+  ]);
 
   return (
     <HubTemplate>
@@ -14,6 +19,12 @@ export default async function Home() {
           (section: { fields: { id: string } }) =>
             section.fields.id === "about",
         )}
+      />
+      <ProjectSection
+        header={sectionHead.find(
+          (sec: { fields: SectionHeader }) => sec.fields.id == "projects",
+        )}
+        projects={partners}
       />
     </HubTemplate>
   );

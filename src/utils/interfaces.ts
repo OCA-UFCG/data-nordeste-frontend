@@ -5,6 +5,12 @@ export interface ISudeneChannel {
   size?: number;
 }
 
+export interface SectionHeader {
+  id: string;
+  title: string;
+  subtitle: string;
+}
+
 export interface ISection {
   name: string;
   id: string;

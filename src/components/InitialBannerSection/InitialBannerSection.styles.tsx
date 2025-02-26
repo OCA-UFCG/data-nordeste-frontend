@@ -4,8 +4,9 @@ import styled from "styled-components";
 import { Icon } from "../Icon/Icon";
 
 export const Wrapper = styled(Section)`
-  height: 100vh;
+  height: calc(100vh - 6rem);
   display: flex;
+  box-sizing: border-box;
   justify-content: center;
   align-items: center;
 `;
@@ -15,6 +16,8 @@ export const MainWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   max-width: 45rem;
+  box-sizing: border-box;
+  padding-bottom: 4rem;
 `;
 
 export const ContentWrapper = styled.div<{ reduced: boolean }>`
