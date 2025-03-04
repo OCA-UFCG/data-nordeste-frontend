@@ -4,6 +4,7 @@ import { getContent } from "@/utils/functions";
 import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/About/About";
 import InitialBannerSection from "@/components/InitialBannerSection/InitialBannerSection";
+import { RecentSection } from "@/components/RecentSection/RecentSection";
 
 export const revalidate = 60;
 
@@ -16,6 +17,11 @@ export default async function Home() {
   return (
     <HubTemplate>
       <InitialBannerSection sectionHead={sectionHead} />
+      <RecentSection
+        header={sectionHead.find(
+          (section: { fields: { id: string } }) => section.fields.id === "new",
+        )}
+      />
       <AboutSection
         header={sectionHead.find(
           (section: { fields: { id: string } }) =>
