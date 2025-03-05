@@ -7,17 +7,22 @@ export const Wrapper = styled.div`
   width: 100%;
   box-sizing: border-box;
   display: flex;
+  justify-content: center;
+`;
+
+export const SlidesContainer = styled.div`
+  display: flex;
+  justify-content: center;
 `;
 
 export const Slides = styled.ul`
   display: flex;
-  width: fit-content;
+  justify-content: center;
 `;
 
 export const Card = styled.li`
   display: flex;
-  align-items: center;
-  justify-content: center;
+  width: fit-content;
 `;
 
 export const Button = styled.button`

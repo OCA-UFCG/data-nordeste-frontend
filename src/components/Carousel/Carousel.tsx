@@ -12,6 +12,7 @@ import {
   LeftIcon,
   RightIcon,
   Slides,
+  SlidesContainer,
   Wrapper,
 } from "./Carousel.styles";
 import { IPublication } from "@/utils/interfaces";
@@ -31,7 +32,7 @@ const Carousel = ({ cards }: { cards: { fields: IPublication }[] }) => {
           perView: cards.length > 4 ? 4 : cards.length,
         },
         1000: {
-          perView: cards.length > 3 ? 3 : cards.length,
+          perView: cards.length > 2 ? 2 : cards.length,
         },
         800: {
           perView: cards.length > 2 ? 2 : cards.length,
@@ -45,7 +46,7 @@ const Carousel = ({ cards }: { cards: { fields: IPublication }[] }) => {
 
   return (
     <Wrapper className="glide" ref={sliderRef}>
-      <div className="glide__track" data-glide-el="track">
+      <SlidesContainer className="glide__track" data-glide-el="track">
         <Slides className="glide__slides">
           {cards
             .sort(
@@ -59,7 +60,7 @@ const Carousel = ({ cards }: { cards: { fields: IPublication }[] }) => {
               </Card>
             ))}
         </Slides>
-      </div>
+      </SlidesContainer>
 
       <div className="glide__arrows" data-glide-el="controls">
         <Button className="glide__arrow glide__arrow--left" data-glide-dir="<">
