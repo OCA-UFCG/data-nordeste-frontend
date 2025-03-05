@@ -16,7 +16,7 @@ import {
   Wrapper,
 } from "./Carousel.styles";
 
-export const Carousel = () => {
+const Carousel = () => {
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,3 +71,5 @@ export const Carousel = () => {
     </Wrapper>
   );
 };
+
+export default Carousel;
