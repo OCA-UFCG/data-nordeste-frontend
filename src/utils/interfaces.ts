@@ -43,3 +43,17 @@ export interface ISectionHeader {
     subtitle?: string;
   };
 }
+
+export interface IPublication {
+  title: string;
+  link: string;
+  thumb: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
+  type: string;
+  date?: Date;
+}
