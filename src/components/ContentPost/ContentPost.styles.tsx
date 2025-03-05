@@ -6,9 +6,6 @@ import { Icon } from "../Icon/Icon";
 export const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  max-width: 19rem;
-  max-height: 22rem;
-  width: 100%;
 `;
 
 export const DateWrapper = styled.div`
@@ -49,8 +46,10 @@ export const Thumb = styled(Image)`
   object-fit: cover;
   object-position: top;
   transition: 300ms;
+  aspect-ratio: 2/1;
+  width: 100%;
   border-radius: 0.5rem;
-  box-shadow: 0.5rem 0.5rem 1rem #cbcaca;
+  box-shadow: 0 0 0.5rem #cbcaca;
   border: 0.1rem solid #cbcaca;
 
   &:hover {

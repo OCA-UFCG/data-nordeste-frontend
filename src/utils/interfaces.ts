@@ -55,5 +55,5 @@ export interface IPublication {
     };
   };
   type: string;
-  date?: Date;
+  date: string;
 }
