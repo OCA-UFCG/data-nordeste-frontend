@@ -10,14 +10,13 @@ export const Wrapper = styled.div`
   justify-content: center;
 `;
 
-export const SlidesContainer = styled.div`
-  display: flex;
-  justify-content: center;
-`;
+export const SlidesContainer = styled.div``;
 
 export const Slides = styled.ul`
-  display: flex;
-  justify-content: center;
+  @media screen and (min-width: 1200px) {
+    display: flex;
+    justify-content: center;
+  }
 `;
 
 export const Card = styled.li`
