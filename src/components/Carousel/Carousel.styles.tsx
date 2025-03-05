@@ -11,36 +11,17 @@ export const Wrapper = styled.div`
 
 export const Slides = styled.ul`
   display: flex;
-  align-items: center;
   width: fit-content;
 `;
 
 export const Card = styled.li`
-  height: 16rem;
-  background-color: red;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: bold;
-  text-transform: uppercase;
-`;
-
-export const Card2 = styled.li`
-  height: 16rem;
-  background-color: red;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  text-transform: uppercase;
 `;
 
 export const Button = styled.button`
-  display: fle;
+  display: flex;
   backdrop-filter: blur(40px);
   color: ${({ theme }) => theme.colors.black};
   background-color: #ffffff70;

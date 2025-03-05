@@ -1,3 +1,4 @@
+import { IPublication } from "@/utils/interfaces";
 import Carousel from "../Carousel/Carousel";
 import {
   Button,
@@ -10,7 +11,13 @@ import {
 } from "./RecentSection.styles";
 import { Header } from "./RecentSection.styles";
 
-export const RecentSection = ({ header }: { header: { fields: any } }) => {
+export const RecentSection = ({
+  header,
+  content,
+}: {
+  header: { fields: any };
+  content: { fields: IPublication }[];
+}) => {
   const { id, title, subtitle } = header.fields;
 
   return (
@@ -25,7 +32,7 @@ export const RecentSection = ({ header }: { header: { fields: any } }) => {
         <Subtitle>{subtitle}</Subtitle>
       </HeaderWrapper>
       <ContentWrapper>
-        <Carousel />
+        <Carousel cards={content} />
       </ContentWrapper>
     </Wrapper>
   );

@@ -9,54 +9,55 @@ import Glide from "@glidejs/glide";
 import {
   Button,
   Card,
-  Card2,
   LeftIcon,
   RightIcon,
   Slides,
   Wrapper,
 } from "./Carousel.styles";
+import { IPublication } from "@/utils/interfaces";
+import ContentPost from "../ContentPost/ContentPost";
 
-const Carousel = () => {
+const Carousel = ({ cards }: { cards: { fields: IPublication }[] }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     new Glide(sliderRef.current, {
-      perView: 4,
+      perView: cards.length > 4 ? 4 : cards.length,
       gap: 16,
       autoplay: 5000,
       bound: true,
       breakpoints: {
         1200: {
-          perView: 4,
+          perView: cards.length > 4 ? 4 : cards.length,
         },
         1000: {
-          perView: 3,
+          perView: cards.length > 3 ? 3 : cards.length,
         },
         800: {
-          perView: 2,
+          perView: cards.length > 2 ? 2 : cards.length,
         },
         600: {
           perView: 1,
         },
       },
     }).mount();
-  }, []);
+  }, [cards.length, sliderRef]);
 
   return (
     <Wrapper className="glide" ref={sliderRef}>
       <div className="glide__track" data-glide-el="track">
         <Slides className="glide__slides">
-          {[...Array(10)].map((_, i) =>
-            i % 2 == 0 ? (
+          {cards
+            .sort(
+              (a, b) =>
+                new Date(b.fields.date).getTime() -
+                new Date(a.fields.date).getTime(),
+            )
+            .map((card, i) => (
               <Card className="glide__slide" key={i}>
-                Card {i}
+                <ContentPost content={card} />
               </Card>
-            ) : (
-              <Card2 className="glide__slide" key={i}>
-                Card {i}
-              </Card2>
-            ),
-          )}
+            ))}
         </Slides>
       </div>
 
