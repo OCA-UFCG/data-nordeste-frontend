@@ -23,7 +23,7 @@ export const Button = styled.button`
   display: flex;
   backdrop-filter: blur(40px);
   color: ${({ theme }) => theme.colors.black};
-  background-color: #ffffff70;
+  background-color: #ffffff80;
   height: 2rem;
   width: 2rem;
   display: flex;
@@ -31,13 +31,14 @@ export const Button = styled.button`
   justify-content: center;
   transition: 300ms;
 
+  box-shadow: 0 2px 4px ${({ theme }) => theme.colors.gray};
+
   &:hover {
     background-color: #ffffff;
   }
 
   svg {
-    min-width: 0.5rem;
-    min-height: 0.5rem;
+    min-width: 0.75rem;
   }
 `;
 
