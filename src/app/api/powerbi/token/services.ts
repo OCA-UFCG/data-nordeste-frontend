@@ -114,6 +114,7 @@ async function authenticate() {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: requestBody,
+      cache: "no-cache",
     },
   );
 }
