@@ -1,19 +1,23 @@
 import PowerBIContainer from "@/components/PowerBIContainer/PowerBiContainer";
-import { Container } from "./styles";
 import HubTemplate from "@/templates/HubTemplate";
+import { getContent } from "@/utils/functions";
+import { Container } from "./styles";
 
-const DataPage = () => {
-  const currentReportID: any = JSON.parse(
-    process.env.NEXT_PUBLIC_POWERBI_REPORTS_ID || "[]",
-  )[0];
+// Define the interface for the report data. Move to interfaces folder in the future
+interface ReportData {
+  title: string;
+  reportId: string;
+}
+
+export default async function DataPage() {
+  const { panels } = await getContent(["panels"]);
 
   return (
     <HubTemplate>
       <Container>
-        <PowerBIContainer currentReportID={currentReportID} />
+        {/* Update this to switch the panel base on the user selection */}
+        <PowerBIContainer currentReportID={panels[0].fields.reportId} /> 
       </Container>
     </HubTemplate>
   );
 };
-
-export default DataPage;
