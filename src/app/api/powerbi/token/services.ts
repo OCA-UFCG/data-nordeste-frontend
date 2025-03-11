@@ -1,5 +1,3 @@
-let cached = false;
-
 const cacheUrls = new Map<string, any>();
 
 export const hasKey = (key: string) => {
@@ -14,6 +12,10 @@ export const addPBIToCache = (key: string, config: any) => {
   if (config) cacheUrls.set(key, config);
   else cacheUrls.delete(key);
 };
+
+export const removePBIfromCache = (key: string) => {
+  cacheUrls.delete(key);
+}
 
 export const getPowerBIEmbededConfig = async (report_id: string) => {
   try {
@@ -45,8 +47,7 @@ export const getPowerBIEmbededConfig = async (report_id: string) => {
       report_id,
       embed_url: embededURL,
       embed_token: embededToken.token,
-      expiration: embededToken.expiration,
-      token_id: embededToken.tokenId,
+      embed_expiration: embededToken.expiration,
     };
   } catch (error) {
     console.error("Error during authentication:", error);
@@ -118,41 +119,3 @@ async function authenticate() {
     },
   );
 }
-
-let cacheInterval: any = null;
-let isCaching = false;
-
-export const cachePBIData = async () => {
-  if (isCaching) return;
-  isCaching = true;
-  try {
-    cached = true;
-    const pbiInfo: any = JSON.parse(
-      process.env.NEXT_PUBLIC_POWERBI_REPORTS_ID || "[]",
-    );
-
-    for (const report_id of pbiInfo) {
-      const embededConfig = await getPowerBIEmbededConfig(report_id);
-      addPBIToCache(report_id, embededConfig);
-    }
-  } catch (error) {
-    console.error("Erro ao atualizar cache:", error);
-  } finally {
-    isCaching = false;
-  }
-};
-
-export const startCaching = () => {
-  if (cacheInterval) {
-    clearInterval(cacheInterval);
-  }
-
-  const runCaching = async () => {
-    await cachePBIData();
-    cacheInterval = setTimeout(runCaching, 1000 * 60 * 50);
-  };
-
-  runCaching();
-};
-
-if (!cached) startCaching();
