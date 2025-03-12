@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import styled from "styled-components";
+import { Icon } from "../Icon/Icon";
 
 export const Wrapper = styled.div`
   padding: 2rem;
@@ -38,25 +39,32 @@ export const Button = styled(Link)`
 `;
 
 export const EmbedContainer = styled.div`
+  background-color: ${({ theme }) => theme.colors.white};
+  padding: 1rem;
   width: 100%;
   height: 45rem;
   border-radius: 0.5rem;
   border: 2px solid ${({ theme }) => theme.colors.green};
   box-sizing: border-box;
-  overflow: auto;
-
+  
   @media (max-width: 1200px) {
+    overflow: auto;
     height: 30rem;
   }
 
-  .reportClass {
+ .reportClass {
     width: 100%;
     height: 100%;
 
-     @media (max-width: 800px) {
-      width: 50rem; 
-      height: 30rem;
+    @media (max-width: 800px) {
+      width: 45rem;
       object-fit: contains;
-     }
+    }
   }
+`;
+
+export const LoadingIcon = styled(Icon)<{ loading: boolean }>`
+  opacity: 0.7;
+  animation: spin 1s linear infinite;
+  display: ${({ loading }) => (loading ? "block" : "none")};
 `;
