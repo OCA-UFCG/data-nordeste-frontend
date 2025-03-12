@@ -15,6 +15,10 @@ export const TitleWrapper = styled.div`
   margin-bottom: 1rem;
   justify-content: space-between;
   align-items: center;
+  
+    @media (max-width: 1200px) {
+    margin: 1rem;
+  }
 `;
 
 export const Title = styled.div`
@@ -39,17 +43,20 @@ export const EmbedContainer = styled.div`
   border-radius: 0.5rem;
   border: 2px solid ${({ theme }) => theme.colors.green};
   box-sizing: border-box;
+  overflow: auto;
 
   @media (max-width: 1200px) {
-    height: 40rem;
-  }
-
-  @media (max-width: 800px) {
     height: 30rem;
   }
 
   .reportClass {
     width: 100%;
     height: 100%;
+
+     @media (max-width: 800px) {
+      width: 50rem; 
+      height: 30rem;
+      object-fit: center;
+     }
   }
 `;
