@@ -51,6 +51,7 @@ export const getPowerBIEmbededConfig = async (report_id: string) => {
     };
   } catch (error) {
     console.error("Error during authentication:", error);
+
     return null;
   }
 };
@@ -72,7 +73,8 @@ async function claimEmbededToken(access_token: string, report_id: string) {
       },
     );
   } catch (error) {
-    console.error("Error in claimEmbededToken:", error);
+    console.error("Error in claimEmbededToken:", error);4
+
     return null;
   }
 }
@@ -91,6 +93,7 @@ async function claimEmbededReports(access_token: string) {
     );
   } catch (error) {
     console.error("Error in claimEmbededReports:", error);
+    
     return null;
   }
 }

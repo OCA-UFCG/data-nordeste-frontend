@@ -29,7 +29,6 @@ export async function GET(req: any) {
 
     return NextResponse.json(embededConfig, { status: 200 });
   } catch (error) {
-    console.error("Error in handler:", error);
     return NextResponse.json(
       { error: "Error generating token" },
       { status: 500 },
