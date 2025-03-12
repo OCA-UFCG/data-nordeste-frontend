@@ -17,7 +17,7 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
   return (
     <ContentWrapper>
       <DateWrapper>{formattedDate}</DateWrapper>
-      <Link target="_blank" href={link}>
+      <Link href={link}>
         <Thumb
           src={`https:${thumb.fields.file.url}`}
           alt=""

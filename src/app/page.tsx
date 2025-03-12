@@ -14,12 +14,13 @@ export default async function Home() {
     sectionHead,
     post: posts,
   } = await getContent(["partners", "sectionHead", "post"]);
+  const MAX_SiZE = 8;
 
   return (
     <HubTemplate>
       <InitialBannerSection sectionHead={sectionHead} />
       <RecentSection
-        content={posts}
+        content={posts.slice(0, MAX_SiZE)}
         header={sectionHead.find(
           (section: { fields: { id: string } }) => section.fields.id === "new",
         )}
