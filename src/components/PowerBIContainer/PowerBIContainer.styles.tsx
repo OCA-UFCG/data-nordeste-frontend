@@ -27,7 +27,7 @@ export const Button = styled(Link)`
   white-space: nowrap;
   cursor: not-allowed;
   transition: 300ms;
-  
+
   &:hover {
     opacity: 0.6;
   }
@@ -53,4 +53,3 @@ export const EmbedContainer = styled.div`
     height: 100%;
   }
 `;
-

@@ -15,7 +15,7 @@ export const addPBIToCache = (key: string, config: any) => {
 
 export const removePBIfromCache = (key: string) => {
   cacheUrls.delete(key);
-}
+};
 
 export const getPowerBIEmbededConfig = async (report_id: string) => {
   try {

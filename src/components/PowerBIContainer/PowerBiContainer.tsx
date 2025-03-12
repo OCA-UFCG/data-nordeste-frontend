@@ -7,22 +7,20 @@ import {
   Title,
   EmbedContainer,
 } from "./PowerBIContainer.styles";
-import { ReportData } from "@/utils/interfaces"
+import { ReportData } from "@/utils/interfaces";
 
 const PowerBIEmbed = dynamic(
   () => import("powerbi-client-react").then((mod) => mod.PowerBIEmbed),
   { ssr: false },
 );
 
-const PowerBIContainer = ({ panel }: { panel: { fields: ReportData} }) => {
-  const { title, reportId } = panel.fields; 
+const PowerBIContainer = ({ panel }: { panel: { fields: ReportData } }) => {
+  const { title, reportId } = panel.fields;
   const [config, setConfig] = useState<any>(null);
 
   const initializePowerBI = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/powerbi/token?reportID=${reportId}`,
-      );
+      const response = await fetch(`/api/powerbi/token?reportID=${reportId}`);
       const { report_id, embed_url, embed_token } = await response.json();
 
       Promise.all([import("powerbi-client")]).then(([pbi]) => {
