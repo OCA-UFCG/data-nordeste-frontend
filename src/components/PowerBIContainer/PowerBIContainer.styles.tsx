@@ -15,7 +15,7 @@ export const TitleWrapper = styled.div`
   margin-bottom: 1rem;
   justify-content: space-between;
   align-items: center;
-  
+
     @media (max-width: 1200px) {
     margin: 1rem;
   }
@@ -56,7 +56,7 @@ export const EmbedContainer = styled.div`
      @media (max-width: 800px) {
       width: 50rem; 
       height: 30rem;
-      object-fit: center;
+      object-fit: contains;
      }
   }
 `;
