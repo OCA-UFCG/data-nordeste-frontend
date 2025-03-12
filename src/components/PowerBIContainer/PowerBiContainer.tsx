@@ -7,6 +7,7 @@ import {
   Title,
   EmbedContainer,
   LoadingIcon,
+  LoadingWrapper,
 } from "./PowerBIContainer.styles";
 import { ReportData } from "@/utils/interfaces";
 
@@ -69,17 +70,18 @@ const PowerBIContainer = ({ panel }: { panel: { fields: ReportData } }) => {
         {/* <Button href="#new">Ver todos</Button> */}
       </TitleWrapper>
       <EmbedContainer>
-       <LoadingIcon loading={isLoading} id="loading" size={40} />
-
-        {config && (
+        {config ? (
           <PowerBIEmbed
             embedConfig={config}
             eventHandlers={
               new Map([
-                ["loaded", () => {
-                  console.log("Report loaded");
-                  setIsLoading(false);
-                }],
+                [
+                  "loaded",
+                  () => {
+                    console.log("Report loaded");
+                    setIsLoading(false);
+                  },
+                ],
                 ["rendered", () => console.log("Report rendered")],
                 ["error", (event: any) => console.log("Error:", event.detail)],
               ])
@@ -89,6 +91,11 @@ const PowerBIContainer = ({ panel }: { panel: { fields: ReportData } }) => {
               reportRef.current = embeddedReport;
             }}
           />
+        ) : (
+          <LoadingWrapper>
+            <LoadingIcon loading={isLoading} id="loading" size={40} />
+            <span>Carregando painel...</span>
+          </LoadingWrapper>
         )}
       </EmbedContainer>
     </Wrapper>

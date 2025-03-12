@@ -4,10 +4,11 @@ import styled from "styled-components";
 import { Icon } from "../Icon/Icon";
 
 export const Wrapper = styled.div`
-  padding: 2rem;
+  padding: 1rem;
   width: 100%;
   max-width: 100rem;
   justify-content: center;
+  box-sizing: border-box;
 `;
 
 export const TitleWrapper = styled.div`
@@ -16,10 +17,6 @@ export const TitleWrapper = styled.div`
   margin-bottom: 1rem;
   justify-content: space-between;
   align-items: center;
-
-    @media (max-width: 1200px) {
-    margin: 1rem;
-  }
 `;
 
 export const Title = styled.div`
@@ -39,20 +36,23 @@ export const Button = styled(Link)`
 `;
 
 export const EmbedContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: ${({ theme }) => theme.colors.white};
-  padding: 1rem;
   width: 100%;
   height: 45rem;
   border-radius: 0.5rem;
   border: 2px solid ${({ theme }) => theme.colors.green};
   box-sizing: border-box;
-  
+
   @media (max-width: 1200px) {
+    display: block;
     overflow: auto;
     height: 30rem;
   }
 
- .reportClass {
+  .reportClass {
     width: 100%;
     height: 100%;
 
@@ -60,6 +60,16 @@ export const EmbedContainer = styled.div`
       width: 45rem;
       object-fit: contains;
     }
+  }
+`;
+
+export const LoadingWrapper = styled.div`
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+
+  @media (max-width: 1200px) {
+    margin: 13rem auto;
   }
 `;
 
