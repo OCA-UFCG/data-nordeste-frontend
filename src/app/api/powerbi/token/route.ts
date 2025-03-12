@@ -19,10 +19,11 @@ export async function GET(req: NextRequest) {
       );
 
     let embededConfig = hasKey(report_id) ? getCachedPBI(report_id) : null;
-    const isInvalidCached =
-      !embededConfig || embededConfig.embed_expiration < new Date();
+    const embedExpirationDate = embededConfig?.embed_expiration instanceof Date 
+      ? embededConfig.embed_expiration 
+      : new Date(embededConfig?.embed_expiration);
 
-    if (isInvalidCached) {
+    if (!embededConfig || embedExpirationDate < new Date()) {
       removePBIfromCache(report_id);
       embededConfig = await getPowerBIEmbededConfig(report_id);
       addPBIToCache(report_id, embededConfig);
@@ -30,6 +31,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(embededConfig, { status: 200 });
   } catch (error) {
+    console.log(error);
+
     return NextResponse.json(
       { error: "Error generating token" },
       { status: 500 },

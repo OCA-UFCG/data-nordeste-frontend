@@ -70,6 +70,7 @@ async function claimEmbededToken(access_token: string, report_id: string) {
           "Content-Type": "application/json",
         },
         body: requestBody,
+        cache: "no-cache",
       },
     );
   } catch (error) {
@@ -89,6 +90,7 @@ async function claimEmbededReports(access_token: string) {
         headers: {
           Authorization: `Bearer ${access_token}`,
         },
+        cache: "no-cache",
       },
     );
   } catch (error) {
