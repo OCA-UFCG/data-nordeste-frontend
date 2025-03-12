@@ -57,3 +57,8 @@ export interface IPublication {
   type: string;
   date: string;
 }
+
+export interface ReportData {
+  title: string;
+  reportId: string;
+}
