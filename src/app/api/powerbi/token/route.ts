@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import {
   hasKey,
   getCachedPBI,
@@ -7,7 +8,7 @@ import {
   getPowerBIEmbededConfig,
 } from "@/app/api/powerbi/token/services";
 
-export async function GET(req: any) {
+export async function GET(req: NextRequest) {
   try {
     const report_id = req.nextUrl.searchParams.get("reportID") || "";
 
