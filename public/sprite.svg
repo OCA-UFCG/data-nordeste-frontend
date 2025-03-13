@@ -42,7 +42,7 @@
                 fill="black" />
         </symbol>
          <symbol  viewBox="0 0 18 11" id="expand" fill="none">
-            <path d="M1.85789 1.99998L8.92896 9.07104L16 1.99998" stroke="#242424" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M1.85789 1.99998L8.92896 9.07104L16 1.99998" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         </symbol>
 
 
