@@ -1,4 +1,5 @@
-import { createClient } from "contentful";
+import { createClient, EntrySys, OrderFilterPaths } from "contentful";
+import { IPublication } from "./interfaces";
 
 const client = createClient({
   accessToken: process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || "",
@@ -29,6 +30,40 @@ export const getTotalPages = async (limit = 10) => {
     return totalPages;
   } catch (error) {
     console.error("Error fetching total pages:", error);
+  }
+};
+
+const sortingTypes: {
+  [x: string]:
+    | OrderFilterPaths<EntrySys, "sys">
+    | "sys.contentType.sys.id"
+    | "-sys.contentType.sys.id";
+} = {
+  "A-Z": "fields.title" as "sys.contentType.sys.id",
+  "Z-A": "-fields.title" as "-sys.contentType.sys.id",
+  date: "-fields.date" as "sys.contentType.sys.id",
+};
+
+export const getPosts = async (
+  sort: string,
+  page = 1,
+  limit = 12,
+): Promise<{ fields: IPublication }[]> => {
+  const skip = (page - 1) * limit;
+
+  try {
+    const response = await client.getEntries({
+      content_type: "post",
+      order: [sortingTypes[sort]], // Sort by title in ascending order (A-Z)
+      limit: limit,
+      skip: skip,
+    });
+
+    return response.items as unknown as { fields: IPublication }[];
+  } catch (error) {
+    console.error("Error fetching page:", error);
+
+    return [];
   }
 };
 

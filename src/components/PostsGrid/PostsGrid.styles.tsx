@@ -7,15 +7,17 @@ export const Wrapper = styled.div`
   display: flex;
   flex-flow: column;
   align-items: center;
+  gap: 1rem;
+  width: 100%;
 `;
 
 export const PostsContainer = styled.div`
   display: grid;
+  justify-content: center;
   flex-wrap: wrap;
   width: 100%;
   max-width: 1440px;
-  min-height: 40rem;
-  grid-template-columns: repeat(4, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, minmax(20rem, 1fr));
   gap: 2rem;
   padding: 2rem;
   box-sizing: border-box;
@@ -23,7 +25,7 @@ export const PostsContainer = styled.div`
   backdrop-filter: blur(20px);
   border-radius: 8px;
 
-  @media screen and (max-width: 1000px) {
+  @media screen and (max-width: 1400px) {
     grid-template-columns: repeat(3, minmax(200px, 1fr));
   }
 
@@ -82,4 +84,58 @@ export const LeftIcon = styled(Icon)`
 
 export const RightIcon = styled(Icon)`
   transform: rotate(-90deg);
+`;
+
+export const LoadingWrapper = styled.div`
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+
+  @media (max-width: 1200px) {
+    margin: 13rem auto;
+  }
+`;
+
+export const LoadingIcon = styled(Icon)`
+  opacity: 0.7;
+  animation: spin 1s linear infinite;
+`;
+
+export const SkeletonCard = styled.div`
+  width: 100%;
+  aspect-ratio: 5/4;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  background: linear-gradient(100deg, #e0e0e0 20%, #f0f0f0 50%, #e0e0e0 80%);
+  background-size: 200% 100%;
+  animation: loading 3s infinite linear;
+  border-radius: 5px;
+`;
+
+export const ImageCont = styled.div`
+  width: 100%;
+  aspect-ratio: 2/1;
+  background: linear-gradient(100deg, #e0e0e0 20%, #f0f0f0 50%, #e0e0e0 80%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite linear;
+  border-radius: 5px;
+`;
+
+export const Title = styled.div`
+  height: 20px;
+  width: 70%;
+  background: linear-gradient(100deg, #e0e0e0 20%, #f0f0f0 50%, #e0e0e0 80%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite linear;
+  border-radius: 5px;
 `;

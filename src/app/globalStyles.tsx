@@ -130,6 +130,15 @@ export const GlobalStyles = createGlobalStyle`
         top: 50%;
       }
     }
+    
+    @keyframes loading {
+      0% {
+        background-position: -200% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
   }
 
   

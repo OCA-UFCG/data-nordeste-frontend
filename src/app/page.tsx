@@ -7,6 +7,7 @@ import InitialBannerSection from "@/components/InitialBannerSection/InitialBanne
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 
 export const revalidate = 60;
+export const MAX_SiZE = 8;
 
 export default async function Home() {
   const {
@@ -14,7 +15,6 @@ export default async function Home() {
     sectionHead,
     post: posts,
   } = await getContent(["partners", "sectionHead", "post"]);
-  const MAX_SiZE = 8;
 
   return (
     <HubTemplate>
