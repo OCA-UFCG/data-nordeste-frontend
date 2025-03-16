@@ -85,5 +85,11 @@
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <path d="M12 3a9 9 0 1 0 9 9" />
         </symbol>
+
+         <symbol id="order-icon" viewBox="0 0 20 15" stroke-width="1.5" stroke="currentColor"
+                fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 4.5L5 0.5M5 0.5L9 4.5M5 0.5V14.5" stroke="#242424" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19 10.5L15 14.5M15 14.5L11 10.5M15 14.5V0.5" stroke="#242424" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
     </defs>
 </svg>
