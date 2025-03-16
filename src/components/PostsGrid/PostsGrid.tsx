@@ -2,7 +2,10 @@
 
 import { IPublication } from "@/utils/interfaces";
 import {
+  Home,
   LeftIcon,
+  Menu,
+  MenuContainer,
   Pagination,
   PaginationButton,
   Post,
@@ -15,11 +18,14 @@ import ContentPost from "../ContentPost/ContentPost";
 import { useEffect, useState } from "react";
 import { getPosts } from "@/utils/functions";
 import { POSTS_PER_PAGE } from "@/utils/constants";
+import { Filter } from "../Filter/Filter";
+import { SortMenu } from "../SortMenu/SortMenu";
 
 const PAGINATION_SIZE = 3;
 
 export const PostsGrid = ({ pages }: { pages: number }) => {
   const [loading, setLoading] = useState(true);
+  const [sorting, setSorting] = useState("Data de publicação");
   const [posts, setPosts] = useState<{ fields: IPublication }[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagesRange, setPagesRange] = useState(
@@ -50,20 +56,30 @@ export const PostsGrid = ({ pages }: { pages: number }) => {
 
     const updatePosts = async () => {
       setLoading(true);
-      const newPosts = await getPosts("date", currentPage, POSTS_PER_PAGE);
+      const newPosts = await getPosts(sorting, currentPage, POSTS_PER_PAGE);
       setPosts(newPosts);
       setLoading(false);
     };
 
     updatePosts();
     updatePaginationButtons();
-  }, [currentPage, pages]);
+  }, [currentPage, pages, sorting]);
 
   return (
     <Wrapper>
+      <MenuContainer>
+        <Home href="/">
+          <LeftIcon id="expand" size={10} />
+          <span>Início</span>
+        </Home>
+        <Menu>
+          <Filter />
+          <SortMenu onClick={(sortType: string) => setSorting(sortType)} />
+        </Menu>
+      </MenuContainer>
       <PostsContainer>
         {loading
-          ? [...Array(12)].map((_, i) => (
+          ? [...Array(POSTS_PER_PAGE)].map((_, i) => (
               <Post key={i}>
                 <SkeletonCard></SkeletonCard>
               </Post>

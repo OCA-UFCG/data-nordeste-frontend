@@ -1,3 +1,4 @@
+import { EntrySys, OrderFilterPaths } from "contentful";
 import { ISudeneChannel } from "./interfaces";
 
 export const channels: ISudeneChannel[] = [
@@ -24,3 +25,14 @@ export const channels: ISudeneChannel[] = [
 ];
 
 export const POSTS_PER_PAGE = 12;
+
+export const sortingTypes: {
+  [x: string]:
+    | OrderFilterPaths<EntrySys, "sys">
+    | "sys.contentType.sys.id"
+    | "-sys.contentType.sys.id";
+} = {
+  "A-Z": "fields.title" as "sys.contentType.sys.id",
+  "Z-A": "-fields.title" as "-sys.contentType.sys.id",
+  "Data de publicação": "-fields.date" as "sys.contentType.sys.id",
+};

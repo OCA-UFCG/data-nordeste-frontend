@@ -1,5 +1,6 @@
-import { createClient, EntrySys, OrderFilterPaths } from "contentful";
+import { createClient } from "contentful";
 import { IPublication } from "./interfaces";
+import { sortingTypes } from "./constants";
 
 const client = createClient({
   accessToken: process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || "",
@@ -31,17 +32,6 @@ export const getTotalPages = async (limit = 10) => {
   } catch (error) {
     console.error("Error fetching total pages:", error);
   }
-};
-
-const sortingTypes: {
-  [x: string]:
-    | OrderFilterPaths<EntrySys, "sys">
-    | "sys.contentType.sys.id"
-    | "-sys.contentType.sys.id";
-} = {
-  "A-Z": "fields.title" as "sys.contentType.sys.id",
-  "Z-A": "-fields.title" as "-sys.contentType.sys.id",
-  date: "-fields.date" as "sys.contentType.sys.id",
 };
 
 export const getPosts = async (

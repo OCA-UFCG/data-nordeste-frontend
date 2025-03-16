@@ -60,7 +60,6 @@ export const Subtitle = styled.p`
 export const Button = styled(Link)`
   width: max-content;
   white-space: nowrap;
-  cursor: not-allowed;
   transition: 300ms;
 
   &:hover {

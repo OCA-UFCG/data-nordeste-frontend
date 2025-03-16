@@ -16,7 +16,6 @@ export const DateWrapper = styled.div`
 
 export const TitleWrapper = styled.summary`
   display: flex;
-  align-items: center;
   width: 100%;
   margin-top: 0.5rem;
   gap: 1rem;
@@ -36,6 +35,7 @@ export const Title = styled.h3`
 
 export const ArrowIcon = styled(Icon)`
   flex-shrink: 0;
+  height: 1.3rem;
 `;
 
 export const Link = styled.a`

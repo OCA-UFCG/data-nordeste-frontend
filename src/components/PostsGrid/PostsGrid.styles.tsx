@@ -2,6 +2,7 @@
 
 import styled from "styled-components";
 import { Icon } from "../Icon/Icon";
+import Link from "next/link";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -9,6 +10,65 @@ export const Wrapper = styled.div`
   align-items: center;
   gap: 1rem;
   width: 100%;
+  padding: 1rem;
+  max-width: 1440px;
+  box-sizing: border-box;
+`;
+
+export const MenuContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+
+  @media screen and (max-width: 800px) {
+    flex-flow: column;
+  }
+`;
+
+export const Home = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: 300ms;
+  width: fit-content;
+
+  &:hover {
+    opacity: 0.6;
+  }
+`;
+
+export const Menu = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  @media screen and (max-width: 800px) {
+    flex-flow: column;
+  }
+`;
+
+export const Button = styled.button`
+  display: flex;
+  backdrop-filter: blur(40px);
+  color: ${({ theme }) => theme.colors.black};
+  background-color: #ffffff80;
+  height: 2rem;
+  width: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 300ms;
+
+  box-shadow: 0 2px 4px ${({ theme }) => theme.colors.gray};
+
+  &:hover {
+    background-color: #ffffff;
+  }
+
+  svg {
+    min-width: 0.75rem;
+  }
 `;
 
 export const PostsContainer = styled.div`
@@ -16,10 +76,9 @@ export const PostsContainer = styled.div`
   justify-content: center;
   flex-wrap: wrap;
   width: 100%;
-  max-width: 1440px;
   grid-template-columns: repeat(4, minmax(20rem, 1fr));
   gap: 2rem;
-  padding: 2rem;
+  padding: 1.5rem;
   box-sizing: border-box;
   background-color: ${({ theme }) => theme.colors.green}10;
   backdrop-filter: blur(20px);
@@ -54,6 +113,8 @@ export const PaginationButton = styled.button<{ selected?: string }>`
 
   padding: 0.5rem 0.5rem;
   border: 2px solid ${({ theme }) => theme.colors.green};
+  color: ${({ theme }) => theme.colors.green};
+  font-weight: bold;
   background-color: white;
   border-radius: 4px;
   transition: 300ms;
@@ -74,7 +135,6 @@ export const PaginationButton = styled.button<{ selected?: string }>`
 
     background-color: ${({ theme }) => theme.colors.green};
     color: white;
-    font-weight: bold;
   }
 `;
 
@@ -119,23 +179,5 @@ export const SkeletonCard = styled.div`
   background: linear-gradient(100deg, #e0e0e0 20%, #f0f0f0 50%, #e0e0e0 80%);
   background-size: 200% 100%;
   animation: loading 3s infinite linear;
-  border-radius: 5px;
-`;
-
-export const ImageCont = styled.div`
-  width: 100%;
-  aspect-ratio: 2/1;
-  background: linear-gradient(100deg, #e0e0e0 20%, #f0f0f0 50%, #e0e0e0 80%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite linear;
-  border-radius: 5px;
-`;
-
-export const Title = styled.div`
-  height: 20px;
-  width: 70%;
-  background: linear-gradient(100deg, #e0e0e0 20%, #f0f0f0 50%, #e0e0e0 80%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite linear;
   border-radius: 5px;
 `;
