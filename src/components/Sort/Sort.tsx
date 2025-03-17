@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   SortContainer,
   SortOptions,
@@ -9,7 +9,7 @@ import {
   OrderIcon,
   Wrapper,
 } from "./Sort.styles";
-import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { useSearchParams, usePathname, useRouter, notFound } from "next/navigation";
 
 const Sort = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,16 +19,25 @@ const Sort = () => {
 
   const handleSortChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("sort", value.replace("fields.", ""));
+    params.set("sort", value);
     router?.push(`${pathname}?${params.toString()}`);
   };
 
   const sortOptions = [
-    { label: "A-Z", value: "fields.title" },
-    { label: "Z-A", value: "-fields.title" },
-    { label: "Data de publicação", value: "-fields.date" },
+    { label: "A-Z", value: "title" },
+    { label: "Z-A", value: "-title" },
+    { label: "Data de publicação", value: "-date" },
   ];
-
+  
+  const sortParam = searchParams.get("sort");
+  useEffect(() => {
+    const isValidSort = sortOptions.some(option => option.value === sortParam);
+    
+    if (sortParam && !isValidSort) {
+      notFound();
+    }
+  }, [sortParam]);
+  
   return (
     <SortContainer>
       <SortDetails onClick={() => setIsOpen(!isOpen)}>
