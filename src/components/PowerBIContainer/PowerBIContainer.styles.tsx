@@ -43,13 +43,12 @@ export const EmbedContainer = styled.div`
   width: 100%;
   height: 45rem;
   border-radius: 0.5rem;
-  border: 2px solid ${({ theme }) => theme.colors.green};
   box-sizing: border-box;
-  
+
   @media (max-width: 1200px) {
     display: block;
-    overflow-x: auto; 
-    overflow-y: hidden; 
+    overflow-x: auto;
+    overflow-y: hidden;
     height: 30rem;
   }
 

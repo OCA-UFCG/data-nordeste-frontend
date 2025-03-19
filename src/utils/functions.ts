@@ -38,16 +38,22 @@ export const getPosts = async (
   sort: string,
   page = 1,
   limit = 12,
+  filter: { [key: string]: any },
 ): Promise<{ fields: IPublication }[]> => {
   const skip = (page - 1) * limit;
 
   try {
-    const response = await client.getEntries({
+    const params: { [key: string]: any } = {
       content_type: "post",
       order: [sortingTypes[sort]], // Sort by title in ascending order (A-Z)
       limit: limit,
       skip: skip,
+    };
+
+    Object.entries(filter).map(([key, value]) => {
+      params[key] = value;
     });
+    const response = await client.getEntries(params);
 
     return response.items as unknown as { fields: IPublication }[];
   } catch (error) {
@@ -64,3 +70,18 @@ export const capitalize = (inputString: string): string => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 };
+
+// export getAllowedValues(contentTypeId: string, fieldId: string) {
+//   const space = await client.getSpace('your_space_id');
+//   const environment = await space.getEnvironment('master'); // or another environment
+//   const contentType = await environment.getContentType(contentTypeId);
+
+//   const field = contentType.fields.find(f => f.id === fieldId);
+
+//   if (field && field.validations) {
+//     const enumValidation = field.validations.find(v => v.in);
+//     return enumValidation ? enumValidation.in : [];
+//   }
+
+//   return [];
+// }
