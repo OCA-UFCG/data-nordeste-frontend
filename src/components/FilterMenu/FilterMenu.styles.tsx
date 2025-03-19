@@ -136,6 +136,7 @@ export const SubmitButton = styled.button`
   font-weight: bold;
   transition: 300ms;
   cursor: pointer;
+  border: 2px solid ${({ theme }) => theme.colors.black};
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.black};
