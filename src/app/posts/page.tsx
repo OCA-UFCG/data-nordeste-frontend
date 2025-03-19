@@ -8,7 +8,7 @@ export default async function DataPanel({}: {}) {
 
   return (
     <HubTemplate>
-      <PostsGrid pages={pages} />
+      <PostsGrid totalPages={pages} />
     </HubTemplate>
   );
 }

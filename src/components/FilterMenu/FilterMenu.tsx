@@ -56,7 +56,7 @@ export const FilterForm = ({
 
     const finalForm: { [key: string]: any } = {};
 
-    if (categories) {
+    if (categories.length > 0) {
       finalForm["fields.type[in]"] = categories.join(",");
     }
 

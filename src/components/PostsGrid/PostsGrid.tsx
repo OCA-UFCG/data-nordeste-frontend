@@ -16,14 +16,15 @@ import {
 } from "./PostsGrid.styles";
 import ContentPost from "../ContentPost/ContentPost";
 import { useEffect, useState } from "react";
-import { getPosts } from "@/utils/functions";
+import { getPosts, getTotalPages } from "@/utils/functions";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { SortMenu } from "../SortMenu/SortMenu";
 import { FilterMenu } from "../FilterMenu/FilterMenu";
 
 const PAGINATION_SIZE = 3;
 
-export const PostsGrid = ({ pages }: { pages: number }) => {
+export const PostsGrid = ({ totalPages }: { totalPages: number }) => {
+  const [pages, setpages] = useState(totalPages);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<{ [x: string]: any }>({});
   const [sorting, setSorting] = useState("Data de publicação");
@@ -35,7 +36,11 @@ export const PostsGrid = ({ pages }: { pages: number }) => {
 
   useEffect(() => {
     const updatePaginationButtons = async () => {
+      console.log("pages", pages);
+
       if (pages <= PAGINATION_SIZE) {
+        setPagesRange(Array.from({ length: pages }, (_, i) => i + 1));
+
         return;
       }
 
@@ -63,11 +68,15 @@ export const PostsGrid = ({ pages }: { pages: number }) => {
         POSTS_PER_PAGE,
         filter,
       );
+
+      const newPages = (await getTotalPages(filter)) || 1;
+      setpages(newPages);
       setPosts(newPosts);
       setLoading(false);
     };
 
     updatePosts();
+    console.log(pages);
     updatePaginationButtons();
   }, [currentPage, pages, sorting, filter]);
 

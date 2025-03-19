@@ -42,7 +42,7 @@ export const Content = styled.div`
   padding: 1rem;
   box-sizing: border-box;
   position: absolute;
-  top: 2.1rem;
+  top: 2rem;
   right: 0;
   z-index: 1;
   background: white;

@@ -18,15 +18,21 @@ export const getContent = async (contentTypes: string[]) => {
   return content;
 };
 
-export const getTotalPages = async (limit = 10) => {
+export const getTotalPages = async (filter = {}) => {
   try {
-    const response = await client.getEntries({
+    const params: { [key: string]: any } = {
       content_type: "post",
-      limit: 1, // Just fetch one entry to get the total count
+      limit: 1,
+    };
+
+    Object.entries(filter).map(([key, value]) => {
+      params[key] = value;
     });
 
+    const response = await client.getEntries(params);
+
     const totalEntries = response.total;
-    const totalPages = Math.ceil(totalEntries / limit);
+    const totalPages = Math.ceil(totalEntries / 12);
 
     return totalPages;
   } catch (error) {
@@ -53,6 +59,7 @@ export const getPosts = async (
     Object.entries(filter).map(([key, value]) => {
       params[key] = value;
     });
+
     const response = await client.getEntries(params);
 
     return response.items as unknown as { fields: IPublication }[];
