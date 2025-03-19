@@ -1,5 +1,4 @@
 "use client";
-
 import { IPublication } from "@/utils/interfaces";
 import {
   Home,
@@ -26,7 +25,7 @@ const PAGINATION_SIZE = 3;
 export const PostsGrid = ({ totalPages }: { totalPages: number }) => {
   const [pages, setpages] = useState(totalPages);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<{ [x: string]: any }>({});
+  const [filter, setFilter] = useState<{ [x: string]: string }>({});
   const [sorting, setSorting] = useState("Data de publicação");
   const [posts, setPosts] = useState<{ fields: IPublication }[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,23 +35,20 @@ export const PostsGrid = ({ totalPages }: { totalPages: number }) => {
 
   useEffect(() => {
     const updatePaginationButtons = async () => {
-      console.log("pages", pages);
+      let init = 0;
+      let end = pages;
 
-      if (pages <= PAGINATION_SIZE) {
-        setPagesRange(Array.from({ length: pages }, (_, i) => i + 1));
+      if (pages >= PAGINATION_SIZE) {
+        init = currentPage - PAGINATION_SIZE - 2;
+        end = currentPage + PAGINATION_SIZE - 2;
 
-        return;
-      }
-
-      let init = currentPage - PAGINATION_SIZE - 2;
-      let end = currentPage + PAGINATION_SIZE - 2;
-
-      if (currentPage + PAGINATION_SIZE > pages) {
-        init = pages - PAGINATION_SIZE;
-        end = pages;
-      } else if (currentPage - PAGINATION_SIZE <= 0) {
-        init = 0;
-        end = PAGINATION_SIZE;
+        if (currentPage + PAGINATION_SIZE > pages) {
+          init = pages - PAGINATION_SIZE;
+          end = pages;
+        } else if (currentPage - PAGINATION_SIZE <= 0) {
+          init = 0;
+          end = PAGINATION_SIZE;
+        }
       }
 
       setPagesRange(
@@ -68,16 +64,20 @@ export const PostsGrid = ({ totalPages }: { totalPages: number }) => {
         POSTS_PER_PAGE,
         filter,
       );
+      setPosts(newPosts);
 
       const newPages = (await getTotalPages(filter)) || 1;
       setpages(newPages);
-      setPosts(newPosts);
       setLoading(false);
     };
 
     updatePosts();
     updatePaginationButtons();
   }, [currentPage, pages, sorting, filter]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sorting, filter]);
 
   return (
     <Wrapper>

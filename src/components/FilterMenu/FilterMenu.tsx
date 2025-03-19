@@ -44,8 +44,6 @@ export const FilterForm = ({
 
     const formData = new FormData(formRef.current);
 
-    // console.log(formData.get('adicion'))
-
     const categories: string[] = [];
 
     Object.values(CATEGORIES).forEach((category) => {

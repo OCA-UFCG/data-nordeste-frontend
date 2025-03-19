@@ -118,7 +118,10 @@ export const DateLabel = styled.label`
   flex-flow: column;
 `;
 
-export const DateTitle = styled.span``;
+export const DateTitle = styled.span`
+  font-size: 0.8rem;
+`;
+
 export const Date = styled.input`
   border: 1px solid #cdcdcd;
   padding: 0.5rem;
