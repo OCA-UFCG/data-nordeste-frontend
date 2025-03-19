@@ -88,6 +88,27 @@ export const FormHeader = styled.div`
   justify-content: space-between;
 `;
 
+export const Icons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+export const ResetContainer = styled.label`
+  display: flex;
+  align-items: cetner;
+`;
+
+export const Reset = styled(Icon)`
+  transition: 300ms;
+  cursor: pointer;
+  transform: rotate(-180deg);
+
+  &:hover {
+    opacity: 0.6;
+  }
+`;
+
 export const Close = styled(Icon)`
   transition: 300ms;
   cursor: pointer;

@@ -21,6 +21,9 @@ import {
   SubmitButton,
   FormHeader,
   Close,
+  Icons,
+  Reset,
+  ResetContainer,
 } from "./FilterMenu.styles";
 
 const CATEGORIES = {
@@ -77,7 +80,13 @@ export const FilterForm = ({
     <Form ref={formRef} onSubmit={handleSubmit}>
       <FormHeader>
         <CategoryTitle>Categoria</CategoryTitle>
-        <Close id="close" size={16} onClick={() => onChange(false)} />
+        <Icons>
+          <ResetContainer>
+            <Reset id="reset" size={16} />
+            <input type="reset" value="Reset" hidden></input>
+          </ResetContainer>
+          <Close id="close" size={16} onClick={() => onChange(false)} />
+        </Icons>
       </FormHeader>
       <CategoriesWrapper>
         {Object.entries(CATEGORIES).map(([key, value], index) => (

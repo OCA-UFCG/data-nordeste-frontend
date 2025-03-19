@@ -104,6 +104,9 @@
             <path d="M18 6l-12 12" />
             <path d="M6 6l12 12" />
         </symbol>
+        <symbol id="reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <path d="M19.95 11a8 8 0 1 0 -.5 4m.5 5v-5h-5"></path>
+        </symbol>
 
 
     </defs>
