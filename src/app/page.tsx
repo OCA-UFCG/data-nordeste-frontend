@@ -7,9 +7,9 @@ import InitialBannerSection from "@/components/InitialBannerSection/InitialBanne
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 
 export const revalidate = 60;
-export const MAX_SiZE = 8;
 
 export default async function Home() {
+  const MAX_SiZE = 8;
   const {
     partners,
     sectionHead,

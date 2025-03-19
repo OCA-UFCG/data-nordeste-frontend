@@ -76,7 +76,6 @@ export const PostsGrid = ({ totalPages }: { totalPages: number }) => {
     };
 
     updatePosts();
-    console.log(pages);
     updatePaginationButtons();
   }, [currentPage, pages, sorting, filter]);
 
