@@ -11,7 +11,7 @@ export const Wrapper = styled.div`
   box-sizing: border-box;
 `;
 
-export const Header = styled.div`
+export const Header = styled.label`
   display: flex;
   align-items: center;
   width: 100%;
@@ -21,9 +21,17 @@ export const Header = styled.div`
   border-radius: 4px;
   box-sizing: border-box;
   justify-content: center;
+  cursor: pointer;
 `;
 
-export const Expand = styled(Icon)``;
+export const Expand = styled(Icon)`
+  transition: 300ms;
+
+  input:checked + ${Header} &,
+  ${Wrapper}:hover & {
+    transform: rotate(180deg);
+  }
+`;
 
 export const Text = styled.span`
   line-height: 0.75rem;
@@ -50,7 +58,7 @@ export const Content = styled.div`
   display: none;
   box-shadow: 0px 0px 4px #cdcdcd;
 
-  ${Wrapper}:hover & {
+  input:checked + ${Header} + & {
     display: flex;
   }
 `;
@@ -68,6 +76,21 @@ export const ContentItem = styled.li`
   transition: 300ms;
   cursor: pointer;
   margin: 0;
+
+  &:hover {
+    opacity: 0.6;
+  }
+`;
+
+export const FormHeader = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+`;
+
+export const Close = styled(Icon)`
+  transition: 300ms;
+  cursor: pointer;
 
   &:hover {
     opacity: 0.6;

@@ -19,6 +19,8 @@ import {
   DateLabel,
   DatesWrapper,
   SubmitButton,
+  FormHeader,
+  Close,
 } from "./FilterMenu.styles";
 
 const CATEGORIES = {
@@ -29,14 +31,16 @@ const CATEGORIES = {
 
 export const FilterForm = ({
   onSubmit,
+  onChange,
 }: {
   onSubmit: Dispatch<
     SetStateAction<{
       [x: string]: any;
     }>
   >;
+  onChange: (state: boolean) => void;
 }) => {
-  const formRef = useRef(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
@@ -71,7 +75,10 @@ export const FilterForm = ({
 
   return (
     <Form ref={formRef} onSubmit={handleSubmit}>
-      <CategoryTitle>Categoria</CategoryTitle>
+      <FormHeader>
+        <CategoryTitle>Categoria</CategoryTitle>
+        <Close id="close" size={16} onClick={() => onChange(false)} />
+      </FormHeader>
       <CategoriesWrapper>
         {Object.entries(CATEGORIES).map(([key, value], index) => (
           <Label key={index}>
@@ -96,7 +103,6 @@ export const FilterForm = ({
   );
 };
 
-// { onClick }: { onClick: (type: string) => void }
 export const FilterMenu = ({
   onSubmit,
 }: {
@@ -106,9 +112,24 @@ export const FilterMenu = ({
     }>
   >;
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const handleSubmit = (e: any) => {
+    if (inputRef.current?.checked) {
+      inputRef.current.checked = !inputRef.current.checked;
+    }
+    onSubmit(e);
+  };
+
+  const handleChange = (newState: boolean) => {
+    if (inputRef.current) {
+      inputRef.current.checked = newState;
+    }
+  };
+
   return (
-    <Wrapper>
-      <Header>
+    <Wrapper onMouseEnter={() => handleChange(true)}>
+      <input ref={inputRef} type="checkbox" id="toggle" hidden />
+      <Header htmlFor="toggle">
         <Icon id="filter" size={14} />
         <TextContainer>
           <Text>Filtrar por</Text>
@@ -117,7 +138,7 @@ export const FilterMenu = ({
       </Header>
       <Content>
         <ContentWrapper>
-          <FilterForm onSubmit={onSubmit} />
+          <FilterForm onSubmit={handleSubmit} onChange={handleChange} />
         </ContentWrapper>
       </Content>
     </Wrapper>
