@@ -42,7 +42,7 @@
                 fill="black" />
         </symbol>
          <symbol  viewBox="0 0 18 11" id="expand" fill="none">
-            <path d="M1.85789 1.99998L8.92896 9.07104L16 1.99998" stroke="#242424" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M1.85789 1.99998L8.92896 9.07104L16 1.99998" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         </symbol>
 
 
@@ -85,5 +85,35 @@
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <path d="M12 3a9 9 0 1 0 9 9" />
         </symbol>
+        <symbol stroke-width="2" id="filter" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.0293 0.5H16.0293V2.54424C16.0292 3.04343 15.8316 3.52213 15.4799 3.87506L11.3418 8.02941V14.6176L5.7168 16.5V8.5L1.5168 3.86188C1.20315 3.51546 1.02935 3.06414 1.0293 2.596V0.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="order" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0.514648 4.5L4.51465 0.5M4.51465 0.5L8.51465 4.5M4.51465 0.5V14.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.5146 10.5L14.5146 14.5M14.5146 14.5L10.5146 10.5M14.5146 14.5V0.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            id="close"
+            >
+            <path d="M18 6l-12 12" />
+            <path d="M6 6l12 12" />
+        </symbol>
+        <symbol id="reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <path d="M19.95 11a8 8 0 1 0 -.5 4m.5 5v-5h-5"></path>
+        </symbol>
+        <symbol id="no-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <path d="M10 21v-6.5a3.5 3.5 0 0 0 -7 0v6.5h18m0 -4v-2a4 4 0 0 0 -4 -4h-2m-4 0h-4.5"></path>
+            <path d="M12 8v-5h4l2 2l-2 2h-4"></path>
+            <path d="M6 15h1"></path>
+            <path d="M3 3l18 18"></path>
+        </symbol>
+
+
     </defs>
 </svg>

@@ -1,6 +1,7 @@
 import { IPublication } from "@/utils/interfaces";
 import Carousel from "../Carousel/Carousel";
 import {
+  Button,
   ContentWrapper,
   HeaderWrapper,
   RightIcon,
@@ -23,10 +24,10 @@ export const RecentSection = ({
     <Wrapper id={id}>
       <HeaderWrapper>
         <Header>
-          <Title href="#new">
+          <Title href="/posts">
             {title} <RightIcon id="expand" size={14} />
           </Title>
-          {/* <Button href="#new">Ver todos</Button> */}
+          <Button href="/posts">Ver todos</Button>
         </Header>
         <Subtitle>{subtitle}</Subtitle>
       </HeaderWrapper>

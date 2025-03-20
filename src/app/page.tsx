@@ -9,12 +9,12 @@ import { RecentSection } from "@/components/RecentSection/RecentSection";
 export const revalidate = 60;
 
 export default async function Home() {
+  const MAX_SiZE = 8;
   const {
     partners,
     sectionHead,
     post: posts,
   } = await getContent(["partners", "sectionHead", "post"]);
-  const MAX_SiZE = 8;
 
   return (
     <HubTemplate>

@@ -36,7 +36,6 @@ export const Header = styled.div`
 export const Title = styled(Link)`
   font-size: 1.5rem;
   font-weight: bold;
-  cursor: not-allowed;
   transition: 300ms;
 
   &:hover {
@@ -60,7 +59,6 @@ export const Subtitle = styled.p`
 export const Button = styled(Link)`
   width: max-content;
   white-space: nowrap;
-  cursor: not-allowed;
   transition: 300ms;
 
   &:hover {
