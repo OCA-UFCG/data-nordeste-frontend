@@ -27,8 +27,7 @@ export const Header = styled.label`
 export const Expand = styled(Icon)`
   transition: 300ms;
 
-  input:checked + ${Header} &,
-  ${Wrapper}:hover & {
+  input:checked + ${Header} & {
     transform: rotate(180deg);
   }
 `;
@@ -57,6 +56,10 @@ export const Content = styled.div`
   border-radius: 4px;
   display: none;
   box-shadow: 0px 0px 4px #cdcdcd;
+
+  @media screen and (max-width: 800px) {
+    width: 100%;
+  }
 
   input:checked + ${Header} + & {
     display: flex;
@@ -154,6 +157,11 @@ export const DatesWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  @media screen and (max-width: 800px) {
+    justify-content: start;
+    gap: 1rem;
+  }
 `;
 
 export const DateLabel = styled.label`
