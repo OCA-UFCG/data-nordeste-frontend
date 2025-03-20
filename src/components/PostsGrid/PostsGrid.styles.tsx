@@ -71,8 +71,8 @@ export const Button = styled.button`
   }
 `;
 
-export const PostsContainer = styled.div`
-  display: grid;
+export const PostsContainer = styled.div<{ noPosts: string }>`
+  display: ${({ noPosts }) => (noPosts === "true" ? "flex" : "grid")};
   justify-content: center;
   flex-wrap: wrap;
   width: 100%;
@@ -180,4 +180,15 @@ export const SkeletonCard = styled.div`
   background-size: 200% 100%;
   animation: loading 3s infinite linear;
   border-radius: 5px;
+`;
+
+export const NoContent = styled.div`
+  width: 100%;
+  height: 10rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
 `;

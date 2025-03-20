@@ -5,6 +5,7 @@ import {
   LeftIcon,
   Menu,
   MenuContainer,
+  NoContent,
   Pagination,
   PaginationButton,
   Post,
@@ -19,6 +20,7 @@ import { getPosts, getTotalPages } from "@/utils/functions";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { SortMenu } from "../SortMenu/SortMenu";
 import { FilterMenu } from "../FilterMenu/FilterMenu";
+import { Icon } from "../Icon/Icon";
 
 const PAGINATION_SIZE = 3;
 
@@ -91,18 +93,25 @@ export const PostsGrid = ({ totalPages }: { totalPages: number }) => {
           <SortMenu onClick={(sortType: string) => setSorting(sortType)} />
         </Menu>
       </MenuContainer>
-      <PostsContainer>
-        {loading
-          ? [...Array(POSTS_PER_PAGE)].map((_, i) => (
-              <Post key={i}>
-                <SkeletonCard></SkeletonCard>
-              </Post>
-            ))
-          : posts.map((post, i) => (
-              <Post key={i}>
-                <ContentPost content={post} />
-              </Post>
-            ))}
+      <PostsContainer noPosts={(!loading && posts.length === 0).toString()}>
+        {loading ? (
+          [...Array(POSTS_PER_PAGE)].map((_, i) => (
+            <Post key={i}>
+              <SkeletonCard></SkeletonCard>
+            </Post>
+          ))
+        ) : posts.length > 0 ? (
+          posts.map((post, i) => (
+            <Post key={i}>
+              <ContentPost content={post} />
+            </Post>
+          ))
+        ) : (
+          <NoContent>
+            <Icon id="no-mail" size={48} />
+            <span>Nenhum post encontrado</span>
+          </NoContent>
+        )}
       </PostsContainer>
       <Pagination>
         <PaginationButton
