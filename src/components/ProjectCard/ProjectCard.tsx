@@ -2,13 +2,12 @@ import { Project } from "@/utils/interfaces";
 import {
   Thumb,
   Wrapper,
-  TitleWrapper,
-  Title,
-  ExpandIcon,
-  Description,
   InfoWrapper,
-  Checkbox,
-  Link,
+  TextWrapper,
+  Title,
+  Description,
+  Button,
+  ArrowIcon,
 } from "./ProjectCard.styles";
 
 const ProjectCard = ({ project }: { project: { fields: Project } }) => {
@@ -16,27 +15,21 @@ const ProjectCard = ({ project }: { project: { fields: Project } }) => {
 
   return (
     <Wrapper>
-      <Link target="_blank" href={link}>
-        <Thumb
-          src={`https:${thumb.fields.file.url}`}
-          alt=""
-          width={300}
-          height={200}
-        />
-      </Link>
+      <Thumb
+        src={`https:${thumb.fields.file.url}`}
+        alt=""
+        width={300}
+        height={200}
+      />
       <InfoWrapper>
-        <Checkbox
-          id={name.replace(" ", "_").toLowerCase()}
-          type="checkbox"
-          defaultChecked={true}
-          hidden
-          readOnly
-        />
-        <TitleWrapper>
+        <TextWrapper>
           <Title>{name}</Title>
-          <ExpandIcon id="expand" size={12} />
-        </TitleWrapper>
-        <Description>{description}</Description>
+          <Description>{description}</Description>
+        </TextWrapper>
+        <Button as="a" href={link} target="_blank">
+          <ArrowIcon id={"link-arrow"} size={12} />
+          Acessar
+        </Button>
       </InfoWrapper>
     </Wrapper>
   );
