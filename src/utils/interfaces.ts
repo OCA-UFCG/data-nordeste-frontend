@@ -60,5 +60,7 @@ export interface IPublication {
 
 export interface ReportData {
   title: string;
-  reportId: string;
+  source: string;
+  width: number;
+  height: number;
 }

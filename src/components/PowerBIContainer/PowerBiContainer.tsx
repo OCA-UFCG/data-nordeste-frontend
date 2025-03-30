@@ -8,7 +8,7 @@ import {
 import { ReportData } from "@/utils/interfaces";
 
 const PowerBIContainer = ({ panel }: { panel: { fields: ReportData } }) => {
-  const { title, reportId } = panel.fields;
+  const { title, source, width, height } = panel.fields;
 
   return (
     <Wrapper>
@@ -18,9 +18,9 @@ const PowerBIContainer = ({ panel }: { panel: { fields: ReportData } }) => {
       <EmbedContainer>
         <iframe
           title={title}
-          width="1024"
-          height="612"
-          src={reportId}
+          width={width}
+          height={height}
+          src={source}
           allowFullScreen={true}
         />
       </EmbedContainer>
