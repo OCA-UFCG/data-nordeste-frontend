@@ -1,7 +1,5 @@
 "use client";
-import Link from "next/link";
 import styled from "styled-components";
-import { Icon } from "../Icon/Icon";
 
 export const Wrapper = styled.div`
   padding: 1rem;
@@ -22,17 +20,6 @@ export const TitleWrapper = styled.div`
 export const Title = styled.div`
   font-weight: bold;
   font-size: 1.3rem;
-`;
-
-export const Button = styled(Link)`
-  width: max-content;
-  white-space: nowrap;
-  cursor: not-allowed;
-  transition: 300ms;
-
-  &:hover {
-    opacity: 0.6;
-  }
 `;
 
 export const EmbedContainer = styled.div`
@@ -61,20 +48,4 @@ export const EmbedContainer = styled.div`
       object-fit: contain;
     }
   }
-`;
-
-export const LoadingWrapper = styled.div`
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-
-  @media (max-width: 1200px) {
-    margin: 13rem auto;
-  }
-`;
-
-export const LoadingIcon = styled(Icon)<{ loading: boolean }>`
-  opacity: 0.7;
-  animation: spin 1s linear infinite;
-  display: ${({ loading }) => (loading ? "block" : "none")};
 `;
