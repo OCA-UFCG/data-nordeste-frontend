@@ -23,13 +23,13 @@ const Carousel = ({ cards }: { cards: { fields: IPublication }[] }) => {
 
   useEffect(() => {
     new Glide(sliderRef.current, {
-      perView: cards.length > 4 ? 4 : cards.length,
+      perView: cards.length > 3 ? 3 : cards.length,
       gap: 16,
       autoplay: 5000,
       bound: true,
       breakpoints: {
         1200: {
-          perView: cards.length > 4 ? 4 : cards.length,
+          perView: cards.length > 3 ? 3 : cards.length,
         },
         1000: {
           perView: cards.length > 2 ? 2 : cards.length,

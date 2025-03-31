@@ -7,23 +7,43 @@ import {
   TitleWrapper,
   ArrowIcon,
   DateWrapper,
+  Header,
+  Type,
+  ThumbContainer,
+  DescriptionContainer,
+  Description,
 } from "./ContentPost.styles";
+import { POST_TYPES } from "@/utils/constants";
 
 const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
-  const { title, thumb, link, date } = content.fields;
+  const { title, thumb, link, date, type, description } = content.fields;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
   return (
     <ContentWrapper>
-      <DateWrapper>{formattedDate}</DateWrapper>
+      <Header>
+        <Type>
+          {
+            POST_TYPES[
+              type as "additional-content" | "data-panel" | "newsletter"
+            ]
+          }
+        </Type>
+        <DateWrapper>{formattedDate}</DateWrapper>
+      </Header>
       <Link href={link}>
-        <Thumb
-          src={`https:${thumb.fields.file.url}`}
-          alt=""
-          width={310}
-          height={260}
-        />
+        <ThumbContainer>
+          <Thumb
+            src={`https:${thumb.fields.file.url}`}
+            alt=""
+            width={600}
+            height={300}
+          />
+          <DescriptionContainer>
+            <Description>{description || "Acessar postagem"}</Description>
+          </DescriptionContainer>
+        </ThumbContainer>
 
         <TitleWrapper>
           <Title>{title}</Title>
