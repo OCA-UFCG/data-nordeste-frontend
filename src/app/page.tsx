@@ -5,6 +5,7 @@ import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/About/About";
 import InitialBannerSection from "@/components/InitialBannerSection/InitialBannerSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
+import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
 
 export const revalidate = 60;
 
@@ -14,11 +15,14 @@ export default async function Home() {
     partners,
     sectionHead,
     post: posts,
-  } = await getContent(["partners", "sectionHead", "post"]);
+    previewCard,
+  } = await getContent(["partners", "sectionHead", "post", "previewCard"]);
 
   return (
     <HubTemplate>
       <InitialBannerSection sectionHead={sectionHead} />
+      <PreviewCarousel cards={previewCard} />
+
       <RecentSection
         content={posts.slice(0, MAX_SiZE)}
         header={sectionHead.find(
