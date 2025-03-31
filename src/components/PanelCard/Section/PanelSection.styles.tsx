@@ -54,20 +54,18 @@ export const PanelsContainer = styled.div`
 `;
 
 export const Button = styled.button`
-  background-color: white;
-  border: 2px solid #60925a;
-  color: #60925a;
-  font-weight: bold;
+  text-decoration: none;
+  border: 1px solid ${({ theme }) => theme.colors.green}80;
   padding: 0.5rem 3rem;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+  color: ${({ theme }) => theme.colors.green};
+  border-radius: 4px;
+  transition: 300ms;
+  cursor: not-allowed;
+  font-size: 0.8rem;
+  background-color: white;
 
   &:hover {
-    background-color: #60925a;
+    background-color: ${({ theme }) => theme.colors.green}90;
     color: white;
   }
 `;
