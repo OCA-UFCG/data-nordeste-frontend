@@ -8,6 +8,8 @@ import {
   Description,
   Button,
   ArrowIcon,
+  Link,
+  ThumbContainer,
 } from "./ProjectCard.styles";
 
 const ProjectCard = ({ project }: { project: { fields: Project } }) => {
@@ -15,12 +17,16 @@ const ProjectCard = ({ project }: { project: { fields: Project } }) => {
 
   return (
     <Wrapper>
-      <Thumb
-        src={`https:${thumb.fields.file.url}`}
-        alt=""
-        width={300}
-        height={200}
-      />
+      <Link href={link}>
+        <ThumbContainer>
+          <Thumb
+            src={`https:${thumb.fields.file.url}`}
+            alt=""
+            width={600}
+            height={300}
+          />
+        </ThumbContainer>
+      </Link>
       <InfoWrapper>
         <TextWrapper>
           <Title>{name}</Title>

@@ -7,38 +7,52 @@ import { Icon } from "../Icon/Icon";
 export const Wrapper = styled.div`
   display: flex;
   flex-flow: row;
-  gap: 0.5rem;
+  width: 100%;
+  height: 100%;
+  gap: 1rem;
+  justify-content: space-between;
+  max-width: 700px;
 
-  @media (max-width: 768px) {
+  @media (max-width: 675px) {
     flex-flow: column;
   }
+`;
+
+export const Link = styled.a`
+  text-decoration: none;
+  width: 100%;
+  height: auto;
+`;
+
+export const ThumbContainer = styled.div`
+  position: relative;
+  aspect-ratio: 16/9;
+  width: 100%;
+  height: auto;
 `;
 
 export const Thumb = styled(Image)`
   border-radius: 4px;
   width: 100%;
-  max-width: 20rem;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   transition: 300ms;
   display: block;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 `;
 
 export const InfoWrapper = styled.summary`
   display: flex;
   flex-flow: column;
-  align-items: flex-start;
   justify-content: space-between;
   width: 100%;
-  max-width: 19rem;
   gap: 0.5rem;
   cursor: pointer;
   transition: 0.3s;
-  padding: 0.5rem;
-`;
-
-export const ArrowIcon = styled(Icon)`
-  flex-shrink: 0;
-  height: 1.3rem;
+  align-items: center;
 `;
 
 export const TextWrapper = styled.div`
@@ -61,6 +75,11 @@ export const Description = styled.p`
   transition: 300ms;
   line-height: 1.2rem;
   color: #555;
+`;
+
+export const ArrowIcon = styled(Icon)`
+  flex-shrink: 0;
+  height: 1.3rem;
 `;
 
 export const Button = styled.button`
