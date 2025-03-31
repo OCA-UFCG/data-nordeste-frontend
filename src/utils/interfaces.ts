@@ -46,6 +46,7 @@ export interface ISectionHeader {
 
 export interface IPublication {
   title: string;
+  description: string;
   link: string;
   thumb: {
     fields: {
