@@ -60,6 +60,7 @@ export interface IPublication {
 }
 
 export interface ReportData {
+  macroTheme: string;
   title: string;
-  reportId: string;
+  source: string;
 }
