@@ -23,9 +23,9 @@ const PanelSection = ({
     subtitle: "",
   };
 
-  const filteredData = panels?.filter(
-    (item) => item.fields.type === "data-panel",
-  );
+  const filteredData = panels
+  ?.filter((item) => item.fields.type === "data-panel")
+  .slice(0, 6);
 
   return (
     <Wrapper full={"false"} id={id}>
