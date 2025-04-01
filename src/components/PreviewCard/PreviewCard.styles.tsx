@@ -80,6 +80,7 @@ export const Wrapper = styled(Link)`
   gap: 1rem;
   text-decoration: none;
   font-weight: normal;
+  transition: 300ms;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.green}70;

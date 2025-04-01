@@ -19,7 +19,6 @@ export default async function Home() {
 
   return (
     <HubTemplate>
-      {/* <InitialBannerSection sectionHead={sectionHead} /> */}
       <PreviewSection cards={previewCard} />
 
       <RecentSection

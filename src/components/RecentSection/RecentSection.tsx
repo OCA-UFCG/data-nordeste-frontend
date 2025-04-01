@@ -25,7 +25,7 @@ export const RecentSection = ({
   const carouselConfig = {
     perView: content.length > 4 ? 4 : content.length,
     gap: 16,
-    autoplay: 50000,
+    autoplay: 5000,
     bound: true,
     breakpoints: {
       1200: {

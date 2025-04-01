@@ -18,7 +18,7 @@ const PreviewSection = ({ cards }: { cards: { fields: IPreviewCard }[] }) => {
     perView: cards.length > 5 ? 5 : cards.length,
     type: "carousel",
     gap: 16,
-    autoplay: 500000,
+    autoplay: 5000,
     bound: true,
     breakpoints: {
       1250: {
