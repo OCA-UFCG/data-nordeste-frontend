@@ -11,7 +11,7 @@ export const Wrapper = styled.div`
 `;
 
 export const Title = styled.h2`
-  text-align: left;
+  text-align: center;
   font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.05em;
