@@ -23,7 +23,7 @@ export const Header = styled.div`
   width: 100%;
 `;
 
-export const TitleWrapper = styled.summary`
+export const TitleWrapper = styled.div`
   display: flex;
   width: 100%;
   margin-top: 0.5rem;
@@ -50,6 +50,7 @@ export const Thumb = styled(Image)`
   object-fit: cover;
   object-position: top;
   transition: 300ms;
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
   box-shadow: 0 0 0.5rem #cbcaca;
@@ -80,6 +81,7 @@ export const DescriptionContainer = styled.div`
   animation: fadeIn 300ms linear forwards;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 `;
 
 export const ThumbContainer = styled.div`
@@ -97,7 +99,6 @@ export const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
 
   &:hover ${TitleWrapper} {
     opacity: 0.6;
