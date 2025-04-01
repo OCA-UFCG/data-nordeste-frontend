@@ -2,6 +2,7 @@ import { IPublication } from "@/utils/interfaces";
 import Carousel from "../Carousel/Carousel";
 import {
   Button,
+  Card,
   ContentWrapper,
   HeaderWrapper,
   RightIcon,
@@ -10,6 +11,7 @@ import {
   Wrapper,
 } from "./RecentSection.styles";
 import { Header } from "./RecentSection.styles";
+import ContentPost from "../ContentPost/ContentPost";
 
 export const RecentSection = ({
   header,
@@ -19,6 +21,27 @@ export const RecentSection = ({
   content: { fields: IPublication }[];
 }) => {
   const { id, title, subtitle } = header.fields;
+
+  const carouselConfig = {
+    perView: content.length > 4 ? 4 : content.length,
+    gap: 16,
+    autoplay: 5000,
+    bound: true,
+    breakpoints: {
+      1200: {
+        perView: content.length > 4 ? 4 : content.length,
+      },
+      1000: {
+        perView: content.length > 2 ? 2 : content.length,
+      },
+      800: {
+        perView: content.length > 2 ? 2 : content.length,
+      },
+      600: {
+        perView: 1,
+      },
+    },
+  };
 
   return (
     <Wrapper id={id}>
@@ -32,7 +55,19 @@ export const RecentSection = ({
         <Subtitle>{subtitle}</Subtitle>
       </HeaderWrapper>
       <ContentWrapper>
-        <Carousel cards={content} />
+        <Carousel config={carouselConfig}>
+          {content
+            .sort(
+              (a, b) =>
+                new Date(b.fields.date).getTime() -
+                new Date(a.fields.date).getTime(),
+            )
+            .map((card, i) => (
+              <Card className="glide__slide" key={i}>
+                <ContentPost content={card} />
+              </Card>
+            ))}
+        </Carousel>
       </ContentWrapper>
     </Wrapper>
   );

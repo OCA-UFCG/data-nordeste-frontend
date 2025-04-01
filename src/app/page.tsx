@@ -3,9 +3,8 @@ import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/functions";
 import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/About/About";
-import InitialBannerSection from "@/components/InitialBannerSection/InitialBannerSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
-import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
+import PreviewSection from "@/components/PreviewSection/PreviewSection";
 
 export const revalidate = 60;
 
@@ -20,8 +19,8 @@ export default async function Home() {
 
   return (
     <HubTemplate>
-      <InitialBannerSection sectionHead={sectionHead} />
-      <PreviewCarousel cards={previewCard} />
+      {/* <InitialBannerSection sectionHead={sectionHead} /> */}
+      <PreviewSection cards={previewCard} />
 
       <RecentSection
         content={posts.slice(0, MAX_SiZE)}

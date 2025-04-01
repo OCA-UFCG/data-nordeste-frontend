@@ -66,6 +66,7 @@ export interface ReportData {
 export interface IPreviewCard {
   title: string;
   subtitle?: string;
+  link: string;
   data: string;
   note?: string;
 }
