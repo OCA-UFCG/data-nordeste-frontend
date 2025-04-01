@@ -56,11 +56,13 @@ export interface IPublication {
   };
   type: string;
   date: string;
+  description: string;
 }
 
 export interface ReportData {
+  macroTheme: string;
   title: string;
-  reportId: string;
+  source: string;
 }
 
 export interface IPreviewCard {
