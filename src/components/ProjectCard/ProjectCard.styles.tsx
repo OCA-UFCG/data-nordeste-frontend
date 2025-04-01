@@ -40,7 +40,7 @@ export const Thumb = styled(Image)`
   display: block;
 
   &:hover {
-    transform: scale(1.05);
+    transform: scale(1.01);
   }
 `;
 
@@ -50,7 +50,6 @@ export const InfoWrapper = styled.summary`
   justify-content: space-between;
   width: 100%;
   gap: 0.5rem;
-  cursor: pointer;
   transition: 0.3s;
   align-items: center;
 `;
