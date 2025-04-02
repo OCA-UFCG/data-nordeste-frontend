@@ -8,12 +8,8 @@ export const BannerContainer = styled.header`
   padding-bottom: 1rem;
   border-radius: 0 0 8px 8px;
 
-  @media (max-width: 768px) {
-    height: 300px;
-  }
-
-  @media (max-width: 480px) {
-    height: 200px;
+  @media (max-width: 1000px) {
+    height: clamp(80px, 20vw, 140px);
   }
 `;
 
