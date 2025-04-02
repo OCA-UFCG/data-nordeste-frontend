@@ -63,4 +63,14 @@ export interface ReportData {
   macroTheme: string;
   title: string;
   source: string;
+  macroPainel: boolean;
+  description: string;
+  thumb: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
 }
+

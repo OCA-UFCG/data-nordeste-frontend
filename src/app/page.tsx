@@ -5,6 +5,7 @@ import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/About/About";
 import InitialBannerSection from "@/components/InitialBannerSection/InitialBannerSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
+import PanelSection from "@/components/PanelCard/Section/PanelSection";
 
 export const revalidate = 60;
 
@@ -14,7 +15,8 @@ export default async function Home() {
     partners,
     sectionHead,
     post: posts,
-  } = await getContent(["partners", "sectionHead", "post"]);
+    panels
+  } = await getContent(["partners", "sectionHead", "post", "panels"]);
 
   return (
     <HubTemplate>
@@ -30,6 +32,12 @@ export default async function Home() {
           (section: { fields: { id: string } }) =>
             section.fields.id === "about",
         )}
+      />
+      <PanelSection 
+        header={sectionHead.find(
+          (sec: { fields: SectionHeader }) => sec.fields.id == "panels",
+        )}
+        panels={panels}
       />
       <ProjectSection
         header={sectionHead.find(
