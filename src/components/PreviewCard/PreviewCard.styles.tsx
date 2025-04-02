@@ -56,6 +56,7 @@ export const Data = styled.div`
   font-size: 2rem;
   color: ${({ theme }) => theme.colors.green};
   font-weight: bolder;
+  text-align: center;
 `;
 
 export const Note = styled.p`
@@ -71,6 +72,7 @@ export const Note = styled.p`
 export const Link = styled(DefaultLink)`
   text-decoration: none;
   font-weight: normal;
+  width: 100%;
 `;
 
 export const Wrapper = styled.div`
