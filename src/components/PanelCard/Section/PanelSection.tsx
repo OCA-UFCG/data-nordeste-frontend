@@ -6,7 +6,8 @@ import {
   Header,
   Title,
   Subtitle,
-  RightIcon,
+  Button,
+  Input,
 } from "./PanelSection.styles";
 
 const PanelSection = ({
@@ -31,7 +32,6 @@ const PanelSection = ({
         return 1;
       }
 
-      // names must be equal
       return 0;
     })
     .filter((item) => item.fields.macroPainel === true);
@@ -39,18 +39,16 @@ const PanelSection = ({
   return (
     <Wrapper full={"false"} id={id}>
       <Header>
-        <Title>
-          {title} <RightIcon id="expand" size={14} />{" "}
-        </Title>
+        <Title>{title}</Title>
         <Subtitle>{subtitle}</Subtitle>
       </Header>
+      <Input id="see-all" type="checkbox" hidden />
       <PanelsContainer>
         {filteredData?.map((panel: { fields: ReportData }) => (
           <PanelCard key={panel.fields.title} data={panel} />
         ))}
       </PanelsContainer>
-
-      {/* <Button>Ver mais</Button> */}
+      <Button htmlFor="see-all" />
     </Wrapper>
   );
 };

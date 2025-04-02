@@ -5,11 +5,13 @@ import styled from "styled-components";
 import { Icon } from "../Icon/Icon";
 import DefaultLink from "next/link";
 
-export const Wrapper = styled.div`
+export const Wrapper = styled.li`
   display: flex;
   flex-direction: column;
   background-color: white;
   width: 100%;
+  transition: 300ms;
+  animation: fadeIn 200ms linear forwards;
 `;
 export const Description = styled.p`
   color: white;

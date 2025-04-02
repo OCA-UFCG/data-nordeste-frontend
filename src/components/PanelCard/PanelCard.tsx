@@ -26,7 +26,7 @@ const PanelCard = ({ data }: { data: { fields: ReportData } }) => {
             height={600}
           />
           <DescriptionContainer>
-            <Description>{description}</Description>
+            <Description>{description || "Visualizar"}</Description>
           </DescriptionContainer>
         </ThumbContainer>
 

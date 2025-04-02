@@ -87,6 +87,7 @@ export const Wrapper = styled.div`
   box-shadow: 0px 2px 4px #00000025;
   padding: 1rem;
   gap: 1rem;
+  background-color: white;
 
   transition: 300ms;
 
