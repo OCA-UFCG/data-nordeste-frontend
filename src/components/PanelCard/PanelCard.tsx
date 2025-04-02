@@ -22,11 +22,11 @@ const PanelCard = ({ data }: { data: { fields: ReportData } }) => {
           <Thumb
             src={`https:${thumb.fields.file.url}`}
             alt=""
-            width={300}
-            height={400}
+            width={600}
+            height={600}
           />
           <DescriptionContainer>
-            <Description>{description}</Description>
+            <Description>{description || "Visualizar"}</Description>
           </DescriptionContainer>
         </ThumbContainer>
 

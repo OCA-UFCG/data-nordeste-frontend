@@ -1,6 +1,5 @@
 "use client";
 import { Section } from "@/app/globalStyles";
-import { Icon } from "@/components/Icon/Icon";
 import styled from "styled-components";
 
 export const Wrapper = styled(Section)``;
@@ -10,10 +9,6 @@ export const Header = styled.div`
   flex-direction: column;
   align-items: flex-start;
   width: 100%;
-`;
-
-export const RightIcon = styled(Icon)`
-  transform: rotate(-90deg);
 `;
 
 export const Title = styled.p`
@@ -32,43 +27,74 @@ export const Subtitle = styled.p`
   }
 `;
 
-export const PanelsContainer = styled.div`
+export const Input = styled.input``;
+
+export const PanelsContainer = styled.ul`
   display: grid;
   flex-wrap: wrap;
   width: 100%;
-  justify-content: start;
   padding: 1rem;
-  align-items: start;
+  margin: 0;
   gap: 1.5rem;
   row-gap: 3rem;
-  grid-template-columns: repeat(4, minmax(20rem, 1fr));
+  grid-template-columns: repeat(5, minmax(200px, 1fr));
 
   @media screen and (max-width: 1200px) {
-    grid-template-columns: repeat(3, minmax(200px, 1fr));
+    grid-template-columns: repeat(4, minmax(100px, 1fr));
   }
 
-  @media screen and (max-width: 700px) {
-    grid-template-columns: repeat(2, minmax(200px, 1fr));
+  @media screen and (max-width: 1000px) {
+    grid-template-columns: repeat(3, minmax(100px, 1fr));
   }
 
-  @media screen and (max-width: 430px) {
-    grid-template-columns: repeat(1, minmax(200px, 1fr));
+  @media screen and (max-width: 675px) {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+  }
+
+  @media screen and (max-width: 340px) {
+    grid-template-columns: repeat(1, minmax(100px, 1fr));
+  }
+
+  & li:nth-child(n + 6) {
+    display: none;
+  }
+
+  ${Input}:checked + & li:nth-child(n+6) {
+    display: flex;
   }
 `;
 
-export const Button = styled.button`
+export const Button = styled.label`
   text-decoration: none;
-  border: 1px solid ${({ theme }) => theme.colors.green}80;
+  border: 2px solid ${({ theme }) => theme.colors.green}80;
   padding: 0.5rem 3rem;
   color: ${({ theme }) => theme.colors.green};
   border-radius: 4px;
   transition: 300ms;
-  cursor: not-allowed;
+  cursor: pointer;
   font-size: 0.8rem;
   background-color: white;
+  width: 16rem;
+  justify-content: center;
+  display: flex;
+  box-sizing: border-box;
+  font-weight: bold;
+  white-space: nowrap;
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.green}90;
     color: white;
+  }
+
+  @media screen and (max-width: 650px) {
+    width: 100%;
+  }
+
+  &::after {
+    content: "Ver todos";
+  }
+
+  ${Input}:checked + ${PanelsContainer} + &::after {
+    content: "Ver menos";
   }
 `;
