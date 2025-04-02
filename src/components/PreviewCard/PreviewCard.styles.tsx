@@ -1,18 +1,19 @@
 "use client";
 import styled from "styled-components";
 import { Icon } from "../Icon/Icon";
-import Link from "next/link";
+import DefaultLink from "next/link";
 
 export const Header = styled.div`
   display: flex;
   flex-flow: column;
   gap: 0.2rem;
   align-items: center;
+  height: 100%;
 `;
 
 export const TitleWrapper = styled.div`
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   cursor: pointer;
 `;
 
@@ -20,6 +21,7 @@ export const Title = styled.h3`
   font-weight: bold;
   font-size: 1.3rem;
   text-transform: uppercase;
+  text-align: center;
   color: ${({ theme }) => theme.colors.orange};
 `;
 
@@ -35,7 +37,7 @@ export const Subtitle = styled.p`
 
 export const ArrowIcon = styled(Icon)`
   flex-shrink: 0;
-  height: 1.3rem;
+  height: 1.5rem;
   color: ${({ theme }) => theme.colors.orange};
 `;
 
@@ -66,7 +68,12 @@ export const Note = styled.p`
   line-height: 1;
 `;
 
-export const Wrapper = styled(Link)`
+export const Link = styled(DefaultLink)`
+  text-decoration: none;
+  font-weight: normal;
+`;
+
+export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -78,8 +85,7 @@ export const Wrapper = styled(Link)`
   box-shadow: 0px 2px 4px #00000025;
   padding: 1rem;
   gap: 1rem;
-  text-decoration: none;
-  font-weight: normal;
+
   transition: 300ms;
 
   &:hover {

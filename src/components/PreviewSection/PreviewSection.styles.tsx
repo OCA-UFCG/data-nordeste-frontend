@@ -44,6 +44,6 @@ export const Wrapper = styled.section`
   }
 
   & .glide__slides {
-    height: 10rem;
+    height: 100%;
   }
 `;
