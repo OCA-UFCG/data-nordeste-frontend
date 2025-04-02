@@ -15,7 +15,7 @@ import Carousel from "../Carousel/Carousel";
 
 const PreviewSection = ({ cards }: { cards: { fields: IPreviewCard }[] }) => {
   const carouselConfig = {
-    perView: cards.length > 5 ? 5 : cards.length,
+    perView: cards.length > 4 ? 4 : cards.length,
     type: "carousel",
     gap: 16,
     autoplay: 5000,
