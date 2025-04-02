@@ -7,7 +7,6 @@ import {
   Title,
   Subtitle,
   RightIcon,
-  Button,
 } from "./PanelSection.styles";
 
 const PanelSection = ({
@@ -23,8 +22,9 @@ const PanelSection = ({
     subtitle: "",
   };
 
-  const filteredData = panels
-  ?.filter((item) => item.fields.macroPainel === true);
+  const filteredData = panels?.filter(
+    (item) => item.fields.macroPainel === true,
+  );
 
   return (
     <Wrapper full={"false"} id={id}>

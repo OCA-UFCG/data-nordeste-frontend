@@ -42,7 +42,7 @@ export const PanelsContainer = styled.div`
   gap: 1.5rem;
   row-gap: 3rem;
   grid-template-columns: repeat(4, minmax(20rem, 1fr));
-  
+
   @media screen and (max-width: 1200px) {
     grid-template-columns: repeat(3, minmax(200px, 1fr));
   }

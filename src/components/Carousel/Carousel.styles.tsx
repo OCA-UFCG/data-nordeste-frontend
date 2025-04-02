@@ -14,11 +14,6 @@ export const SlidesContainer = styled.div``;
 
 export const Slides = styled.ul``;
 
-export const Card = styled.li`
-  display: flex;
-  width: fit-content;
-`;
-
 export const Button = styled.button`
   display: flex;
   backdrop-filter: blur(40px);

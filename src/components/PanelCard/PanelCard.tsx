@@ -18,24 +18,24 @@ const PanelCard = ({ data }: { data: { fields: ReportData } }) => {
   return (
     <Wrapper>
       <Link target="_blank" href={`/data-panel/${title}`}>
-      <ThumbContainer>
+        <ThumbContainer>
           <Thumb
             src={`https:${thumb.fields.file.url}`}
             alt=""
             width={300}
             height={400}
-            />
+          />
           <DescriptionContainer>
             <Description>{description}</Description>
           </DescriptionContainer>
         </ThumbContainer>
 
-      <InfoWrapper>
-        <TitleWrapper>
-          <Title>{macroTheme}</Title>
-          <ArrowIcon id={"link-arrow"} size={16} />
-        </TitleWrapper>
-      </InfoWrapper>
+        <InfoWrapper>
+          <TitleWrapper>
+            <Title>{macroTheme}</Title>
+            <ArrowIcon id={"link-arrow"} size={16} />
+          </TitleWrapper>
+        </InfoWrapper>
       </Link>
     </Wrapper>
   );

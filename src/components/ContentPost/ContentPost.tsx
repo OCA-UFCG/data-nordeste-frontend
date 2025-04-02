@@ -33,22 +33,24 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
         <DateWrapper>{formattedDate}</DateWrapper>
       </Header>
       <Link href={link}>
-        <ThumbContainer>
-          <Thumb
-            src={`https:${thumb.fields.file.url}`}
-            alt=""
-            width={600}
-            height={300}
-          />
-          <DescriptionContainer>
-            <Description>{description || "Acessar postagem"}</Description>
-          </DescriptionContainer>
-        </ThumbContainer>
+        <div>
+          <ThumbContainer>
+            <Thumb
+              src={`https:${thumb.fields.file.url}`}
+              alt=""
+              width={600}
+              height={300}
+            />
+            <DescriptionContainer>
+              <Description>{description || "Acessar postagem"}</Description>
+            </DescriptionContainer>
+          </ThumbContainer>
 
-        <TitleWrapper>
-          <Title>{title}</Title>
-          <ArrowIcon id={"link-arrow"} size={16} />
-        </TitleWrapper>
+          <TitleWrapper>
+            <Title>{title}</Title>
+            <ArrowIcon id={"link-arrow"} size={16} />
+          </TitleWrapper>
+        </div>
       </Link>
     </ContentWrapper>
   );

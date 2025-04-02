@@ -113,6 +113,11 @@
             <path d="M6 15h1"></path>
             <path d="M3 3l18 18"></path>
         </symbol>
+        <svg id="arrow" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.5 11L11.5 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5.94434 1H11.4999V6.55556" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+
 
 
     </defs>

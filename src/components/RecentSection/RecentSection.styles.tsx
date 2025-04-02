@@ -70,3 +70,8 @@ export const ContentWrapper = styled.div`
   width: 100%;
   max-width: 1440px;
 `;
+
+export const Card = styled.li`
+  display: flex;
+  width: fit-content;
+`;
