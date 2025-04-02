@@ -3,9 +3,10 @@ import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/functions";
 import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/About/About";
-import InitialBannerSection from "@/components/InitialBannerSection/InitialBannerSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import BannerImage from "@/components/BannerImage/BannerImage";
+import PreviewSection from "@/components/PreviewSection/PreviewSection";
+import PanelSection from "@/components/PanelCard/Section/PanelSection";
 
 export const revalidate = 60;
 
@@ -15,12 +16,21 @@ export default async function Home() {
     partners,
     sectionHead,
     post: posts,
-  } = await getContent(["partners", "sectionHead", "post"]);
+    previewCard,
+    panels,
+  } = await getContent([
+    "partners",
+    "sectionHead",
+    "post",
+    "previewCard",
+    "panels",
+  ]);
 
   return (
     <HubTemplate>
-      <BannerImage/>
-      <InitialBannerSection sectionHead={sectionHead} />
+      <BannerImage />
+      <PreviewSection cards={previewCard} />
+
       <RecentSection
         content={posts.slice(0, MAX_SiZE)}
         header={sectionHead.find(
@@ -33,6 +43,12 @@ export default async function Home() {
             section.fields.id === "about",
         )}
       />
+      <PanelSection
+        header={sectionHead.find(
+          (sec: { fields: SectionHeader }) => sec.fields.id == "panels",
+        )}
+        panels={panels}
+      />
       <ProjectSection
         header={sectionHead.find(
           (sec: { fields: SectionHeader }) => sec.fields.id == "projects",
@@ -40,6 +56,5 @@ export default async function Home() {
         projects={partners}
       />
     </HubTemplate>
-
   );
 }

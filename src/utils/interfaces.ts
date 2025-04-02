@@ -60,6 +60,25 @@ export interface IPublication {
 }
 
 export interface ReportData {
+  macroTheme: string;
+  id: string;
   title: string;
-  reportId: string;
+  source: string;
+  macroPainel: boolean;
+  description: string;
+  thumb: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
+}
+
+export interface IPreviewCard {
+  title: string;
+  subtitle?: string;
+  link: string;
+  data: string;
+  note?: string;
 }

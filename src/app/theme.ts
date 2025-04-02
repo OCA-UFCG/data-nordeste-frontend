@@ -30,7 +30,7 @@ export const theme: DefaultTheme = {
     black: "#1F1F1F",
     "dark-gray": "#242424",
     gray: "#858585",
-    orange: "#AA633B",
+    orange: "#FF9600",
     yellow: "#CEA15B",
     salmon: "#F9E8DD",
   },

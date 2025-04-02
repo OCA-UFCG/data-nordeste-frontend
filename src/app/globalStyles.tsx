@@ -175,7 +175,7 @@ export const GlobalStyles = createGlobalStyle`
     width: 100%;
     min-height: 100svh;
     justify-content: space-between;
-    background-image: url("background.png");
+    background-image: url("/background.png");
 
     background-size: 150vh;
     background-repeat: repeat;
@@ -245,7 +245,6 @@ export const Main = styled.main<{ backThumb: string }>`
 
   box-sizing: border-box;
   transition: 0.3s;
-  margin-bottom: 2rem;
 `;
 
 export const Section = styled.section<{ full?: string }>`

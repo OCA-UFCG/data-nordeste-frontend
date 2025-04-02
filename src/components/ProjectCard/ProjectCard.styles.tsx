@@ -6,80 +6,99 @@ import { Icon } from "../Icon/Icon";
 
 export const Wrapper = styled.div`
   display: flex;
-  flex-flow: column;
-  max-width: 20rem;
+  flex-flow: row;
   width: 100%;
-  min-width: 16rem;
-  gap: 0.5rem;
+  height: 100%;
+  gap: 1rem;
+  justify-content: space-between;
+  max-width: 700px;
+
+  @media (max-width: 675px) {
+    flex-flow: column;
+  }
 `;
 
 export const Link = styled.a`
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0px 0px 2px #616161;
+  text-decoration: none;
   width: 100%;
   height: auto;
-  margin: 0;
-  padding: 0;
+`;
+
+export const ThumbContainer = styled.div`
+  position: relative;
+  aspect-ratio: 16/9;
+  width: 100%;
+  height: auto;
 `;
 
 export const Thumb = styled(Image)`
   border-radius: 4px;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   transition: 300ms;
   display: block;
 
   &:hover {
-    transform: scale(1.05);
+    transform: scale(1.01);
   }
 `;
 
-export const InfoWrapper = styled.details`
+export const InfoWrapper = styled.summary`
   display: flex;
   flex-flow: column;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+  transition: 0.3s;
+  align-items: center;
 `;
 
-export const Checkbox = styled.input``;
-
-export const TitleWrapper = styled.summary`
+export const TextWrapper = styled.div`
   display: flex;
-  align-items: center;
+  flex-flow: column;
+  gap: 0.5rem;
   width: 100%;
-  gap: 1rem;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: 0.3s;
-
-  &:hover {
-    opacity: 0.6;
-  }
 `;
 
 export const Title = styled.h3`
   font-weight: bold;
-`;
-
-export const ExpandIcon = styled(Icon)`
-  transition: 300ms;
-
-  ${InfoWrapper}[open] & {
-    transform: rotate(180deg);
-  }
+  font-size: 1.1rem;
+  margin: 0;
+  color: #333;
 `;
 
 export const Description = styled.p`
-  margin-bottom: 0;
-  font-size: 0.8rem;
+  margin: 0;
+  font-size: 0.9rem;
   transition: 300ms;
-  line-height: 1rem;
-  margin-top: 0.5rem;
+  line-height: 1.2rem;
+  color: #555;
+`;
 
-  ${InfoWrapper}[open] > & {
-    animation: fall 1000ms ease-in-out;
-  }
+export const ArrowIcon = styled(Icon)`
+  flex-shrink: 0;
+  height: 1.3rem;
+`;
 
-  ${InfoWrapper}:not([open]) > & {
-    animation: close 1000ms ease-in-out;
+export const Button = styled.button`
+  text-decoration: none;
+  border: 1px solid ${({ theme }) => theme.colors.green}80;
+  color: ${({ theme }) => theme.colors.green};
+  border-radius: 4px;
+  transition: 300ms;
+  cursor: pointer;
+  font-size: 0.8rem;
+  width: 100%;
+  padding: 0.2rem 0rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.green}90;
+    color: white;
   }
 `;
