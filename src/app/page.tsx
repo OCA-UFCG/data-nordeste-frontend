@@ -5,6 +5,7 @@ import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/About/About";
 import InitialBannerSection from "@/components/InitialBannerSection/InitialBannerSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
+import BannerImage from "@/components/BannerImage/BannerImage";
 
 export const revalidate = 60;
 
@@ -18,6 +19,7 @@ export default async function Home() {
 
   return (
     <HubTemplate>
+      <BannerImage/>
       <InitialBannerSection sectionHead={sectionHead} />
       <RecentSection
         content={posts.slice(0, MAX_SiZE)}
@@ -38,5 +40,6 @@ export default async function Home() {
         projects={partners}
       />
     </HubTemplate>
+
   );
 }
