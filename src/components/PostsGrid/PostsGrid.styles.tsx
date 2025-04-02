@@ -13,6 +13,7 @@ export const Wrapper = styled.div`
   padding: 1rem;
   max-width: 1440px;
   box-sizing: border-box;
+  padding-top: 6rem;
 `;
 
 export const MenuContainer = styled.div`
