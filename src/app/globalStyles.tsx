@@ -175,7 +175,7 @@ export const GlobalStyles = createGlobalStyle`
     width: 100%;
     min-height: 100svh;
     justify-content: space-between;
-    background-image: url("background.png");
+    background-image: url("/background.png");
 
     background-size: 150vh;
     background-repeat: repeat;

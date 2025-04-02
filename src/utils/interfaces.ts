@@ -61,6 +61,7 @@ export interface IPublication {
 
 export interface ReportData {
   macroTheme: string;
+  id: string;
   title: string;
   source: string;
   macroPainel: boolean;
