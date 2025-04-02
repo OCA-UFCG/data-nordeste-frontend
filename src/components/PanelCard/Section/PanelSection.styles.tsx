@@ -41,18 +41,22 @@ export const PanelsContainer = styled.div`
   align-items: start;
   gap: 1.5rem;
   row-gap: 3rem;
-  grid-template-columns: repeat(4, minmax(20rem, 1fr));
+  grid-template-columns: repeat(5, minmax(200px, 1fr));
 
   @media screen and (max-width: 1200px) {
-    grid-template-columns: repeat(3, minmax(200px, 1fr));
+    grid-template-columns: repeat(4, minmax(100px, 1fr));
   }
 
-  @media screen and (max-width: 700px) {
-    grid-template-columns: repeat(2, minmax(200px, 1fr));
+  @media screen and (max-width: 1000px) {
+    grid-template-columns: repeat(3, minmax(100px, 1fr));
   }
 
-  @media screen and (max-width: 430px) {
-    grid-template-columns: repeat(1, minmax(200px, 1fr));
+  @media screen and (max-width: 675px) {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+  }
+
+  @media screen and (max-width: 340px) {
+    grid-template-columns: repeat(1, minmax(100px, 1fr));
   }
 `;
 

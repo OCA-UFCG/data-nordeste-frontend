@@ -34,7 +34,7 @@ export const DescriptionContainer = styled.div`
 
 export const ThumbContainer = styled.div`
   position: relative;
-  aspect-ratio: 16 / 20;
+  aspect-ratio: 1 / 1;
   width: 100%;
   height: 100%;
 

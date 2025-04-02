@@ -22,9 +22,19 @@ const PanelSection = ({
     subtitle: "",
   };
 
-  const filteredData = panels?.filter(
-    (item) => item.fields.macroPainel === true,
-  );
+  const filteredData = panels
+    ?.sort((a, b) => {
+      if (a.fields.title < b.fields.title) {
+        return -1;
+      }
+      if (a.fields.title > b.fields.title) {
+        return 1;
+      }
+
+      // names must be equal
+      return 0;
+    })
+    .filter((item) => item.fields.macroPainel === true);
 
   return (
     <Wrapper full={"false"} id={id}>
