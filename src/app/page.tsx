@@ -6,6 +6,7 @@ import { AboutSection } from "@/components/About/About";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewSection from "@/components/PreviewSection/PreviewSection";
 import PanelSection from "@/components/PanelCard/Section/PanelSection";
+import BannerImage from "@/components/BannerImage/BannerImage";
 
 export const revalidate = 60;
 
@@ -27,8 +28,8 @@ export default async function Home() {
 
   return (
     <HubTemplate>
+      <BannerImage />
       <PreviewSection cards={previewCard} />
-
       <RecentSection
         content={posts.slice(0, MAX_SiZE)}
         header={sectionHead.find(

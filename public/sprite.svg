@@ -119,6 +119,11 @@
         </svg>
 
 
-
+        <defs>
+            <symbol viewBox="0 0 1900 400" id="banner-image">
+                <image href="/banner.png" width="1900" height="400" />
+            </symbol>
+        </defs>
+        <use href="/public/banner" />
     </defs>
 </svg>
