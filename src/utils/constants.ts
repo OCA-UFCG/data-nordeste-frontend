@@ -36,3 +36,9 @@ export const sortingTypes: {
   "Z-A": "-fields.title" as "-sys.contentType.sys.id",
   "Data de publicação": "-fields.date" as "sys.contentType.sys.id",
 };
+
+export const POST_TYPES = {
+  "additional-content": "Conteúdo adicional",
+  "data-panel": "Painel de dados",
+  newsletter: "Boletim",
+};

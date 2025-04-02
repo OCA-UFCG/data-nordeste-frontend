@@ -7,6 +7,7 @@ export const Wrapper = styled.div`
   align-items: center;
   margin-bottom: 1rem;
   gap: 1rem;
+  padding: 3rem 2rem;
 `;
 
 export const Header = styled.div`
@@ -29,7 +30,7 @@ export const Subtitle = styled.p`
 
 export const Projects = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: 2.5rem;
   max-width: 100%;
   width: 100%;
   justify-content: center;

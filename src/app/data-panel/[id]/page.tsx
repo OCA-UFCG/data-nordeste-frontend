@@ -11,7 +11,7 @@ export default async function DataPanel({
 }) {
   const { panels } = await getContent(["panels"]);
   const selectedPanel = panels.find(
-    (panel: any) => panel.fields.reportId === params.id,
+    (panel: any) => panel.fields.title === params.id,
   );
 
   if (!selectedPanel) {
