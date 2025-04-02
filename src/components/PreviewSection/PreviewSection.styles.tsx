@@ -16,6 +16,11 @@ export const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  @media (max-width: 800px) {
+    padding: 0;
+    justify-content: center;
+  }
 `;
 
 export const Logo = styled(Image)``;
@@ -41,6 +46,10 @@ export const Wrapper = styled.section`
 
   & .out-control {
     padding: 0 5rem;
+
+    @media (max-width: 800px) {
+      padding: 0 1rem;
+    }
   }
 
   & .glide__slides {
