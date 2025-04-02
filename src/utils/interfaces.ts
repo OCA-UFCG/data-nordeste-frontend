@@ -46,7 +46,6 @@ export interface ISectionHeader {
 
 export interface IPublication {
   title: string;
-  description: string;
   link: string;
   thumb: {
     fields: {
@@ -64,4 +63,14 @@ export interface ReportData {
   macroTheme: string;
   title: string;
   source: string;
+  macroPainel: boolean;
+  description: string;
+  thumb: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
 }
+

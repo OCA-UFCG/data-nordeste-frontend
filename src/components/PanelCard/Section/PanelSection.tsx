@@ -1,5 +1,5 @@
 import PanelCard from "../PanelCard";
-import { IPublication, SectionHeader } from "@/utils/interfaces";
+import { ReportData, SectionHeader } from "@/utils/interfaces";
 import {
   PanelsContainer,
   Wrapper,
@@ -15,7 +15,7 @@ const PanelSection = ({
   panels,
 }: {
   header?: { fields: SectionHeader };
-  panels?: { fields: IPublication }[];
+  panels?: { fields: ReportData }[];
 }) => {
   const { title, id, subtitle } = header?.fields || {
     title: "",
@@ -24,8 +24,7 @@ const PanelSection = ({
   };
 
   const filteredData = panels
-  ?.filter((item) => item.fields.type === "data-panel")
-  .slice(0, 6);
+  ?.filter((item) => item.fields.macroPainel === true);
 
   return (
     <Wrapper full={"false"} id={id}>
@@ -36,7 +35,7 @@ const PanelSection = ({
         <Subtitle>{subtitle}</Subtitle>
       </Header>
       <PanelsContainer>
-        {filteredData?.map((panel: { fields: IPublication }) => (
+        {filteredData?.map((panel: { fields: ReportData }) => (
           <PanelCard key={panel.fields.title} data={panel} />
         ))}
       </PanelsContainer>

@@ -15,7 +15,8 @@ export default async function Home() {
     partners,
     sectionHead,
     post: posts,
-  } = await getContent(["partners", "sectionHead", "post"]);
+    panels
+  } = await getContent(["partners", "sectionHead", "post", "panels"]);
 
   return (
     <HubTemplate>
@@ -36,7 +37,7 @@ export default async function Home() {
         header={sectionHead.find(
           (sec: { fields: SectionHeader }) => sec.fields.id == "panels",
         )}
-        panels={posts}
+        panels={panels}
       />
       <ProjectSection
         header={sectionHead.find(

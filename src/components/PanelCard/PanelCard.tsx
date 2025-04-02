@@ -1,4 +1,4 @@
-import { IPublication } from "@/utils/interfaces";
+import { ReportData } from "@/utils/interfaces";
 import {
   Thumb,
   Wrapper,
@@ -8,28 +8,35 @@ import {
   ArrowIcon,
   TitleWrapper,
   Link,
+  ThumbContainer,
+  DescriptionContainer,
 } from "./PanelCard.styles";
 
-const PanelCard = ({ data }: { data: { fields: IPublication } }) => {
-  const { title, description, link, thumb } = data.fields;
+const PanelCard = ({ data }: { data: { fields: ReportData } }) => {
+  const { macroTheme, title, description, thumb } = data.fields;
 
   return (
     <Wrapper>
-      <Link target="_blank" href={link}>
-        <Thumb
-          src={`https:${thumb.fields.file.url}`}
-          alt=""
-          width={300}
-          height={200}
-        />
-      </Link>
+      <Link target="_blank" href={`/data-panel/${title}`}>
+      <ThumbContainer>
+          <Thumb
+            src={`https:${thumb.fields.file.url}`}
+            alt=""
+            width={300}
+            height={400}
+            />
+          <DescriptionContainer>
+            <Description>{description}</Description>
+          </DescriptionContainer>
+        </ThumbContainer>
+
       <InfoWrapper>
-        <TitleWrapper target="_blank" href={link}>
-          <Title>{title}</Title>
+        <TitleWrapper>
+          <Title>{macroTheme}</Title>
           <ArrowIcon id={"link-arrow"} size={16} />
         </TitleWrapper>
-        <Description>{description}</Description>
       </InfoWrapper>
+      </Link>
     </Wrapper>
   );
 };

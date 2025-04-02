@@ -5,7 +5,6 @@ import styled from "styled-components";
 
 export const Wrapper = styled(Section)`
   margin: 2rem 0;
-  margin-bottom: 5rem;
 `;
 
 export const Header = styled.div`
@@ -37,15 +36,17 @@ export const Subtitle = styled.p`
 
 export const PanelsContainer = styled.div`
   display: flex;
-  column-count: 3;
+  column-count: 4;
   flex-wrap: wrap;
+  width: 100%;
   justify-content: center;
   padding: 1rem;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
 
-  @media screen and (max-width: 700px) {
+  @media screen and (max-width: 1000px) {
     column-count: 2;
+    gap: 2rem;
   }
 
   @media screen and (max-width: 600px) {
