@@ -3,9 +3,7 @@ import { Section } from "@/app/globalStyles";
 import { Icon } from "@/components/Icon/Icon";
 import styled from "styled-components";
 
-export const Wrapper = styled(Section)`
-  margin: 2rem 0;
-`;
+export const Wrapper = styled(Section)``;
 
 export const Header = styled.div`
   display: flex;
@@ -35,22 +33,26 @@ export const Subtitle = styled.p`
 `;
 
 export const PanelsContainer = styled.div`
-  display: flex;
-  column-count: 4;
+  display: grid;
   flex-wrap: wrap;
   width: 100%;
-  justify-content: center;
+  justify-content: start;
   padding: 1rem;
   align-items: center;
   gap: 1.5rem;
-
-  @media screen and (max-width: 1000px) {
-    column-count: 2;
-    gap: 2rem;
+  row-gap: 3rem;
+  grid-template-columns: repeat(4, minmax(20rem, 1fr));
+  
+  @media screen and (max-width: 1200px) {
+    grid-template-columns: repeat(3, minmax(200px, 1fr));
   }
 
-  @media screen and (max-width: 600px) {
-    column-count: 1;
+  @media screen and (max-width: 700px) {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+  }
+
+  @media screen and (max-width: 430px) {
+    grid-template-columns: repeat(1, minmax(200px, 1fr));
   }
 `;
 

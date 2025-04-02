@@ -3,13 +3,13 @@
 import Image from "next/image";
 import styled from "styled-components";
 import { Icon } from "../Icon/Icon";
+import DefaultLink from "next/link";
 
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   background-color: white;
-  max-width: 20rem;
-  min-height: 30rem;
+  width: 100%;
 `;
 export const Description = styled.p`
   color: white;
@@ -34,7 +34,7 @@ export const DescriptionContainer = styled.div`
 
 export const ThumbContainer = styled.div`
   position: relative;
-  aspect-ratio: 16 / 19;
+  aspect-ratio: 16 / 20;
   width: 100%;
   height: 100%;
 
@@ -43,13 +43,16 @@ export const ThumbContainer = styled.div`
   }
 `;
 
-export const Link = styled.a`
+export const Link = styled(DefaultLink)`
   overflow: hidden;
   width: 100%;
   height: auto;
   margin: 0;
   padding: 0;
   text-decoration: none;
+  display: flex;
+  flex-flow: column;
+  gap: 1rem;
 `;
 
 export const Thumb = styled(Image)`
@@ -59,6 +62,7 @@ export const Thumb = styled(Image)`
   transition: 300ms;
   display: block;
   object-position: top;
+  object-fit: cover;
 
   &:hover {
     transform: scale(1.05);
@@ -73,7 +77,6 @@ export const ArrowIcon = styled(Icon)`
 export const InfoWrapper = styled.div`
   display: flex;
   flex-flow: column;
-  padding: 1rem;
 `;
 
 export const TitleWrapper = styled.summary`
