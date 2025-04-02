@@ -38,6 +38,7 @@ export const PanelsContainer = styled.ul`
   gap: 1.5rem;
   row-gap: 3rem;
   grid-template-columns: repeat(5, minmax(200px, 1fr));
+  gap: 1rem;
 
   @media screen and (max-width: 1200px) {
     grid-template-columns: repeat(4, minmax(100px, 1fr));
