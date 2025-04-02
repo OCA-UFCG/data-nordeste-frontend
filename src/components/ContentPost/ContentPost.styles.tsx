@@ -67,6 +67,8 @@ export const Description = styled.p`
   color: white;
   font-size: 1rem;
   text-align: center;
+  align-content: center;
+  height: 100%;
 `;
 
 export const DescriptionContainer = styled.div`
@@ -82,6 +84,7 @@ export const DescriptionContainer = styled.div`
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  overflow-y: scroll;
 `;
 
 export const ThumbContainer = styled.div`

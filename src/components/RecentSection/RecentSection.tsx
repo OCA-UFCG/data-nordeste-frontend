@@ -28,8 +28,8 @@ export const RecentSection = ({
     autoplay: 5000,
     bound: true,
     breakpoints: {
-      1200: {
-        perView: content.length > 4 ? 4 : content.length,
+      1300: {
+        perView: content.length > 3 ? 3 : content.length,
       },
       1000: {
         perView: content.length > 2 ? 2 : content.length,
