@@ -38,7 +38,7 @@ export const PanelsContainer = styled.div`
   width: 100%;
   justify-content: start;
   padding: 1rem;
-  align-items: center;
+  align-items: start;
   gap: 1.5rem;
   row-gap: 3rem;
   grid-template-columns: repeat(4, minmax(20rem, 1fr));
