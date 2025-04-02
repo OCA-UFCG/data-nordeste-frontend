@@ -41,7 +41,7 @@ export const Wrapper = styled.section`
   box-sizing: border-box;
   gap: 1rem;
   height: 100%;
-  /* padding: 3rem 0; */
+  padding: 3rem 0;
   align-items: center;
 
   & .out-control {
@@ -54,5 +54,9 @@ export const Wrapper = styled.section`
 
   & .glide__slides {
     height: 100%;
+  }
+
+  @media (max-width: 800px) {
+    padding: 0;
   }
 `;
