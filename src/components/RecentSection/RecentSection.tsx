@@ -23,7 +23,7 @@ export const RecentSection = ({
   const { id, title, subtitle } = header.fields;
 
   const carouselConfig = {
-    perView: content.length > 4 ? 4 : content.length,
+    perView: content.length > 3 ? 3 : content.length,
     gap: 16,
     autoplay: 5000,
     bound: true,
