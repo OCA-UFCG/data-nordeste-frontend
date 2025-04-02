@@ -6,12 +6,13 @@ export const Wrapper = styled.div`
   display: flex;
   width: 100%;
   top: 0;
+  left: 0;
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
   box-sizing: border-box;
   position: fixed;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
 `;
 
