@@ -10,7 +10,7 @@ export const Wrapper = styled.div`
   justify-content: space-between;
   padding: 1rem;
   box-sizing: border-box;
-  position: sticky;
+  position: fixed;
   z-index: 1;
   pointer-events: none;
 `;

@@ -1,10 +1,10 @@
-import { BannerContainer, Banner } from './BannerImage.styles';
+import { BannerContainer, Banner, GreenStrip } from "./BannerImage.styles";
 
 const BannerImage = () => {
-
   return (
-  <BannerContainer>
-      <Banner id="banner-image" width={1900} height={400}/>
+    <BannerContainer>
+      <Banner src={"/banner.png"} />
+      <GreenStrip />
     </BannerContainer>
   );
 };
