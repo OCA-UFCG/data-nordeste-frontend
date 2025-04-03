@@ -37,7 +37,6 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
       <Navbar>
         <NavList>
           {content
-            .sort((a, b) => a.fields.name.localeCompare(b.fields.name))
             .filter((a) => a.fields.appears)
             .map((item, key) => (
               <NavItem key={key} item={item} />
