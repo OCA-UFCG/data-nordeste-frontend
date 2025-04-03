@@ -33,7 +33,6 @@ export const BannerOverlay = styled.div`
   justify-content: flex-start;
   align-items: center;
   padding: 0 2rem;
-  /* Ajuste aqui para mover o conteúdo um pouco para cima */
   padding-bottom: 1.5rem;
 `;
 
@@ -42,7 +41,6 @@ export const TextButtonContainer = styled.div`
   flex-direction: column;
   align-items: flex-start;
   width: 100%;
-  /* Alternativa: ajuste aqui para mover um pouco para cima */
   margin-bottom: 0.75rem;
 `;
 
@@ -52,7 +50,7 @@ export const OverlayText = styled.h2`
   font-weight: 600;
   margin: 0;
   text-align: left;
-  color: ${({ theme }) => theme.colors.green};
+  color: #505050;
   font-family: "League Spartan", sans-serif;
 
   @media (max-width: 1000px) {
@@ -60,6 +58,8 @@ export const OverlayText = styled.h2`
     margin: 0 0 0.5rem 0;
     max-width: 100%;
   }
+
+  margin-bottom: 0.5rem;
 `;
 
 export const OverlayButton = styled.label`
