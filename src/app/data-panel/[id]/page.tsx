@@ -11,13 +11,11 @@ export default async function DataPanel({
   searchParams,
 }: {
   params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: { pageName?: string };
 }) {
   const { panels } = await getContent(["panels"]);
-  const selectedPanel = panels.find((panel: any) =>
-    searchParams.page
-      ? panel.fields.id === `${params.id}?page=${searchParams.page}`
-      : panel.fields.id === params.id,
+  const selectedPanel = panels.find(
+    (panel: any) => panel.fields.title === params.id,
   );
 
   if (!selectedPanel) {
@@ -27,7 +25,10 @@ export default async function DataPanel({
   return (
     <HubTemplate>
       <Container>
-        <PowerBIContainer panel={selectedPanel} />
+        <PowerBIContainer
+          panel={selectedPanel}
+          pageName={searchParams.pageName}
+        />
       </Container>
     </HubTemplate>
   );

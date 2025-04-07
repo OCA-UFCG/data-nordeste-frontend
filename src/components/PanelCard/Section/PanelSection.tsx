@@ -17,9 +17,8 @@ const PanelSection = ({
   header?: { fields: SectionHeader };
   panels?: { fields: ReportData }[];
 }) => {
-  const { title, id, subtitle } = header?.fields || {
+  const { title, subtitle } = header?.fields || {
     title: "",
-    id: "",
     subtitle: "",
   };
 
@@ -37,7 +36,7 @@ const PanelSection = ({
     .filter((item) => item.fields.macroPainel === true);
 
   return (
-    <Wrapper full={"false"} id={id}>
+    <Wrapper full={"false"} id={title}>
       <Header>
         <Title>{title}</Title>
         <Subtitle>{subtitle}</Subtitle>

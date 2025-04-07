@@ -60,10 +60,9 @@ export interface IPublication {
 }
 
 export interface ReportData {
-  macroTheme: string;
-  id: string;
   title: string;
   source: string;
+  macroTheme: string;
   macroPainel: boolean;
   description: string;
   thumb: {

@@ -13,11 +13,11 @@ import {
 } from "./PanelCard.styles";
 
 const PanelCard = ({ data }: { data: { fields: ReportData } }) => {
-  const { macroTheme, id, description, thumb } = data.fields;
+  const { macroTheme, title, description, thumb } = data.fields;
 
   return (
     <Wrapper>
-      <Link target="_blank" href={`/data-panel/${id}`}>
+      <Link href={`/data-panel/${title}`}>
         <ThumbContainer>
           <Thumb
             src={`https:${thumb.fields.file.url}`}

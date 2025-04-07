@@ -9,7 +9,13 @@ import {
   Text,
 } from "./PowerBiContainer.styles";
 
-const PowerBIContainer = ({ panel }: { panel: { fields: ReportData } }) => {
+const PowerBIContainer = ({
+  panel,
+  pageName,
+}: {
+  panel: { fields: ReportData };
+  pageName?: string;
+}) => {
   const { macroTheme, title, source } = panel.fields;
 
   return (
@@ -23,7 +29,7 @@ const PowerBIContainer = ({ panel }: { panel: { fields: ReportData } }) => {
       </Header>
       <iframe
         src={source}
-        title={title}
+        title={pageName ? `${title}&pageName=${pageName}` : title}
         width="1220px"
         height="100%"
         allowFullScreen={true}
