@@ -81,3 +81,27 @@ export interface IPreviewCard {
   data: string;
   note?: string;
 }
+
+export interface IPreviewCards {
+  fields: {
+    title: string;
+    jsonFile: IRegionData;
+  };
+}
+
+export interface IRegionData {
+  region: string;
+  title: string;
+  subtitle?: string;
+  data: string;
+  link: string;
+  note?: string;
+  states: IStateData[];
+}
+
+export interface IStateData {
+  name: string;
+  data: string;
+  link: string;
+  note?: string;
+}

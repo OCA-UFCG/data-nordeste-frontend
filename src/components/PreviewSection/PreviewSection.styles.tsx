@@ -18,8 +18,8 @@ export const Header = styled.div`
   justify-content: space-between;
 
   @media (max-width: 800px) {
-    padding: 0;
-    justify-content: center;
+    justify-content: space-between;
+    padding: 0 1rem;
   }
 `;
 
