@@ -72,8 +72,8 @@ export const Button = styled.button`
   }
 `;
 
-export const PostsContainer = styled.div<{ noPosts: string }>`
-  display: ${({ noPosts }) => (noPosts === "true" ? "flex" : "grid")};
+export const PostsContainer = styled.div<{ $posts: string }>`
+  display: ${({ $posts }) => ($posts === "true" ? "grid" : "flex")};
   justify-content: center;
   flex-wrap: wrap;
   width: 100%;

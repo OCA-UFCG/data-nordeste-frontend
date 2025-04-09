@@ -93,7 +93,7 @@ export const PostsGrid = ({ totalPages }: { totalPages: number }) => {
           <SortMenu onClick={(sortType: string) => setSorting(sortType)} />
         </Menu>
       </MenuContainer>
-      <PostsContainer noPosts={(!loading && posts.length === 0).toString()}>
+      <PostsContainer $posts={(!loading && posts.length > 0).toString()}>
         {loading ? (
           [...Array(POSTS_PER_PAGE)].map((_, i) => (
             <Post key={i}>
