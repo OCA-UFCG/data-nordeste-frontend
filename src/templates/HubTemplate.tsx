@@ -25,7 +25,7 @@ const HubTemplate = async ({
         }
         content={header}
       />
-      <Main id="root" backThumb={backThumb.toString()}>
+      <Main id="root" $backThumb={backThumb.toString()}>
         {children}
       </Main>
       <Footer content={header} />

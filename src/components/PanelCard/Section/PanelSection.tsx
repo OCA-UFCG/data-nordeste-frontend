@@ -36,7 +36,7 @@ const PanelSection = ({
     .filter((item) => item.fields.macroPainel === true);
 
   return (
-    <Wrapper full={"false"} id={title}>
+    <Wrapper $full={"false"} id={title}>
       <Header>
         <Title>{title}</Title>
         <Subtitle>{subtitle}</Subtitle>

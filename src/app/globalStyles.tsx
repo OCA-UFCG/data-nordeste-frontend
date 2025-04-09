@@ -236,7 +236,7 @@ export const ContentContainer = styled.div`
   justify-content: space-between;
 `;
 
-export const Main = styled.main<{ backThumb: string }>`
+export const Main = styled.main<{ $backThumb: string }>`
   display: flex;
   flex-flow: column;
   align-items: center;
@@ -247,7 +247,7 @@ export const Main = styled.main<{ backThumb: string }>`
   transition: 0.3s;
 `;
 
-export const Section = styled.section<{ full?: string }>`
+export const Section = styled.section<{ $full?: string }>`
   padding: 1rem 1rem;
   display: flex;
   align-items: center;
@@ -255,8 +255,8 @@ export const Section = styled.section<{ full?: string }>`
   gap: 1.5rem;
   box-sizing: border-box;
   width: 100%;
-  max-width: ${({ full }) =>
-    full !== "false" ? "100%" : "var(--main-section-width)"};
+  max-width: ${({ $full }) =>
+    $full !== "false" ? "100%" : "var(--main-section-width)"};
 `;
 
 export const SectionTitle = styled.h2<{
