@@ -12,8 +12,8 @@ import {
   Link,
 } from "./PreviewCard.styles";
 
-const PreviewCard = ({ content }: { content: { fields: IPreviewCard } }) => {
-  const { title, subtitle, data, note, link } = content.fields;
+const PreviewCard = ({ content }: { content: IPreviewCard }) => {
+  const { title, subtitle, data, note, link } = content;
 
   return (
     <Link href={link || ""}>

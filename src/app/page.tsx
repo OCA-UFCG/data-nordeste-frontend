@@ -16,20 +16,20 @@ export default async function Home() {
     partners,
     sectionHead,
     post: posts,
-    previewCard,
+    previewCards,
     panels,
   } = await getContent([
     "partners",
     "sectionHead",
     "post",
-    "previewCard",
+    "previewCards",
     "panels",
   ]);
 
   return (
     <HubTemplate>
       <BannerImage />
-      <PreviewSection cards={previewCard} />
+      <PreviewSection cards={previewCards} />
       <RecentSection
         content={posts.slice(0, MAX_SiZE)}
         header={sectionHead.find(
