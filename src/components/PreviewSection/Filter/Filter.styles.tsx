@@ -18,7 +18,6 @@ export const FilterHeader = styled.div`
   padding: 0.5rem 1rem;
   gap: 0.5rem;
   width: 100%;
-  box-sizing: border-box;
 `;
 
 export const Title = styled.span``;
@@ -31,11 +30,10 @@ export const Expand = styled(Icon)`
 `;
 
 export const FilterContent = styled.div`
-  box-sizing: border-box;
   position: absolute;
-  top: 2.5rem;
+  top: 2.4rem;
   width: 100%;
-  z-index: 1;
+  z-index: 3;
   right: 0;
   background: white;
   border-radius: 4px;
@@ -61,7 +59,6 @@ export const RegionTitle = styled.span`
   font-weight: 600;
   margin-top: 0.5rem;
   cursor: pointer;
-  transition: opacity 0.2s;
 
   &:hover {
     opacity: 0.7;
@@ -72,7 +69,6 @@ export const StateItem = styled.li`
   list-style: none;
   margin: 0;
   cursor: pointer;
-  transition: opacity 0.2s;
 
   &:hover {
     opacity: 0.6;
