@@ -17,23 +17,23 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
   const [selectedRegion, setSelectedRegion] = useState("Nordeste");
   const [selectedState, setSelectedState] = useState("");
 
-  const jsonFile = cards.find(
-    (card) => card.fields?.title?.toLowerCase() === "minicards",
-  )?.fields?.jsonFile;
+  const allCardsData = cards.map((card) => card.fields.jsonFile);
 
-  if (!jsonFile) return null;
+  const filteredCards = allCardsData.map((regionData) => {
+    const source = selectedState
+      ? regionData.states.find((state) => state.name === selectedState)
+      : regionData;
 
-  const selectedRegionData = jsonFile.find(
-    (item) => item.region === selectedRegion,
-  );
-
-  const selectedStateData = selectedRegionData?.states.find(
-    (state) => state.name === selectedState,
-  );
-
-  const filteredCards: IPreviewCard[] = selectedState
-    ? selectedStateData?.cards || []
-    : selectedRegionData?.cards || [];
+    return source
+      ? {
+          title: regionData.title,
+          subtitle: regionData.subtitle,
+          data: source.data,
+          link: source.link,
+          note: source.note,
+        }
+      : null;
+  }) as IPreviewCard[];
 
   const handleFilterChange = (region: string, state: string) => {
     setSelectedRegion(region);
@@ -71,7 +71,7 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
         </LogoContainer>
 
         <Filter
-          data={jsonFile}
+          data={allCardsData}
           selectedRegion={selectedRegion}
           selectedState={selectedState}
           onChange={handleFilterChange}

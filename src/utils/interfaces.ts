@@ -86,17 +86,23 @@ export interface IPreviewCard {
 export interface IPreviewCards {
   fields: {
     title: string;
-    jsonFile: IRegionData[];
+    jsonFile: IRegionData;
   };
 }
 
 export interface IRegionData {
   region: string;
-  cards: IPreviewCard[];
+  title: string;
+  subtitle?: string;
+  data: string;
+  link: string;
+  note?: string;
   states: IStateData[];
 }
 
 export interface IStateData {
   name: string;
-  cards: IPreviewCard[];
+  data: string;
+  link: string;
+  note?: string;
 }

@@ -22,6 +22,14 @@ const Filter = ({
   selectedState: string;
   onChange: (region: string, state: string) => void;
 }) => {
+  const regions = Array.from(new Set(data.map((card) => card.region)));
+
+  const getRegionStates = (region: string) => {
+    const regionCard = data.find((card) => card.region === region);
+
+    return regionCard ? regionCard.states : [];
+  };
+
   return (
     <FilterWrapper>
       <FilterHeader>
@@ -31,17 +39,17 @@ const Filter = ({
 
       <FilterContent>
         <FilterList>
-          {data.map((regionItem) => (
-            <li key={regionItem.region}>
-              <RegionTitle onClick={() => onChange(regionItem.region, "")}>
-                {regionItem.region}
+          {regions.map((region) => (
+            <li key={region}>
+              <RegionTitle onClick={() => onChange(region, "")}>
+                {region}
               </RegionTitle>
 
               <ul>
-                {regionItem.states.map((state) => (
+                {getRegionStates(region).map((state) => (
                   <StateItem
                     key={state.name}
-                    onClick={() => onChange(regionItem.region, state.name)}
+                    onClick={() => onChange(region, state.name)}
                   >
                     {state.name}
                   </StateItem>
