@@ -45,16 +45,14 @@ const Filter = ({
                 {region}
               </RegionTitle>
 
-              <ul>
-                {getRegionStates(region).map((state) => (
-                  <StateItem
-                    key={state.name}
-                    onClick={() => onChange(region, state.name)}
-                  >
-                    {state.name}
-                  </StateItem>
-                ))}
-              </ul>
+              {getRegionStates(region).map((state) => (
+                <StateItem
+                  key={state.name}
+                  onClick={() => onChange(region, state.name)}
+                >
+                  {state.name}
+                </StateItem>
+              ))}
             </li>
           ))}
         </FilterList>

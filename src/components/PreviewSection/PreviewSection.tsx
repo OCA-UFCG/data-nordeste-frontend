@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Filter from "./Filter/Filter";
 import { IPreviewCard, IPreviewCards } from "@/utils/interfaces";
 import PreviewCard from "@/components/PreviewCard/PreviewCard";
@@ -19,21 +19,23 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
 
   const allCardsData = cards.map((card) => card.fields.jsonFile);
 
-  const filteredCards = allCardsData.map((regionData) => {
-    const source = selectedState
-      ? regionData.states.find((state) => state.name === selectedState)
-      : regionData;
+  const filteredCards = useMemo(() => {
+    return allCardsData.map((regionData) => {
+      const source = selectedState
+        ? regionData.states.find((state) => state.name === selectedState)
+        : regionData;
 
-    return source
-      ? {
-          title: regionData.title,
-          subtitle: regionData.subtitle,
-          data: source.data,
-          link: source.link,
-          note: source.note,
-        }
-      : null;
-  }) as IPreviewCard[];
+      return source
+        ? {
+            title: regionData.title,
+            subtitle: regionData.subtitle,
+            data: source.data,
+            link: source.link,
+            note: source.note,
+          }
+        : null;
+    }) as IPreviewCard[];
+  }, [selectedState, selectedRegion]);
 
   const handleFilterChange = (region: string, state: string) => {
     setSelectedRegion(region);
