@@ -35,6 +35,7 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
           }
         : null;
     }) as IPreviewCard[];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedState, selectedRegion]);
 
   const handleFilterChange = (region: string, state: string) => {

@@ -5,6 +5,8 @@ import { getContent } from "@/utils/functions";
 import Footer from "@/components/Footer/Footer";
 import { ISection } from "@/utils/interfaces";
 
+import "../app/globals.css";
+
 const HubTemplate = async ({
   children,
   backThumb = false,

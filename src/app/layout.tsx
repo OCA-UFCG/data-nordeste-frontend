@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Lato } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
-
 import { Providers } from "./Providers";
+
+import "./globals.css";
 
 const NEXT_PUBLIC_GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
 const lato = Lato({
