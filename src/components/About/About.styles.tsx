@@ -1,6 +1,5 @@
 "use client";
 import styled from "styled-components";
-import Link from "next/link";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -50,21 +49,5 @@ export const Subtitle = styled.p`
 
   @media (max-width: 800px) {
     font-size: 0.9rem;
-  }
-`;
-
-export const Button = styled(Link)`
-  text-decoration: none;
-  border: 1px solid ${({ theme }) => theme.colors.green}80;
-  padding: 0.5rem 1.5rem;
-  color: ${({ theme }) => theme.colors.green};
-  border-radius: 4px;
-  transition: 300ms;
-  cursor: not-allowed;
-  font-size: 0.8rem;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.green}90;
-    color: white;
   }
 `;

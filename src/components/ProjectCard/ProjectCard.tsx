@@ -6,11 +6,10 @@ import {
   TextWrapper,
   Title,
   Description,
-  Button,
-  ArrowIcon,
   Link,
   ThumbContainer,
 } from "./ProjectCard.styles";
+import { LinkButton } from "../LinkButton/LinkButton";
 
 const ProjectCard = ({ project }: { project: { fields: Project } }) => {
   const { name, description, link, thumb } = project.fields;
@@ -32,10 +31,7 @@ const ProjectCard = ({ project }: { project: { fields: Project } }) => {
           <Title>{name}</Title>
           <Description>{description}</Description>
         </TextWrapper>
-        <Button as="a" href={link} target="_blank">
-          <ArrowIcon id={"link-arrow"} size={12} />
-          Acessar
-        </Button>
+        <LinkButton href={link} text="Acessar" className="md:w-full" />
       </InfoWrapper>
     </Wrapper>
   );

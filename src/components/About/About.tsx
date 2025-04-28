@@ -1,10 +1,5 @@
-import {
-  Button,
-  ContentWrapper,
-  Subtitle,
-  Title,
-  Wrapper,
-} from "./About.styles";
+import { LinkButton } from "../LinkButton/LinkButton";
+import { ContentWrapper, Subtitle, Title, Wrapper } from "./About.styles";
 
 export const AboutSection = ({ header }: { header: { fields: any } }) => {
   const { id, title, subtitle } = header.fields;
@@ -14,7 +9,7 @@ export const AboutSection = ({ header }: { header: { fields: any } }) => {
       <ContentWrapper>
         <Title>{title}</Title>
         <Subtitle>{subtitle}</Subtitle>
-        <Button href="#">Saiba mais</Button>
+        <LinkButton href="/" text="Saiba mais" />
       </ContentWrapper>
     </Wrapper>
   );

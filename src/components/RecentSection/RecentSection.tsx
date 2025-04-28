@@ -1,7 +1,6 @@
 import { IPublication } from "@/utils/interfaces";
 import Carousel from "../Carousel/Carousel";
 import {
-  Button,
   Card,
   ContentWrapper,
   HeaderWrapper,
@@ -12,6 +11,7 @@ import {
 } from "./RecentSection.styles";
 import { Header } from "./RecentSection.styles";
 import ContentPost from "../ContentPost/ContentPost";
+import { LinkButton } from "../LinkButton/LinkButton";
 
 export const RecentSection = ({
   header,
@@ -50,7 +50,9 @@ export const RecentSection = ({
           <Title href="/posts">
             {title} <RightIcon id="expand" size={14} />
           </Title>
-          <Button href="/posts">Ver todos</Button>
+          <div className="hidden md:block">
+            <LinkButton href="/posts" text="Ver Todos" variant="secondary" />
+          </div>
         </Header>
         <Subtitle>{subtitle}</Subtitle>
       </HeaderWrapper>
@@ -68,6 +70,9 @@ export const RecentSection = ({
               </Card>
             ))}
         </Carousel>
+        <div className="block md:hidden mt-6 flex justify-center w-full">
+          <LinkButton href="/posts" text="Ver Todos" variant="secondary" />
+        </div>
       </ContentWrapper>
     </Wrapper>
   );
