@@ -17,13 +17,14 @@ export default async function Home() {
     sectionHead,
     post: posts,
     previewCards,
-    panels,
+    theme,
   } = await getContent([
     "partners",
     "sectionHead",
     "post",
     "previewCards",
     "panels",
+    "theme",
   ]);
 
   return (
@@ -46,7 +47,7 @@ export default async function Home() {
         header={sectionHead.find(
           (sec: { fields: SectionHeader }) => sec.fields.id == "panels",
         )}
-        panels={panels}
+        panels={theme}
       />
       <ProjectSection
         header={sectionHead.find(

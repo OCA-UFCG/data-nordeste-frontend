@@ -74,6 +74,12 @@ export interface ReportData {
   };
 }
 
+export interface MacroTheme {
+  name: string;
+  id: string;
+  color: string;
+}
+
 export interface IPreviewCard {
   title: string;
   subtitle?: string;

@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 @theme {
+  /* Padding */
+  /* --spacing-m: 16px; */
+
+  /* Palette */
   --color-green-neutro: #D6E9DB;
   --color-green-100: #EEFFF3;
   --color-green-200: #D6FFE6;
