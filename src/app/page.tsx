@@ -5,8 +5,8 @@ import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/About/About";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewSection from "@/components/PreviewSection/PreviewSection";
-import PanelSection from "@/components/PanelCard/Section/PanelSection";
 import BannerImage from "@/components/BannerImage/BannerImage";
+import DataSection from "@/components/DataSection/DataSection";
 
 export const revalidate = 60;
 
@@ -43,12 +43,13 @@ export default async function Home() {
             section.fields.id === "about",
         )}
       />
-      <PanelSection
+      <DataSection
         header={sectionHead.find(
           (sec: { fields: SectionHeader }) => sec.fields.id == "panels",
         )}
-        panels={theme}
+        categories={theme}
       />
+
       <ProjectSection
         header={sectionHead.find(
           (sec: { fields: SectionHeader }) => sec.fields.id == "projects",
