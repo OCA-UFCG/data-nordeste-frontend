@@ -1,6 +1,7 @@
 import { MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { Icon } from "@/components/Icon/Icon";
 import { macroThemes } from "@/utils/constants";
+import Link from "next/link";
 
 const PanelSection = ({
   header,
@@ -27,7 +28,7 @@ const PanelSection = ({
 
   return (
     <section
-      className="w-full max-w-[1440px] px-4 py-6 content-center flex flex-col box-border"
+      className="w-full max-w-[1440px] px-4 py-6 content-center flex flex-col gap-6 box-border"
       id={title}
     >
       <div className="flex flex-col gap-3">
@@ -38,8 +39,9 @@ const PanelSection = ({
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredData?.map((panel: { fields: MacroTheme }) => (
-          <div
-            className="flex justify-between items-center rounded-sm shadow-sm p-4 w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 cursor-pointer transition duration-300"
+          <Link
+            href={`/posts?category=${panel.fields.id}`}
+            className="flex justify-between items-center rounded-sm shadow-sm p-4 w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300"
             key={panel.fields.id}
           >
             <div className="flex flex-col md:flex-row w-full md:w-fit items-center justify-center gap-4">
@@ -58,7 +60,7 @@ const PanelSection = ({
               </span>
             </div>
             <Icon className="hidden md:flex rotate-270" id="expand" size={9} />
-          </div>
+          </Link>
         ))}
       </div>
     </section>
