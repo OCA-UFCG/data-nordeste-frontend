@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import styled from "styled-components";
-import { Icon } from "../Icon/Icon";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -74,31 +73,4 @@ export const Description = styled.p`
   transition: 300ms;
   line-height: 1.2rem;
   color: #555;
-`;
-
-export const ArrowIcon = styled(Icon)`
-  flex-shrink: 0;
-  height: 1.3rem;
-`;
-
-export const Button = styled.button`
-  text-decoration: none;
-  border: 1px solid ${({ theme }) => theme.colors.green}80;
-  color: ${({ theme }) => theme.colors.green};
-  border-radius: 4px;
-  transition: 300ms;
-  cursor: pointer;
-  font-size: 0.8rem;
-  width: 100%;
-  padding: 0.2rem 0rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.green}90;
-    color: white;
-  }
 `;

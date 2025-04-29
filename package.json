@@ -21,9 +21,11 @@
     "@glidejs/glide": "^3.7.1",
     "@google/earthengine": "^0.1.402",
     "@next/third-parties": "^14.2.3",
+    "@radix-ui/react-slot": "^1.2.0",
     "@types/google-earth": "^0.0.8",
     "@types/next": "^8.0.7",
     "braces": ">=3.0.3",
+    "class-variance-authority": "^0.7.1",
     "contentful": "^10.11.10",
     "contentful-management": "^11.48.0",
     "express": "^4.19.2",
@@ -37,7 +39,8 @@
     "react-dom": "^18",
     "sass": "^1.77.8",
     "styled-components": "^6.1.8",
-    "swiper": "^11.1.14"
+    "swiper": "^11.1.14",
+    "tailwind-merge": "^3.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
