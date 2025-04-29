@@ -51,16 +51,6 @@ export const Subtitle = styled.p`
   }
 `;
 
-export const Button = styled(Link)`
-  width: max-content;
-  white-space: nowrap;
-  transition: 300ms;
-
-  &:hover {
-    opacity: 0.6;
-  }
-`;
-
 export const ContentWrapper = styled.div`
   width: 100%;
   max-width: 1440px;

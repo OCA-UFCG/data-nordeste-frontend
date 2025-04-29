@@ -1,7 +1,6 @@
 import { IPublication } from "@/utils/interfaces";
 import Carousel from "../Carousel/Carousel";
 import {
-  Button,
   ContentWrapper,
   HeaderWrapper,
   Subtitle,
@@ -10,6 +9,8 @@ import {
 } from "./RecentSection.styles";
 import { Header } from "./RecentSection.styles";
 import ContentPost from "../ContentPost/ContentPost";
+import { LinkButton } from "../LinkButton/LinkButton";
+import { Icon } from "../Icon/Icon";
 
 export const RecentSection = ({
   header,
@@ -45,7 +46,15 @@ export const RecentSection = ({
       <HeaderWrapper>
         <Header>
           <Title href="/posts">{title}</Title>
-          <Button href="/posts">Ver todos</Button>
+          <div className="hidden md:block">
+            <LinkButton href="/posts" variant="secondary">
+              Ver Todos
+              <Icon
+                id="expand"
+                className="transform -rotate-90 !w-[8px] !h-[8px]"
+              />
+            </LinkButton>
+          </div>
         </Header>
         <Subtitle>{subtitle}</Subtitle>
       </HeaderWrapper>
@@ -61,6 +70,15 @@ export const RecentSection = ({
               <ContentPost content={card} key={i} />
             ))}
         </Carousel>
+        <div className="block md:hidden mt-6 flex justify-center w-full">
+          <LinkButton href="/posts" variant="secondary">
+            Ver Todos
+            <Icon
+              id="expand"
+              className="transform -rotate-90 !w-[8px] !h-[8px]"
+            />
+          </LinkButton>
+        </div>
       </ContentWrapper>
     </Wrapper>
   );
