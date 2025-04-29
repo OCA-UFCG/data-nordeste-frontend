@@ -12,6 +12,7 @@ import {
 import { Header } from "./RecentSection.styles";
 import ContentPost from "../ContentPost/ContentPost";
 import { LinkButton } from "../LinkButton/LinkButton";
+import { Icon } from "../Icon/Icon";
 
 export const RecentSection = ({
   header,
@@ -51,7 +52,13 @@ export const RecentSection = ({
             {title} <RightIcon id="expand" size={14} />
           </Title>
           <div className="hidden md:block">
-            <LinkButton href="/posts" text="Ver Todos" variant="secondary" />
+            <LinkButton href="/posts" variant="secondary">
+              Ver Todos
+              <Icon
+                id="expand"
+                className="transform -rotate-90 !w-[8px] !h-[8px]"
+              />
+            </LinkButton>
           </div>
         </Header>
         <Subtitle>{subtitle}</Subtitle>
@@ -71,7 +78,13 @@ export const RecentSection = ({
             ))}
         </Carousel>
         <div className="block md:hidden mt-6 flex justify-center w-full">
-          <LinkButton href="/posts" text="Ver Todos" variant="secondary" />
+          <LinkButton href="/posts" variant="secondary">
+            Ver Todos
+            <Icon
+              id="expand"
+              className="transform -rotate-90 !w-[8px] !h-[8px]"
+            />
+          </LinkButton>
         </div>
       </ContentWrapper>
     </Wrapper>

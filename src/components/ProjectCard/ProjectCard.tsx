@@ -31,7 +31,9 @@ const ProjectCard = ({ project }: { project: { fields: Project } }) => {
           <Title>{name}</Title>
           <Description>{description}</Description>
         </TextWrapper>
-        <LinkButton href={link} text="Acessar" className="md:w-full" />
+        <LinkButton href={link} className="md:w-full">
+          Acessar
+        </LinkButton>
       </InfoWrapper>
     </Wrapper>
   );

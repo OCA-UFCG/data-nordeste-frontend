@@ -9,7 +9,7 @@ export const AboutSection = ({ header }: { header: { fields: any } }) => {
       <ContentWrapper>
         <Title>{title}</Title>
         <Subtitle>{subtitle}</Subtitle>
-        <LinkButton href="/" text="Saiba mais" />
+        <LinkButton href="/">Saiba mais</LinkButton>
       </ContentWrapper>
     </Wrapper>
   );

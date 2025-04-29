@@ -1,15 +1,15 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Icon } from "../Icon/Icon";
+import { ReactNode } from "react";
 
 export const LinkButton = ({
   href,
-  text,
+  children,
   variant = "primary",
   className = "",
 }: {
   href: string;
-  text: string;
+  children: ReactNode;
   variant?: "primary" | "secondary";
   className?: string;
 }) => {
@@ -19,15 +19,7 @@ export const LinkButton = ({
       variant={variant}
       className={`w-full md:w-auto ${className}`}
     >
-      <Link href={href}>
-        {text}
-        {variant === "secondary" && (
-          <Icon
-            id="expand"
-            className="transform -rotate-90 !w-[8px] !h-[8px]"
-          />
-        )}
-      </Link>
+      <Link href={href}>{children}</Link>
     </Button>
   );
 };
