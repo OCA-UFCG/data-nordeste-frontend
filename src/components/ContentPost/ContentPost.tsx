@@ -1,58 +1,42 @@
 import { IPublication } from "@/utils/interfaces";
-import {
-  ContentWrapper,
-  Link,
-  Thumb,
-  Title,
-  TitleWrapper,
-  ArrowIcon,
-  DateWrapper,
-  Header,
-  Type,
-  ThumbContainer,
-  DescriptionContainer,
-  Description,
-} from "./ContentPost.styles";
 import { POST_TYPES } from "@/utils/constants";
+import { Box, Card, Text, Strong, Flex } from "@radix-ui/themes";
+import { ChevronRightIcon } from "@radix-ui/react-icons";
 
 const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
-  const { title, thumb, link, date, type, description } = content.fields;
+  const { title, thumb, date, type } = content.fields;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
   return (
-    <ContentWrapper>
-      <Header>
-        <Type>
-          {
-            POST_TYPES[
-              type as "additional-content" | "data-panel" | "newsletter"
-            ]
-          }
-        </Type>
-        <DateWrapper>{formattedDate}</DateWrapper>
-      </Header>
-      <Link href={link}>
-        <div>
-          <ThumbContainer>
-            <Thumb
-              src={`https:${thumb.fields.file.url}`}
-              alt=""
-              width={600}
-              height={300}
-            />
-            <DescriptionContainer>
-              <Description>{description || "Acessar postagem"}</Description>
-            </DescriptionContainer>
-          </ThumbContainer>
+    <Card className="rounded-t-md overflow-hidden m-0">
+      <Box className="relative">
+        <img
+          alt=""
+          src={`https:${thumb.fields.file.url}`}
+          className="h-[225px] w-full block object-cover"
+        />
+        <Box className="absolute top-2 left-2 bg-white rounded-lg px-2 bg-gray-50">
+          <Strong>
+            {
+              POST_TYPES[
+                type as "additional-content" | "data-panel" | "newsletter"
+              ]
+            }
+          </Strong>
+        </Box>
+      </Box>
 
-          <TitleWrapper>
-            <Title>{title}</Title>
-            <ArrowIcon id={"link-arrow"} size={16} />
-          </TitleWrapper>
-        </div>
-      </Link>
-    </ContentWrapper>
+      <Box className="flex items-center justify-between bg-gray-50 px-4 py-3 h-[95px]">
+        <Flex direction="column" gap="0.5">
+          <Text className="block break-words whitespace-normal leading-tight overflow-hidden font-bold">
+            {title}
+          </Text>
+          <Text className="text-[#7E797B] text-xs">{formattedDate}</Text>
+        </Flex>
+        <ChevronRightIcon />
+      </Box>
+    </Card>
   );
 };
 

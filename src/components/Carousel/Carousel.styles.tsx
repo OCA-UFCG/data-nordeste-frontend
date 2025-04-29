@@ -10,12 +10,20 @@ export const Wrapper = styled.div`
   justify-content: center;
 `;
 
-export const SlidesContainer = styled.div``;
+export const SlidesContainer = styled.div`
+  width: 100%;
+  max-width: 1200px;
+`;
 
-export const Slides = styled.ul``;
+export const Slides = styled.ul`
+  display: flex;
+  justify-content: center;
+`;
 
 export const Button = styled.button`
-  display: flex;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   backdrop-filter: blur(40px);
   color: ${({ theme }) => theme.colors.black};
   background-color: #ffffff80;
@@ -25,7 +33,6 @@ export const Button = styled.button`
   align-items: center;
   justify-content: center;
   transition: 300ms;
-
   box-shadow: 0 2px 4px ${({ theme }) => theme.colors.gray};
 
   &:hover {
@@ -34,6 +41,14 @@ export const Button = styled.button`
 
   svg {
     min-width: 0.75rem;
+  }
+
+  &.glide__arrow--left {
+    left: 3rem;
+  }
+
+  &.glide__arrow--right {
+    right: 3rem;
   }
 `;
 

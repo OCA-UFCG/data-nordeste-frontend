@@ -2,10 +2,8 @@ import { IPublication } from "@/utils/interfaces";
 import Carousel from "../Carousel/Carousel";
 import {
   Button,
-  Card,
   ContentWrapper,
   HeaderWrapper,
-  RightIcon,
   Subtitle,
   Title,
   Wrapper,
@@ -23,8 +21,7 @@ export const RecentSection = ({
   const { id, title, subtitle } = header.fields;
 
   const carouselConfig = {
-    perView: content.length > 3 ? 3 : content.length,
-    gap: 16,
+    perView: content.length > 4 ? 4 : content.length,
     autoplay: 5000,
     bound: true,
     breakpoints: {
@@ -47,9 +44,7 @@ export const RecentSection = ({
     <Wrapper id={id}>
       <HeaderWrapper>
         <Header>
-          <Title href="/posts">
-            {title} <RightIcon id="expand" size={14} />
-          </Title>
+          <Title href="/posts">{title}</Title>
           <Button href="/posts">Ver todos</Button>
         </Header>
         <Subtitle>{subtitle}</Subtitle>
@@ -63,9 +58,7 @@ export const RecentSection = ({
                 new Date(a.fields.date).getTime(),
             )
             .map((card, i) => (
-              <Card className="glide__slide" key={i}>
-                <ContentPost content={card} />
-              </Card>
+              <ContentPost content={card} key={i} />
             ))}
         </Carousel>
       </ContentWrapper>
