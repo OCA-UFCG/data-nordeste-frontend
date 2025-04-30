@@ -37,9 +37,9 @@ const DataSection = ({
           <LinkButton
             href="/posts"
             variant="secondary"
-            className="w-fit hidden md:flex hover:underline"
+            className="w-fit hidden md:flex"
           >
-            <p>ver todos</p>
+            <p>Ver Todos</p>
             <Icon className="rotate-270 size-2" id="expand" />
           </LinkButton>
         </div>
@@ -50,12 +50,8 @@ const DataSection = ({
           <CategoryCard key={category.fields.id} category={category} />
         ))}
       </div>
-      <LinkButton
-        href="/posts"
-        variant="secondary"
-        className="md:hidden hover:underline"
-      >
-        <p>ver todos</p>
+      <LinkButton href="/posts" variant="secondary" className="md:hidden">
+        <p>Ver Todos</p>
         <Icon className="rotate-270 size-2" id="expand" />
       </LinkButton>
     </section>

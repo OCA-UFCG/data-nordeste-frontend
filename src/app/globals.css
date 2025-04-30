@@ -3,9 +3,6 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Padding */
-  /* --spacing-m: 16px; */
-
   /* Palette */
   --color-green-neutro: #D6E9DB;
   --color-green-100: #EEFFF3;
