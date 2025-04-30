@@ -42,3 +42,13 @@ export const POST_TYPES = {
   "data-panel": "Painel de dados",
   newsletter: "Boletim",
 };
+
+export const macroThemes: { [key: string]: string } = {
+  economia_e_renda: "money",
+  demografia: "user",
+  saude: "health",
+  educacao: "book",
+  infraestrutura_e_saneamento: "screwdriver",
+  seguranca_hidrica: "drop",
+  meio_ambiente: "leaf",
+};
