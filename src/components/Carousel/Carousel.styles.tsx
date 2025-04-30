@@ -18,6 +18,7 @@ export const SlidesContainer = styled.div`
 export const Slides = styled.ul`
   display: flex;
   justify-content: center;
+  height: 100%;
 `;
 
 export const Button = styled.button`

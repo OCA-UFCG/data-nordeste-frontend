@@ -11,7 +11,7 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
   return (
     <Link
       href={link}
-      className="flex flex-col overflow-hidden rounded-md w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-sm"
+      className="flex flex-col overflow-hidden rounded-md w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
     >
       <div className="relative group">
         <img
@@ -30,14 +30,16 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
         </div>
       </div>
 
-      <div className="p-5 flex justify-between items-center md:max-h-[76px]">
-        <div className="flex flex-col gap-0.5 md:max-w-[95%]">
-          <p className="line-clamp-2 leading-tight font-semibold text-base text-wrap">
-            {title}
-          </p>
-          <p className="text-[#7E797B] text-xs">{formattedDate}</p>
+      <div className="py-4 px-5 flex gap-3 justify-between items-center h-full box-border">
+        <div className="flex flex-col gap-0.5">
+          <p className="line-clamp-2 text-sm font-medium text-wrap">{title}</p>
+          <p className="text-grey-600 text-[10px]">{formattedDate}</p>
         </div>
-        <Icon className="hidden md:flex rotate-270" id="expand" size={9} />
+        <Icon
+          className="md:flex rotate-270 size-2 min-w-2"
+          id="expand"
+          size={9}
+        />
       </div>
     </Link>
   );
