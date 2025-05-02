@@ -17,7 +17,10 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
   const [selectedRegion, setSelectedRegion] = useState("Nordeste");
   const [selectedState, setSelectedState] = useState("");
 
-  const allCardsData = cards.map((card) => card.fields.jsonFile);
+  const allCardsData = cards.map((card) => ({
+    category: card.fields.category,
+    ...card.fields.jsonFile,
+  }));
 
   const filteredCards = useMemo(() => {
     return allCardsData.map((regionData) => {
@@ -32,6 +35,7 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
             data: source.data,
             link: source.link,
             note: source.note,
+            category: regionData.category,
           }
         : null;
     }) as IPreviewCard[];
@@ -47,7 +51,7 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
     perView: filteredCards.length > 4 ? 4 : filteredCards.length,
     type: "carousel",
     gap: 16,
-    autoplay: 5000,
+    autoplay: 5000000,
     bound: true,
     breakpoints: {
       1250: {
@@ -88,12 +92,15 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
           config={carouselConfig}
         >
           {filteredCards.map((card, i) => (
-            <Card className="glide__slide" key={i}>
-              <PreviewCard content={card} />
-            </Card>
+            <PreviewCard content={card} key={i} />
           ))}
         </Carousel>
       )}
+      <div className="grid grid-cols-4">
+        {filteredCards.map((card, i) => (
+          <PreviewCard content={card} key={i} />
+        ))}
+      </div>
     </Wrapper>
   );
 };

@@ -83,6 +83,7 @@ export interface MacroTheme {
 export interface IPreviewCard {
   title: string;
   subtitle?: string;
+  category: { fields: MacroTheme };
   link: string;
   data: string;
   note?: string;
@@ -92,6 +93,7 @@ export interface IPreviewCards {
   fields: {
     title: string;
     jsonFile: IRegionData;
+    category: { fields: MacroTheme };
   };
 }
 
