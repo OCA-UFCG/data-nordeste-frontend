@@ -34,7 +34,7 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
                         <Link href={child.fields.path} key={i} passHref>
                           <NavigationMenuLink
                             href={child.fields.path}
-                            className="flex flex-row py-[6px] px-3 w-full whitespace-nowrap gap-2 hover:bg-gray-100 rounded"
+                            className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 hover:bg-gray-100 rounded"
                           >
                             <Icon
                               id={macroThemes[child.fields.id] || "list"}
