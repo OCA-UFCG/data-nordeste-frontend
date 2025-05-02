@@ -1,5 +1,5 @@
 import { createClient } from "contentful";
-import { IPublication } from "./interfaces";
+import { IPublication, ISection } from "./interfaces";
 import { sortingTypes } from "./constants";
 
 const client = createClient({
@@ -76,4 +76,19 @@ export const capitalize = (inputString: string): string => {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+};
+
+export const sortContentByDesiredOrder = (
+  content: { fields: ISection }[],
+): { fields: ISection }[] => {
+  const desiredOrder = ["home", "about", "explore", "posts", "projects"];
+
+  return [...content].sort((a, b) => {
+    const aIndex = desiredOrder.indexOf(a.fields.id);
+    const bIndex = desiredOrder.indexOf(b.fields.id);
+
+    return (
+      (aIndex === -1 ? Infinity : aIndex) - (bIndex === -1 ? Infinity : bIndex)
+    );
+  });
 };

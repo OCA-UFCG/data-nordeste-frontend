@@ -1,25 +1,23 @@
 "use client";
 
 import HeaderModal from "@/components/Header/Modal/HeaderModal";
-import { Logo, MainHeader, Wrapper } from "./HeaderSection.styles";
 import { ISection } from "@/utils/interfaces";
-import Link from "next/link";
+import Header from "../Header";
+import { sortContentByDesiredOrder } from "@/utils/functions";
 
-const HeaderSection = ({
-  title,
-  content,
-}: {
-  title: string;
-  content: { fields: ISection }[];
-}) => {
+const HeaderSection = ({ content }: { content: { fields: ISection }[] }) => {
+  const orderedContent = sortContentByDesiredOrder(content);
+
   return (
-    <Wrapper>
-      <HeaderModal content={content} />
-      <Link href="/">
-        <Logo src="/logo.png" alt="datane logo" width={45} height={45} />
-      </Link>
-      <MainHeader title={title} content={content} />
-    </Wrapper>
+    <div>
+      <div className="lg:hidden w-full h-[80px] flex justify-between border-b-2 justify-between px-[24px] py-[18px]">
+        <HeaderModal content={orderedContent} />
+      </div>
+
+      <div className="hidden lg:block w-full h-[80px] fixed left-0 right-0 z-5 ">
+        <Header content={orderedContent} />
+      </div>
+    </div>
   );
 };
 

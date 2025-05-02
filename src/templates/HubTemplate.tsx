@@ -3,7 +3,6 @@ import { Main } from "@/app/globalStyles";
 import React, { ReactNode } from "react";
 import { getContent } from "@/utils/functions";
 import Footer from "@/components/Footer/Footer";
-import { ISection } from "@/utils/interfaces";
 
 import "../app/globals.css";
 
@@ -14,19 +13,11 @@ const HubTemplate = async ({
   children?: ReactNode;
   backThumb?: boolean;
 }) => {
-  const { header, sectionHead } = await getContent(["header", "sectionHead"]);
+  const { header } = await getContent(["header", "sectionHead"]);
 
   return (
     <>
-      <HeaderSection
-        title={
-          sectionHead.find(
-            (section: { fields: ISection }) =>
-              section.fields.id == "initialBanner",
-          ).fields.title || "Data Nordeste"
-        }
-        content={header}
-      />
+      <HeaderSection content={header} />
       <Main id="root" $backThumb={backThumb.toString()}>
         {children}
       </Main>
