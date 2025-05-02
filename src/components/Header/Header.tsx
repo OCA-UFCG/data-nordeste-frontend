@@ -29,7 +29,7 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
                     <NavigationMenuTrigger>
                       {item.fields.name}
                     </NavigationMenuTrigger>
-                    <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col">
+                    <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15">
                       {item.fields.children.map((child, i) => (
                         <Link href={child.fields.path} key={i} passHref>
                           <NavigationMenuLink
