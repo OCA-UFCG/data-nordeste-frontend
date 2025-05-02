@@ -38,7 +38,7 @@ export const sortingTypes: {
 };
 
 export const POST_TYPES = {
-  "additional-content": "Conteúdo adicional",
+  "additional-content": "Notícia",
   "data-panel": "Painel de dados",
   newsletter: "Boletim",
 };

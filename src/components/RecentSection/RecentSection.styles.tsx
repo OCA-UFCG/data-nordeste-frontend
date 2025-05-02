@@ -1,7 +1,6 @@
 "use client";
 import styled from "styled-components";
 import Link from "next/link";
-import { Icon } from "../Icon/Icon";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -43,10 +42,6 @@ export const Title = styled(Link)`
   }
 `;
 
-export const RightIcon = styled(Icon)`
-  transform: rotate(-90deg);
-`;
-
 export const Subtitle = styled.p`
   margin: 0;
 
@@ -59,9 +54,4 @@ export const Subtitle = styled.p`
 export const ContentWrapper = styled.div`
   width: 100%;
   max-width: 1440px;
-`;
-
-export const Card = styled.li`
-  display: flex;
-  width: fit-content;
 `;
