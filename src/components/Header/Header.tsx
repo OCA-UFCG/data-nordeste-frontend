@@ -15,7 +15,7 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
   return (
     <div className="flex items-center justify-between px-[80px] py-[18px] border-b-2 shadow-sm border-b bg-white">
       <Link href="/" className="flex items-center gap-2">
-        <img src="/logo-DNE.png" alt="Logo" className="w-[99px] h-[47px]" />
+        <Icon id="logo-DNE" width={99} height={47} />
       </Link>
 
       <NavigationMenu>
@@ -26,23 +26,22 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
               <NavigationMenuItem key={idx} className="px-4 py-2">
                 {item.fields.children ? (
                   <>
-                    <NavigationMenuTrigger>
+                    <NavigationMenuTrigger className="text-md cursor-pointer">
                       {item.fields.name}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15">
-                      {item.fields.children.map((child, i) => (
-                        <Link href={child.fields.path} key={i} passHref>
-                          <NavigationMenuLink
-                            href={child.fields.path}
-                            className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 hover:bg-gray-100 rounded"
-                          >
-                            <Icon
-                              id={macroThemes[child.fields.id] || "list"}
-                              size={14}
-                            />
-                            {child.fields.name}
-                          </NavigationMenuLink>
-                        </Link>
+                      {item.fields.children.map((child) => (
+                        <NavigationMenuLink
+                          key={child.fields.id}
+                          href={child.fields.path}
+                          className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 hover:bg-green-100 rounded"
+                        >
+                          <Icon
+                            id={macroThemes[child.fields.id] || "list"}
+                            size={14}
+                          />
+                          {child.fields.name}
+                        </NavigationMenuLink>
                       ))}
                     </NavigationMenuContent>
                   </>
@@ -50,7 +49,7 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
                   <Link href={item.fields.path} passHref>
                     <NavigationMenuLink
                       href={item.fields.path}
-                      className="px-4 py-2"
+                      className="px-4 py-2 text-md"
                     >
                       {item.fields.name}
                     </NavigationMenuLink>

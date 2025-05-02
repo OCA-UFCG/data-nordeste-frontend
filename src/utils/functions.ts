@@ -80,9 +80,8 @@ export const capitalize = (inputString: string): string => {
 
 export const sortContentByDesiredOrder = (
   content: { fields: ISection }[],
+  desiredOrder: string[],
 ): { fields: ISection }[] => {
-  const desiredOrder = ["home", "about", "explore", "posts", "projects"];
-
   return [...content].sort((a, b) => {
     const aIndex = desiredOrder.indexOf(a.fields.id);
     const bIndex = desiredOrder.indexOf(b.fields.id);
