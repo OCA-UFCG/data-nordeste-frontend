@@ -1,17 +1,17 @@
 "use client";
 import { useMemo, useState } from "react";
-import Filter from "./Filter/Filter";
+import Autoplay from "embla-carousel-autoplay";
 import { IPreviewCard, IPreviewCards } from "@/utils/interfaces";
 import PreviewCard from "@/components/PreviewCard/PreviewCard";
-import Carousel from "../Carousel/Carousel";
+import { Header, Logo, LogoContainer, Name } from "./PreviewSection.styles";
 import {
-  Card,
-  Header,
-  Logo,
-  LogoContainer,
-  Name,
-  Wrapper,
-} from "./PreviewSection.styles";
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "../ui/carousel";
+import Filter from "./Filter/Filter";
 
 const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
   const [selectedRegion, setSelectedRegion] = useState("Nordeste");
@@ -47,30 +47,8 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
     setSelectedState(state);
   };
 
-  const carouselConfig = {
-    perView: filteredCards.length > 4 ? 4 : filteredCards.length,
-    type: "carousel",
-    gap: 16,
-    autoplay: 5000000,
-    bound: true,
-    breakpoints: {
-      1250: {
-        perView: filteredCards.length > 4 ? 4 : filteredCards.length,
-      },
-      1000: {
-        perView: filteredCards.length > 3 ? 3 : filteredCards.length,
-      },
-      860: {
-        perView: filteredCards.length > 2 ? 2 : filteredCards.length,
-      },
-      650: {
-        perView: 1,
-      },
-    },
-  };
-
   return (
-    <Wrapper>
+    <div className="flex flex-col p-6 max-w-[1440px] w-full justify-center items-center">
       <Header>
         <LogoContainer>
           <Logo src="/logo.png" alt="datane logo" width={24} height={24} />
@@ -85,23 +63,32 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
         />
       </Header>
 
-      {filteredCards.length > 0 && (
-        <Carousel
-          key={`${selectedRegion}-${selectedState}`}
-          classname="out-control"
-          config={carouselConfig}
-        >
+      <Carousel
+        opts={{
+          align: "start",
+          loop: true,
+        }}
+        plugins={[
+          Autoplay({
+            delay: 10000,
+          }),
+        ]}
+        className="content-carousel"
+      >
+        <CarouselContent className="-ml-0">
           {filteredCards.map((card, i) => (
-            <PreviewCard content={card} key={i} />
+            <CarouselItem
+              key={i}
+              className="basis-1/1 md:basis-1/2 lg:basis-1/4 p-2"
+            >
+              <PreviewCard content={card} />
+            </CarouselItem>
           ))}
-        </Carousel>
-      )}
-      <div className="grid grid-cols-4">
-        {filteredCards.map((card, i) => (
-          <PreviewCard content={card} key={i} />
-        ))}
-      </div>
-    </Wrapper>
+        </CarouselContent>
+        <CarouselPrevious className="hidden md:flex" />
+        <CarouselNext className="hidden md:flex" />
+      </Carousel>
+    </div>
   );
 };
 
