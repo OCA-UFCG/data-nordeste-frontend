@@ -26,8 +26,10 @@ type CarouselContextProps = {
   api: ReturnType<typeof useEmblaCarousel>[1];
   scrollPrev: () => void;
   scrollNext: () => void;
+  scrollTo: (i: number) => void;
   canScrollPrev: boolean;
   canScrollNext: boolean;
+  currentItem: number;
 } & CarouselProps;
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null);
@@ -60,11 +62,13 @@ function Carousel({
   );
   const [canScrollPrev, setCanScrollPrev] = React.useState(false);
   const [canScrollNext, setCanScrollNext] = React.useState(false);
+  const [currentItem, setCurrentItem] = React.useState(0);
 
   const onSelect = React.useCallback((api: CarouselApi) => {
     if (!api) return;
     setCanScrollPrev(api.canScrollPrev());
     setCanScrollNext(api.canScrollNext());
+    setCurrentItem(api.selectedScrollSnap());
   }, []);
 
   const scrollPrev = React.useCallback(() => {
@@ -74,6 +78,13 @@ function Carousel({
   const scrollNext = React.useCallback(() => {
     api?.scrollNext();
   }, [api]);
+
+  const scrollTo = React.useCallback(
+    (index: number) => {
+      api?.scrollTo(index);
+    },
+    [api],
+  );
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -114,8 +125,10 @@ function Carousel({
           orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
         scrollPrev,
         scrollNext,
+        scrollTo,
         canScrollPrev,
         canScrollNext,
+        currentItem,
       }}
     >
       <div
@@ -235,6 +248,32 @@ function CarouselNext({
   );
 }
 
+function DotButton({
+  className,
+  variant = "outline",
+  size = "icon",
+  tabIndex,
+  ...props
+}: React.ComponentProps<typeof Button>) {
+  const { scrollTo, canScrollNext, currentItem } = useCarousel();
+
+  return (
+    <Button
+      data-slot="carousel-dots"
+      variant={variant}
+      size={size}
+      className={cn(
+        "rounded-full w-3 h-3 cursor-pointer hover:bg-grey-300",
+        currentItem == tabIndex ? "bg-green-800" : "bg-grey-200",
+        className,
+      )}
+      disabled={!canScrollNext}
+      onClick={() => scrollTo(tabIndex || 0)}
+      {...props}
+    />
+  );
+}
+
 export {
   type CarouselApi,
   Carousel,
@@ -242,4 +281,5 @@ export {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
+  DotButton,
 };

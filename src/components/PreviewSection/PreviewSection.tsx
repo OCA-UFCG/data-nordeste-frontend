@@ -10,6 +10,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  DotButton,
 } from "../ui/carousel";
 import Filter from "./Filter/Filter";
 
@@ -73,7 +74,7 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
             delay: 10000,
           }),
         ]}
-        className="content-carousel"
+        className="flex flex-col gap-2 content-carousel"
       >
         <CarouselContent className="-ml-0">
           {filteredCards.map((card, i) => (
@@ -85,6 +86,11 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
             </CarouselItem>
           ))}
         </CarouselContent>
+        <div className="flex md:hidden gap-2 w-full justify-center">
+          {filteredCards.map((_, i) => (
+            <DotButton tabIndex={i} key={i} />
+          ))}
+        </div>
         <CarouselPrevious className="hidden md:flex" />
         <CarouselNext className="hidden md:flex" />
       </Carousel>

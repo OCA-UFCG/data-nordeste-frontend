@@ -35,7 +35,6 @@ const Carousel = ({
       <SlidesContainer className="glide__track" data-glide-el="track">
         <Slides className="glide__slides">{children}</Slides>
       </SlidesContainer>
-
       <div className="glide__arrows" data-glide-el="controls">
         <Button className="glide__arrow glide__arrow--left" data-glide-dir="<">
           <LeftIcon id="expand" size={10} />
