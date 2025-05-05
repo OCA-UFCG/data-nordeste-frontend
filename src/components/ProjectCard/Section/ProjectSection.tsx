@@ -15,15 +15,14 @@ export const ProjectSection = ({
   };
 
   return (
-    <section
-      id={id}
-      className="w-full max-w-[1440px] px-4 py-6 content-center flex flex-col gap-6 box-border bg-grey-100"
-    >
-      <h2 className="text-3xl font-semibold">{title}</h2>
-      <div className="flex flex-wrap justify-center gap-10 w-full max-w-full">
-        {projects?.map((partner: { fields: Project }) => (
-          <ProjectCard key={partner.fields.name} project={partner} />
-        ))}
+    <section id={id} className="w-full py-6 bg-grey-100">
+      <div className="w-full max-w-[1440px] mx-auto px-4 flex flex-col gap-6 box-border">
+        <h2 className="text-3xl font-semibold">{title}</h2>
+        <div className="flex flex-wrap justify-center gap-10 w-full max-w-full">
+          {projects?.map((partner: { fields: Project }) => (
+            <ProjectCard key={partner.fields.name} project={partner} />
+          ))}
+        </div>
       </div>
     </section>
   );
