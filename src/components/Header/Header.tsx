@@ -46,14 +46,12 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
                     </NavigationMenuContent>
                   </>
                 ) : (
-                  <Link href={item.fields.path} passHref>
-                    <NavigationMenuLink
-                      href={item.fields.path}
-                      className="px-4 py-2 text-md"
-                    >
-                      {item.fields.name}
-                    </NavigationMenuLink>
-                  </Link>
+                  <NavigationMenuLink
+                    href={item.fields.path}
+                    className="px-4 py-2 text-md"
+                  >
+                    {item.fields.name}
+                  </NavigationMenuLink>
                 )}
               </NavigationMenuItem>
             ))}
