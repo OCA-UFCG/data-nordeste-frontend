@@ -8,8 +8,8 @@ const PreviewCard = ({ content }: { content: IPreviewCard }) => {
 
   return (
     <Link href={link || ""}>
-      <div className="w-full rounded-lg shadow h-full">
-        <div className="px-4 py-3 flex gap-2 w-full items-center bg-grey-100 min-h-[5rem]">
+      <div className="group w-full rounded-lg shadow h-full">
+        <div className="px-4 py-3 flex gap-2 w-full items-center bg-grey-100 group-hover:bg-grey-200 min-h-[5rem] transition duration-300">
           <div
             className="flex items-center justify-center rounded-sm min-w-[40px] w-[40px] h-[40px]"
             style={{ backgroundColor: category.fields.color }}
