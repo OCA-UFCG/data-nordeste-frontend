@@ -1,44 +1,63 @@
 import { ISection } from "@/utils/interfaces";
 import {
-  Logo,
-  NavList,
-  Navbar,
-  Wrapper,
-  Name,
-  LogoContainer,
-  Gov,
-} from "./Header.styles";
-import { Dropdown } from "@/components/Dropdown/Dropdown";
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuContent,
+  NavigationMenuLink,
+} from "@/components/ui/navigation-menu";
+import Link from "next/link";
+import { Icon } from "../Icon/Icon";
+import { macroThemes } from "@/utils/constants";
 
-const Header = ({
-  title,
-  content,
-  ...props
-}: {
-  title: string;
-  content: { fields: ISection }[];
-  props?: any;
-}) => {
+const Header = ({ content }: { content: { fields: ISection }[] }) => {
   return (
-    <Wrapper {...props}>
-      <LogoContainer href="/">
-        <Logo src="/logo.png" alt="datane logo" width={45} height={45} />
-        <Name>{title}</Name>
-      </LogoContainer>
-      <Navbar>
-        <NavList>
+    <div className="flex items-center justify-between px-[80px] py-[18px] border-b-2 shadow-sm border-b bg-white">
+      <Link href="/" className="flex items-center gap-2">
+        <Icon id="logo-DNE" width={99} height={47} />
+      </Link>
+
+      <NavigationMenu>
+        <NavigationMenuList className="flex items-center">
           {content
-            .sort((a, b) => a.fields.name.localeCompare(b.fields.name))
-            .filter((a) => a.fields.appears)
-            .map((item, key) => (
-              <Dropdown item={item} key={key} />
+            .filter((item) => item.fields.appears)
+            .map((item, idx) => (
+              <NavigationMenuItem key={idx} className="px-4 py-2">
+                {item.fields.children ? (
+                  <>
+                    <NavigationMenuTrigger className="text-md cursor-pointer">
+                      {item.fields.name}
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15">
+                      {item.fields.children.map((child) => (
+                        <NavigationMenuLink
+                          key={child.fields.id}
+                          href={child.fields.path}
+                          className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 hover:bg-green-100 rounded"
+                        >
+                          <Icon
+                            id={macroThemes[child.fields.id] || "list"}
+                            size={14}
+                          />
+                          {child.fields.name}
+                        </NavigationMenuLink>
+                      ))}
+                    </NavigationMenuContent>
+                  </>
+                ) : (
+                  <NavigationMenuLink
+                    href={item.fields.path}
+                    className="px-4 py-2 text-md"
+                  >
+                    {item.fields.name}
+                  </NavigationMenuLink>
+                )}
+              </NavigationMenuItem>
             ))}
-        </NavList>
-      </Navbar>
-      <LogoContainer target="_blank" href="https://www.gov.br/sudene/pt-br">
-        <Gov src="/gov.png" alt="datane logo" width={110} height={40} />
-      </LogoContainer>
-    </Wrapper>
+        </NavigationMenuList>
+      </NavigationMenu>
+    </div>
   );
 };
 
