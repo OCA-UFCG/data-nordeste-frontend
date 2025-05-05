@@ -221,3 +221,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+.content-carousel {
+  width: calc(100% - 6rem);
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
