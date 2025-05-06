@@ -17,7 +17,7 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
         <img
           alt=""
           src={`https:${thumb.fields.file.url}`}
-          className="h-[180px] w-full block object-cover object-top transition-transform group-hover:scale-102 duration-300"
+          className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
         />
         <div className="absolute top-4 left-4 rounded-lg px-2 py-0.5 bg-gray-100">
           <p className="font-semibold text-xs">
