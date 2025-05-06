@@ -9,6 +9,13 @@ export interface SectionHeader {
   id: string;
   title: string;
   subtitle: string;
+  thumb?: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
 }
 
 export interface ISection {
