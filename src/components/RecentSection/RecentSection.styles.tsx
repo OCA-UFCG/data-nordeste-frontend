@@ -9,11 +9,11 @@ export const Wrapper = styled.div`
   justify-content: center;
 
   box-sizing: border-box;
-  padding: 1rem;
   width: 100%;
   box-sizing: border-box;
   max-width: 1440px;
   gap: 2rem;
+  padding: 2rem 1rem;
 `;
 
 export const HeaderWrapper = styled.div`

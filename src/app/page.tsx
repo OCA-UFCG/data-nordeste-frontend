@@ -31,15 +31,13 @@ export default async function Home() {
 
   return (
     <HubTemplate>
-      <div className="flex flex-col w-full items-center">
-        <MainBanner content={mainBanner[0]} />
-        <PreviewSection
-          header={sectionHead.find(
-            (sec: { fields: SectionHeader }) => sec.fields.id == "preview",
-          )}
-          cards={previewCards}
-        />
-      </div>
+      <MainBanner content={mainBanner[0]} />
+      <PreviewSection
+        header={sectionHead.find(
+          (sec: { fields: SectionHeader }) => sec.fields.id == "preview",
+        )}
+        cards={previewCards}
+      />
       <RecentSection
         content={posts.slice(0, MAX_SiZE)}
         header={sectionHead.find(

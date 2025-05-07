@@ -18,7 +18,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner } }) => {
       />
       <div className="absolute top-0 right-0 h-full w-[100%] bg-gradient-to-l from-black via-transparent to-transparent"></div>
       <div className="absolute top-0 left-0 h-full w-[140%] bg-gradient-to-r from-black via-transparent to-transparent"></div>
-      <div className="flex w-full p-6 xl:p-0 h-full items-end justify-between max-w-[1440px] z-10">
+      <div className="flex w-full p-6 2xl:p-0 h-full items-end justify-between max-w-[1440px] z-10">
         <div className="flex flex-col gap-4">
           <h1 className="text-white text-6xl font-semibold lg:max-w-[50%]">
             {title}
@@ -32,7 +32,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner } }) => {
           id="logo-DNE"
           width={200}
           height={100}
-          className="hidden lg:block self-end filter grayscale-300 mix-blend-screen brightness-[10000%] contrast-[400%]"
+          className="hidden lg:block self-end filter brightness-0 invert"
         />
       </div>
     </div>
