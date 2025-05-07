@@ -34,8 +34,8 @@ const Footer = ({ content }: { content: { fields: ISection }[] }) => {
   };
 
   return (
-    <footer className="flex flex-col md:flex-row justify-around items-top px-8 py-16 gap-4 w-full mx-auto bg-grey-1100">
-      <div className="flex justify-center w-full md:w-auto">
+    <footer className="flex flex-col lg:flex-row justify-around items-top px-8 py-16 gap-4 w-full mx-auto bg-grey-1100">
+      <div className="flex justify-center w-full lg:w-auto">
         <Icon
           id="logo-DNE"
           width={198}
@@ -44,8 +44,8 @@ const Footer = ({ content }: { content: { fields: ISection }[] }) => {
         />
       </div>
 
-      <div className="hidden md:flex gap-12 w-full md:w-auto px-4">
-        <div className="flex flex-col items-center md:items-start gap-3">
+      <div className="hidden lg:flex gap-12 w-full lg:w-auto px-4">
+        <div className="flex flex-col items-center lg:items-start gap-3">
           {mainPages.map(({ id, path, name }) => (
             <a
               href={path}
@@ -60,7 +60,7 @@ const Footer = ({ content }: { content: { fields: ISection }[] }) => {
           {splitColumns(macroThemes, 6).map((columnItems, columnIndex) => (
             <div
               key={`column-${columnIndex}`}
-              className="flex flex-col md:items-start gap-3"
+              className="flex flex-col lg:items-start gap-3"
             >
               {columnItems.map(({ id, path, name }) => (
                 <a
@@ -76,12 +76,12 @@ const Footer = ({ content }: { content: { fields: ISection }[] }) => {
         </div>
       </div>
 
-      <div className="flex flex-col justify-between md:items-start w-full md:w-auto gap-4">
-        <div className="flex flex-col md:items-start gap-4">
-          <p className="hidden md:flex text-white font-semibold text-2xl">
+      <div className="flex flex-col justify-between lg:items-start w-full lg:w-auto gap-4">
+        <div className="flex flex-col lg:items-start gap-4">
+          <p className="hidden lg:flex text-white font-semibold text-2xl">
             Redes sociais e contatos
           </p>
-          <div className="flex flex-wrap justify-center md:justify-end gap-4">
+          <div className="flex flex-wrap justify-center lg:justify-end gap-4">
             {channels.map(({ href, icon, size }, index) => (
               <a target="_blank" href={href} key={index}>
                 <Icon id={icon} size={size} key={index} />
@@ -92,9 +92,19 @@ const Footer = ({ content }: { content: { fields: ISection }[] }) => {
             datanordeste@sudene.gov.br
           </p>
         </div>
-        <div className="flex flex-wrap gap-4 justify-center md:justify-start px-4 md:px-0 max-w-2xl mx-auto">
-          <Icon id="logo-gov" width={198} height={94} />
-          <Icon id="logo-sudene" width={198} height={94} />
+        <div className="flex flex-wrap gap-4 justify-center lg:justify-start px-4 lg:px-0 max-w-2xl mx-auto">
+          <Icon
+            id="logo-gov"
+            width={198}
+            height={94}
+            className="w-[128px] h-[60px] sm:w-[198px] sm:h-[94px]"
+          />
+          <Icon
+            id="logo-sudene"
+            width={198}
+            height={94}
+            className="w-[128px] h-[60px] sm:w-[198px] sm:h-[94px]"
+          />{" "}
         </div>
       </div>
     </footer>
