@@ -28,7 +28,7 @@ const DataSection = ({
 
   return (
     <section
-      className="w-full max-w-[1440px] px-4 py-6 content-center flex flex-col gap-6 box-border"
+      className="w-full max-w-[1440px] px-4 py-10 my-0 lg:my-8 content-center flex flex-col gap-6 box-border"
       id={title}
     >
       <div className="flex flex-col gap-3">

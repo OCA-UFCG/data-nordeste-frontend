@@ -13,7 +13,7 @@ import { macroThemes } from "@/utils/constants";
 
 const Header = ({ content }: { content: { fields: ISection }[] }) => {
   return (
-    <div className="flex items-center justify-between px-[80px] py-[18px] border-b-2 shadow-sm border-b bg-white">
+    <div className="flex items-center justify-between px-[80px] py-[18px] border-b-2 shadow-sm bg-white">
       <Link href="/" className="flex items-center gap-2">
         <Icon id="logo-DNE" width={99} height={47} />
       </Link>
@@ -29,12 +29,12 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
                     <NavigationMenuTrigger className="text-md cursor-pointer">
                       {item.fields.name}
                     </NavigationMenuTrigger>
-                    <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15">
+                    <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15 ">
                       {item.fields.children.map((child) => (
                         <NavigationMenuLink
                           key={child.fields.id}
                           href={child.fields.path}
-                          className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 hover:bg-green-100 rounded"
+                          className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 rounded"
                         >
                           <Icon
                             id={macroThemes[child.fields.id] || "list"}
