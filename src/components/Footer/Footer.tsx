@@ -93,8 +93,8 @@ const Footer = ({ content }: { content: { fields: ISection }[] }) => {
           </p>
         </div>
         <div className="flex flex-wrap gap-4 justify-center md:justify-start px-4 md:px-0 max-w-2xl mx-auto">
-          <Icon id="logo-sudene" width={198} height={94} />
           <Icon id="logo-gov" width={198} height={94} />
+          <Icon id="logo-sudene" width={198} height={94} />
         </div>
       </div>
     </footer>
