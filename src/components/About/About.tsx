@@ -14,9 +14,9 @@ export const AboutSection = ({ header }: { header: { fields: any } }) => {
           <Image
             alt=""
             src={`https:${thumb.fields.file.url}`}
-            width={500}
+            width={462}
             height={374}
-            className="w-fit max-h-[374px] rounded-lg"
+            className="w-full lg:h-[374px] lg:w-[462px] rounded-lg"
           />
           <div className="flex flex-col items-start justify-between lg:max-h-[375px] lg:max-w-full gap-6">
             <p className="text-left whitespace-pre-line h-fit lg:overflow-auto">
