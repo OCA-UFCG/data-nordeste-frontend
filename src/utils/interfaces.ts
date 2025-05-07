@@ -9,6 +9,13 @@ export interface SectionHeader {
   id: string;
   title: string;
   subtitle: string;
+  thumb?: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
 }
 
 export interface ISection {
@@ -112,4 +119,16 @@ export interface IStateData {
   data: string;
   link: string;
   note?: string;
+}
+
+export interface IMainBanner {
+  title: string;
+  subtitle: string;
+  image: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
 }
