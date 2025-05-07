@@ -113,3 +113,15 @@ export interface IStateData {
   link: string;
   note?: string;
 }
+
+export interface IMainBanner {
+  title: string;
+  subtitle: string;
+  image: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
+}

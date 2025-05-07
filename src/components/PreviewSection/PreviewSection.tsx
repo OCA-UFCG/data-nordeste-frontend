@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import Autoplay from "embla-carousel-autoplay";
 import { IPreviewCard, IPreviewCards } from "@/utils/interfaces";
 import PreviewCard from "@/components/PreviewCard/PreviewCard";
-import { Header, Logo, LogoContainer, Name } from "./PreviewSection.styles";
 import {
   Carousel,
   CarouselContent,
@@ -12,11 +11,24 @@ import {
   CarouselPrevious,
   DotButton,
 } from "../ui/carousel";
-import Filter from "./Filter/Filter";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
-const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
-  const [selectedRegion, setSelectedRegion] = useState("Nordeste");
-  const [selectedState, setSelectedState] = useState("");
+const PreviewSection = ({
+  header,
+  cards,
+}: {
+  cards: IPreviewCards[];
+  header: { fields: any };
+}) => {
+  const [selectedState, setSelectedState] = useState("all");
 
   const allCardsData = cards.map((card) => ({
     category: card.fields.category,
@@ -25,9 +37,10 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
 
   const filteredCards = useMemo(() => {
     return allCardsData.map((regionData) => {
-      const source = selectedState
-        ? regionData.states.find((state) => state.name === selectedState)
-        : regionData;
+      const source =
+        selectedState !== "all"
+          ? regionData.states.find((state) => state.name === selectedState)
+          : regionData;
 
       return source
         ? {
@@ -41,28 +54,35 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
         : null;
     }) as IPreviewCard[];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedState, selectedRegion]);
+  }, [selectedState]);
 
-  const handleFilterChange = (region: string, state: string) => {
-    setSelectedRegion(region);
+  const handleFilterChange = (state: string) => {
+    // setSelectedRegion(region);
     setSelectedState(state);
   };
 
   return (
-    <div className="flex flex-col p-6 max-w-[1440px] w-full justify-center items-center">
-      <Header>
-        <LogoContainer>
-          <Logo src="/logo.png" alt="datane logo" width={24} height={24} />
-          <Name>Data Nordeste</Name>
-        </LogoContainer>
-
-        <Filter
-          data={allCardsData}
-          selectedRegion={selectedRegion}
-          selectedState={selectedState}
-          onChange={handleFilterChange}
-        />
-      </Header>
+    <div className="flex flex-col bg-white px-8 gap-3 py-10 max-w-[1440px] w-full justify-center items-center shadow-md rounded-lg -translate-y-4 lg:-translate-y-8">
+      <div className="flex justify-between w-full">
+        <h2 className="text-3xl font-semibold">{header.fields.title}</h2>
+        <Select onValueChange={handleFilterChange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Nordeste" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Nordeste</SelectItem>
+            <SelectGroup>
+              <SelectLabel>Estados</SelectLabel>
+              {allCardsData &&
+                allCardsData[0].states.map((state, i) => (
+                  <SelectItem value={state.name} key={i}>
+                    {state.name}
+                  </SelectItem>
+                ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
 
       <Carousel
         opts={{

@@ -5,7 +5,7 @@ import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/About/About";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewSection from "@/components/PreviewSection/PreviewSection";
-import BannerImage from "@/components/BannerImage/BannerImage";
+import MainBanner from "@/components/BannerImage/BannerImage";
 import DataSection from "@/components/DataSection/DataSection";
 
 export const revalidate = 60;
@@ -18,6 +18,7 @@ export default async function Home() {
     post: posts,
     previewCards,
     theme,
+    mainBanner,
   } = await getContent([
     "partners",
     "sectionHead",
@@ -25,12 +26,20 @@ export default async function Home() {
     "previewCards",
     "panels",
     "theme",
+    "mainBanner",
   ]);
 
   return (
     <HubTemplate>
-      <BannerImage />
-      <PreviewSection cards={previewCards} />
+      <div className="flex flex-col w-full items-center">
+        <MainBanner content={mainBanner[0]} />
+        <PreviewSection
+          header={sectionHead.find(
+            (sec: { fields: SectionHeader }) => sec.fields.id == "preview",
+          )}
+          cards={previewCards}
+        />
+      </div>
       <RecentSection
         content={posts.slice(0, MAX_SiZE)}
         header={sectionHead.find(
