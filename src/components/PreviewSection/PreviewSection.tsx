@@ -62,11 +62,11 @@ const PreviewSection = ({
   };
 
   return (
-    <div className="flex flex-col bg-white px-8 gap-3 py-10 max-w-[1440px] w-full justify-center items-center shadow-md rounded-lg -translate-y-4 lg:-translate-y-8">
-      <div className="flex justify-between w-full">
+    <div className="flex flex-col bg-white px-3 lg:px-8 gap-3 py-5 lg:py-10 max-w-[1440px] w-full justify-center items-center shadow-md rounded-lg -translate-y-4 lg:-translate-y-8">
+      <div className="flex flex-col lg:flex-row gap-3 justify-between w-full">
         <h2 className="text-3xl font-semibold">{header.fields.title}</h2>
         <Select onValueChange={handleFilterChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full lg:w-[180px]">
             <SelectValue placeholder="Nordeste" />
           </SelectTrigger>
           <SelectContent>
@@ -100,7 +100,7 @@ const PreviewSection = ({
           {filteredCards.map((card, i) => (
             <CarouselItem
               key={i}
-              className="basis-1/1 md:basis-1/2 lg:basis-1/4 p-2"
+              className="basis-1/1 md:basis-1/2 lg:basis-1/4 p-1 md:p-2"
             >
               <PreviewCard content={card} />
             </CarouselItem>
