@@ -12,8 +12,8 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner } }) => {
         className="absolute w-full min-h-[450px] h-full object-cover rounded-t-md md:rounded-l-md md:rounded-tr-none z-0"
         src={`https:${image.fields.file.url}`}
         alt=""
-        width={1400}
-        height={1400}
+        width={1000}
+        height={600}
       />
       <div className="absolute top-0 right-0 h-full w-[100%] bg-gradient-to-l from-black via-transparent to-transparent"></div>
       <div className="absolute top-0 left-0 h-full w-[140%] bg-gradient-to-r from-black via-transparent to-transparent"></div>

@@ -59,7 +59,7 @@ function NavigationMenuItem({
 }
 
 const navigationMenuTriggerStyle = cva(
-  "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium hover:bg-green-100 focus:bg-green-100 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-green-100 focus-visible:ring-ring/50 outline-none transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1",
+  "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium hover:bg-green-neutro  focus:bg-green-neutro  disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-green-neutro  focus-visible:ring-ring/50 outline-none transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1",
 );
 
 function NavigationMenuTrigger({
@@ -132,7 +132,7 @@ function NavigationMenuLink({
     <NavigationMenuPrimitive.Link
       data-slot="navigation-menu-link"
       className={cn(
-        "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-green-100 data-[active=true]:bg-green-100/50 data-[active=true]:text-accent-foreground hover:bg-green-100 hover:text-accent-foreground focus:bg-green-100 focus:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm transition-all outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4 hover:bg-green-100",
+        "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-green-neutro  data-[active=true]:bg-green-neutro data-[active=true]:text-accent-foreground hover:text-accent-foreground focus:bg-green-neutro  focus:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm transition-all outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4 hover:bg-green-neutro ",
         isActive ? "text-green-900" : "",
         className,
       )}
