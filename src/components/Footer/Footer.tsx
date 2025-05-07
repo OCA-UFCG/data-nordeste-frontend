@@ -89,7 +89,7 @@ const Footer = ({ content }: { content: { fields: ISection }[] }) => {
             ))}
           </div>
           <p className="text-white font-medium text-sm text-center">
-            Email@sudene.com
+            datanordeste@sudene.gov.br
           </p>
         </div>
         <div className="flex flex-wrap gap-4 justify-center md:justify-start px-4 md:px-0 max-w-2xl mx-auto">
