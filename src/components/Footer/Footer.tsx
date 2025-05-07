@@ -44,29 +44,29 @@ const Footer = ({ content }: { content: { fields: ISection }[] }) => {
         />
       </div>
 
-      <div className="hidden md:flex gap-10 w-full md:w-auto px-4">
-        <div className="flex flex-col items-center md:items-start gap-4">
+      <div className="hidden md:flex gap-12 w-full md:w-auto px-4">
+        <div className="flex flex-col items-center md:items-start gap-3">
           {mainPages.map(({ id, path, name }) => (
             <a
               href={path}
               key={id}
-              className="text-white font-bold text-lg hover:opacity-60 transition-opacity"
+              className="text-white font-bold text-md hover:opacity-60 transition-opacity"
             >
               {name}
             </a>
           ))}
         </div>
-        <div className="flex gap-5">
+        <div className="flex gap-3">
           {splitColumns(macroThemes, 6).map((columnItems, columnIndex) => (
             <div
               key={`column-${columnIndex}`}
-              className="flex flex-col md:items-start gap-4"
+              className="flex flex-col md:items-start gap-3"
             >
               {columnItems.map(({ id, path, name }) => (
                 <a
                   href={path}
                   key={id}
-                  className="text-white text-lg hover:opacity-60 transition-opacity"
+                  className="text-white text-md hover:opacity-60 transition-opacity"
                 >
                   {name}
                 </a>
