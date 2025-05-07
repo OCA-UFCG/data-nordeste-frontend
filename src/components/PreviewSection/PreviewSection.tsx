@@ -57,7 +57,6 @@ const PreviewSection = ({
   }, [selectedState]);
 
   const handleFilterChange = (state: string) => {
-    // setSelectedRegion(region);
     setSelectedState(state);
   };
 
