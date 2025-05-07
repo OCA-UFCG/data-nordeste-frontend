@@ -52,7 +52,6 @@
     "@eslint/js": "^9.1.1",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/express": "^4.17.21",
-    "@types/glidejs": "^1.0.34",
     "@types/node": "^20.17.24",
     "@types/nodemailer": "^6.4.15",
     "@types/react": "^18",
