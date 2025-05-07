@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "^15.21.2",
-    "@glidejs/glide": "^3.7.1",
     "@google/earthengine": "^0.1.402",
     "@next/third-parties": "^14.2.3",
     "@radix-ui/react-accordion": "^1.2.8",
