@@ -9,6 +9,13 @@ export interface SectionHeader {
   id: string;
   title: string;
   subtitle: string;
+  thumb?: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
 }
 
 export interface ISection {
@@ -74,9 +81,16 @@ export interface ReportData {
   };
 }
 
+export interface MacroTheme {
+  name: string;
+  id: string;
+  color: string;
+}
+
 export interface IPreviewCard {
   title: string;
   subtitle?: string;
+  category: { fields: MacroTheme };
   link: string;
   data: string;
   note?: string;
@@ -86,6 +100,7 @@ export interface IPreviewCards {
   fields: {
     title: string;
     jsonFile: IRegionData;
+    category: { fields: MacroTheme };
   };
 }
 
@@ -104,4 +119,16 @@ export interface IStateData {
   data: string;
   link: string;
   note?: string;
+}
+
+export interface IMainBanner {
+  title: string;
+  subtitle: string;
+  image: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
 }

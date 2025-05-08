@@ -2,7 +2,7 @@ name: CI/CD DataNordeste
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main-v2"]
 
 jobs:
   build-image:
@@ -33,7 +33,7 @@ jobs:
           file: Dockerfile.production
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
-            ${{ vars.DOCKER_IMAGE_BETA }}:latest
+            ${{ vars.DOCKER_IMAGE_BETA }}:main-v2
             ${{ steps.meta.outputs.tags }}
           build-args: |
             NEXT_PUBLIC_CONTENTFUL_SPACE=${{ secrets.NEXT_PUBLIC_CONTENTFUL_SPACE  }}
@@ -46,16 +46,16 @@ jobs:
     runs-on: beta-runner
     steps:
       - name: Pull the latest image
-        run: sudo docker pull ${{ vars.DOCKER_IMAGE_BETA }}:latest
+        run: sudo docker pull ${{ vars.DOCKER_IMAGE_BETA }}:main-v2
 
       - name: Stop existing container
-        run: sudo docker rm -f ${{ vars.CONTAINER_NAME_BETA }} || true 
+        run: sudo docker rm -f data-nordeste-frontend-app-v2 || true 
             
       - name: Run new container
-        run: sudo docker run --name ${{ vars.CONTAINER_NAME_BETA }} -p ${{ vars.HOST_PORT_BETA }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_BETA }}:latest
+        run: sudo docker run --name data-nordeste-frontend-app-v2 -p 3001:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_BETA }}:main-v2
 
-      - name: Connect to network
-        run: docker network connect ${{ vars.NETWORK_NAME }} ${{ vars.CONTAINER_NAME_BETA }}
+      # - name: Connect to network
+      #   run: docker network connect ${{ vars.NETWORK_NAME }} data-nordeste-frontend-app-v2
 
       - name: Prune unused Docker images
         run: sudo docker system prune -f

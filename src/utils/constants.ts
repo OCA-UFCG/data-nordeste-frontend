@@ -4,23 +4,30 @@ import { ISudeneChannel } from "./interfaces";
 export const channels: ISudeneChannel[] = [
   {
     name: "@sudenebr",
-    href: "https://www.youtube.com/@sudenebr",
+    href: "https://www.youtube.com/sudenebr",
     icon: "youtube",
-    size: 20,
+    size: 32,
   },
 
   {
     name: "@sudenebr",
     href: "https://www.facebook.com/sudenebr",
     icon: "facebook",
-    size: 20,
+    size: 32,
   },
 
   {
     name: "@sudenebr",
     href: "https://www.instagram.com/sudenebr",
     icon: "instagram",
-    size: 20,
+    size: 32,
+  },
+
+  {
+    name: "@sudenebr",
+    href: "https://br.linkedin.com/company/superintend-ncia-do-desenvolvimento-do-nordeste",
+    icon: "linkedin",
+    size: 32,
   },
 ];
 
@@ -38,7 +45,17 @@ export const sortingTypes: {
 };
 
 export const POST_TYPES = {
-  "additional-content": "Conteúdo adicional",
+  "additional-content": "Notícia",
   "data-panel": "Painel de dados",
   newsletter: "Boletim",
+};
+
+export const macroThemes: { [key: string]: string } = {
+  economia_e_renda: "money",
+  demografia: "user",
+  saude: "health",
+  educacao: "book",
+  infraestrutura_e_saneamento: "screwdriver",
+  seguranca_hidrica: "drop",
+  meio_ambiente: "leaf",
 };

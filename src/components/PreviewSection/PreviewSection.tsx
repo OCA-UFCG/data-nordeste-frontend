@@ -1,29 +1,46 @@
 "use client";
 import { useMemo, useState } from "react";
-import Filter from "./Filter/Filter";
+import Autoplay from "embla-carousel-autoplay";
 import { IPreviewCard, IPreviewCards } from "@/utils/interfaces";
 import PreviewCard from "@/components/PreviewCard/PreviewCard";
-import Carousel from "../Carousel/Carousel";
 import {
-  Card,
-  Header,
-  Logo,
-  LogoContainer,
-  Name,
-  Wrapper,
-} from "./PreviewSection.styles";
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  DotButton,
+} from "../ui/carousel";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
-const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
-  const [selectedRegion, setSelectedRegion] = useState("Nordeste");
-  const [selectedState, setSelectedState] = useState("");
+const PreviewSection = ({
+  header,
+  cards,
+}: {
+  cards: IPreviewCards[];
+  header: { fields: any };
+}) => {
+  const [selectedState, setSelectedState] = useState("all");
 
-  const allCardsData = cards.map((card) => card.fields.jsonFile);
+  const allCardsData = cards.map((card) => ({
+    category: card.fields.category,
+    ...card.fields.jsonFile,
+  }));
 
   const filteredCards = useMemo(() => {
     return allCardsData.map((regionData) => {
-      const source = selectedState
-        ? regionData.states.find((state) => state.name === selectedState)
-        : regionData;
+      const source =
+        selectedState !== "all"
+          ? regionData.states.find((state) => state.name === selectedState)
+          : regionData;
 
       return source
         ? {
@@ -32,68 +49,71 @@ const PreviewSection = ({ cards }: { cards: IPreviewCards[] }) => {
             data: source.data,
             link: source.link,
             note: source.note,
+            category: regionData.category,
           }
         : null;
     }) as IPreviewCard[];
-  }, [selectedState, selectedRegion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedState]);
 
-  const handleFilterChange = (region: string, state: string) => {
-    setSelectedRegion(region);
+  const handleFilterChange = (state: string) => {
     setSelectedState(state);
   };
 
-  const carouselConfig = {
-    perView: filteredCards.length > 4 ? 4 : filteredCards.length,
-    type: "carousel",
-    gap: 16,
-    autoplay: 5000,
-    bound: true,
-    breakpoints: {
-      1250: {
-        perView: filteredCards.length > 4 ? 4 : filteredCards.length,
-      },
-      1000: {
-        perView: filteredCards.length > 3 ? 3 : filteredCards.length,
-      },
-      860: {
-        perView: filteredCards.length > 2 ? 2 : filteredCards.length,
-      },
-      650: {
-        perView: 1,
-      },
-    },
-  };
-
   return (
-    <Wrapper>
-      <Header>
-        <LogoContainer>
-          <Logo src="/logo.png" alt="datane logo" width={24} height={24} />
-          <Name>Data Nordeste</Name>
-        </LogoContainer>
+    <div className="flex flex-col bg-white px-3 lg:px-8 gap-3 border-box py-5 lg:py-10 max-w-[1440px] w-full justify-center items-center shadow-md rounded-lg -translate-y-4 lg:-translate-y-12">
+      <div className="flex flex-col lg:flex-row gap-3 justify-between w-full">
+        <h2 className="text-3xl font-semibold">{header.fields.title}</h2>
+        <Select onValueChange={handleFilterChange}>
+          <SelectTrigger className="w-full lg:w-[180px]">
+            <SelectValue placeholder="Nordeste" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Nordeste</SelectItem>
+            <SelectGroup>
+              <SelectLabel>Estados</SelectLabel>
+              {allCardsData &&
+                allCardsData[0].states.map((state, i) => (
+                  <SelectItem value={state.name} key={i}>
+                    {state.name}
+                  </SelectItem>
+                ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
 
-        <Filter
-          data={allCardsData}
-          selectedRegion={selectedRegion}
-          selectedState={selectedState}
-          onChange={handleFilterChange}
-        />
-      </Header>
-
-      {filteredCards.length > 0 && (
-        <Carousel
-          key={`${selectedRegion}-${selectedState}`}
-          classname="out-control"
-          config={carouselConfig}
-        >
+      <Carousel
+        opts={{
+          align: "start",
+          loop: true,
+        }}
+        plugins={[
+          Autoplay({
+            delay: 10000,
+          }),
+        ]}
+        className="flex flex-col gap-2 content-carousel"
+      >
+        <CarouselContent className="-ml-0">
           {filteredCards.map((card, i) => (
-            <Card className="glide__slide" key={i}>
+            <CarouselItem
+              key={i}
+              className="basis-1/1 md:basis-1/2 lg:basis-1/4 p-1 md:p-2"
+            >
               <PreviewCard content={card} />
-            </Card>
+            </CarouselItem>
           ))}
-        </Carousel>
-      )}
-    </Wrapper>
+        </CarouselContent>
+        <div className="flex md:hidden gap-2 w-full justify-center">
+          {filteredCards.map((_, i) => (
+            <DotButton tabIndex={i} key={i} />
+          ))}
+        </div>
+        <CarouselPrevious className="hidden md:flex" />
+        <CarouselNext className="hidden md:flex" />
+      </Carousel>
+    </div>
   );
 };
 

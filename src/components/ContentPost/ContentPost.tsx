@@ -1,58 +1,47 @@
 import { IPublication } from "@/utils/interfaces";
-import {
-  ContentWrapper,
-  Link,
-  Thumb,
-  Title,
-  TitleWrapper,
-  ArrowIcon,
-  DateWrapper,
-  Header,
-  Type,
-  ThumbContainer,
-  DescriptionContainer,
-  Description,
-} from "./ContentPost.styles";
 import { POST_TYPES } from "@/utils/constants";
+import Link from "next/link";
+import { Icon } from "@/components/Icon/Icon";
 
 const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
-  const { title, thumb, link, date, type, description } = content.fields;
+  const { title, thumb, link, date, type } = content.fields;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
   return (
-    <ContentWrapper>
-      <Header>
-        <Type>
-          {
-            POST_TYPES[
-              type as "additional-content" | "data-panel" | "newsletter"
-            ]
-          }
-        </Type>
-        <DateWrapper>{formattedDate}</DateWrapper>
-      </Header>
-      <Link href={link}>
-        <div>
-          <ThumbContainer>
-            <Thumb
-              src={`https:${thumb.fields.file.url}`}
-              alt=""
-              width={600}
-              height={300}
-            />
-            <DescriptionContainer>
-              <Description>{description || "Acessar postagem"}</Description>
-            </DescriptionContainer>
-          </ThumbContainer>
-
-          <TitleWrapper>
-            <Title>{title}</Title>
-            <ArrowIcon id={"link-arrow"} size={16} />
-          </TitleWrapper>
+    <Link
+      href={link}
+      className="group flex flex-col overflow-hidden rounded-md w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
+    >
+      <div className="relative group">
+        <img
+          alt=""
+          src={`https:${thumb.fields.file.url}`}
+          className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
+        />
+        <div className="absolute top-4 left-4 rounded-lg px-2 py-0.5 bg-gray-100">
+          <p className="font-semibold text-xs">
+            {
+              POST_TYPES[
+                type as "additional-content" | "data-panel" | "newsletter"
+              ]
+            }
+          </p>
         </div>
-      </Link>
-    </ContentWrapper>
+      </div>
+
+      <div className="py-4 px-5 flex gap-3 justify-between items-center h-full box-border">
+        <div className="flex flex-col gap-0.5">
+          <p className="line-clamp-2 text-sm font-medium text-wrap">{title}</p>
+          <p className="text-grey-600 text-xs">{formattedDate}</p>
+        </div>
+        <Icon
+          className="md:flex rotate-270 size-2 min-w-2"
+          id="expand"
+          size={9}
+        />
+      </div>
+    </Link>
   );
 };
 
