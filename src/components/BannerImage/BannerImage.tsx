@@ -23,7 +23,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner } }) => {
             {title}
           </h1>
           <p className="text-white text-lg font-medium">{subtitle}</p>
-          <LinkButton href="/posts" className="md:max-w-fit">
+          <LinkButton href="/explore" className="md:max-w-fit">
             Explore os dados
           </LinkButton>
         </div>

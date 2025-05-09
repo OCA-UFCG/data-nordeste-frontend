@@ -1,63 +1,64 @@
 "use client";
+
 import { IPublication } from "@/utils/interfaces";
-import {
-  Home,
-  LeftIcon,
-  Menu,
-  MenuContainer,
-  NoContent,
-  Pagination,
-  PaginationButton,
-  Post,
-  PostsContainer,
-  RightIcon,
-  SkeletonCard,
-  Wrapper,
-} from "./PostsGrid.styles";
 import ContentPost from "../ContentPost/ContentPost";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getPosts, getTotalPages } from "@/utils/functions";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { SortMenu } from "../SortMenu/SortMenu";
 import { FilterMenu } from "../FilterMenu/FilterMenu";
 import { Icon } from "../Icon/Icon";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../ui/pagination";
+import { useSearchParams } from "next/navigation";
+import { Skeleton } from "../ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const PAGINATION_SIZE = 3;
 
-export const PostsGrid = ({ totalPages }: { totalPages: number }) => {
+export const PostsGrid = ({
+  header,
+  totalPages,
+  initFilter = {},
+}: {
+  totalPages: number;
+  header: { fields: any };
+  initFilter?: { [key: string]: string };
+}) => {
+  const params = useSearchParams();
+  const currentPage = useMemo(() => Number(params.get("page")) || 1, [params]);
   const [pages, setpages] = useState(totalPages);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<{ [x: string]: string }>({});
+  const [filter, setFilter] = useState<{ [x: string]: string }>(initFilter);
   const [sorting, setSorting] = useState("Data de publicação");
   const [posts, setPosts] = useState<{ fields: IPublication }[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagesRange, setPagesRange] = useState(
-    Array.from({ length: pages }, (_, i) => i + 1).slice(0, PAGINATION_SIZE),
-  );
+  const pagesRange = useMemo(() => {
+    let init = 0;
+    let end = pages;
+
+    if (pages >= PAGINATION_SIZE) {
+      init = currentPage - PAGINATION_SIZE - 2;
+      end = currentPage + PAGINATION_SIZE - 2;
+
+      if (currentPage + PAGINATION_SIZE > pages) {
+        init = pages - PAGINATION_SIZE;
+        end = pages;
+      } else if (currentPage - PAGINATION_SIZE <= 0) {
+        init = 0;
+        end = PAGINATION_SIZE;
+      }
+    }
+
+    return Array.from({ length: pages }, (_, i) => i + 1).slice(init, end);
+  }, [currentPage, pages]);
 
   useEffect(() => {
-    const updatePaginationButtons = async () => {
-      let init = 0;
-      let end = pages;
-
-      if (pages >= PAGINATION_SIZE) {
-        init = currentPage - PAGINATION_SIZE - 2;
-        end = currentPage + PAGINATION_SIZE - 2;
-
-        if (currentPage + PAGINATION_SIZE > pages) {
-          init = pages - PAGINATION_SIZE;
-          end = pages;
-        } else if (currentPage - PAGINATION_SIZE <= 0) {
-          init = 0;
-          end = PAGINATION_SIZE;
-        }
-      }
-
-      setPagesRange(
-        Array.from({ length: pages }, (_, i) => i + 1).slice(init, end),
-      );
-    };
-
     const updatePosts = async () => {
       setLoading(true);
       const newPosts = await getPosts(
@@ -74,70 +75,66 @@ export const PostsGrid = ({ totalPages }: { totalPages: number }) => {
     };
 
     updatePosts();
-    updatePaginationButtons();
   }, [currentPage, pages, sorting, filter]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sorting, filter]);
-
   return (
-    <Wrapper>
-      <MenuContainer>
-        <Home href="/">
-          <LeftIcon id="expand" size={10} />
-          <span>Início</span>
-        </Home>
-        <Menu>
+    <div className="grow-1 flex flex-col items-center gap-8 w-full p-4 max-w-[1440px] box-border py-16">
+      <div className="flex flex-col md:flex-row w-full gap-4 justify-between">
+        <h1 className="text-3xl font-semibold">{header.fields.title}</h1>
+        <div className="flex flex-col md:flex-row gap-4 items-center">
           <FilterMenu onSubmit={(form) => setFilter(form)} />
           <SortMenu onClick={(sortType: string) => setSorting(sortType)} />
-        </Menu>
-      </MenuContainer>
-      <PostsContainer $posts={(!loading && posts.length > 0).toString()}>
+        </div>
+      </div>
+      <div
+        className={cn(
+          !loading && posts.length == 0 ? "flex" : "grid",
+          "grow-1 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full justify-center gap-6",
+        )}
+      >
         {loading ? (
           [...Array(POSTS_PER_PAGE)].map((_, i) => (
-            <Post key={i}>
-              <SkeletonCard></SkeletonCard>
-            </Post>
+            <Skeleton className="w-full h-[250px] rounded-lg" key={i} />
           ))
         ) : posts.length > 0 ? (
-          posts.map((post, i) => (
-            <Post key={i}>
-              <ContentPost content={post} />
-            </Post>
-          ))
+          posts.map((post, i) => <ContentPost content={post} key={i} />)
         ) : (
-          <NoContent>
+          <div className="grow-1 flex flex-col gap-4 justify-center items-center w-full py-12 bg-gray-50 rounded-lg">
             <Icon id="no-mail" size={48} />
             <span>Nenhum post encontrado</span>
-          </NoContent>
+          </div>
         )}
-      </PostsContainer>
+      </div>
       <Pagination>
-        <PaginationButton
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(currentPage - 1)}
-        >
-          <LeftIcon id="expand" size={10} />
-        </PaginationButton>
-
-        {pagesRange.map((i) => (
-          <PaginationButton
-            key={i}
-            onClick={() => setCurrentPage(i)}
-            disabled={currentPage === i}
-            selected={i === currentPage ? "selected" : ""}
-          >
-            {i}
-          </PaginationButton>
-        ))}
-        <PaginationButton
-          disabled={currentPage === pages}
-          onClick={() => setCurrentPage(currentPage + 1)}
-        >
-          <RightIcon id="expand" size={10} />
-        </PaginationButton>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              disabled={currentPage <= 1}
+              href={`/explore?page=${currentPage - 1}`}
+            />
+          </PaginationItem>
+          {pagesRange.map((i) =>
+            loading ? (
+              <Skeleton className="w-[40px] h-[40px] rounded-lg" key={i} />
+            ) : (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  isActive={i == currentPage}
+                  href={`/explore?page=${i}`}
+                >
+                  {i}
+                </PaginationLink>
+              </PaginationItem>
+            ),
+          )}
+          <PaginationItem>
+            <PaginationNext
+              disabled={currentPage >= pages}
+              href={`/explore?page=${currentPage + 1}`}
+            />
+          </PaginationItem>
+        </PaginationContent>
       </Pagination>
-    </Wrapper>
+    </div>
   );
 };
