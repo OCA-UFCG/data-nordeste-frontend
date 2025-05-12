@@ -38,13 +38,14 @@ export const PostsGrid = ({
   const [filter, setFilter] = useState<{ [x: string]: string }>(initFilter);
   const [sorting, setSorting] = useState("Data de publicação");
   const [posts, setPosts] = useState<{ fields: IPublication }[]>([]);
+
   const pagesRange = useMemo(() => {
     let init = 0;
     let end = pages;
 
     if (pages >= PAGINATION_SIZE) {
-      init = currentPage - PAGINATION_SIZE - 2;
-      end = currentPage + PAGINATION_SIZE - 2;
+      init = currentPage - PAGINATION_SIZE;
+      end = currentPage + PAGINATION_SIZE;
 
       if (currentPage + PAGINATION_SIZE > pages) {
         init = pages - PAGINATION_SIZE;
@@ -59,22 +60,23 @@ export const PostsGrid = ({
   }, [currentPage, pages]);
 
   useEffect(() => {
-    const updatePosts = async () => {
-      setLoading(true);
-      const newPosts = await getPosts(
-        sorting,
-        currentPage,
-        POSTS_PER_PAGE,
-        filter,
-      );
-      setPosts(newPosts);
+    setLoading(true);
 
-      const newPages = (await getTotalPages(filter)) || 1;
-      setpages(newPages);
+    const postsPromise = new Promise((resolve) => {
+      resolve(getPosts(sorting, currentPage, POSTS_PER_PAGE, filter));
+    }).then((value) => {
+      setPosts(value as unknown as { fields: IPublication }[]);
+    });
+
+    const pagesPromise = new Promise((resolve) => {
+      resolve(getTotalPages(filter));
+    }).then((value) => {
+      setpages(value as number);
+    });
+
+    Promise.all([postsPromise, pagesPromise]).then(() => {
       setLoading(false);
-    };
-
-    updatePosts();
+    });
   }, [currentPage, pages, sorting, filter]);
 
   return (
