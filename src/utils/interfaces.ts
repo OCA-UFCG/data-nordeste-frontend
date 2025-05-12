@@ -132,3 +132,8 @@ export interface IMainBanner {
     };
   };
 }
+
+export interface IPageHeader {
+  title: string;
+  subtitle: string;
+}
