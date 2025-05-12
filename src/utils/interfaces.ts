@@ -34,6 +34,7 @@ export interface Project {
   name: string;
   description: string;
   link: string;
+  details: any;
   thumb: {
     fields: {
       file: {
