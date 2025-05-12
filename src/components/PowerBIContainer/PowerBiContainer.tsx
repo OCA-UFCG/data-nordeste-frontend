@@ -23,7 +23,7 @@ const PowerBIContainer = ({
       <Header>
         <Home href="/">
           <RightIcon id="expand" size={10} />
-          <Text>Pagina inicial</Text>
+          <Text>Página inicial</Text>
         </Home>
         <Title>{macroTheme}</Title>
       </Header>
