@@ -24,7 +24,7 @@ export default async function Connections({}: {}) {
         <FullProjectCard
           key={partner.fields.name}
           project={partner}
-          index={index}
+          direction={index % 2 === 0 ? "left" : "right"}
         />
       ))}
     </HubTemplate>
