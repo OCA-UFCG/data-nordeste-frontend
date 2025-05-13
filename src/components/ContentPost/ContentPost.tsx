@@ -3,7 +3,13 @@ import { POST_TYPES } from "@/utils/constants";
 import Link from "next/link";
 import { Icon } from "@/components/Icon/Icon";
 
-const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
+const ContentPost = ({
+  content,
+  labeled,
+}: {
+  content: { fields: IPublication };
+  labeled: boolean;
+}) => {
   const { title, thumb, link, date, type } = content.fields;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
@@ -19,10 +25,14 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
           src={`https:${thumb?.fields?.file?.url || ""}`}
           className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
         />
-        {type !== "data-panel" && (
+        {labeled && (
           <div className="absolute top-4 left-4 rounded-lg px-2 py-0.5 bg-gray-100">
             <p className="font-semibold text-xs">
-              {POST_TYPES[type as "additional-content" | "newsletter"]}
+              {
+                POST_TYPES[
+                  type as "additional-content" | "data-panel" | "newsletter"
+                ]
+              }
             </p>
           </div>
         )}

@@ -21,6 +21,7 @@ export default async function DataPanel({}: {}) {
           )}
           initFilter={{ "fields.type[in]": "data-panel" }}
           totalPages={pages}
+          labeled={false}
         />
       </Suspense>
     </HubTemplate>
