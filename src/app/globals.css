@@ -2,6 +2,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+body {
+  display: flex;
+  flex-flow: column;
+  min-height: 100vh;
+}
 @theme {
   /* Palette */
   --color-green-neutro: #D6E9DB;

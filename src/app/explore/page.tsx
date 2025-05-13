@@ -16,9 +16,10 @@ export default async function DataPanel({}: {}) {
       <Suspense>
         <PostsGrid
           header={sectionHead.find(
-            (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
+            (sec: { fields: SectionHeader }) =>
+              sec.fields.id == "interactive-panels",
           )}
-          initFilter={{ "fields.type[in]": "newsletter,additional-content" }}
+          initFilter={{ "fields.type[in]": "data-panel" }}
           totalPages={pages}
         />
       </Suspense>
