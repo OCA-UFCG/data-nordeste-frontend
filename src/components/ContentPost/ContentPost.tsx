@@ -16,7 +16,7 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
       <div className="relative group">
         <img
           alt=""
-          src={`https:${thumb.fields.file.url}`}
+          src={`https:${thumb?.fields?.file?.url || ""}`}
           className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
         />
         {type !== "data-panel" && (

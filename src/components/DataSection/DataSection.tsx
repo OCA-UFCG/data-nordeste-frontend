@@ -35,7 +35,7 @@ const DataSection = ({
         <div className="flex justify-between w-full">
           <h2 className="text-3xl font-semibold">{title}</h2>
           <LinkButton
-            href="/posts"
+            href="/explore"
             variant="secondary"
             className="w-fit hidden md:flex"
           >
@@ -50,7 +50,7 @@ const DataSection = ({
           <CategoryCard key={category.fields.id} category={category} />
         ))}
       </div>
-      <LinkButton href="/posts" variant="secondary" className="md:hidden">
+      <LinkButton href="/explore" variant="secondary" className="md:hidden">
         <p>Ver Todos</p>
         <Icon className="rotate-270 size-2" id="expand" />
       </LinkButton>
