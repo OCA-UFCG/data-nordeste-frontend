@@ -19,15 +19,13 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
           src={`https:${thumb.fields.file.url}`}
           className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
         />
-        <div className="absolute top-4 left-4 rounded-lg px-2 py-0.5 bg-gray-100">
-          <p className="font-semibold text-xs">
-            {
-              POST_TYPES[
-                type as "additional-content" | "data-panel" | "newsletter"
-              ]
-            }
-          </p>
-        </div>
+        {type !== "data-panel" && (
+          <div className="absolute top-4 left-4 rounded-lg px-2 py-0.5 bg-gray-100">
+            <p className="font-semibold text-xs">
+              {POST_TYPES[type as "additional-content" | "newsletter"]}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="py-4 px-5 flex gap-3 justify-between items-center h-full box-border">
