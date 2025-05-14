@@ -1,6 +1,7 @@
 import { IPublication } from "@/utils/interfaces";
 import { POST_TYPES } from "@/utils/constants";
 import Link from "next/link";
+import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
 
 const ContentPost = ({
@@ -20,7 +21,9 @@ const ContentPost = ({
       className="group flex flex-col overflow-hidden rounded-md w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
     >
       <div className="relative group">
-        <img
+        <Image
+          width={300}
+          height={300}
           alt=""
           src={`https:${thumb?.fields?.file?.url || ""}`}
           className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
