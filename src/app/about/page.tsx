@@ -1,7 +1,7 @@
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/functions";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import AboutCard from "@/components/AboutCard/AboutCard";
+import AboutBigCard from "@/components/AboutBigCard/AboutBigCard";
 import {
   Carousel,
   CarouselContent,
@@ -24,9 +24,9 @@ export default async function Connections({}: {}) {
             section.fields.id === "about",
         )}
       />
-      <AboutCard about={about[0]} />
+      <AboutBigCard about={about[0]} />
       <div className="w-full px-6 pt-9 lg:px-20 lg:pt-12 pb-9">
-        <h2 className="text-green-900 text-2xl font-semibold">Galeria</h2>
+        <h2 className="text-green-900 text-2xl font-semibold mb-4">Galeria</h2>
         <div className="flex justify-center">
           <Carousel
             opts={{

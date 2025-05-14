@@ -2,7 +2,7 @@ import { About } from "@/utils/interfaces";
 import Image from "next/image";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 
-const AboutCard = ({ about }: { about: { fields: About } }) => {
+const AboutBigCard = ({ about }: { about: { fields: About } }) => {
   const { details, thumb } = about.fields;
 
   return (
@@ -27,4 +27,4 @@ const AboutCard = ({ about }: { about: { fields: About } }) => {
   );
 };
 
-export default AboutCard;
+export default AboutBigCard;
