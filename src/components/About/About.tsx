@@ -22,7 +22,7 @@ export const AboutSection = ({ header }: { header: { fields: any } }) => {
             <p className="text-left whitespace-pre-line h-fit lg:overflow-auto">
               {subtitle}
             </p>
-            <LinkButton href="/" className="mt-auto w-full md:w-[300px]">
+            <LinkButton href="/about" className="mt-auto w-full md:w-[300px]">
               Saiba mais
             </LinkButton>
           </div>
