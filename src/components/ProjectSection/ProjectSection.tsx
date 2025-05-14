@@ -1,5 +1,5 @@
 import { Project, SectionHeader } from "@/utils/interfaces";
-import ProjectCard from "../ProjectCard";
+import ProjectCard from "@/components/ProjectCard/ProjectCard";
 
 export const ProjectSection = ({
   header,

@@ -26,10 +26,12 @@ export const PostsGrid = ({
   header,
   totalPages,
   initFilter = {},
+  labeled = false,
 }: {
   totalPages: number;
   header: { fields: any };
   initFilter?: { [key: string]: string };
+  labeled?: boolean;
 }) => {
   const params = useSearchParams();
   const currentPage = useMemo(() => Number(params.get("page")) || 1, [params]);
@@ -99,7 +101,9 @@ export const PostsGrid = ({
             <Skeleton className="w-full h-[250px] rounded-lg" key={i} />
           ))
         ) : posts.length > 0 ? (
-          posts.map((post, i) => <ContentPost content={post} key={i} />)
+          posts.map((post, i) => (
+            <ContentPost content={post} key={i} labeled={labeled} />
+          ))
         ) : (
           <div className="grow-1 flex flex-col gap-4 justify-center items-center w-full py-12 bg-gray-50 rounded-lg">
             <Icon id="no-mail" size={48} />

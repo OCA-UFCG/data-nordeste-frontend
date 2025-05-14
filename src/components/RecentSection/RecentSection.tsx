@@ -67,7 +67,7 @@ export const RecentSection = ({
                   key={i}
                   className="basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
                 >
-                  <ContentPost content={card} key={i} />
+                  <ContentPost content={card} key={i} labeled={true} />
                 </CarouselItem>
               ))}
           </CarouselContent>
