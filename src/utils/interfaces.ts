@@ -137,3 +137,9 @@ export interface IPageHeader {
   title: string;
   subtitle: string;
 }
+
+export interface ITab {
+  name: string;
+  id: string;
+  path: string;
+}

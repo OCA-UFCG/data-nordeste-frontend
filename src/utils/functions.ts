@@ -1,5 +1,5 @@
 import { createClient } from "contentful";
-import { IPublication, ISection } from "./interfaces";
+import { IPublication } from "./interfaces";
 import { sortingTypes } from "./constants";
 
 const client = createClient({
@@ -78,10 +78,10 @@ export const capitalize = (inputString: string): string => {
     .join(" ");
 };
 
-export const sortContentByDesiredOrder = (
-  content: { fields: ISection }[],
+export const sortContentByDesiredOrder = <T extends { id: string }>(
+  content: { fields: T }[],
   desiredOrder: string[],
-): { fields: ISection }[] => {
+): { fields: T }[] => {
   return [...content].sort((a, b) => {
     const aIndex = desiredOrder.indexOf(a.fields.id);
     const bIndex = desiredOrder.indexOf(b.fields.id);
