@@ -1,4 +1,4 @@
-import { ProjectSection } from "@/components/ProjectCard/Section/ProjectSection";
+import { ProjectSection } from "@/components/ProjectSection/ProjectSection";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/functions";
 import { SectionHeader } from "@/utils/interfaces";
