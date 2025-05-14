@@ -11,7 +11,10 @@ const HubTemplate = async ({ children }: { children?: ReactNode }) => {
   return (
     <>
       <HeaderSection content={header} />
-      <main id="root" className="flex flex-col items-center w-full border-box">
+      <main
+        id="root"
+        className="flex flex-col items-center h-full grow-1 w-full border-box"
+      >
         {children}
       </main>
       <Footer content={header} />

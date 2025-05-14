@@ -1,6 +1,7 @@
 import { createClient } from "contentful";
+
 import { IPublication } from "./interfaces";
-import { sortingTypes } from "./constants";
+import { POSTS_PER_PAGE, sortingTypes } from "./constants";
 
 const client = createClient({
   accessToken: process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || "",
@@ -32,7 +33,7 @@ export const getTotalPages = async (filter = {}) => {
     const response = await client.getEntries(params);
 
     const totalEntries = response.total;
-    const totalPages = Math.ceil(totalEntries / 12);
+    const totalPages = Math.ceil(totalEntries / POSTS_PER_PAGE);
 
     return totalPages;
   } catch (error) {
