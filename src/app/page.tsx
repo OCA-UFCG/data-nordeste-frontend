@@ -17,7 +17,6 @@ export default async function Home() {
       "partners",
       "sectionHead",
       "previewCards",
-      "panels",
       "theme",
       "mainBanner",
     ]);
