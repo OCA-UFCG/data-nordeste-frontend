@@ -50,6 +50,8 @@ export const POST_TYPES = {
   newsletter: "Boletim",
 };
 
+export const POSTS_TYPES_RECENTS_FILTER = ["additional-content", "newsletter"];
+
 export const macroThemes: { [key: string]: string } = {
   economia_e_renda: "money",
   demografia: "user",
