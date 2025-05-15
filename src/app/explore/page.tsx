@@ -1,3 +1,4 @@
+import PageHeader from "@/components/PageHeader/PageHeader";
 import { PostsGrid } from "@/components/PostsGrid/PostsGrid";
 import HubTemplate from "@/templates/HubTemplate";
 import { POSTS_PER_PAGE } from "@/utils/constants";
@@ -10,9 +11,16 @@ export const revalidate = 60;
 export default async function DataPanel({}: {}) {
   const pages = (await getTotalPages(POSTS_PER_PAGE)) || 1;
   const { sectionHead } = await getContent(["sectionHead"]);
+  const { pageHeaders } = await getContent(["pageHeaders"]);
 
   return (
     <HubTemplate>
+      <PageHeader
+        content={pageHeaders.find(
+          (section: { fields: { id: string } }) =>
+            section.fields.id === "panels",
+        )}
+      />
       <Suspense>
         <PostsGrid
           header={sectionHead.find(

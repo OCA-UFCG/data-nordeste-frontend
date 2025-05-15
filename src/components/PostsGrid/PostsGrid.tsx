@@ -1,12 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import { IPublication } from "@/utils/interfaces";
 import ContentPost from "../ContentPost/ContentPost";
-import { useEffect, useMemo, useState } from "react";
-import { getPosts, getTotalPages } from "@/utils/functions";
 import { POSTS_PER_PAGE } from "@/utils/constants";
-import { SortMenu } from "../SortMenu/SortMenu";
-import { FilterMenu } from "../FilterMenu/FilterMenu";
 import { Icon } from "../Icon/Icon";
 import {
   Pagination,
@@ -16,29 +13,22 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../ui/pagination";
-import { useSearchParams } from "next/navigation";
 import { Skeleton } from "../ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const PAGINATION_SIZE = 3;
 
 export const PostsGrid = ({
-  header,
-  totalPages,
-  initFilter = {},
+  currentPage,
+  pages,
+  posts = [],
+  loading,
 }: {
-  totalPages: number;
-  header: { fields: any };
-  initFilter?: { [key: string]: string };
+  currentPage: number;
+  loading: boolean;
+  pages: number;
+  posts: { fields: IPublication }[];
 }) => {
-  const params = useSearchParams();
-  const currentPage = useMemo(() => Number(params.get("page")) || 1, [params]);
-  const [pages, setpages] = useState(totalPages);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<{ [x: string]: string }>(initFilter);
-  const [sorting, setSorting] = useState("Data de publicação");
-  const [posts, setPosts] = useState<{ fields: IPublication }[]>([]);
-
   const pagesRange = useMemo(() => {
     let init = 0;
     let end = pages;
@@ -59,35 +49,8 @@ export const PostsGrid = ({
     return Array.from({ length: pages }, (_, i) => i + 1).slice(init, end);
   }, [currentPage, pages]);
 
-  useEffect(() => {
-    setLoading(true);
-
-    const postsPromise = new Promise((resolve) => {
-      resolve(getPosts(sorting, currentPage, POSTS_PER_PAGE, filter));
-    }).then((value) => {
-      setPosts(value as unknown as { fields: IPublication }[]);
-    });
-
-    const pagesPromise = new Promise((resolve) => {
-      resolve(getTotalPages(filter));
-    }).then((value) => {
-      setpages(value as number);
-    });
-
-    Promise.all([postsPromise, pagesPromise]).then(() => {
-      setLoading(false);
-    });
-  }, [currentPage, pages, sorting, filter]);
-
   return (
     <div className="grow-1 flex flex-col items-center gap-8 w-full p-4 max-w-[1440px] box-border py-16">
-      <div className="flex flex-col md:flex-row w-full gap-4 justify-between">
-        <h1 className="text-3xl font-semibold">{header.fields.title}</h1>
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-          <FilterMenu onSubmit={(form) => setFilter(form)} />
-          <SortMenu onClick={(sortType: string) => setSorting(sortType)} />
-        </div>
-      </div>
       <div
         className={cn(
           !loading && posts.length == 0 ? "flex" : "grid",
@@ -111,8 +74,8 @@ export const PostsGrid = ({
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
-              disabled={currentPage <= 1}
-              href={`/explore?page=${currentPage - 1}`}
+              disabled={pages == 0 || currentPage <= 1}
+              href={`?page=${currentPage - 1}`}
             />
           </PaginationItem>
           {pagesRange.map((i) =>
@@ -120,10 +83,7 @@ export const PostsGrid = ({
               <Skeleton className="w-[40px] h-[40px] rounded-lg" key={i} />
             ) : (
               <PaginationItem key={i}>
-                <PaginationLink
-                  isActive={i == currentPage}
-                  href={`/explore?page=${i}`}
-                >
+                <PaginationLink isActive={i == currentPage} href={`?page=${i}`}>
                   {i}
                 </PaginationLink>
               </PaginationItem>
@@ -131,8 +91,8 @@ export const PostsGrid = ({
           )}
           <PaginationItem>
             <PaginationNext
-              disabled={currentPage >= pages}
-              href={`/explore?page=${currentPage + 1}`}
+              disabled={pages == 0 || currentPage >= pages}
+              href={`?page=${currentPage + 1}`}
             />
           </PaginationItem>
         </PaginationContent>
