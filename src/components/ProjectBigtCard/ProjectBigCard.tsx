@@ -29,7 +29,9 @@ const ProjectBigCard = ({
               width={800}
               height={800}
             />
-            <LinkButton href={link}>Acessar</LinkButton>
+            <LinkButton href={link} className="w-fit hidden md:flex">
+              Acessar
+            </LinkButton>
           </div>
           <div
             className={`text-base text-gray-800 h-full space-y-4 lg:w-[65%] order-2 ${
@@ -41,6 +43,9 @@ const ProjectBigCard = ({
             {documentToReactComponents(details)}
           </div>
         </div>
+        <LinkButton href={link} className="md:hidden mt-5">
+          Acessar
+        </LinkButton>
       </div>
     </section>
   );
