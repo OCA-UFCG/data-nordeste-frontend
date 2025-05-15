@@ -23,7 +23,7 @@ export default async function DataPanel({
 
   return (
     <HubTemplate>
-      <div className="flex justify-center items-center overflow-hidden">
+      <div className="flex justify-center h-full w-full items-center overflow-hidden">
         <PowerBIContainer
           panel={selectedPanel}
           pageName={searchParams.pageName}
