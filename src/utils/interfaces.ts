@@ -44,6 +44,19 @@ export interface Project {
   };
 }
 
+export interface About {
+  id: string;
+  album: any[];
+  details: any;
+  thumb: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
+}
+
 export interface ISectionHeader {
   fields: {
     id: string;
