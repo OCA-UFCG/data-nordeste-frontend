@@ -6,7 +6,7 @@ import Header from "../Header";
 import { sortContentByDesiredOrder } from "@/utils/functions";
 
 const HeaderSection = ({ content }: { content: { fields: ISection }[] }) => {
-  const orderedContent = sortContentByDesiredOrder(content, [
+  const orderedContent = sortContentByDesiredOrder<ISection>(content, [
     "home",
     "about",
     "explore",

@@ -81,18 +81,11 @@ export interface IPublication {
 }
 
 export interface ReportData {
+  date: string;
   title: string;
   source: string;
   macroTheme: string;
-  macroPainel: boolean;
   description: string;
-  thumb: {
-    fields: {
-      file: {
-        url: string;
-      };
-    };
-  };
 }
 
 export interface MacroTheme {
@@ -150,4 +143,10 @@ export interface IMainBanner {
 export interface IPageHeader {
   title: string;
   subtitle: string;
+}
+
+export interface ITab {
+  name: string;
+  id: string;
+  path: string;
 }

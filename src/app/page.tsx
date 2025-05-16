@@ -56,7 +56,6 @@ export default async function Home() {
         )}
         categories={theme}
       />
-
       <ProjectSection
         header={sectionHead.find(
           (sec: { fields: SectionHeader }) => sec.fields.id == "projects",
