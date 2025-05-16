@@ -4,7 +4,7 @@ import { sortContentByDesiredOrder } from "@/utils/functions";
 import { ISection } from "@/utils/interfaces";
 
 const Footer = ({ content }: { content: { fields: ISection }[] }) => {
-  const mainPages = sortContentByDesiredOrder(content, [
+  const mainPages = sortContentByDesiredOrder<ISection>(content, [
     "home",
     "about",
     "explore",
