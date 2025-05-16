@@ -1,23 +1,21 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { ExploreForm } from "../PostsGrid/ExploreForm";
 import { PostsGrid } from "../PostsGrid/PostsGrid";
 import { IPublication, MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { useSearchParams } from "next/navigation";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { getPosts, getTotalPages } from "@/utils/functions";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Button } from "../ui/button";
 
 export const Posts = ({
   header,
-  categories,
+  categories = [],
   totalPages,
   rootFilter = {},
 }: {
   header: { fields: SectionHeader };
-  categories: { fields: MacroTheme; sys: { id: string } }[];
+  categories?: { fields: MacroTheme; sys: { id: string } }[];
   totalPages: number;
   rootFilter: { [key: string]: string };
 }) => {
@@ -31,6 +29,7 @@ export const Posts = ({
 
   useEffect(() => {
     setLoading(true);
+    setSorting("Data de publicação");
 
     const postsPromise = new Promise((resolve) => {
       resolve(getPosts(sorting, currentPage, POSTS_PER_PAGE, filter));
@@ -51,8 +50,8 @@ export const Posts = ({
   }, [currentPage, pages, sorting, filter]);
 
   return (
-    <section className="w-full">
-      <div>
+    <section className="w-full max-w-[1440px] p-4 border-box">
+      <div className="flex justify-between items-center w-full max-w-[1440px]">
         <h1 className="text-3xl font-semibold">{header.fields.title}</h1>
         <div className="">
           <ExploreForm
@@ -61,14 +60,6 @@ export const Posts = ({
           />
         </div>
       </div>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button>hey</Button>
-        </PopoverTrigger>
-        <PopoverContent>
-          <p>testinggg</p>
-        </PopoverContent>
-      </Popover>
       <Suspense>
         <PostsGrid
           pages={pages}

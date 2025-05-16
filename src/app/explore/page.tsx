@@ -1,5 +1,5 @@
 import PageHeader from "@/components/PageHeader/PageHeader";
-import { PostsGrid } from "@/components/PostsGrid/PostsGrid";
+import { Posts } from "@/components/Posts/Posts";
 import HubTemplate from "@/templates/HubTemplate";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { getContent, getTotalPages } from "@/utils/functions";
@@ -22,12 +22,11 @@ export default async function DataPanel({}: {}) {
         )}
       />
       <Suspense>
-        <PostsGrid
+        <Posts
           header={sectionHead.find(
-            (sec: { fields: SectionHeader }) =>
-              sec.fields.id == "interactive-panels",
+            (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
           )}
-          initFilter={{ "fields.type[in]": "data-panel" }}
+          rootFilter={{ "fields.type[in]": "newsletter,additional-content" }}
           totalPages={pages}
         />
       </Suspense>
