@@ -10,11 +10,16 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Image from "next/image";
+import PageTabs from "@/components/PageTabs/PageTabs";
 
 export const revalidate = 60;
 
 export default async function Connections({}: {}) {
-  const { pageHeaders, about } = await getContent(["pageHeaders", "about"]);
+  const { pageHeaders, pageTabs, about } = await getContent([
+    "pageHeaders",
+    "pageTabs",
+    "about",
+  ]);
 
   return (
     <HubTemplate>
@@ -24,6 +29,7 @@ export default async function Connections({}: {}) {
             section.fields.id === "about",
         )}
       />
+      <PageTabs content={pageTabs} />
       <AboutBigCard about={about[0]} />
       <div className="w-full px-6 pt-9 lg:px-20 lg:pt-12 pb-9">
         <h2 className="text-green-900 text-2xl font-semibold mb-4">Galeria</h2>
