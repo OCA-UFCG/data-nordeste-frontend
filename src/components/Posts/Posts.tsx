@@ -105,6 +105,8 @@ export const Posts = ({
     Promise.all([postsPromise, pagesPromise]).then(() => {
       setLoading(false);
     });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pages, sorting, filter]);
 
   return (
