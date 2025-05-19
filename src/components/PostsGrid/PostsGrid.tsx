@@ -50,7 +50,7 @@ export const PostsGrid = ({
   }, [currentPage, pages]);
 
   return (
-    <div className="grow-1 flex flex-col items-center gap-8 w-full max-w-[1440px] box-border py-16">
+    <div className="grow-1 flex flex-col items-center gap-8 w-full max-w-[1440px] box-border">
       <div
         className={cn(
           !loading && posts.length == 0 ? "flex" : "grid",

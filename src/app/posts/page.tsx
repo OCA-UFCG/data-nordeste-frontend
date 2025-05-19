@@ -10,8 +10,7 @@ export const revalidate = 60;
 
 export default async function DataPanel({}: {}) {
   const pages = (await getTotalPages(POSTS_PER_PAGE)) || 1;
-  const { theme, sectionHead, pageHeaders } = await getContent([
-    "theme",
+  const { sectionHead, pageHeaders } = await getContent([
     "sectionHead",
     "pageHeaders",
   ]);
@@ -27,7 +26,7 @@ export default async function DataPanel({}: {}) {
 
       <Suspense>
         <Posts
-          categories={theme}
+          type="posts"
           header={sectionHead.find(
             (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
           )}

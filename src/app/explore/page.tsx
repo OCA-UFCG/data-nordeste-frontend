@@ -10,8 +10,11 @@ export const revalidate = 60;
 
 export default async function DataPanel({}: {}) {
   const pages = (await getTotalPages(POSTS_PER_PAGE)) || 1;
-  const { sectionHead } = await getContent(["sectionHead"]);
-  const { pageHeaders } = await getContent(["pageHeaders"]);
+  const { theme, pageHeaders, sectionHead } = await getContent([
+    "theme",
+    "sectionHead",
+    "pageHeaders",
+  ]);
 
   return (
     <HubTemplate>
@@ -23,10 +26,12 @@ export default async function DataPanel({}: {}) {
       />
       <Suspense>
         <Posts
+          type="panels"
+          categories={theme}
           header={sectionHead.find(
             (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
           )}
-          rootFilter={{ "fields.type[in]": "newsletter,additional-content" }}
+          rootFilter={{ "fields.type[in]": "data-panel" }}
           totalPages={pages}
         />
       </Suspense>
