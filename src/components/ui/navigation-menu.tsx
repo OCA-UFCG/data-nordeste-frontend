@@ -5,7 +5,6 @@ import { ChevronDownIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import Link from "next/link";
 
 function NavigationMenu({
   className,
@@ -124,23 +123,23 @@ function NavigationMenuViewport({
 
 function NavigationMenuLink({
   className,
+  href,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Link>) {
   const pathname = usePathname();
-  const isActive = pathname === props.href;
+  const isActive = pathname === href;
 
   return (
-    <Link href={props.href || ""}>
-      <NavigationMenuPrimitive.Link
-        data-slot="navigation-menu-link"
-        className={cn(
-          "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-green-neutro  data-[active=true]:bg-green-neutro data-[active=true]:text-accent-foreground hover:text-accent-foreground focus:bg-green-neutro  focus:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm transition-all outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4 hover:bg-green-neutro ",
-          isActive ? "text-green-900" : "",
-          className,
-        )}
-        {...props}
-      />
-    </Link>
+    <NavigationMenuPrimitive.Link
+      data-slot="navigation-menu-link"
+      href={href || ""}
+      className={cn(
+        "data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-green-neutro data-[active=true]:bg-green-neutro data-[active=true]:text-accent-foreground hover:text-accent-foreground focus:bg-green-neutro focus:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm transition-all outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4 hover:bg-green-neutro",
+        isActive ? "text-green-900" : "",
+        className,
+      )}
+      {...props}
+    />
   );
 }
 
