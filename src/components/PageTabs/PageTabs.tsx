@@ -23,7 +23,7 @@ const PageTabs = ({ content }: { content: { fields: ITab }[] }) => {
 
   return (
     <section className="w-full border-b border-grey-400">
-      <NavigationMenu className="flex flex-row justify-start h-[60px] py-2 px-7 w-full max-w-[1440px] mx-auto overflow-x-auto overflow-y-hidden">
+      <NavigationMenu className="flex flex-row justify-start h-[60px] py-2 px-7 lg:px-20 xl:px-0 w-full max-w-[1440px] mx-auto overflow-x-auto overflow-y-hidden">
         <NavigationMenuList className="gap-4 min-w-max">
           {orderedContent.map((tab, idx) => (
             <NavigationMenuItem key={idx}>

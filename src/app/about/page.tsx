@@ -34,7 +34,7 @@ export default async function AboutPage({}: {}) {
         <PageTabs content={pageTabs} />
         <AboutBigCard content={pageTabs} about={about[0]} />
       </Suspense>
-      <div className="w-full px-6 pt-9 lg:px-20 lg:pt-12 pb-9">
+      <div className="w-full max-w-[1440px] px-6 pt-9 lg:px-20 lg:pt-12 xl:px-0 pb-9 ">
         <h2 className="text-green-900 text-2xl font-semibold mb-4">Galeria</h2>
         <div className="flex justify-center">
           <Carousel
