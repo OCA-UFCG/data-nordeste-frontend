@@ -32,8 +32,8 @@ export default async function AboutPage({}: {}) {
       />
       <Suspense fallback={<></>}>
         <PageTabs content={pageTabs} />
+        <AboutBigCard content={pageTabs} about={about[0]} />
       </Suspense>
-      <AboutBigCard about={about[0]} />
       <div className="w-full px-6 pt-9 lg:px-20 lg:pt-12 pb-9">
         <h2 className="text-green-900 text-2xl font-semibold mb-4">Galeria</h2>
         <div className="flex justify-center">
@@ -52,11 +52,11 @@ export default async function AboutPage({}: {}) {
                     className="basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
                   >
                     <Image
-                      width={250}
-                      height={250}
+                      width={350}
+                      height={350}
                       alt=""
                       src={`https:${photo?.fields?.file.url || ""}`}
-                      className="w-full max-h-[250px] rounded-lg aspect-1/1 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
+                      className="w-full max-h-[250px] max-w-[350px] rounded-lg aspect-1/1 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
                     />
                   </CarouselItem>
                 ),
