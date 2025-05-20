@@ -39,12 +39,12 @@ export function FilterForm({
     type: z.array(z.string()).optional(),
     initDate: z
       .date({
-        invalid_type_error: "That's not a date!",
+        invalid_type_error: "Isso não é uma data",
       })
       .optional(),
     finalDate: z
       .date({
-        invalid_type_error: "That's not a date!",
+        invalid_type_error: "Isso não é uma data",
       })
       .optional(),
   });
