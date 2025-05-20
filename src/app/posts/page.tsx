@@ -26,13 +26,15 @@ export default async function DataPanel({}: {}) {
 
       <Suspense>
         <Posts
-          type="posts"
           header={sectionHead.find(
             (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
           )}
           rootFilter={{ "fields.type[in]": "newsletter,additional-content" }}
           totalPages={pages}
-          labeled={true}
+          categories={{
+            "additional-content": "Notícia",
+            newsletter: "Boletim",
+          }}
         />
       </Suspense>
     </HubTemplate>

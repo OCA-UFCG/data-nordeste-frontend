@@ -3,7 +3,7 @@ import { Posts } from "@/components/Posts/Posts";
 import HubTemplate from "@/templates/HubTemplate";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { getContent, getTotalPages } from "@/utils/functions";
-import { SectionHeader } from "@/utils/interfaces";
+import { MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { Suspense } from "react";
 
 export const revalidate = 60;
@@ -26,14 +26,16 @@ export default async function DataPanel({}: {}) {
       />
       <Suspense>
         <Posts
-          type="panels"
-          categories={theme}
+          categories={Object.fromEntries(
+            (theme as { fields: MacroTheme; sys: { id: string } }[]).map(
+              (category) => [category.sys.id, category.fields.name],
+            ),
+          )}
           header={sectionHead.find(
             (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
           )}
           rootFilter={{ "fields.type[in]": "data-panel" }}
           totalPages={pages}
-          labeled={false}
         />
       </Suspense>
     </HubTemplate>

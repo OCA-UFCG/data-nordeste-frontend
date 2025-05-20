@@ -1,9 +1,9 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { ExploreForm } from "../PostsGrid/ExploreForm";
+import { FilterForm } from "../PostsGrid/FilterForm";
 import { PostsGrid } from "../PostsGrid/PostsGrid";
-import { IPublication, MacroTheme, SectionHeader } from "@/utils/interfaces";
+import { IPublication, SectionHeader } from "@/utils/interfaces";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   exploreFilterMap,
@@ -15,14 +15,12 @@ import { SortSelect } from "../PostsGrid/SortSelect";
 
 export const Posts = ({
   header,
-  type,
-  categories = [],
+  categories = {},
   totalPages,
   rootFilter = {},
 }: {
   header: { fields: SectionHeader };
-  type: "posts" | "panels";
-  categories?: { fields: MacroTheme; sys: { id: string } }[];
+  categories?: { [key: string]: string };
   totalPages: number;
   rootFilter?: { [key: string]: string };
 }) => {
@@ -111,14 +109,17 @@ export const Posts = ({
 
   return (
     <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
-      <div className="flex justify-between items-center w-full">
+      <div className="flex flex-col lg:flex-row justify-between lg:items-center w-full gap-4">
         <h1 className="text-3xl font-semibold">{header.fields.title}</h1>
-        <div className="flex items-center gap-4">
-          <ExploreForm
-            type={type}
+        <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
+          <FilterForm
             initSchema={filter}
+            selectFields={{
+              title: "Tipo de publicação",
+              type: "type",
+              fields: categories,
+            }}
             onReset={() => setFilter({})}
-            categories={categories}
             onSubmit={(newForm) => setFilter(newForm)}
           />
           <SortSelect defaultvalue={sorting} onChange={setSorting} />
