@@ -88,8 +88,8 @@ export const Posts = ({
     const postsPromise = new Promise((resolve) => {
       resolve(
         getPosts(sorting, currentPage, POSTS_PER_PAGE, {
-          ...parseForm(filter),
           ...rootFilter,
+          ...parseForm(filter),
         }),
       );
     }).then((value) => {
@@ -97,7 +97,7 @@ export const Posts = ({
     });
 
     const pagesPromise = new Promise((resolve) => {
-      resolve(getTotalPages({ ...parseForm(filter), ...rootFilter }));
+      resolve(getTotalPages({ ...rootFilter, ...parseForm(filter) }));
     }).then((value) => {
       setpages(value as number);
     });
@@ -110,8 +110,8 @@ export const Posts = ({
   }, [currentPage, pages, sorting, filter]);
 
   return (
-    <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-4 py-16 xl:px-0 border-box">
-      <div className="flex justify-between items-center w-full max-w-[1440px]">
+    <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
+      <div className="flex justify-between items-center w-full">
         <h1 className="text-3xl font-semibold">{header.fields.title}</h1>
         <div className="flex items-center gap-4">
           <ExploreForm
