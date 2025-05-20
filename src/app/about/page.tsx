@@ -30,18 +30,13 @@ export default async function AboutPage({
             section.fields.id === "about",
         )}
       />
+      <PageTabs content={pageTabs} />
 
-      {tab === "contato" && (
-        <>
-          <PageTabs content={pageTabs} />
-          <ContactSection />
-        </>
-      )}
+      {tab === "contato" && <ContactSection />}
 
       {(!tab || tab === "nossa-historia") && (
         <Suspense fallback={<></>}>
           <>
-            <PageTabs content={pageTabs} />
             <AboutBigCard content={pageTabs} about={about[0]} />
             <GalleryCarousel album={about[0].fields.album} />
           </>
