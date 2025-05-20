@@ -19,12 +19,11 @@ const PageTabs = ({ content }: { content: { fields: ITab }[] }) => {
   ]);
 
   const searchParams = useSearchParams();
-
   const activeTab = searchParams.get("tab");
 
   return (
-    <section className="w-full border-b border-grey-400">
-      <NavigationMenu className="flex flex-row justify-start h-[60px] py-2 px-2 w-full max-w-[1440px] mx-auto overflow-x-auto overflow-y-hidden">
+    <section className="flex justify-center w-full h-[60px] border-b border-grey-400">
+      <NavigationMenu className="flex flex-row justify-start w-full max-w-[1440px] mx-6 lg:mx-20 overflow-x-auto overflow-y-hidden">
         <NavigationMenuList className="gap-4 min-w-max">
           {orderedContent.map((tab, idx) => (
             <NavigationMenuItem key={idx}>
