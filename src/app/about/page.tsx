@@ -24,49 +24,49 @@ export default async function AboutPage({}: {}) {
 
   return (
     <HubTemplate>
-      <PageHeader
-        content={pageHeaders.find(
-          (section: { fields: { id: string } }) =>
-            section.fields.id === "about",
-        )}
-      />
       <Suspense fallback={<></>}>
+        <PageHeader
+          content={pageHeaders.find(
+            (section: { fields: { id: string } }) =>
+              section.fields.id === "about",
+          )}
+        />
         <PageTabs content={pageTabs} />
         <AboutBigCard content={pageTabs} about={about[0]} />
-      </Suspense>
-      <div className="w-full max-w-[1440px] px-6 pt-9 lg:px-20 lg:pt-12 xl:px-0 pb-9 ">
-        <h2 className="text-green-900 text-2xl font-semibold mb-4">Galeria</h2>
-        <div className="flex justify-center">
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="flex flex-col gap-4 content-carousel"
-          >
-            <CarouselContent className="-ml-0">
-              {(about[0].fields.album as any[]).map(
-                (photo: any, index: number) => (
-                  <CarouselItem
-                    key={index}
-                    className="basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
-                  >
-                    <Image
-                      width={350}
-                      height={350}
-                      alt=""
-                      src={`https:${photo?.fields?.file.url || ""}`}
-                      className="w-full max-h-[250px] max-w-[350px] rounded-lg aspect-1/1 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
-                    />
-                  </CarouselItem>
-                ),
-              )}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex" />
-            <CarouselNext className="hidden md:flex" />
-          </Carousel>
+        <div className=" max-w-[1440px] py-6 mx-6 lg:mx-20">
+          <h2 className="text-green-900 text-2xl font-semibold">Galeria</h2>
+          <div className="flex justify-center">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="flex flex-col gap-4 content-carousel"
+            >
+              <CarouselContent className="-ml-0">
+                {(about[0].fields.album as any[]).map(
+                  (photo: any, index: number) => (
+                    <CarouselItem
+                      key={index}
+                      className="basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
+                    >
+                      <Image
+                        width={250}
+                        height={250}
+                        alt=""
+                        src={`https:${photo?.fields?.file.url || ""}`}
+                        className="w-full max-h-[250px] rounded-lg aspect-1/1 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
+                      />
+                    </CarouselItem>
+                  ),
+                )}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
+          </div>
         </div>
-      </div>
+      </Suspense>
     </HubTemplate>
   );
 }
