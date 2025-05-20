@@ -1,8 +1,8 @@
-import { ProjectSection } from "@/components/ProjectCard/Section/ProjectSection";
+import { ProjectSection } from "@/components/ProjectSection/ProjectSection";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/functions";
 import { SectionHeader } from "@/utils/interfaces";
-import { AboutSection } from "@/components/About/About";
+import { AboutSection } from "@/components/AboutSection/AboutSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewSection from "@/components/PreviewSection/PreviewSection";
 import MainBanner from "@/components/BannerImage/BannerImage";
@@ -56,7 +56,6 @@ export default async function Home() {
         )}
         categories={theme}
       />
-
       <ProjectSection
         header={sectionHead.find(
           (sec: { fields: SectionHeader }) => sec.fields.id == "projects",

@@ -32,6 +32,7 @@ export default async function DataPanel({}: {}) {
           )}
           rootFilter={{ "fields.type[in]": "newsletter,additional-content" }}
           totalPages={pages}
+          labeled={true}
         />
       </Suspense>
     </HubTemplate>
