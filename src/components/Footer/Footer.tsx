@@ -84,7 +84,12 @@ const Footer = ({ content }: { content: { fields: ISection }[] }) => {
           <div className="flex flex-wrap justify-center lg:justify-end gap-4">
             {channels.map(({ href, icon, size }, index) => (
               <a target="_blank" href={href} key={index}>
-                <Icon id={icon} size={size} key={index} />
+                <Icon
+                  id={icon}
+                  size={size}
+                  key={index}
+                  className="text-grey-900"
+                />
               </a>
             ))}
           </div>
