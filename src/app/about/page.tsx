@@ -24,15 +24,15 @@ export default async function AboutPage({
 
   return (
     <HubTemplate>
+      <PageHeader
+        content={pageHeaders.find(
+          (section: { fields: { id: string } }) =>
+            section.fields.id === "about",
+        )}
+      />
+
       {tab === "contato" && (
         <>
-          <PageHeader
-            content={pageHeaders.find(
-              (section: { fields: { id: string } }) =>
-                section.fields.id === "about",
-            )}
-          />
-
           <PageTabs content={pageTabs} />
           <ContactSection />
         </>
@@ -41,12 +41,6 @@ export default async function AboutPage({
       {(!tab || tab === "nossa-historia") && (
         <Suspense fallback={<></>}>
           <>
-            <PageHeader
-              content={pageHeaders.find(
-                (section: { fields: { id: string } }) =>
-                  section.fields.id === "about",
-              )}
-            />
             <PageTabs content={pageTabs} />
             <AboutBigCard content={pageTabs} about={about[0]} />
             <GalleryCarousel album={about[0].fields.album} />
