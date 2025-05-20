@@ -26,11 +26,15 @@ export default async function DataPanel({}: {}) {
       />
       <Suspense>
         <Posts
-          categories={Object.fromEntries(
-            (theme as { fields: MacroTheme; sys: { id: string } }[]).map(
-              (category) => [category.sys.id, category.fields.name],
+          categories={{
+            title: "Categorias dos painéis",
+            type: "category",
+            fields: Object.fromEntries(
+              (theme as { fields: MacroTheme; sys: { id: string } }[]).map(
+                (category) => [category.sys.id, category.fields.name],
+              ),
             ),
-          )}
+          }}
           header={sectionHead.find(
             (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
           )}

@@ -32,8 +32,12 @@ export default async function DataPanel({}: {}) {
           rootFilter={{ "fields.type[in]": "newsletter,additional-content" }}
           totalPages={pages}
           categories={{
-            "additional-content": "Notícia",
-            newsletter: "Boletim",
+            title: "Tipo de publicação",
+            type: "type",
+            fields: {
+              "additional-content": "Notícia",
+              newsletter: "Boletim",
+            },
           }}
         />
       </Suspense>

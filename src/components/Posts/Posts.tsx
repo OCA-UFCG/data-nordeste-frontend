@@ -15,12 +15,16 @@ import { SortSelect } from "../PostsGrid/SortSelect";
 
 export const Posts = ({
   header,
-  categories = {},
+  categories,
   totalPages,
   rootFilter = {},
 }: {
   header: { fields: SectionHeader };
-  categories?: { [key: string]: string };
+  categories: {
+    title: string;
+    type: string;
+    fields: { [key: string]: string };
+  };
   totalPages: number;
   rootFilter?: { [key: string]: string };
 }) => {
@@ -114,11 +118,7 @@ export const Posts = ({
         <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
           <FilterForm
             initSchema={filter}
-            selectFields={{
-              title: "Tipo de publicação",
-              type: "type",
-              fields: categories,
-            }}
+            selectFields={categories}
             onReset={() => setFilter({})}
             onSubmit={(newForm) => setFilter(newForm)}
           />
