@@ -1,4 +1,5 @@
-import { PostsGrid } from "@/components/PostsGrid/PostsGrid";
+import PageHeader from "@/components/PageHeader/PageHeader";
+import { Posts } from "@/components/Posts/Posts";
 import HubTemplate from "@/templates/HubTemplate";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { getContent, getTotalPages } from "@/utils/functions";
@@ -9,18 +10,36 @@ export const revalidate = 60;
 
 export default async function DataPanel({}: {}) {
   const pages = (await getTotalPages(POSTS_PER_PAGE)) || 1;
-  const { sectionHead } = await getContent(["sectionHead"]);
+  const { sectionHead, pageHeaders } = await getContent([
+    "sectionHead",
+    "pageHeaders",
+  ]);
 
   return (
     <HubTemplate>
+      <PageHeader
+        content={pageHeaders.find(
+          (section: { fields: { id: string } }) =>
+            section.fields.id === "posts",
+        )}
+      />
+
       <Suspense>
-        <PostsGrid
+        <Posts
           header={sectionHead.find(
-            (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
+            (sec: { fields: SectionHeader }) =>
+              sec.fields.id == "posts-content",
           )}
-          initFilter={{ "fields.type[in]": "newsletter,additional-content" }}
+          rootFilter={{ "fields.type[in]": "newsletter,additional-content" }}
           totalPages={pages}
-          labeled={true}
+          categories={{
+            title: "Tipo de publicação",
+            type: "type",
+            fields: {
+              "additional-content": "Notícia",
+              newsletter: "Boletim",
+            },
+          }}
         />
       </Suspense>
     </HubTemplate>

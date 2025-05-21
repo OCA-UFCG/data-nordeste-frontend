@@ -1,27 +1,46 @@
-import { PostsGrid } from "@/components/PostsGrid/PostsGrid";
+import PageHeader from "@/components/PageHeader/PageHeader";
+import { Posts } from "@/components/Posts/Posts";
 import HubTemplate from "@/templates/HubTemplate";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { getContent, getTotalPages } from "@/utils/functions";
-import { SectionHeader } from "@/utils/interfaces";
+import { MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { Suspense } from "react";
 
 export const revalidate = 60;
 
 export default async function DataPanel({}: {}) {
   const pages = (await getTotalPages(POSTS_PER_PAGE)) || 1;
-  const { sectionHead } = await getContent(["sectionHead"]);
+  const { theme, pageHeaders, sectionHead } = await getContent([
+    "theme",
+    "sectionHead",
+    "pageHeaders",
+  ]);
 
   return (
     <HubTemplate>
+      <PageHeader
+        content={pageHeaders.find(
+          (section: { fields: { id: string } }) =>
+            section.fields.id === "panels",
+        )}
+      />
       <Suspense>
-        <PostsGrid
+        <Posts
+          categories={{
+            title: "Categorias dos painéis",
+            type: "category",
+            fields: Object.fromEntries(
+              (theme as { fields: MacroTheme; sys: { id: string } }[]).map(
+                (category) => [category.sys.id, category.fields.name],
+              ),
+            ),
+          }}
           header={sectionHead.find(
             (sec: { fields: SectionHeader }) =>
               sec.fields.id == "interactive-panels",
           )}
-          initFilter={{ "fields.type[in]": "data-panel" }}
+          rootFilter={{ "fields.type[in]": "data-panel" }}
           totalPages={pages}
-          labeled={false}
         />
       </Suspense>
     </HubTemplate>

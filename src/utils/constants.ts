@@ -39,9 +39,8 @@ export const sortingTypes: {
     | "sys.contentType.sys.id"
     | "-sys.contentType.sys.id";
 } = {
-  "A-Z": "fields.title" as "sys.contentType.sys.id",
-  "Z-A": "-fields.title" as "-sys.contentType.sys.id",
-  "Data de publicação": "-fields.date" as "sys.contentType.sys.id",
+  "Ordem Alfabética": "fields.title" as "sys.contentType.sys.id",
+  "Mais recente": "-fields.date" as "sys.contentType.sys.id",
 };
 
 export const POST_TYPES = {
@@ -58,4 +57,33 @@ export const macroThemes: { [key: string]: string } = {
   infraestrutura_e_saneamento: "screwdriver",
   seguranca_hidrica: "drop",
   meio_ambiente: "leaf",
+};
+
+export const exploreFilterMap: {
+  [key: string]: { name: string; formatFunc: (params: any) => any };
+} = {
+  category: {
+    name: "fields.category.sys.id[in]",
+    formatFunc: (selectedCats: string[]) =>
+      selectedCats.length > 0 && !("all" in selectedCats)
+        ? selectedCats.join(",")
+        : null,
+  },
+  initDate: {
+    name: "fields.date[gte]",
+    formatFunc: (date: Date | undefined) => (date ? date.toISOString() : null),
+  },
+
+  finalDate: {
+    name: "fields.date[lte]",
+    formatFunc: (date: Date | undefined) => (date ? date.toISOString() : null),
+  },
+
+  type: {
+    name: "fields.type[in]",
+    formatFunc: (selectedCats: string[]) =>
+      selectedCats.length > 0 && !("all" in selectedCats)
+        ? selectedCats.join(",")
+        : null,
+  },
 };

@@ -1,7 +1,7 @@
 import { createClient } from "contentful";
 
 import { IPublication } from "./interfaces";
-import { POSTS_PER_PAGE, sortingTypes } from "./constants";
+import { POSTS_PER_PAGE } from "./constants";
 
 const client = createClient({
   accessToken: process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || "",
@@ -52,7 +52,7 @@ export const getPosts = async (
   try {
     const params: { [key: string]: any } = {
       content_type: "post",
-      order: [sortingTypes[sort]], // Sort by title in ascending order (A-Z)
+      order: [sort],
       limit: limit,
       skip: skip,
     };
@@ -91,4 +91,14 @@ export const sortContentByDesiredOrder = <T extends { id: string }>(
       (aIndex === -1 ? Infinity : aIndex) - (bIndex === -1 ? Infinity : bIndex)
     );
   });
+};
+
+export const createQueryString = (newParams: { [key: string]: string }) => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(newParams).forEach(([name, value]) => {
+    searchParams.set(name, value);
+  });
+
+  return searchParams.toString();
 };
