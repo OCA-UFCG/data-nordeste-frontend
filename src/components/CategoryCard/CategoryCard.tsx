@@ -3,10 +3,14 @@ import { Icon } from "@/components/Icon/Icon";
 import { macroThemes } from "@/utils/constants";
 import Link from "next/link";
 
-const CategoryCard = ({ category }: { category: { fields: MacroTheme } }) => {
+const CategoryCard = ({
+  category,
+}: {
+  category: { fields: MacroTheme; sys: { id: string } };
+}) => {
   return (
     <Link
-      href={`/explore?category=${category.fields.id}`}
+      href={`/explore?category=${category.sys.id}`}
       className="flex justify-between items-center rounded-sm shadow-sm p-4 w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300"
       key={category.fields.id}
     >
