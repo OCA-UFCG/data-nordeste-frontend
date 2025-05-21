@@ -22,11 +22,16 @@ const ContactSection = ({ content }: { content: { fields: IContact }[] }) => {
           Nos siga nas redes sociais!
         </h3>
         <div className="flex flex-wrap justify-start gap-6 lg:gap-4 items-center">
-          {social.map(({ name, type }, index) => (
-            <div key={index} className="flex flex-row gap-2 items-center">
+          {social.map(({ name, type, path }, index) => (
+            <a
+              key={index}
+              href={path}
+              target="_blank"
+              className="flex flex-row gap-2 items-center hover:underline cursor-pointer"
+            >
               <Icon id={type} size={32} className="text-green-900" />
               <span className="text-[16px]">{name}</span>
-            </div>
+            </a>
           ))}
         </div>
       </div>

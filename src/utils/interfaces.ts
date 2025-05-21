@@ -154,4 +154,5 @@ export interface ITab {
 export interface IContact {
   name: string;
   type: string;
+  path: string;
 }
