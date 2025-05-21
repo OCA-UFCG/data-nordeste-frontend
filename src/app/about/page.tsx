@@ -6,6 +6,7 @@ import PageTabs from "@/components/PageTabs/PageTabs";
 import { Suspense } from "react";
 import GalleryCarousel from "@/components/GalleryCarousel/GalleryCarousel";
 import ContactSection from "@/components/ContactSection/ContactSection";
+import ValuesSection from "@/components/ValuesSection/ValuesSection";
 
 export const revalidate = 60;
 
@@ -14,12 +15,14 @@ export default async function AboutPage({
 }: {
   searchParams: { tab?: string };
 }) {
-  const { pageHeaders, pageTabs, about, contactInfo } = await getContent([
-    "pageHeaders",
-    "pageTabs",
-    "about",
-    "contactInfo",
-  ]);
+  const { pageHeaders, pageTabs, about, contactInfo, visionMissionValues } =
+    await getContent([
+      "pageHeaders",
+      "pageTabs",
+      "about",
+      "contactInfo",
+      "visionMissionValues",
+    ]);
 
   const tab = searchParams.tab || "nossa-historia";
 
@@ -31,6 +34,7 @@ export default async function AboutPage({
         <GalleryCarousel album={about[0].fields.album} />
       </Suspense>
     ),
+    "missao-visao-valor": <ValuesSection content={visionMissionValues} />,
   };
 
   return (

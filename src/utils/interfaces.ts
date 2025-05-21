@@ -156,3 +156,9 @@ export interface IContact {
   type: string;
   path: string;
 }
+
+export interface IValues {
+  title: string;
+  details: any;
+  id: string;
+}
