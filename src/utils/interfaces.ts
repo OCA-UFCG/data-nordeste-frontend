@@ -150,3 +150,8 @@ export interface ITab {
   id: string;
   path: string;
 }
+
+export interface IContact {
+  name: string;
+  type: string;
+}

@@ -14,13 +14,24 @@ export default async function AboutPage({
 }: {
   searchParams: { tab?: string };
 }) {
-  const { pageHeaders, pageTabs, about } = await getContent([
+  const { pageHeaders, pageTabs, about, contactInfo } = await getContent([
     "pageHeaders",
     "pageTabs",
     "about",
+    "contactInfo",
   ]);
 
-  const { tab } = searchParams;
+  const tab = searchParams.tab || "nossa-historia";
+
+  const tabs: { [key: string]: React.ReactElement } = {
+    contato: <ContactSection content={contactInfo} />,
+    "nossa-historia": (
+      <Suspense fallback={<></>}>
+        <AboutBigCard content={pageTabs} about={about[0]} />
+        <GalleryCarousel album={about[0].fields.album} />
+      </Suspense>
+    ),
+  };
 
   return (
     <HubTemplate>
@@ -31,17 +42,7 @@ export default async function AboutPage({
         )}
       />
       <PageTabs content={pageTabs} />
-
-      {tab === "contato" && <ContactSection />}
-
-      {(!tab || tab === "nossa-historia") && (
-        <Suspense fallback={<></>}>
-          <>
-            <AboutBigCard content={pageTabs} about={about[0]} />
-            <GalleryCarousel album={about[0].fields.album} />
-          </>
-        </Suspense>
-      )}
+      {tabs[tab]}
     </HubTemplate>
   );
 }
