@@ -114,7 +114,7 @@ export const Posts = ({
   return (
     <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
       <div className="flex flex-col lg:flex-row justify-between lg:items-center w-full gap-4">
-        <h1 className="text-3xl font-semibold">{header.fields.title}</h1>
+        <h1 className="text-3xl font-semibold w-full">{header.fields.title}</h1>
         <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
           <FilterForm
             initSchema={filter}

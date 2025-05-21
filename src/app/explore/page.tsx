@@ -36,7 +36,8 @@ export default async function DataPanel({}: {}) {
             ),
           }}
           header={sectionHead.find(
-            (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
+            (sec: { fields: SectionHeader }) =>
+              sec.fields.id == "interactive-panels",
           )}
           rootFilter={{ "fields.type[in]": "data-panel" }}
           totalPages={pages}

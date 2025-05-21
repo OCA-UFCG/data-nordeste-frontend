@@ -27,7 +27,8 @@ export default async function DataPanel({}: {}) {
       <Suspense>
         <Posts
           header={sectionHead.find(
-            (sec: { fields: SectionHeader }) => sec.fields.id == "posts",
+            (sec: { fields: SectionHeader }) =>
+              sec.fields.id == "posts-content",
           )}
           rootFilter={{ "fields.type[in]": "newsletter,additional-content" }}
           totalPages={pages}
