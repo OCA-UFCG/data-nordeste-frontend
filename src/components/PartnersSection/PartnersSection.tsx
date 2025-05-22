@@ -10,7 +10,7 @@ const PartnersSection = ({ content }: { content: { fields: IPartners } }) => {
         <div>{documentToReactComponents(content.fields.details)}</div>
         <GalleryCarousel
           album={content.fields.album}
-          length={"basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6"}
+          length={"basis-1/1 md:basis-1/3 lg:basis-1/5 xl:basis-1/6"}
         />
       </div>
     </section>

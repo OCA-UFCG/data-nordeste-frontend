@@ -1,3 +1,4 @@
+"use client";
 import {
   Carousel,
   CarouselContent,
@@ -5,6 +6,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -23,19 +25,24 @@ const GalleryCarousel = ({
             align: "start",
             loop: true,
           }}
+          plugins={[
+            Autoplay({
+              delay: 5000,
+            }),
+          ]}
           className="flex flex-col gap-4 content-carousel py-4"
         >
           <CarouselContent className="-ml-0">
             {album.map((photo: any, index: number) => (
               <CarouselItem
                 key={index}
-                className={`flex justify-center items-center ${length}`}
+                className={`flex justify-center items-center pl-0 ${length}`}
               >
                 {photo?.fields?.description ? (
                   <Link href={photo.fields.description} className="block">
                     <Image
                       alt={photo.fields.description}
-                      width={600}
+                      width={150}
                       height={
                         (600 * photo?.fields?.file?.details?.image?.height) /
                         photo?.fields?.file?.details?.image?.width
