@@ -4,14 +4,12 @@ import GalleryCarousel from "../GalleryCarousel/GalleryCarousel";
 const PartnersSection = ({ content }: { content: any }) => {
   return (
     <section className="flex justify-center w-full px-6 py-9 lg:px-20">
-      <div className="flex flex-col items-left w-full max-w-[1440px]">
-        <h2 className="font-semibold text-3xl pb-4">{content.fields.id}</h2>
-        <div className="mb-9">
-          {documentToReactComponents(content.fields.details)}
-        </div>
+      <div className="flex flex-col items-left w-full max-w-[1440px] gap-6">
+        <h2 className="font-semibold text-3xl">{content.fields.id}</h2>
+        <div>{documentToReactComponents(content.fields.details)}</div>
         <GalleryCarousel
           album={content.fields.album}
-          lenght={"basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6"}
+          length={"basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6"}
         />
       </div>
     </section>

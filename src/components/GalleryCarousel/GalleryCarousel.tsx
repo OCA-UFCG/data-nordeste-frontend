@@ -9,10 +9,10 @@ import Image from "next/image";
 
 const GalleryCarousel = ({
   album,
-  lenght,
+  length,
 }: {
   album: any[];
-  lenght: string;
+  length: string;
 }) => {
   return (
     <section className="flex items-center justify-center w-full">
@@ -28,7 +28,7 @@ const GalleryCarousel = ({
             {album.map((photo: any, index: number) => (
               <CarouselItem
                 key={index}
-                className={`flex justify-center items-center ${lenght}`}
+                className={`flex justify-center items-center ${length}`}
               >
                 <Image
                   alt=""

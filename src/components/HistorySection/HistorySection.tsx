@@ -9,7 +9,7 @@ const HistorySection = ({ content }: { content: any }) => {
         <h2 className="text-green-900 text-2xl font-semibold">Galeria</h2>
         <GalleryCarousel
           album={content.fields.album}
-          lenght={"basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"}
+          length={"basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"}
         />
       </div>
     </section>
