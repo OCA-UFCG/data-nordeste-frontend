@@ -3,7 +3,7 @@ import AboutBigCard from "../AboutBigCard/AboutBigCard";
 
 const HistorySection = ({ content }: { content: any }) => {
   return (
-    <section className="w-full px-6 pt-9 lg:px-20 lg:pt-12">
+    <section className="flex justify-center w-full px-6 py-9 lg:px-20">
       <div className="flex flex-col items-left w-full max-w-[1440px]">
         <AboutBigCard content={content} />
         <h2 className="text-green-900 text-2xl font-semibold">Galeria</h2>
