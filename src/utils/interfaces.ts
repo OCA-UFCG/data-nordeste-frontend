@@ -157,6 +157,11 @@ export interface IContact {
   path: string;
 }
 
+export interface IPartners {
+  id: string;
+  details: any;
+  album: any[];
+}
 export interface IValues {
   title: string;
   details: any;

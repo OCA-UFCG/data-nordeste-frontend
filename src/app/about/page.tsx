@@ -1,11 +1,10 @@
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/functions";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import AboutBigCard from "@/components/AboutBigCard/AboutBigCard";
 import PageTabs from "@/components/PageTabs/PageTabs";
-import { Suspense } from "react";
-import GalleryCarousel from "@/components/GalleryCarousel/GalleryCarousel";
 import ContactSection from "@/components/ContactSection/ContactSection";
+import PartnersSection from "@/components/PartnersSection/PartnersSection";
+import HistorySection from "@/components/HistorySection/HistorySection";
 import ValuesSection from "@/components/ValuesSection/ValuesSection";
 
 export const revalidate = 60;
@@ -15,25 +14,28 @@ export default async function AboutPage({
 }: {
   searchParams: { tab?: string };
 }) {
-  const { pageHeaders, pageTabs, about, contactInfo, visionMissionValues } =
-    await getContent([
-      "pageHeaders",
-      "pageTabs",
-      "about",
-      "contactInfo",
-      "visionMissionValues",
-    ]);
+  const {
+    pageHeaders,
+    pageTabs,
+    about,
+    contactInfo,
+    partnersInfo,
+    visionMissionValues,
+  } = await getContent([
+    "pageHeaders",
+    "pageTabs",
+    "about",
+    "contactInfo",
+    "partnersInfo",
+    "visionMissionValues",
+  ]);
 
   const tab = searchParams.tab || "nossa-historia";
 
   const tabs: { [key: string]: React.ReactElement } = {
     contato: <ContactSection content={contactInfo} />,
-    "nossa-historia": (
-      <Suspense fallback={<></>}>
-        <AboutBigCard content={pageTabs} about={about[0]} />
-        <GalleryCarousel album={about[0].fields.album} />
-      </Suspense>
-    ),
+    "rede-colaboracao": <PartnersSection content={partnersInfo[0]} />,
+    "nossa-historia": <HistorySection content={about[0]} />,
     "missao-visao-valor": <ValuesSection content={visionMissionValues} />,
   };
 

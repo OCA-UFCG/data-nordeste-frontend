@@ -9,8 +9,8 @@ const ContactSection = ({ content }: { content: { fields: IContact }[] }) => {
     .map((entry) => entry.fields);
 
   return (
-    <section className="flex items-center flex-col w-full py-[36px] px-[24px] lg:pt-[24px] lg:px-[80px] lg:pb-[60px]">
-      <div className="flex flex-col gap-6 w-full lg:max-w-[1440px]">
+    <section className="flex justify-center w-full px-6 py-9 lg:px-20">
+      <div className="flex flex-col items-left w-full max-w-[1440px] gap-6">
         <h2 className="font-bold text-[24px] lg:text-[30px]">Contatos</h2>
         {email && (
           <p className="text-[20px]">
