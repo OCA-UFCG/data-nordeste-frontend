@@ -1,7 +1,8 @@
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import GalleryCarousel from "../GalleryCarousel/GalleryCarousel";
+import { IPartners } from "@/utils/interfaces";
 
-const PartnersSection = ({ content }: { content: any }) => {
+const PartnersSection = ({ content }: { content: { fields: IPartners } }) => {
   return (
     <section className="flex justify-center w-full px-6 py-9 lg:px-20">
       <div className="flex flex-col items-left w-full max-w-[1440px] gap-6">

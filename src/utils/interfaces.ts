@@ -156,3 +156,9 @@ export interface IContact {
   type: string;
   path: string;
 }
+
+export interface IPartners {
+  id: string;
+  details: any;
+  album: any[];
+}

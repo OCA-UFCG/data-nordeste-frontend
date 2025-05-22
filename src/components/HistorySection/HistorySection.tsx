@@ -1,7 +1,8 @@
 import GalleryCarousel from "../GalleryCarousel/GalleryCarousel";
 import AboutBigCard from "../AboutBigCard/AboutBigCard";
+import { About } from "@/utils/interfaces";
 
-const HistorySection = ({ content }: { content: any }) => {
+const HistorySection = ({ content }: { content: { fields: About } }) => {
   return (
     <section className="flex justify-center w-full px-6 py-9 lg:px-20">
       <div className="flex flex-col items-left w-full max-w-[1440px]">
