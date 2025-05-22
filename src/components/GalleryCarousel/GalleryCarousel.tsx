@@ -6,6 +6,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Image from "next/image";
+import Link from "next/link";
 
 const GalleryCarousel = ({
   album,
@@ -30,16 +31,31 @@ const GalleryCarousel = ({
                 key={index}
                 className={`flex justify-center items-center ${length}`}
               >
-                <Image
-                  alt=""
-                  width={600}
-                  height={
-                    (600 * photo?.fields?.file?.details?.image?.height) /
-                    photo?.fields?.file?.details?.image?.width
-                  }
-                  src={`https:${photo?.fields?.file.url || ""}`}
-                  className="w-fit rounded-lg"
-                />
+                {photo?.fields?.description ? (
+                  <Link href={photo.fields.description} className="block">
+                    <Image
+                      alt={photo.fields.description}
+                      width={600}
+                      height={
+                        (600 * photo?.fields?.file?.details?.image?.height) /
+                        photo?.fields?.file?.details?.image?.width
+                      }
+                      src={`https:${photo?.fields?.file.url || ""}`}
+                      className="w-fit rounded-lg"
+                    />
+                  </Link>
+                ) : (
+                  <Image
+                    alt=""
+                    width={600}
+                    height={
+                      (600 * photo?.fields?.file?.details?.image?.height) /
+                      photo?.fields?.file?.details?.image?.width
+                    }
+                    src={`https:${photo?.fields?.file.url || ""}`}
+                    className="w-fit rounded-lg"
+                  />
+                )}
               </CarouselItem>
             ))}
           </CarouselContent>
