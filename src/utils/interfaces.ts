@@ -162,3 +162,8 @@ export interface IPartners {
   details: any;
   album: any[];
 }
+export interface IValues {
+  title: string;
+  details: any;
+  id: string;
+}

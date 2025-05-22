@@ -36,7 +36,7 @@ const GalleryCarousel = ({
             {album.map((photo: any, index: number) => (
               <CarouselItem
                 key={index}
-                className={`flex justify-center items-center pl-0 ${length}`}
+                className={`flex justify-center items-center ${length}`}
               >
                 {photo?.fields?.description ? (
                   <Link href={photo.fields.description} className="block">
