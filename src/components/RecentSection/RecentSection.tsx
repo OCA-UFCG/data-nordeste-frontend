@@ -32,7 +32,7 @@ export const RecentSection = ({
         <div className="flex justify-between w-full">
           <h2 className="text-3xl font-semibold">{title}</h2>
           <LinkButton
-            href="/explore"
+            href="/posts?page=1"
             variant="secondary"
             className="w-fit hidden md:flex"
           >
@@ -80,7 +80,11 @@ export const RecentSection = ({
           <CarouselNext className="hidden md:flex" />
         </Carousel>
       </div>
-      <LinkButton href="/explore" variant="secondary" className="md:hidden">
+      <LinkButton
+        href="/posts?page=1"
+        variant="secondary"
+        className="md:hidden"
+      >
         <p>Ver Todos</p>
         <Icon className="rotate-270 size-2" id="expand" />
       </LinkButton>
