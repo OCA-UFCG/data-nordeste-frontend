@@ -30,7 +30,10 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
         </div>
 
         <div className="py-4 px-5 flex gap-3 justify-between h-full items-center box-border">
-          <p className="line-clamp-2 text-sm font-medium text-wrap">{title}</p>
+          <span className="sr-only">{title}</span>
+          <p className="line-clamp-2 text-sm font-medium text-wrap">
+            {type === "data-panel" ? "Acessar Painel" : title}
+          </p>
           <Icon
             className="md:flex rotate-270 size-2 min-w-2"
             id="expand"
