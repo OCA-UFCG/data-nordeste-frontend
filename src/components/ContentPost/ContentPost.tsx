@@ -21,7 +21,7 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
         src={`https:${thumb?.fields?.file?.url || ""}`}
         className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
       />
-      <div className="flex flex-row justify-between bg-gray-200 px-2 py-1">
+      <div className="flex flex-row justify-between bg-gray-200 px-5 py-1">
         <p className="font-semibold text-xs">
           {
             POST_TYPES[
