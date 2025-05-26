@@ -1,19 +1,16 @@
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/functions";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import PageTabs from "@/components/PageTabs/PageTabs";
 import ContactSection from "@/components/ContactSection/ContactSection";
 import PartnersSection from "@/components/PartnersSection/PartnersSection";
 import HistorySection from "@/components/HistorySection/HistorySection";
 import ValuesSection from "@/components/ValuesSection/ValuesSection";
+import { AboutContent } from "@/components/AboutContent/AboutContent";
+import { Suspense } from "react";
 
 export const revalidate = 60;
 
-export default async function AboutPage({
-  searchParams,
-}: {
-  searchParams: { tab?: string };
-}) {
+export default async function AboutPage() {
   const {
     pageHeaders,
     pageTabs,
@@ -30,8 +27,6 @@ export default async function AboutPage({
     "visionMissionValues",
   ]);
 
-  const tab = searchParams.tab || "nossa-historia";
-
   const tabs: { [key: string]: React.ReactElement } = {
     contato: <ContactSection content={contactInfo} />,
     "rede-colaboracao": <PartnersSection content={partnersInfo[0]} />,
@@ -47,8 +42,9 @@ export default async function AboutPage({
             section.fields.id === "about",
         )}
       />
-      <PageTabs content={pageTabs} />
-      {tabs[tab]}
+      <Suspense>
+        <AboutContent tabs={tabs} tabsHeader={pageTabs} />
+      </Suspense>
     </HubTemplate>
   );
 }
