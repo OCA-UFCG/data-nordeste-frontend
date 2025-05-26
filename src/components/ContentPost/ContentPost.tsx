@@ -4,13 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
 
-const ContentPost = ({
-  content,
-  labeled,
-}: {
-  content: { fields: IPublication };
-  labeled: boolean;
-}) => {
+const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
   const { title, thumb, link, date, type } = content.fields;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";

@@ -23,13 +23,11 @@ export const PostsGrid = ({
   pages,
   posts = [],
   loading,
-  labeled = false,
 }: {
   currentPage: number;
   loading: boolean;
   pages: number;
   posts: { fields: IPublication }[];
-  labeled?: boolean;
 }) => {
   const pagesRange = useMemo(() => {
     let init = 0;
@@ -64,9 +62,7 @@ export const PostsGrid = ({
             <Skeleton className="w-full h-[250px] rounded-lg" key={i} />
           ))
         ) : posts.length > 0 ? (
-          posts.map((post, i) => (
-            <ContentPost content={post} key={i} labeled={labeled} />
-          ))
+          posts.map((post, i) => <ContentPost content={post} key={i} />)
         ) : (
           <div className="grow-1 flex flex-col gap-4 justify-center items-center w-full py-12 bg-gray-50 rounded-lg">
             <Icon id="no-mail" size={48} />
