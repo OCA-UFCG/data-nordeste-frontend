@@ -111,6 +111,20 @@ export const Posts = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pages, sorting, filter]);
 
+  useEffect(() => {
+    const newFilter = {
+      category: params.get(`category`)?.split(`,`) || [],
+      initDate: params.get(`initDate`)
+        ? new Date(params.get(`initDate`)!)
+        : undefined,
+      finalDate: params.get(`finalDate`)
+        ? new Date(params.get(`finalDate`)!)
+        : undefined,
+    };
+
+    setFilter(newFilter);
+  }, [params.toString()]);
+
   return (
     <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
       <div className="flex flex-col lg:flex-row justify-between lg:items-center w-full gap-4">

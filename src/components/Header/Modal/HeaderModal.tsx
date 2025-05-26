@@ -14,17 +14,20 @@ import {
 import { macroThemes } from "@/utils/constants";
 import { Icon } from "@/components/Icon/Icon";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <div className="flex items-center">
           <Menu className="h-[40px] w-[40px] text-green-900 hover:bg-green-neutro p-2 box-border cursor-pointer rounded-lg transition duration-300" />
         </div>
       </SheetTrigger>
+
       <Link href="/" className="flex items-center gap-2">
         <Icon id="logo-DNE" width={99} height={47} />
       </Link>
@@ -52,7 +55,11 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
                         const isActive = pathname === child.fields.path;
 
                         return (
-                          <Link key={i} href={child.fields.path}>
+                          <Link
+                            key={i}
+                            href={child.fields.path}
+                            onClick={() => setOpen(false)}
+                          >
                             <div
                               className={`flex items-center gap-2 py-[6px] px-2 h-[44px] hover:bg-green-neutro cursor-pointer ${isActive ? "text-green-900" : "hover:text-black"}`}
                             >
@@ -60,7 +67,7 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
                                 id={macroThemes[child.fields.id] || "list"}
                                 size={14}
                               />
-                              <span className={`whitespace-nowrap`}>
+                              <span className="whitespace-nowrap">
                                 {child.fields.name}
                               </span>
                             </div>
@@ -70,7 +77,7 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
                     </AccordionContent>
                   </>
                 ) : (
-                  <Link href={item.fields.path}>
+                  <Link href={item.fields.path} onClick={() => setOpen(false)}>
                     <div
                       className={`flex items-center px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer ${pathname === item.fields.path ? "text-green-900" : ""}`}
                     >
