@@ -75,7 +75,7 @@ export interface IPublication {
       };
     };
   };
-  type: string;
+  type: "additional-content" | "data-panel" | "newsletter";
   date: string;
   description: string;
 }

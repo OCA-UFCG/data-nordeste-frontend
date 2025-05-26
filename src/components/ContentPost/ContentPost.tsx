@@ -25,13 +25,7 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
       </div>
       <div className="flex flex-col grow-1 justify-between">
         <div className="flex flex-row justify-between items-center bg-gray-200 px-5 py-1">
-          <p className="font-semibold text-xs">
-            {
-              POST_TYPES[
-                type as "additional-content" | "data-panel" | "newsletter"
-              ]
-            }
-          </p>
+          <p className="font-semibold text-xs">{POST_TYPES[type]}</p>
           <p className="text-grey-600 text-xs">{formattedDate}</p>
         </div>
 
