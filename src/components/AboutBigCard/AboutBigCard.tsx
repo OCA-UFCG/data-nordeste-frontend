@@ -9,15 +9,15 @@ const AboutBigCard = ({ content }: { content: { fields: About } }) => {
     <section className="flex items-center justify-center w-full">
       <div className="flex flex-col items-left">
         <h2 className="font-semibold text-3xl">{id}</h2>
-        <div className="flex flex-col lg:flex-row w-full overflow-hidden justify-between items-top my-5">
+        <div className=" my-5">
           <Image
-            className="w-full h-full max-h-[400px] object-cover rounded-md aspect-[4/3] order-1 mb-5"
+            className="w-full float-none md:float-left h-full md:max-w-[450px] object-cover rounded-md aspect-[4/3] order-1 mb-4 mr-4"
             src={`https:${thumb.fields.file.url}`}
             alt={"Sobre nós"}
             width={600}
             height={600}
           />
-          <div className="h-full max-h-[400px] overflow-y-auto text-base text-gray-800 order-2 lg:pl-6">
+          <div className="h-full text-gray-800 order-2 text-justify">
             {documentToReactComponents(details)}
           </div>
         </div>
