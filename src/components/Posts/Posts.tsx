@@ -113,17 +113,17 @@ export const Posts = ({
 
   useEffect(() => {
     const newFilter = {
-      category: params.get(`category`)?.split(`,`) || [],
-      initDate: params.get(`initDate`)
-        ? new Date(params.get(`initDate`)!)
+      category: params.get("category")?.split(",") || [],
+      initDate: params.get("initDate")
+        ? new Date(params.get("initDate")!)
         : undefined,
-      finalDate: params.get(`finalDate`)
-        ? new Date(params.get(`finalDate`)!)
+      finalDate: params.get("finalDate")
+        ? new Date(params.get("finalDate")!)
         : undefined,
     };
 
     setFilter(newFilter);
-  }, [params.toString()]);
+  }, [params]);
 
   return (
     <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
