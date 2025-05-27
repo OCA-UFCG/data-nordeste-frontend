@@ -4,7 +4,7 @@ import { cva } from "class-variance-authority";
 import { ChevronDownIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 function NavigationMenu({
   className,
@@ -65,15 +65,26 @@ const navigationMenuTriggerStyle = cva(
 function NavigationMenuTrigger({
   className,
   children,
+  itemId,
   ...props
-}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger>) {
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger> & {
+  itemId?: string;
+}) {
+  const pathname = usePathname();
+  const isActive = pathname.startsWith("/" + itemId);
+
   return (
     <NavigationMenuPrimitive.Trigger
       data-slot="navigation-menu-trigger"
-      className={cn(navigationMenuTriggerStyle(), "group", className)}
+      className={cn(
+        navigationMenuTriggerStyle(),
+        "group text-md cursor-pointer",
+        isActive && "text-green-900",
+        className,
+      )}
       {...props}
     >
-      {children}{" "}
+      {children}
       <ChevronDownIcon
         className="relative top-[1px] ml-1 size-3 transition duration-300 group-data-[state=open]:rotate-180"
         aria-hidden="true"
@@ -121,13 +132,27 @@ function NavigationMenuViewport({
   );
 }
 
+const useIsHrefActive = (href?: string): boolean => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  if (!href) return false;
+
+  const [hrefPath, hrefQuery] = href.split("?");
+  const hrefParams = new URLSearchParams(hrefQuery);
+
+  return (
+    pathname === hrefPath &&
+    hrefParams.get("category") === searchParams.get("category")
+  );
+};
+
 function NavigationMenuLink({
   className,
   href,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Link>) {
-  const pathname = usePathname();
-  const isActive = pathname === href;
+  const isActive = useIsHrefActive(href);
 
   return (
     <NavigationMenuPrimitive.Link

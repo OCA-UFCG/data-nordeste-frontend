@@ -26,7 +26,10 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
               <NavigationMenuItem key={idx} className="px-4 py-2">
                 {item.fields.children ? (
                   <>
-                    <NavigationMenuTrigger className="text-md cursor-pointer">
+                    <NavigationMenuTrigger
+                      className={"text-md cursor-pointer"}
+                      itemId={item.fields.id}
+                    >
                       {item.fields.name}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15 ">
