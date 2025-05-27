@@ -134,17 +134,14 @@ function NavigationMenuViewport({
 
 const useIsHrefActive = (href?: string): boolean => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const category = useSearchParams().get("category");
 
   if (!href) return false;
 
   const [hrefPath, hrefQuery] = href.split("?");
-  const hrefParams = new URLSearchParams(hrefQuery);
+  const hrefParams = new URLSearchParams(hrefQuery).get("category");
 
-  return (
-    pathname === hrefPath &&
-    hrefParams.get("category") === searchParams.get("category")
-  );
+  return pathname === hrefPath && hrefParams === category;
 };
 
 function NavigationMenuLink({
