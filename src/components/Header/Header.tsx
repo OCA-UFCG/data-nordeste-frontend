@@ -1,3 +1,4 @@
+"use client";
 import { ISection } from "@/utils/interfaces";
 import {
   NavigationMenu,
