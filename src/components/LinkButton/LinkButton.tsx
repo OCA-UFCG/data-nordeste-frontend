@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -17,7 +18,10 @@ export const LinkButton = ({
 }) => {
   return (
     <div
-      className={`w-full md:w-auto  ${disabled && "cursor-not-allowed"} ${className}`}
+      className={cn(
+        `w-full md:w-auto  ${disabled && "cursor-not-allowed"}`,
+        className,
+      )}
     >
       <Button
         asChild
