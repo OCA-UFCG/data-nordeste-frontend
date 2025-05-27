@@ -4,6 +4,7 @@ import HeaderModal from "@/components/Header/Modal/HeaderModal";
 import { ISection } from "@/utils/interfaces";
 import Header from "../Header";
 import { sortContentByDesiredOrder } from "@/utils/functions";
+import { Suspense } from "react";
 
 const HeaderSection = ({ content }: { content: { fields: ISection }[] }) => {
   const orderedContent = sortContentByDesiredOrder<ISection>(content, [
@@ -21,7 +22,9 @@ const HeaderSection = ({ content }: { content: { fields: ISection }[] }) => {
       </div>
 
       <div className="hidden lg:block w-full h-[80px]">
-        <Header content={orderedContent} />
+        <Suspense>
+          <Header content={orderedContent} />
+        </Suspense>
       </div>
     </div>
   );
