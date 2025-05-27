@@ -13,6 +13,10 @@ import {
   DotButton,
 } from "../ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { FILTERS, TypeFilter } from "./TypeFilter";
+import { useCallback, useState } from "react";
+import { getPosts } from "@/utils/functions";
+import { POSTS_PER_PAGE } from "@/utils/constants";
 
 export const RecentSection = ({
   header,
@@ -22,6 +26,19 @@ export const RecentSection = ({
   content: { fields: IPublication }[];
 }) => {
   const { id, title, subtitle } = header.fields;
+  const [posts, setPosts] = useState(content);
+  const [selectedType, setSelectedType] = useState<"all" | "panels" | "posts">(
+    FILTERS.all.key,
+  );
+
+  const fetchPosts = useCallback(async (types: "all" | "panels" | "posts") => {
+    setSelectedType(types);
+
+    const filteredPosts = await getPosts("", 1, POSTS_PER_PAGE, {
+      "fields.type[in]": FILTERS[types].filter,
+    });
+    setPosts(filteredPosts);
+  }, []);
 
   return (
     <section
@@ -29,18 +46,26 @@ export const RecentSection = ({
       id={id}
     >
       <div className="flex flex-col gap-3">
-        <div className="flex justify-between w-full">
-          <h2 className="text-3xl font-semibold">{title}</h2>
-          <LinkButton
-            href="/posts?page=1"
-            variant="secondary"
-            className="w-fit hidden md:flex"
-          >
-            <p>Ver Todos</p>
-            <Icon className="rotate-270 size-2" id="expand" />
-          </LinkButton>
+        <div className="flex flex-col md:flex-row gap-4 justify-between w-full">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-3xl font-semibold">{title}</h2>
+            <p className="flex md:hidden text-sm">{subtitle}</p>
+          </div>
+
+          <div className="flex gap-6">
+            <TypeFilter onChange={fetchPosts} />
+            <LinkButton
+              href={FILTERS[selectedType].href}
+              variant="secondary"
+              className="w-fit hidden md:flex"
+              disabled={selectedType === FILTERS.all.key}
+            >
+              <p>Ver Todos</p>
+              <Icon className="rotate-270 size-2" id="expand" />
+            </LinkButton>
+          </div>
         </div>
-        <p className="text-sm">{subtitle}</p>
+        <p className="hidden md:block text-sm">{subtitle}</p>
       </div>
       <div className="flex justify-center">
         <Carousel
@@ -56,7 +81,7 @@ export const RecentSection = ({
           className="flex flex-col gap-4 content-carousel"
         >
           <CarouselContent className="-ml-0">
-            {content
+            {posts
               .sort(
                 (a, b) =>
                   new Date(b.fields.date).getTime() -
@@ -81,9 +106,10 @@ export const RecentSection = ({
         </Carousel>
       </div>
       <LinkButton
-        href="/posts?page=1"
+        href={FILTERS[selectedType].href}
         variant="secondary"
-        className="md:hidden"
+        className="lg:hidden"
+        disabled={selectedType === FILTERS.all.key}
       >
         <p>Ver Todos</p>
         <Icon className="rotate-270 size-2" id="expand" />
