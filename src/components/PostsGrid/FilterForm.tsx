@@ -67,7 +67,7 @@ export function FilterForm({
           collisionPadding={{
             top: 5000,
           }} /* Huge number so the popover never pops on top */
-          className="flex flex-col gap-6 w-auto p-6 box-pointer-events-auto overflow-auto max-h-scree z-10"
+          className="flex flex-col gap-6 w-auto p-6 box-pointer-events-auto overflow-auto max-h-screen z-0"
           align="start"
         >
           <h3 className="text-xl font-semibold">Filtros</h3>
