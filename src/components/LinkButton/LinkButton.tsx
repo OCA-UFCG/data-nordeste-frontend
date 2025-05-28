@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -7,19 +8,29 @@ export const LinkButton = ({
   children,
   variant = "primary",
   className = "",
+  disabled = false,
 }: {
   href: string;
   children: ReactNode;
   variant?: "primary" | "secondary";
   className?: string;
+  disabled?: boolean;
 }) => {
   return (
-    <Button
-      asChild
-      variant={variant}
-      className={`w-full md:w-auto ${className}`}
+    <div
+      className={cn(
+        `w-full md:w-auto  ${disabled && "cursor-not-allowed"}`,
+        className,
+      )}
     >
-      <Link href={href}>{children}</Link>
-    </Button>
+      <Button
+        asChild
+        variant={disabled ? "ghost" : variant}
+        disabled={disabled}
+        className={`w-full ${disabled && "pointer-events-none"}`}
+      >
+        <Link href={href}>{children}</Link>
+      </Button>
+    </div>
   );
 };
