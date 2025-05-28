@@ -14,7 +14,7 @@ import { macroThemes } from "@/utils/constants";
 
 const Header = ({ content }: { content: { fields: ISection }[] }) => {
   return (
-    <div className="flex items-center justify-between px-[80px] py-[18px] border-b-2 shadow-sm bg-white">
+    <div className="flex items-center justify-between px-[80px] py-[18px] border-b-2 shadow-sm bg-white z-10">
       <Link href="/" className="flex items-center gap-2">
         <Icon id="logo-DNE" width={99} height={47} />
       </Link>

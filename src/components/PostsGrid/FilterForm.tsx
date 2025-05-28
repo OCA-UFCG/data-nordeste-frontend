@@ -64,6 +64,9 @@ export function FilterForm({
           </PopoverTrigger>
         </Button>
         <PopoverContent
+          collisionPadding={{
+            top: 5000,
+          }} /* Huge number so the popover never pops on top */
           className="flex flex-col gap-6 w-auto p-6 box-pointer-events-auto overflow-auto max-h-screen z-0"
           align="start"
         >
