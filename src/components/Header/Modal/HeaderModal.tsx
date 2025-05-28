@@ -16,6 +16,7 @@ import { Icon } from "@/components/Icon/Icon";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { isHrefActive } from "@/utils/functions";
+import { cn } from "@/lib/utils";
 
 const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
   const pathname = usePathname();
@@ -50,7 +51,11 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
                 {item.fields.children && item.fields.children.length > 0 ? (
                   <>
                     <AccordionTrigger
-                      className={` ${pathname.startsWith("/" + item.fields.id) ? "text-green-900" : ""} flex items-center font-inter font-semibold text-sm leading-5 px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer`}
+                      className={cn(
+                        "flex items-center font-inter font-semibold text-sm leading-5 px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer",
+                        pathname.startsWith("/" + item.fields.id) &&
+                          "text-green-900",
+                      )}
                     >
                       {item.fields.name}
                     </AccordionTrigger>

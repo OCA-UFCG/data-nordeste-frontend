@@ -38,17 +38,18 @@ export const Posts = ({
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
   const [posts, setPosts] = useState<{ fields: IPublication }[]>([]);
-  const [filter, setFilter] = useState<{
-    [key: string]: string[] | string | Date | undefined;
-  }>({
-    category: params.get(`category`)?.split(`,`) || [],
-    initDate: Date.parse(params.get(`initDate`) || "")
-      ? new Date(params.get(`initDate`) || "")
-      : undefined,
-    finalDate: Date.parse(params.get(`finalDate`) || "")
-      ? new Date(params.get(`finalDate`) || "")
-      : undefined,
-  });
+  const filter = useMemo(
+    () => ({
+      category: params.get("category")?.split(",") || [],
+      initDate: Date.parse(params.get(`initDate`) || "")
+        ? new Date(params.get(`initDate`) || "")
+        : undefined,
+      finalDate: Date.parse(params.get(`finalDate`) || "")
+        ? new Date(params.get(`finalDate`) || "")
+        : undefined,
+    }),
+    [params],
+  );
 
   const currentPage = useMemo(() => {
     const paramPages = Number(params.get("page") || 1);
@@ -111,20 +112,6 @@ export const Posts = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pages, sorting, filter]);
 
-  useEffect(() => {
-    const newFilter = {
-      category: params.get("category")?.split(",") || [],
-      initDate: params.get("initDate")
-        ? new Date(params.get("initDate")!)
-        : undefined,
-      finalDate: params.get("finalDate")
-        ? new Date(params.get("finalDate")!)
-        : undefined,
-    };
-
-    setFilter(newFilter);
-  }, [params]);
-
   return (
     <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
       <div className="flex flex-col lg:flex-row justify-between lg:items-center w-full gap-4">
@@ -133,8 +120,8 @@ export const Posts = ({
           <FilterForm
             initSchema={filter}
             selectFields={categories}
-            onReset={() => setFilter({})}
-            onSubmit={(newForm) => setFilter(newForm)}
+            onReset={() => router.push(pathname)}
+            onSubmit={(newForm) => parseForm(newForm)}
           />
           <SortSelect defaultvalue={sorting} onChange={setSorting} />
         </div>
