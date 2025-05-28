@@ -38,17 +38,18 @@ export const Posts = ({
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
   const [posts, setPosts] = useState<{ fields: IPublication }[]>([]);
-  const [filter, setFilter] = useState<{
-    [key: string]: string[] | string | Date | undefined;
-  }>({
-    category: params.get(`category`)?.split(`,`) || [],
-    initDate: Date.parse(params.get(`initDate`) || "")
-      ? new Date(params.get(`initDate`) || "")
-      : undefined,
-    finalDate: Date.parse(params.get(`finalDate`) || "")
-      ? new Date(params.get(`finalDate`) || "")
-      : undefined,
-  });
+  const filter = useMemo(
+    () => ({
+      category: params.get("category")?.split(",") || [],
+      initDate: Date.parse(params.get(`initDate`) || "")
+        ? new Date(params.get(`initDate`) || "")
+        : undefined,
+      finalDate: Date.parse(params.get(`finalDate`) || "")
+        ? new Date(params.get(`finalDate`) || "")
+        : undefined,
+    }),
+    [params],
+  );
 
   const currentPage = useMemo(() => {
     const paramPages = Number(params.get("page") || 1);
@@ -119,8 +120,8 @@ export const Posts = ({
           <FilterForm
             initSchema={filter}
             selectFields={categories}
-            onReset={() => setFilter({})}
-            onSubmit={(newForm) => setFilter(newForm)}
+            onReset={() => router.push(pathname)}
+            onSubmit={(newForm) => parseForm(newForm)}
           />
           <SortSelect defaultvalue={sorting} onChange={setSorting} />
         </div>
