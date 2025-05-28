@@ -13,11 +13,13 @@ import {
 } from "@/components/ui/accordion";
 import { macroThemes } from "@/utils/constants";
 import { Icon } from "@/components/Icon/Icon";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { isHrefActive } from "@/utils/functions";
 
 const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
   const pathname = usePathname();
+  const category = useSearchParams().get("category");
   const [open, setOpen] = useState(false);
 
   return (
@@ -47,12 +49,18 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
               >
                 {item.fields.children && item.fields.children.length > 0 ? (
                   <>
-                    <AccordionTrigger className="flex items-center font-inter font-semibold text-sm leading-5 px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer">
+                    <AccordionTrigger
+                      className={` ${pathname.startsWith("/" + item.fields.id) ? "text-green-900" : ""} flex items-center font-inter font-semibold text-sm leading-5 px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer`}
+                    >
                       {item.fields.name}
                     </AccordionTrigger>
                     <AccordionContent className="py-2 px-2">
                       {item.fields.children!.map((child, i) => {
-                        const isActive = pathname === child.fields.path;
+                        const isActive = isHrefActive(
+                          pathname,
+                          category,
+                          child.fields.path,
+                        );
 
                         return (
                           <Link
@@ -61,7 +69,7 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
                             onClick={() => setOpen(false)}
                           >
                             <div
-                              className={`flex items-center gap-2 py-[6px] px-2 h-[44px] hover:bg-green-neutro cursor-pointer ${isActive ? "text-green-900" : "hover:text-black"}`}
+                              className={`flex items-center gap-2 py-[6px] px-2 h-[44px] hover:bg-green-neutro cursor-pointer ${isActive ? "text-green-900" : ""}`}
                             >
                               <Icon
                                 id={macroThemes[child.fields.id] || "list"}
@@ -79,13 +87,9 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
                 ) : (
                   <Link href={item.fields.path} onClick={() => setOpen(false)}>
                     <div
-                      className={`flex items-center px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer ${pathname === item.fields.path ? "text-green-900" : ""}`}
+                      className={`flex items-center px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer ${isHrefActive(pathname, category, item.fields.path) ? "text-green-900" : ""}`}
                     >
-                      <span
-                        className={`font-semibold ${pathname === item.fields.path ? "" : "hover:text-black"}`}
-                      >
-                        {item.fields.name}
-                      </span>
+                      <span className="font-semibold">{item.fields.name}</span>
                     </div>
                   </Link>
                 )}

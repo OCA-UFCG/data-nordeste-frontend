@@ -102,3 +102,16 @@ export const createQueryString = (newParams: { [key: string]: string }) => {
 
   return searchParams.toString();
 };
+
+export const isHrefActive = (
+  pathname: string,
+  category: string | null,
+  href?: string | null,
+): boolean => {
+  if (!href) return false;
+
+  const [hrefPath, hrefQuery] = href.split("?");
+  const hrefParams = new URLSearchParams(hrefQuery).get("category");
+
+  return pathname === hrefPath && hrefParams === category;
+};

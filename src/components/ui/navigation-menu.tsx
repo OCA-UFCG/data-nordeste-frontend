@@ -1,4 +1,3 @@
-"use client";
 import * as React from "react";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
 import { cva } from "class-variance-authority";
@@ -6,6 +5,7 @@ import { ChevronDownIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { usePathname, useSearchParams } from "next/navigation";
+import { isHrefActive } from "@/utils/functions";
 
 function NavigationMenu({
   className,
@@ -66,13 +66,11 @@ const navigationMenuTriggerStyle = cva(
 function NavigationMenuTrigger({
   className,
   children,
-  itemId,
+  itemID,
   ...props
-}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger> & {
-  itemId?: string;
-}) {
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger>) {
   const pathname = usePathname();
-  const isActive = pathname.startsWith("/" + itemId);
+  const isActive = pathname.startsWith("/" + itemID);
 
   return (
     <NavigationMenuPrimitive.Trigger
@@ -133,24 +131,14 @@ function NavigationMenuViewport({
   );
 }
 
-const useIsHrefActive = (href?: string): boolean => {
-  const pathname = usePathname();
-  const category = useSearchParams().get("category");
-
-  if (!href) return false;
-
-  const [hrefPath, hrefQuery] = href.split("?");
-  const hrefParams = new URLSearchParams(hrefQuery).get("category");
-
-  return pathname === hrefPath && hrefParams === category;
-};
-
 function NavigationMenuLink({
   className,
   href,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Link>) {
-  const isActive = useIsHrefActive(href);
+  const pathname = usePathname();
+  const category = useSearchParams().get("category");
+  const isActive = isHrefActive(pathname, category, href);
 
   return (
     <NavigationMenuPrimitive.Link

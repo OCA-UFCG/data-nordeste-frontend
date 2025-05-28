@@ -29,7 +29,7 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
                   <>
                     <NavigationMenuTrigger
                       className={"text-md cursor-pointer"}
-                      itemId={item.fields.id}
+                      itemID={item.fields.id}
                     >
                       {item.fields.name}
                     </NavigationMenuTrigger>
