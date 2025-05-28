@@ -10,11 +10,15 @@ const client = createClient({
 
 export const getContent = async (contentTypes: string[]) => {
   const content: any = {};
+  const promises = contentTypes.map(type =>
+    client.getEntries({ content_type: type })
+  );
 
-  for (const type of contentTypes) {
-    const res = await client.getEntries({ content_type: type });
-    content[type] = res.items;
-  }
+  const results = await Promise.all(promises);
+
+  contentTypes.forEach((type, index) => {
+    content[type] = results[index].items;
+  });
 
   return content;
 };
