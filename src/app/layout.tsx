@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   title: "Data Nordeste",
   description: "Data Nordeste",
   icons: {
-    icon: "logo.png",
-    shortcut: "logo.png",
-    apple: "logo.png",
+    icon: "datane-logo.png",
+    shortcut: "datane-logo.png",
+    apple: "datane-logo.png",
   },
 };
 
