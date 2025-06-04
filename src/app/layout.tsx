@@ -15,6 +15,11 @@ const lato = Lato({
 export const metadata: Metadata = {
   title: "Data Nordeste",
   description: "Data Nordeste",
+  icons: {
+    icon: "datane-logo.png",
+    shortcut: "datane-logo.png",
+    apple: "datane-logo.png",
+  },
 };
 
 export default function RootLayout({
