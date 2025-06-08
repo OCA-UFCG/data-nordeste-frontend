@@ -15,6 +15,7 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
+import Link from "next/link";
 
 const GalleryCarousel = ({
   album,
@@ -46,26 +47,40 @@ const GalleryCarousel = ({
                 (600 * photo?.fields?.file?.details?.image?.height) /
                 photo?.fields?.file?.details?.image?.width;
 
+              const path = photo?.fields?.description;
+
               return (
                 <CarouselItem
                   key={index}
                   className={`flex justify-center items-center ${length}`}
                 >
-                  <div
-                    className="cursor-zoom-in"
-                    onClick={() => {
-                      setPhotoIndex(index);
-                      setLightboxOpen(true);
-                    }}
-                  >
-                    <Image
-                      alt={photo?.fields?.description || ""}
-                      width={600}
-                      height={height}
-                      src={imageUrl}
-                      className="w-fit rounded-lg"
-                    />
-                  </div>
+                  {path ? (
+                    <Link href={path}>
+                      <Image
+                        alt={photo.fields.title || ""}
+                        width={600}
+                        height={height}
+                        src={imageUrl}
+                        className="w-fit rounded-lg cursor-pointer"
+                      />
+                    </Link>
+                  ) : (
+                    <div
+                      className="cursor-zoom-in"
+                      onClick={() => {
+                        setPhotoIndex(index);
+                        setLightboxOpen(true);
+                      }}
+                    >
+                      <Image
+                        alt={photo?.fields?.title || ""}
+                        width={600}
+                        height={height}
+                        src={imageUrl}
+                        className="w-fit rounded-lg"
+                      />
+                    </div>
+                  )}
                 </CarouselItem>
               );
             })}
