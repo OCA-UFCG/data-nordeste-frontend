@@ -164,6 +164,13 @@ export interface IPartners {
 }
 export interface IValues {
   title: string;
+  thumb: {
+    fields: {
+      file: {
+        url: string;
+      };
+    };
+  };
   details: any;
   id: string;
 }
