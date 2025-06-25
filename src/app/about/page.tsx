@@ -31,7 +31,7 @@ export default async function AboutPage() {
     contato: <ContactSection content={contactInfo} />,
     "rede-colaboracao": <PartnersSection content={partnersInfo[0]} />,
     "nossa-historia": <HistorySection content={about[0]} />,
-    "missao-visao-valor": <ValuesSection content={visionMissionValues} />,
+    compromisso: <ValuesSection content={visionMissionValues} />,
   };
 
   return (
