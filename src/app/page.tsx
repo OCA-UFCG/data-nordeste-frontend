@@ -5,7 +5,7 @@ import { SectionHeader } from "@/utils/interfaces";
 import { AboutSection } from "@/components/AboutSection/AboutSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewSection from "@/components/PreviewSection/PreviewSection";
-import MainBanner from "@/components/BannerImage/BannerImage";
+import MainBanner from "@/components/BannerCarousel/BannerCarousel";
 import DataSection from "@/components/DataSection/DataSection";
 
 export const revalidate = 60;
@@ -31,7 +31,7 @@ export default async function Home() {
 
   return (
     <HubTemplate>
-      <MainBanner content={mainBanner[0]} />
+      <MainBanner content={mainBanner} />
       <PreviewSection
         header={sectionHead.find(
           (sec: { fields: SectionHeader }) => sec.fields.id == "preview",
