@@ -25,7 +25,7 @@ export const AboutContent = ({
 
   const orderedContent = sortContentByDesiredOrder<ITab>(tabsHeader, [
     "history",
-    "mission",
+    "compromisso",
     "partners",
     "contact",
   ]);
