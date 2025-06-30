@@ -44,17 +44,17 @@ export default async function Home() {
           (section: { fields: { id: string } }) => section.fields.id === "new",
         )}
       />
-      <AboutSection
-        header={sectionHead.find(
-          (section: { fields: { id: string } }) =>
-            section.fields.id === "about",
-        )}
-      />
       <DataSection
         header={sectionHead.find(
           (sec: { fields: SectionHeader }) => sec.fields.id == "panels",
         )}
         categories={theme}
+      />
+      <AboutSection
+        header={sectionHead.find(
+          (section: { fields: { id: string } }) =>
+            section.fields.id === "about",
+        )}
       />
       <ProjectSection
         header={sectionHead.find(
