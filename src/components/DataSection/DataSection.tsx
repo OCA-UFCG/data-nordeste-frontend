@@ -35,7 +35,7 @@ const DataSection = ({
             <LinkButton
               href="/explore"
               variant="secondary"
-              className="w-fit hidden md:flex"
+              className="w-fit bg-grey-100 border-grey-300 hidden md:flex"
             >
               <p>Ver Todos</p>
               <Icon className="rotate-270 size-2" id="expand" />
@@ -53,7 +53,7 @@ const DataSection = ({
         <LinkButton
           href="/explore?page=1"
           variant="secondary"
-          className="md:hidden"
+          className="md:hidden bg-grey-100 border-grey-300"
         >
           <p>Ver Todos</p>
           <Icon className="rotate-270 size-2" id="expand" />

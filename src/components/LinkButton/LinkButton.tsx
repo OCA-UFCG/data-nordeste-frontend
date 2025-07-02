@@ -17,20 +17,17 @@ export const LinkButton = ({
   disabled?: boolean;
 }) => {
   return (
-    <div
+    <Button
+      asChild
+      variant={disabled ? "ghost" : variant}
+      disabled={disabled}
       className={cn(
-        `w-full md:w-auto  ${disabled && "cursor-not-allowed"}`,
+        "w-full md:w-auto",
+        disabled && "cursor-not-allowed pointer-events-none",
         className,
       )}
     >
-      <Button
-        asChild
-        variant={disabled ? "ghost" : variant}
-        disabled={disabled}
-        className={`w-full ${disabled && "pointer-events-none"}`}
-      >
-        <Link href={href}>{children}</Link>
-      </Button>
-    </div>
+      <Link href={href}>{children}</Link>
+    </Button>
   );
 };
