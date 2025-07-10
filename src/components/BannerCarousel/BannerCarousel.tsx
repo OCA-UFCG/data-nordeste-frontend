@@ -20,7 +20,8 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
       }}
       plugins={[
         Autoplay({
-          delay: 5000,
+          delay: 15000,
+          stopOnInteraction: false,
         }),
       ]}
     >
