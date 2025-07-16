@@ -1,6 +1,5 @@
 import { createClient } from "contentful";
 
-import { IPublication } from "./interfaces";
 import { POSTS_PER_PAGE } from "./constants";
 
 const client = createClient({
@@ -41,17 +40,18 @@ export const getTotalPages = async (filter = {}) => {
   }
 };
 
-export const getPosts = async (
+export const getEntriesByType = async <T>(
   sort: string,
   page = 1,
   limit = 12,
   filter: { [key: string]: any },
-): Promise<{ fields: IPublication }[]> => {
+  contentType?: string,
+): Promise<{ fields: T }[]> => {
   const skip = (page - 1) * limit;
 
   try {
     const params: { [key: string]: any } = {
-      content_type: "post",
+      content_type: contentType || "post",
       order: [sort],
       limit: limit,
       skip: skip,
@@ -63,7 +63,7 @@ export const getPosts = async (
 
     const response = await client.getEntries(params);
 
-    return response.items as unknown as { fields: IPublication }[];
+    return response.items as unknown as { fields: T }[];
   } catch (error) {
     console.error("Error fetching page:", error);
 

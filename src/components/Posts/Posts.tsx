@@ -10,7 +10,11 @@ import {
   POSTS_PER_PAGE,
   sortingTypes,
 } from "@/utils/constants";
-import { createQueryString, getPosts, getTotalPages } from "@/utils/functions";
+import {
+  createQueryString,
+  getEntriesByType,
+  getTotalPages,
+} from "@/utils/functions";
 import { SortSelect } from "../PostsGrid/SortSelect";
 
 export const Posts = ({
@@ -90,7 +94,7 @@ export const Posts = ({
 
     const postsPromise = new Promise((resolve) => {
       resolve(
-        getPosts(sorting, currentPage, POSTS_PER_PAGE, {
+        getEntriesByType<IPublication>(sorting, currentPage, POSTS_PER_PAGE, {
           ...rootFilter,
           ...parseForm(filter),
         }),
