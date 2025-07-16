@@ -1,8 +1,8 @@
-name: CI/CD DataNordeste Beta
+name: CI/CD DataNordeste Prod
 
 on:
   push:
-    branches: ["main"]
+    tags: ["*"]
 
 jobs:
   build-image:
@@ -14,7 +14,7 @@ jobs:
         uses: docker/metadata-action@v4
         id: meta
         with:
-          images: ${{ vars.DOCKER_IMAGE_BETA }}
+          images: ${{ vars.DOCKER_IMAGE_PROD }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -33,29 +33,30 @@ jobs:
           file: Dockerfile.production
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
-            ${{ vars.DOCKER_IMAGE_BETA }}:latest
+            ${{ vars.DOCKER_IMAGE_PROD }}:latest
             ${{ steps.meta.outputs.tags }}
           build-args: |
             NEXT_PUBLIC_CONTENTFUL_SPACE=${{ secrets.NEXT_PUBLIC_CONTENTFUL_SPACE  }}
             NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN=${{ secrets.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN }}
-            NEXT_PUBLIC_HOST_URL=${{ vars.NEXT_PUBLIC_HOST_URL_BETA }}
-            NEXT_PUBLIC_CONTENTFUL_HOST=${{ vars.NEXT_PUBLIC_CONTENTFUL_HOST_BETA }}
-            
-  push-beta:
+            NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }}
+            NEXT_PUBLIC_HOST_URL=${{ vars.NEXT_PUBLIC_HOST_URL_PROD }}
+            NEXT_PUBLIC_CONTENTFUL_HOST=${{ vars.NEXT_PUBLIC_CONTENTFUL_HOST_PROD }}
+
+  push-prod:
     needs: build-image
-    runs-on: beta-runner
+    runs-on: prod-runner
     steps:
       - name: Pull the latest image
-        run: sudo docker pull ${{ vars.DOCKER_IMAGE_BETA }}:latest
+        run: sudo docker pull ${{ vars.DOCKER_IMAGE_PROD }}:latest
 
       - name: Stop existing container
-        run: sudo docker rm -f ${{ vars.CONTAINER_NAME_BETA }} || true 
+        run: sudo docker rm -f ${{ vars.CONTAINER_NAME_PROD }} || true 
             
       - name: Run new container
-        run: sudo docker run --name ${{ vars.CONTAINER_NAME_BETA }} --restart unless-stopped -p ${{ vars.HOST_PORT_BETA }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_BETA }}:latest
+        run: sudo docker run --name ${{ vars.CONTAINER_NAME_PROD }} --restart unless-stopped -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
 
       - name: Connect to network
-        run: docker network connect ${{ vars.NETWORK_NAME }} ${{ vars.CONTAINER_NAME_BETA }}
+        run: docker network connect ${{ vars.NETWORK_NAME }} ${{ vars.CONTAINER_NAME_PROD }}
 
       - name: Prune unused Docker images
         run: sudo docker system prune -f
