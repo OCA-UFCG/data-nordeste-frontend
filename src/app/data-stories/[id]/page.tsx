@@ -21,7 +21,7 @@ export default async function DataStories({
   return (
     <iframe
       src={selectedStorie.fields.path}
-      className="w-full h-screen border-none"
+      className="w-full h-screen"
       allowFullScreen
       allow="geolocation"
     />
