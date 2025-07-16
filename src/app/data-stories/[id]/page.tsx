@@ -1,3 +1,4 @@
+import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/functions";
 import { notFound } from "next/navigation";
 
@@ -19,11 +20,13 @@ export default async function DataStories({
   }
 
   return (
-    <iframe
-      src={selectedStorie.fields.path}
-      className="w-full h-screen"
-      allowFullScreen
-      allow="geolocation"
-    />
+    <HubTemplate>
+      <iframe
+        src={selectedStorie.fields.path}
+        className="w-full h-screen"
+        allowFullScreen
+        allow="geolocation"
+      />
+    </HubTemplate>
   );
 }
