@@ -174,3 +174,8 @@ export interface IValues {
   details: any;
   id: string;
 }
+
+export interface IDataStory {
+  name: string;
+  id: string;
+}

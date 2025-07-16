@@ -15,7 +15,7 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import { FILTERS, TypeFilter } from "./TypeFilter";
 import { useCallback, useState } from "react";
-import { getPosts } from "@/utils/functions";
+import { getEntriesByType } from "@/utils/functions";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 
 export const RecentSection = ({
@@ -34,9 +34,14 @@ export const RecentSection = ({
   const fetchPosts = useCallback(async (types: "all" | "panels" | "posts") => {
     setSelectedType(types);
 
-    const filteredPosts = await getPosts("", 1, POSTS_PER_PAGE, {
-      "fields.type[in]": FILTERS[types].filter,
-    });
+    const filteredPosts = await getEntriesByType<IPublication>(
+      "",
+      1,
+      POSTS_PER_PAGE,
+      {
+        "fields.type[in]": FILTERS[types].filter,
+      },
+    );
     setPosts(filteredPosts);
   }, []);
 
