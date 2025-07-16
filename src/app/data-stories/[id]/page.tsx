@@ -12,7 +12,7 @@ export default async function DataStory({
     "",
     1,
     1,
-    { "fields.id": params.id },
+    { "fields.name": params.id },
     "dataStories",
   );
 
