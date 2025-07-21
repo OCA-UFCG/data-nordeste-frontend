@@ -35,7 +35,7 @@ jobs:
           tags: |
             ${{ vars.DOCKER_IMAGE_PROD }}:latest
             ${{ steps.meta.outputs.tags }}
-          platforms: linux/arm64
+          platforms: linux/amd64,linux/arm64
           build-args: |
             NEXT_PUBLIC_CONTENTFUL_SPACE=${{ secrets.NEXT_PUBLIC_CONTENTFUL_SPACE  }}
             NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN=${{ secrets.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN }}
