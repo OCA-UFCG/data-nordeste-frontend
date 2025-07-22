@@ -35,6 +35,7 @@ jobs:
           tags: |
             ${{ vars.DOCKER_IMAGE_PROD }}:latest
             ${{ steps.meta.outputs.tags }}
+          platforms: linux/amd64,linux/arm64
           build-args: |
             NEXT_PUBLIC_CONTENTFUL_SPACE=${{ secrets.NEXT_PUBLIC_CONTENTFUL_SPACE  }}
             NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN=${{ secrets.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN }}
@@ -57,6 +58,25 @@ jobs:
 
       - name: Connect to network
         run: docker network connect ${{ vars.NETWORK_NAME }} ${{ vars.CONTAINER_NAME_PROD }}
+
+      - name: Prune unused Docker images
+        run: sudo docker system prune -f
+    
+  push-failover:
+      needs: build-image
+      runs-on: failover-runner
+      steps:
+      - name: Pull the latest image
+        run: sudo docker pull ${{ vars.DOCKER_IMAGE_PROD }}:latest
+
+      - name: Stop existing container
+        run: sudo docker rm -f ${{ vars.CONTAINER_NAME_PROD }} || true
+
+      - name: Run new container
+        run: sudo docker run --restart unless-stopped --name ${{ vars.CONTAINER_NAME_PROD }} -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
+
+      - name: Connect to oca-network
+        run: docker network connect oca-network oca-frontend-app
 
       - name: Prune unused Docker images
         run: sudo docker system prune -f
