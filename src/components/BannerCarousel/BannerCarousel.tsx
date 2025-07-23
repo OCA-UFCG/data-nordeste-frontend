@@ -64,7 +64,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
                   />
                 </div>
 
-                <div className="absolute bottom-[65px] left-0 w-full z-20">
+                <div className="absolute bottom-6 lg:bottom-[65px] left-0 w-full z-20">
                   <div className="mx-auto max-w-[1440px] px-6 flex justify-center">
                     <div className="bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 flex gap-2">
                       {content.map((_, indexDot) => (
