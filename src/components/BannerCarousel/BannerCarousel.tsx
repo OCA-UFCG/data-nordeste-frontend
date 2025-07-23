@@ -48,7 +48,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
 
                 <div className="flex w-full p-6 2xl:p-0 md:px-20 h-full items-end justify-between max-w-[1440px] z-10">
                   <div className="flex flex-col gap-4 lg:gap-8">
-                    <h1 className="text-white text-4xl leading-[40px] lg:leading-[68px] lg:text-6xl font-semibold">
+                    <h1 className="text-white text-4xl leading-[40px] lg:leading-[68px] lg:text-6xl font-semibold lg:max-w-[50%]">
                       {title}
                     </h1>
                     <p className="text-white text-lg font-medium">{subtitle}</p>
@@ -63,24 +63,23 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
                     className="hidden lg:block self-end filter brightness-0 invert"
                   />
                 </div>
-
-                <div className="absolute bottom-6 lg:bottom-[65px] left-0 w-full z-20">
-                  <div className="mx-auto max-w-[1440px] px-6 flex justify-center">
-                    <div className="bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 flex gap-2">
-                      {content.map((_, indexDot) => (
-                        <DotButton key={indexDot} tabIndex={indexDot} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <CarouselPrevious className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-30" />
-                <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30" />
               </div>
             </CarouselItem>
           );
         })}
       </CarouselContent>
+      <div className="absolute bottom-6 lg:bottom-[65px] left-0 w-full z-20">
+        <div className="mx-auto max-w-[1440px] px-6 flex justify-center">
+          <div className="bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 flex gap-2">
+            {content.map((_, indexDot) => (
+              <DotButton key={indexDot} tabIndex={indexDot} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <CarouselPrevious className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-30" />
+      <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30" />
     </Carousel>
   );
 };
