@@ -18,9 +18,14 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
   return (
     <Carousel
       className="relative w-full"
+      opts={{
+        align: "start",
+        loop: true,
+      }}
       plugins={[
         Autoplay({
-          delay: 5000,
+          delay: 15000,
+          stopOnInteraction: false,
         }),
       ]}
     >
