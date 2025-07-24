@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Icon } from "../Icon/Icon";
 import { macroThemes } from "@/utils/constants";
 
-const Header = ({ content }: { content: { fields: ISection }[] }) => {
+const Header = ({ content }: { content: ISection[] }) => {
   return (
     <div className="flex items-center justify-between px-[80px] py-[18px] border-b-2 shadow-sm bg-white z-10">
       <Link href="/" className="flex items-center gap-2">
@@ -22,39 +22,39 @@ const Header = ({ content }: { content: { fields: ISection }[] }) => {
       <NavigationMenu>
         <NavigationMenuList className="flex items-center">
           {content
-            .filter((item) => item.fields.appears)
+            .filter((item) => item.appears)
             .map((item, idx) => (
               <NavigationMenuItem key={idx} className="px-4 py-2">
-                {item.fields.children ? (
+                {item.childrenCollection?.items.length ? (
                   <>
                     <NavigationMenuTrigger
                       className={"text-md cursor-pointer"}
-                      itemID={item.fields.id}
+                      itemID={item.id}
                     >
-                      {item.fields.name}
+                      {item.name}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15 ">
-                      {item.fields.children.map((child) => (
+                      {item.childrenCollection.items.map((child) => (
                         <NavigationMenuLink
-                          key={child.fields.id}
-                          href={child.fields.path}
+                          key={child.id}
+                          href={child.path}
                           className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 rounded"
                         >
                           <Icon
-                            id={macroThemes[child.fields.id] || "list"}
+                            id={macroThemes[child.id] || "list"}
                             size={14}
                           />
-                          {child.fields.name}
+                          {child.name}
                         </NavigationMenuLink>
                       ))}
                     </NavigationMenuContent>
                   </>
                 ) : (
                   <NavigationMenuLink
-                    href={item.fields.path}
+                    href={item.path}
                     className="px-4 py-2 text-md"
                   >
-                    {item.fields.name}
+                    {item.name}
                   </NavigationMenuLink>
                 )}
               </NavigationMenuItem>

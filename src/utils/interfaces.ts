@@ -19,7 +19,7 @@ export interface ISection {
   id: string;
   path: string;
   appears: boolean;
-  children?: { fields: ISection }[];
+  childrenCollection?: { items: ISection[] };
 }
 
 export interface ISections {

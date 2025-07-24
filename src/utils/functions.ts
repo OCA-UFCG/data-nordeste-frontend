@@ -80,12 +80,12 @@ export const capitalize = (inputString: string): string => {
 };
 
 export const sortContentByDesiredOrder = <T extends { id: string }>(
-  content: { fields: T }[],
+  content: T[],
   desiredOrder: string[],
-): { fields: T }[] => {
+): T[] => {
   return [...content].sort((a, b) => {
-    const aIndex = desiredOrder.indexOf(a.fields.id);
-    const bIndex = desiredOrder.indexOf(b.fields.id);
+    const aIndex = desiredOrder.indexOf(a.id);
+    const bIndex = desiredOrder.indexOf(b.id);
 
     return (
       (aIndex === -1 ? Infinity : aIndex) - (bIndex === -1 ? Infinity : bIndex)

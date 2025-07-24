@@ -1,4 +1,23 @@
 export const HEAD_QUERY = `
+  query {
+    headerCollection {
+      items {
+        id
+        name
+        path
+        appears
+        childrenCollection {
+          items {
+            ... on Header {
+              id
+              name
+              path
+            }
+          }
+        }
+      }
+    }
+  }
 
 `;
 

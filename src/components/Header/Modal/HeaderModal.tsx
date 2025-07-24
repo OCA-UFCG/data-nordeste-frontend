@@ -18,7 +18,7 @@ import { useState } from "react";
 import { isHrefActive } from "@/utils/functions";
 import { cn } from "@/lib/utils";
 
-const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
+const HeaderModal = ({ content }: { content: ISection[] }) => {
   const pathname = usePathname();
   const category = useSearchParams().get("category");
   const [open, setOpen] = useState(false);
@@ -41,47 +41,48 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
       >
         <Accordion type="multiple" className="w-full space-y-2 py-4 px-2 pt-0">
           {content
-            .filter((item) => item.fields.appears)
+            .filter((item) => item.appears)
             .map((item, idx) => (
               <AccordionItem
                 key={idx}
                 value={`item-${idx}`}
                 className="rounded-sm font-inter text-sm leading-5"
               >
-                {item.fields.children && item.fields.children.length > 0 ? (
+                {item.childrenCollection &&
+                item.childrenCollection.items &&
+                item.childrenCollection.items.length > 0 ? (
                   <>
                     <AccordionTrigger
                       className={cn(
                         "flex items-center font-inter font-semibold text-sm leading-5 px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer",
-                        pathname.startsWith("/" + item.fields.id) &&
-                          "text-green-900",
+                        pathname.startsWith("/" + item.id) && "text-green-900",
                       )}
                     >
-                      {item.fields.name}
+                      {item.name}
                     </AccordionTrigger>
                     <AccordionContent className="py-2 px-2">
-                      {item.fields.children!.map((child, i) => {
+                      {item.childrenCollection.items.map((child, i) => {
                         const isActive = isHrefActive(
                           pathname,
                           category,
-                          child.fields.path,
+                          child.path,
                         );
 
                         return (
                           <Link
                             key={i}
-                            href={child.fields.path}
+                            href={child.path}
                             onClick={() => setOpen(false)}
                           >
                             <div
                               className={`flex items-center gap-2 py-[6px] px-2 h-[44px] hover:bg-green-neutro cursor-pointer ${isActive ? "text-green-900" : ""}`}
                             >
                               <Icon
-                                id={macroThemes[child.fields.id] || "list"}
+                                id={macroThemes[child.id] || "list"}
                                 size={14}
                               />
                               <span className="whitespace-nowrap">
-                                {child.fields.name}
+                                {child.name}
                               </span>
                             </div>
                           </Link>
@@ -90,11 +91,11 @@ const HeaderModal = ({ content }: { content: { fields: ISection }[] }) => {
                     </AccordionContent>
                   </>
                 ) : (
-                  <Link href={item.fields.path} onClick={() => setOpen(false)}>
+                  <Link href={item.path} onClick={() => setOpen(false)}>
                     <div
-                      className={`flex items-center px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer ${isHrefActive(pathname, category, item.fields.path) ? "text-green-900" : ""}`}
+                      className={`flex items-center px-2 py-[6px] h-[44px] hover:bg-green-neutro cursor-pointer ${isHrefActive(pathname, category, item.path) ? "text-green-900" : ""}`}
                     >
-                      <span className="font-semibold">{item.fields.name}</span>
+                      <span className="font-semibold">{item.name}</span>
                     </div>
                   </Link>
                 )}
