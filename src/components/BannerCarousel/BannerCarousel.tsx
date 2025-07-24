@@ -47,13 +47,16 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
                 <div className="absolute top-0 right-0 h-full w-[100%] bg-gradient-to-l from-black via-transparent to-transparent"></div>
                 <div className="absolute top-0 left-0 h-full w-[140%] bg-gradient-to-r from-black via-transparent to-transparent"></div>
 
-                <div className="flex w-full p-6 px-20 h-full items-end justify-between max-w-[1440px] z-10">
-                  <div className="flex flex-col gap-4 lg:gap-8">
+                <div className="flex w-full max-w-full px-6 md:px-20 h-full items-end justify-between z-10">
+                  <div className="flex flex-col gap-4 lg:gap-8 w-full max-w-md md:max-w-none">
                     <h1 className="text-white text-4xl leading-[40px] lg:leading-[68px] lg:text-6xl font-semibold">
                       {title}
                     </h1>
                     <p className="text-white text-lg font-medium">{subtitle}</p>
-                    <LinkButton href={buttonUrl} className="md:max-w-fit">
+                    <LinkButton
+                      href={buttonUrl}
+                      className="w-full md:max-w-fit"
+                    >
                       {buttonLabel}
                     </LinkButton>
                   </div>
@@ -70,8 +73,8 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
         })}
       </CarouselContent>
       <div className="absolute bottom-6 lg:bottom-[65px] left-0 w-full z-20">
-        <div className="mx-auto max-w-[1440px] px-6 flex justify-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 flex gap-2">
+        <div className="w-full mx-auto max-w-[1440px] px-6 flex justify-center">
+          <div className="bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 md:px-4 md:py-2 flex gap-2">
             {content.map((_, indexDot) => (
               <DotButton key={indexDot} tabIndex={indexDot} />
             ))}
@@ -80,7 +83,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
       </div>
 
       <CarouselPrevious className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
-      <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
+      <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-whi transition-colors" />
     </Carousel>
   );
 };
