@@ -79,8 +79,8 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
         </div>
       </div>
 
-      <CarouselPrevious className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-30" />
-      <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30" />
+      <CarouselPrevious className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
+      <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
     </Carousel>
   );
 };
