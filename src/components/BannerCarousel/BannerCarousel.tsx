@@ -31,7 +31,8 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
     >
       <CarouselContent>
         {content.map((item, index) => {
-          const { title, subtitle, image } = item.fields;
+          const { title, subtitle, image, buttonUrl, buttonLabel } =
+            item.fields;
 
           return (
             <CarouselItem key={index} className="relative">
@@ -52,8 +53,8 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
                       {title}
                     </h1>
                     <p className="text-white text-lg font-medium">{subtitle}</p>
-                    <LinkButton href="/explore" className="md:max-w-fit">
-                      Explore os dados
+                    <LinkButton href={buttonUrl} className="md:max-w-fit">
+                      {buttonLabel}
                     </LinkButton>
                   </div>
                   <Icon
