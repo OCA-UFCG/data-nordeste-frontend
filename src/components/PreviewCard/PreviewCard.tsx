@@ -12,11 +12,11 @@ const PreviewCard = ({ content }: { content: IPreviewCard }) => {
         <div className="px-4 py-3 flex gap-2 w-full items-center bg-grey-100 group-hover:bg-grey-200 min-h-[5rem] transition duration-300">
           <div
             className="flex items-center justify-center rounded-sm min-w-[40px] w-[40px] h-[40px]"
-            style={{ backgroundColor: category.fields.color }}
+            style={{ backgroundColor: category.color }}
           >
             <Icon
               className="text-white"
-              id={macroThemes[category.fields.id]}
+              id={macroThemes[category.id]}
               size={20}
             />
           </div>
@@ -29,7 +29,7 @@ const PreviewCard = ({ content }: { content: IPreviewCard }) => {
         <div className="flex flex-col justify-center px-4 py-3">
           <p
             className="font-bold text-[32px]"
-            style={{ color: category.fields.color }}
+            style={{ color: category.color }}
           >
             {data}
           </p>

@@ -10,11 +10,7 @@ export interface SectionHeader {
   title: string;
   subtitle: string;
   thumb?: {
-    fields: {
-      file: {
-        url: string;
-      };
-    };
+    url: string;
   };
 }
 
@@ -36,11 +32,7 @@ export interface Project {
   link: string;
   details: any;
   thumb: {
-    fields: {
-      file: {
-        url: string;
-      };
-    };
+    url: string;
   };
 }
 
@@ -69,11 +61,7 @@ export interface IPublication {
   title: string;
   link: string;
   thumb: {
-    fields: {
-      file: {
-        url: string;
-      };
-    };
+    url: string;
   };
   type: "additional-content" | "data-panel" | "newsletter";
   date: string;
@@ -92,23 +80,24 @@ export interface MacroTheme {
   name: string;
   id: string;
   color: string;
+  sys: {
+    id: string;
+  };
 }
 
 export interface IPreviewCard {
   title: string;
   subtitle?: string;
-  category: { fields: MacroTheme };
+  category: MacroTheme;
   link: string;
   data: string;
   note?: string;
 }
 
 export interface IPreviewCards {
-  fields: {
-    title: string;
-    jsonFile: IRegionData;
-    category: { fields: MacroTheme };
-  };
+  title: string;
+  jsonFile: IRegionData;
+  category: MacroTheme;
 }
 
 export interface IRegionData {
@@ -132,11 +121,7 @@ export interface IMainBanner {
   title: string;
   subtitle: string;
   image: {
-    fields: {
-      file: {
-        url: string;
-      };
-    };
+    url: string;
   };
 }
 

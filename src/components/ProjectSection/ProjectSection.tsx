@@ -5,10 +5,10 @@ export const ProjectSection = ({
   header,
   projects,
 }: {
-  header?: { fields: SectionHeader };
-  projects?: { fields: Project }[];
+  header?: SectionHeader;
+  projects?: Project[];
 }) => {
-  const { title, id } = header?.fields || {
+  const { title, id } = header || {
     title: "",
     id: "",
     subtitle: "",
@@ -19,8 +19,8 @@ export const ProjectSection = ({
       <div className="w-full max-w-[1440px] mx-auto px-4 flex flex-col gap-6 box-border">
         <h2 className="text-3xl font-semibold">{title}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 justify-center gap-10 w-full max-w-full">
-          {projects?.map((partner: { fields: Project }) => (
-            <ProjectCard key={partner.fields.name} project={partner} />
+          {projects?.map((partner: Project) => (
+            <ProjectCard key={partner.name} project={partner} />
           ))}
         </div>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import Autoplay from "embla-carousel-autoplay";
-import { IPreviewCard, IPreviewCards } from "@/utils/interfaces";
+import { IPreviewCard, IPreviewCards, SectionHeader } from "@/utils/interfaces";
 import PreviewCard from "@/components/PreviewCard/PreviewCard";
 import {
   Carousel,
@@ -26,13 +26,13 @@ const PreviewSection = ({
   cards,
 }: {
   cards: IPreviewCards[];
-  header: { fields: any };
+  header?: SectionHeader;
 }) => {
   const [selectedState, setSelectedState] = useState("all");
 
   const allCardsData = cards.map((card) => ({
-    category: card.fields.category,
-    ...card.fields.jsonFile,
+    category: card.category,
+    ...card.jsonFile,
   }));
 
   const filteredCards = useMemo(() => {
@@ -63,7 +63,7 @@ const PreviewSection = ({
   return (
     <div className="flex flex-col bg-white px-3 lg:px-8 gap-3 border-box py-5 lg:py-10 max-w-[1440px] w-full justify-center items-center shadow-md rounded-lg -translate-y-4 lg:-translate-y-12">
       <div className="flex flex-col lg:flex-row gap-3 justify-between w-full">
-        <h2 className="text-3xl font-semibold">{header.fields.title}</h2>
+        <h2 className="text-3xl font-semibold">{header?.title}</h2>
         <Select onValueChange={handleFilterChange}>
           <SelectTrigger className="w-full lg:w-[180px]">
             <SelectValue placeholder="Nordeste" />
