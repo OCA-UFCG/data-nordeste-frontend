@@ -1,7 +1,7 @@
 import { IPageHeader } from "@/utils/interfaces";
 
-const PageHeader = ({ content }: { content: { fields: IPageHeader } }) => {
-  const { title, subtitle } = content.fields;
+const PageHeader = ({ content }: { content: IPageHeader }) => {
+  const { title, subtitle } = content;
 
   return (
     <section className="flex items-center justify-center bg-grey-100 w-full min-h-[200px] px-6 pt-9 lg:px-20 lg:pt-12 pb-9 border-box">

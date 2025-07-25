@@ -30,7 +30,9 @@ export interface Project {
   name: string;
   description: string;
   link: string;
-  details: any;
+  details: {
+    json: any;
+  };
   thumb: {
     url: string;
   };

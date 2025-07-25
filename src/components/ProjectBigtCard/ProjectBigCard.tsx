@@ -7,10 +7,10 @@ const ProjectBigCard = ({
   project,
   direction,
 }: {
-  project: { fields: Project };
+  project: Project;
   direction: string;
 }) => {
-  const { name, link, thumb, details } = project.fields;
+  const { name, link, thumb, details } = project;
 
   return (
     <section className="flex items-center justify-center w-full min-h-[200px] px-6 pt-3 pb-5 lg:px-20 lg:pt-10">
@@ -24,7 +24,7 @@ const ProjectBigCard = ({
           >
             <Image
               className="w-full h-full object-cover rounded-md aspect-[16/9] mb-4"
-              src={`https:${thumb.fields.file.url}`}
+              src={`${thumb.url}`}
               alt={name}
               width={800}
               height={800}
@@ -40,7 +40,7 @@ const ProjectBigCard = ({
                 : "lg:order-1 lg:pr-12"
             }`}
           >
-            {documentToReactComponents(details)}
+            {documentToReactComponents(details.json)}
           </div>
         </div>
         <LinkButton href={link} className="md:hidden mt-5">
