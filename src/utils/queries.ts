@@ -148,3 +148,13 @@ export const DATA_PANEL_QUERY = `
     }
   }
 `;
+
+export const DATA_STORY_QUERY = `
+  query ($id: String!) {
+    dataStoriesCollection(limit: 1, where: { id_in: [$id] } ) {
+      items {
+        id
+      }
+    }
+  }
+`;
