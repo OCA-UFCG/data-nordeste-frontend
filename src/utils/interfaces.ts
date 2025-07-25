@@ -38,16 +38,19 @@ export interface Project {
   };
 }
 
-export interface About {
+export interface IAbout {
   id: string;
-  album: any[];
+  albumCollection: {
+    items: {
+      url: string;
+      width: string;
+      height: string;
+      description: string;
+    }[];
+  };
   details: any;
   thumb: {
-    fields: {
-      file: {
-        url: string;
-      };
-    };
+    url: string;
   };
 }
 
@@ -147,16 +150,19 @@ export interface IContact {
 export interface IPartners {
   id: string;
   details: any;
-  album: any[];
+  albumCollection: {
+    items: {
+      url: string;
+      width: string;
+      height: string;
+      description: string;
+    }[];
+  };
 }
 export interface IValues {
   title: string;
   thumb: {
-    fields: {
-      file: {
-        url: string;
-      };
-    };
+    url: string;
   };
   details: any;
   id: string;

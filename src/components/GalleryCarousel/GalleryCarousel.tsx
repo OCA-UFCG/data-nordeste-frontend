@@ -21,15 +21,15 @@ const GalleryCarousel = ({
   album,
   length,
 }: {
-  album: any[];
+  album: { url: string; width: string; height: string; description: string }[];
   length: string;
 }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
   const slides = album.map((photo: any) => ({
-    src: `https:${photo?.fields?.file?.url || ""}`,
-    alt: photo?.fields?.description || "",
+    src: `${photo?.url || ""}`,
+    alt: photo?.description || "",
   }));
 
   return (
@@ -42,12 +42,10 @@ const GalleryCarousel = ({
         >
           <CarouselContent className="-ml-0">
             {album.map((photo: any, index: number) => {
-              const imageUrl = `https:${photo?.fields?.file?.url || ""}`;
-              const height =
-                (600 * photo?.fields?.file?.details?.image?.height) /
-                photo?.fields?.file?.details?.image?.width;
+              const imageUrl = `${photo?.url || ""}`;
+              const height = (600 * photo?.height) / photo?.width;
 
-              const path = photo?.fields?.description;
+              const path = photo?.description;
 
               return (
                 <CarouselItem
@@ -57,7 +55,7 @@ const GalleryCarousel = ({
                   {path ? (
                     <Link href={path}>
                       <Image
-                        alt={photo.fields.title || ""}
+                        alt={photo.title || ""}
                         width={600}
                         height={height}
                         src={imageUrl}
@@ -73,7 +71,7 @@ const GalleryCarousel = ({
                       }}
                     >
                       <Image
-                        alt={photo?.fields?.title || ""}
+                        alt={photo?.title || ""}
                         width={600}
                         height={height}
                         src={imageUrl}

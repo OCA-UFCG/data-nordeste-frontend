@@ -1,12 +1,11 @@
 import { Icon } from "../Icon/Icon";
 import { IContact } from "@/utils/interfaces";
 
-const ContactSection = ({ content }: { content: { fields: IContact }[] }) => {
-  const email = content.find((entry) => entry.fields.type === "email")?.fields
-    .name;
+const ContactSection = ({ content }: { content: IContact[] }) => {
+  const email = content.find((entry) => entry.type === "email")?.name;
   const social: IContact[] = content
-    .filter((entry) => entry.fields.type !== "email")
-    .map((entry) => entry.fields);
+    .filter((entry) => entry.type !== "email")
+    .map((entry) => entry);
 
   return (
     <section className="flex justify-center w-full px-6 py-9 lg:px-20">

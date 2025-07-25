@@ -158,3 +158,86 @@ export const DATA_STORY_QUERY = `
     }
   }
 `;
+
+export const ABOUT_PAGE_QUERY = `
+  query {
+    pageHeadersCollection(limit: 1, where: { id_in: ["about"]}) {
+      items {
+        title
+        subtitle
+      }
+    }
+
+    pageTabsCollection {
+      items {
+        name
+        id
+        path
+      }
+    }
+
+
+    contactInfoCollection {
+      items {
+        name
+        type
+        path
+      }
+    }
+
+    partnersInfoCollection {
+      items {
+        id
+        details {
+          json
+        }
+        albumCollection {
+          items {
+            url
+            width
+            height
+            description
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const ABOUT_QUERY = `
+  query {
+    aboutCollection {
+      items {
+        id
+        albumCollection {
+          items {
+            url
+            width
+            height
+            description
+          }
+        }
+        details {
+          json
+        }
+        thumb {
+          url
+        }
+      }
+    }
+
+    visionMissionValuesCollection {
+      items {
+        id
+        title
+        thumb {
+          url
+        }
+
+        details {
+          json
+        }
+      }
+    }
+  }
+`;
