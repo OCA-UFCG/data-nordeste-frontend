@@ -1,6 +1,8 @@
 import { EntrySys, OrderFilterPaths } from "contentful";
 import { ISudeneChannel } from "./interfaces";
 
+export const REVALIDATE = 60;
+
 export const channels: ISudeneChannel[] = [
   {
     name: "@sudenebr",

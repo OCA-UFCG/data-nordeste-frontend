@@ -21,6 +21,9 @@ export const HEAD_QUERY = `
 
 `;
 
+export const MAIN_PAGE_IDS =
+  '["preview", "new", "panels", "about", "projects"]';
+
 export const MAIN_PAGE_QUERY = `
   query {
     mainBannerCollection(limit: 10) {
@@ -66,7 +69,7 @@ export const MAIN_PAGE_QUERY = `
       }
     }
 
-    sectionHeadCollection(limit: 5, where: { id_in: ["preview", "new", "panels", "about", "projects"] }) {
+    sectionHeadCollection(limit: 5, where: { id_in: ${MAIN_PAGE_IDS} }) {
       items {
         title
         subtitle
@@ -104,4 +107,44 @@ export const POSTS_QUERY = `
     }
   }
 
+`;
+
+export const PAGE_ID = "projects";
+
+export const CONNECTIONS_PAGE_QUERY = `
+  query {
+    pageHeadersCollection(limit: 1, where: { id_in: ["${PAGE_ID}"] }) {
+      items {
+        title
+        subtitle
+        id
+      }
+    }
+
+    partnersCollection {
+      items {
+        name
+        link
+        details {
+          json
+        }
+        thumb {
+          url
+        }
+      }
+    }
+  }
+`;
+
+export const DATA_PANEL_QUERY = `
+  query ($id: String!) {
+    panelsCollection(where: { title_in: [$id] } ) {
+      items {
+        title
+        date
+        source
+        macroTheme
+      }
+    }
+  }
 `;

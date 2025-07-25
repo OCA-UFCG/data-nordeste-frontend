@@ -5,10 +5,10 @@ const PowerBIContainer = ({
   panel,
   pageName,
 }: {
-  panel: { fields: ReportData };
+  panel: ReportData;
   pageName?: string;
 }) => {
-  const { macroTheme, title, source, date } = panel.fields;
+  const { macroTheme, title, source, date } = panel;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 

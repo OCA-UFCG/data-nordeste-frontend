@@ -3,35 +3,10 @@ import PageHeader from "@/components/PageHeader/PageHeader";
 import ProjectBigCard from "@/components/ProjectBigtCard/ProjectBigCard";
 import { IPageHeader, Project } from "@/utils/interfaces";
 import { getContent } from "@/utils/contentful";
+import { REVALIDATE } from "@/utils/constants";
+import { CONNECTIONS_PAGE_QUERY } from "@/utils/queries";
 
-export const revalidate = 60;
-
-const PAGE_ID = "projects";
-
-export const CONNECTIONS_PAGE_QUERY = `
-  query {
-    pageHeadersCollection(limit: 1, where: { id_in: ["${PAGE_ID}"] }) {
-      items {
-        title
-        subtitle
-        id
-      }
-    }
-
-    partnersCollection {
-      items {
-        name
-        link
-        details {
-          json
-        }
-        thumb {
-          url
-        }
-      }
-    }
-  }
-`;
+export const revalidate = REVALIDATE;
 
 interface IConnectionsContent {
   pageHeadersCollection: { items: IPageHeader[] };
