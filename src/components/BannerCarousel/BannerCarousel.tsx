@@ -77,7 +77,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
         })}
       </CarouselContent>
 
-      <div className="absolute bottom-0 left-0 right-0 w-full z-20 pb-16 sm:pb-6 lg:pb-[65px]">
+      <div className="absolute bottom-0 left-0 right-0 w-full z-20 pb-5 sm:pb-6 lg:pb-[65px]">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
           <div className="bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 md:px-4 md:py-2 flex gap-2">
             {content.map((_, indexDot) => (
