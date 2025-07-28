@@ -19,7 +19,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
     <Carousel
       className="relative w-full"
       opts={{
-        align: "start",
+        align: "center",
         loop: true,
       }}
       plugins={[
@@ -35,21 +35,25 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
             item.fields;
 
           return (
-            <CarouselItem key={index} className="relative">
-              <div className="overflow-hidden relative flex justify-center items-center w-full lg:mt-4 min-h-[380px] lg:min-h-[510px]">
+            <CarouselItem
+              key={index}
+              className="relative basis-full w-full flex-shrink-0"
+            >
+              <div className="overflow-hidden relative flex justify-center items-center w-full min-h-[380px] lg:min-h-[510px]">
                 <Image
-                  className="absolute w-full min-h-[450px] h-full object-cover rounded-t-md md:rounded-l-md md:rounded-tr-none z-0"
+                  className="absolute inset-0 w-full h-full object-cover z-0"
                   src={`https:${image.fields.file.url}`}
                   alt=""
-                  width={1000}
-                  height={600}
+                  width={1920}
+                  height={1080}
+                  priority
                 />
-                <div className="absolute top-0 right-0 h-full w-[100%] bg-gradient-to-l from-black via-transparent to-transparent"></div>
-                <div className="absolute top-0 left-0 h-full w-[140%] bg-gradient-to-r from-black via-transparent to-transparent"></div>
+                <div className="absolute top-0 right-0 h-full w-full bg-gradient-to-l from-black via-transparent to-transparent"></div>
+                <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-black via-transparent to-transparent"></div>
 
-                <div className="flex w-full max-w-full px-6 md:px-20 h-full items-end justify-between z-10">
-                  <div className="flex flex-col gap-4 lg:gap-8 w-full  md:max-w-[70%]">
-                    <h1 className="text-white text-4xl leading-[40px] lg:leading-[68px] lg:text-6xl font-semibold">
+                <div className="relative flex w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full items-end justify-between z-30">
+                  <div className="flex flex-col gap-4 lg:gap-8 w-full md:max-w-[70%]">
+                    <h1 className="text-white text-3xl sm:text-4xl lg:text-6xl font-semibold leading-tight sm:leading-tight lg:leading-tight">
                       {title}
                     </h1>
                     <p className="text-white text-lg font-medium">{subtitle}</p>
@@ -64,7 +68,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
                     id="logo-DNE"
                     width={200}
                     height={100}
-                    className="hidden lg:block self-end filter brightness-0 invert"
+                    className="absolute bottom-6 right-6 hidden lg:block filter brightness-0 invert z-30"
                   />
                 </div>
               </div>
@@ -72,8 +76,9 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
           );
         })}
       </CarouselContent>
-      <div className="absolute bottom-6 lg:bottom-[65px] left-0 w-full z-20">
-        <div className="w-full mx-auto max-w-[1440px] px-6 flex justify-center">
+
+      <div className="absolute bottom-0 left-0 right-0 w-full z-20 pb-16 sm:pb-6 lg:pb-[65px]">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
           <div className="bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 md:px-4 md:py-2 flex gap-2">
             {content.map((_, indexDot) => (
               <DotButton key={indexDot} tabIndex={indexDot} />
@@ -83,7 +88,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
       </div>
 
       <CarouselPrevious className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
-      <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-whi transition-colors" />
+      <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
     </Carousel>
   );
 };
