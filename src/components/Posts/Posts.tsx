@@ -105,6 +105,7 @@ export const Posts = ({
           postCollection: { total: number; items: IPublication[] };
         }>(PUBLICATION_QUERY, {
           order: sorting,
+          skip: POSTS_PER_PAGE * (currentPage - 1),
           filter: {
             ...rootFilter,
             ...parseForm(filter),

@@ -15,9 +15,6 @@ export const SortSelect = ({
   defaultvalue: string;
   onChange: (value: string) => void;
 }) => {
-  console.log(defaultvalue);
-  console.log(Object.entries(sortingTypes));
-
   return (
     <Select value={defaultvalue} onValueChange={onChange}>
       <SelectTrigger className="w-full lg:w-fit hover:bg-grey-100 cursor-pointer">

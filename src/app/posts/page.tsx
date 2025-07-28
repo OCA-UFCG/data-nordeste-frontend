@@ -25,7 +25,10 @@ export default async function DataPanel({}: {}) {
   const {
     sectionHeadCollection: sectionHead,
     pageHeadersCollection: pageHeaders,
-  }: IPostsContent = await getContent(POST_PAGE_QUERY);
+  }: IPostsContent = await getContent(POST_PAGE_QUERY, {
+    header_id: "posts",
+    head_id: "posts-content",
+  });
 
   return (
     <HubTemplate>

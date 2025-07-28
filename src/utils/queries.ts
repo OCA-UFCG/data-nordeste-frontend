@@ -245,15 +245,15 @@ export const ABOUT_QUERY = `
 `;
 
 export const POST_PAGE_QUERY = `
-  query {
-    pageHeadersCollection(limit: 1, where: { id_in: ["posts"]}) {
+  query GetPosts($header_id: String!, $head_id: String!) {
+    pageHeadersCollection(limit: 1, where: { id_in: [$header_id]}) {
       items {
         title
         subtitle
       }
     }
 
-    sectionHeadCollection(limit: 1, where: { id_in: ["posts-content"]}) {
+    sectionHeadCollection(limit: 1, where: { id_in: [$head_id]}) {
       items {
         id
         title
@@ -263,12 +263,14 @@ export const POST_PAGE_QUERY = `
         }
       }
     }
+
+
   }
 `;
 
 export const PUBLICATION_QUERY = `
-  query GetPosts($order: [PostOrder], $filter: PostFilter) {
-    postCollection(limit: ${POSTS_PER_PAGE}, order: $order, where: $filter) {
+  query GetPosts($order: [PostOrder], $filter: PostFilter, $skip: Int!) {
+    postCollection(limit: ${POSTS_PER_PAGE}, order: $order, where: $filter, skip: $skip) {
       total
       items {
         title
@@ -281,7 +283,36 @@ export const PUBLICATION_QUERY = `
         description
       }
     }
+  }
+`;
 
+export const EXPLORE_PAGE_QUERY = `
+  query GetPosts($header_id: String!, $head_id: String!) {
+    pageHeadersCollection(limit: 1, where: { id_in: [$header_id]}) {
+      items {
+        title
+        subtitle
+      }
+    }
 
+    sectionHeadCollection(limit: 1, where: { id_in: [$head_id]}) {
+      items {
+        id
+        title
+        subtitle
+        thumb {
+          url
+        }
+      }
+    }
+
+    themeCollection {
+      items {
+        name
+        sys {
+          id
+        }
+      }
+    }
   }
 `;
