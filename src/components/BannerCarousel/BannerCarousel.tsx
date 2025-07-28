@@ -68,7 +68,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
                     id="logo-DNE"
                     width={200}
                     height={100}
-                    className="absolute bottom-6 right-6 hidden lg:block filter brightness-0 invert z-30"
+                    className="hidden lg:block self-end filter brightness-0 invert z-30"
                   />
                 </div>
               </div>
