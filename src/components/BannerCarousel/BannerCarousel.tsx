@@ -51,7 +51,7 @@ const MainBanner = ({ content }: { content: { fields: IMainBanner }[] }) => {
                 <div className="absolute top-0 right-0 h-full w-full bg-gradient-to-l from-black via-transparent to-transparent"></div>
                 <div className="absolute top-0 left-0 h-full w-[140%] bg-gradient-to-r from-black via-transparent to-transparent"></div>
 
-                <div className="relative flex w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full items-end justify-between z-30">
+                <div className="relative flex w-full xl:min-w-[1440px] xl:ml-5 max-w-7xl px-4 sm:px-6 lg:px-8 xl:px-0 h-full items-end justify-between z-30">
                   <div className="flex flex-col gap-4 lg:gap-8 w-full md:max-w-[70%]">
                     <h1 className="text-white text-3xl sm:text-4xl lg:text-6xl font-semibold leading-tight sm:leading-tight lg:leading-tight">
                       {title}
