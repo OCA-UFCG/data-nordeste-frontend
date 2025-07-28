@@ -36,13 +36,13 @@ export function FilterForm({
 }) {
   const formSchema = z.object({
     category: z.array(z.string()).optional(),
-    type: z.array(z.string()).optional(),
-    initDate: z
+    type_in: z.array(z.string()).optional(),
+    date_gte: z
       .date({
         invalid_type_error: "Isso não é uma data",
       })
       .optional(),
-    finalDate: z
+    date_lte: z
       .date({
         invalid_type_error: "Isso não é uma data",
       })
@@ -78,13 +78,13 @@ export function FilterForm({
             >
               <div className="flex flex-col md:flex-row gap-4">
                 {[
-                  { label: "Início", name: "initDate" },
-                  { label: "Fim", name: "finalDate" },
+                  { label: "Início", name: "date_gte" },
+                  { label: "Fim", name: "date_lte" },
                 ].map(({ label, name }, i) => (
                   <FormField
                     key={i}
                     control={form.control}
-                    name={name as "initDate" | "finalDate"}
+                    name={name as "date_gte" | "date_lte"}
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>{label}</FormLabel>
@@ -139,11 +139,11 @@ export function FilterForm({
                 control={form.control}
                 name={
                   selectFields.type as
-                    | "initDate"
-                    | "finalDate"
-                    | "type"
+                    | "date_lte"
+                    | "date_gte"
+                    | "type_in"
                     | "category"
-                    | `type.${number}`
+                    | `type_in.${number}`
                     | `category.${number}`
                 }
                 render={() => (
@@ -157,7 +157,7 @@ export function FilterForm({
                       <FormField
                         key={key}
                         control={form.control}
-                        name={selectFields.type as "type" | "category"}
+                        name={selectFields.type as "type_in" | "category"}
                         render={({ field }) => {
                           return (
                             <FormItem

@@ -2,39 +2,43 @@ import PageHeader from "@/components/PageHeader/PageHeader";
 import { Posts } from "@/components/Posts/Posts";
 import HubTemplate from "@/templates/HubTemplate";
 import { POSTS_PER_PAGE } from "@/utils/constants";
-import { getContent, getTotalPages } from "@/utils/functions";
-import { SectionHeader } from "@/utils/interfaces";
+import { getContent } from "@/utils/contentful";
+import { getTotalPages } from "@/utils/functions";
+import { IPageHeader, SectionHeader } from "@/utils/interfaces";
+import { POST_PAGE_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
 
 export const revalidate = 60;
 
+// [
+//     "sectionHead",
+//     "pageHeaders",
+
+interface IPostsContent {
+  pageHeadersCollection: { items: IPageHeader[] };
+  sectionHeadCollection: { items: SectionHeader[] };
+}
+
 export default async function DataPanel({}: {}) {
   const pages = (await getTotalPages(POSTS_PER_PAGE)) || 1;
-  const { sectionHead, pageHeaders } = await getContent([
-    "sectionHead",
-    "pageHeaders",
-  ]);
+
+  const {
+    sectionHeadCollection: sectionHead,
+    pageHeadersCollection: pageHeaders,
+  }: IPostsContent = await getContent(POST_PAGE_QUERY);
 
   return (
     <HubTemplate>
-      <PageHeader
-        content={pageHeaders.find(
-          (section: { fields: { id: string } }) =>
-            section.fields.id === "posts",
-        )}
-      />
+      <PageHeader content={pageHeaders.items[0]} />
 
       <Suspense>
         <Posts
-          header={sectionHead.find(
-            (sec: { fields: SectionHeader }) =>
-              sec.fields.id == "posts-content",
-          )}
-          rootFilter={{ "fields.type[in]": "newsletter,additional-content" }}
+          header={sectionHead.items[0]}
+          rootFilter={{ type_in: ["newsletter", "additional-content"] }}
           totalPages={pages}
           categories={{
             title: "Tipo de publicação",
-            type: "type",
+            type: "type_in",
             fields: {
               "additional-content": "Notícia",
               newsletter: "Boletim",

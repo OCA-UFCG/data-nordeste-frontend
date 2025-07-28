@@ -27,7 +27,7 @@ export const PostsGrid = ({
   currentPage: number;
   loading: boolean;
   pages: number;
-  posts: { fields: IPublication }[];
+  posts: IPublication[];
 }) => {
   const pagesRange = useMemo(() => {
     let init = 0;

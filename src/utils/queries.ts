@@ -1,3 +1,5 @@
+import { POSTS_PER_PAGE } from "./constants";
+
 export const HEAD_QUERY = `
   query {
     headerCollection {
@@ -239,5 +241,47 @@ export const ABOUT_QUERY = `
         }
       }
     }
+  }
+`;
+
+export const POST_PAGE_QUERY = `
+  query {
+    pageHeadersCollection(limit: 1, where: { id_in: ["posts"]}) {
+      items {
+        title
+        subtitle
+      }
+    }
+
+    sectionHeadCollection(limit: 1, where: { id_in: ["posts-content"]}) {
+      items {
+        id
+        title
+        subtitle
+        thumb {
+          url
+        }
+      }
+    }
+  }
+`;
+
+export const PUBLICATION_QUERY = `
+  query GetPosts($order: [PostOrder], $filter: PostFilter) {
+    postCollection(limit: ${POSTS_PER_PAGE}, order: $order, where: $filter) {
+      total
+      items {
+        title
+        link
+        thumb {
+          url
+        }
+        type
+        date
+        description
+      }
+    }
+
+
   }
 `;

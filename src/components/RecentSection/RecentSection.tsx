@@ -48,7 +48,6 @@ export const RecentSection = ({
       },
     });
 
-    console.log(filteredPosts);
     setPosts(filteredPosts.items);
   }, []);
 
