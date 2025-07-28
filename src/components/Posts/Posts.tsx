@@ -81,14 +81,8 @@ export const Posts = ({
               ...{ [key]: formatedForm[key] },
             };
           }
-
-          // console.log(finalForm);
         }
       },
-    );
-
-    console.log(
-      createQueryString({ ...newParams, page: currentPage.toString() }),
     );
 
     router.push(
@@ -106,14 +100,6 @@ export const Posts = ({
     new Promise<{
       postCollection: { total: number; items: IPublication[] };
     }>((resolve) => {
-      console.log(
-        "oi",
-        {
-          ...rootFilter,
-          ...parseForm(filter),
-        },
-        parseForm(filter),
-      );
       resolve(
         getContent<{
           postCollection: { total: number; items: IPublication[] };
@@ -127,7 +113,6 @@ export const Posts = ({
       );
     }).then((value) => {
       const { postCollection: posts } = value;
-      console.log(posts);
       setPosts(posts.items);
       setpages(Math.ceil(posts.total / POSTS_PER_PAGE));
       setLoading(false);
@@ -145,11 +130,7 @@ export const Posts = ({
             initSchema={filter}
             selectFields={categories}
             onReset={() => router.push(pathname)}
-            onSubmit={(newForm) => {
-              console.log(newForm);
-
-              return parseForm(newForm);
-            }}
+            onSubmit={(newForm) => parseForm(newForm)}
           />
           <SortSelect defaultvalue={sorting} onChange={setSorting} />
         </div>
