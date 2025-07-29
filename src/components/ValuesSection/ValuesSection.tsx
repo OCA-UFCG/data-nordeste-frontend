@@ -12,7 +12,7 @@ const ValuesSection = ({ content }: { content: IValues[] }) => {
         <div className="">
           <Image
             className="w-full float-none md:float-left h-full md:max-w-[300px] object-cover rounded-md aspect-[16/9] order-1 mb-4 mr-4"
-            src={`${thumb.url}`}
+            src={thumb?.url || ""}
             alt={"Sobre nós"}
             width={1200}
             height={800}

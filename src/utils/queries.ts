@@ -1,8 +1,8 @@
 import { POSTS_PER_PAGE } from "./constants";
 
 export const HEAD_QUERY = `
-  query {
-    headerCollection {
+  query($preview: Boolean) {
+    headerCollection(preview: $preview) {
       items {
         id
         name
@@ -27,8 +27,8 @@ export const MAIN_PAGE_IDS =
   '["preview", "new", "panels", "about", "projects"]';
 
 export const MAIN_PAGE_QUERY = `
-  query {
-    mainBannerCollection(limit: 10) {
+  query($preview: Boolean) {
+    mainBannerCollection(limit: 10, preview: $preview) {
       items {
         title
         subtitle
@@ -37,7 +37,7 @@ export const MAIN_PAGE_QUERY = `
         }
       }
     }
-    themeCollection(limit: 20) {
+    themeCollection(limit: 20, preview: $preview) {
       items {
         name
         id
@@ -48,7 +48,7 @@ export const MAIN_PAGE_QUERY = `
       }
     }
 
-    postCollection(limit: 8) {
+    postCollection(limit: 8, preview: $preview) {
       items {
         title
         thumb {
@@ -59,7 +59,7 @@ export const MAIN_PAGE_QUERY = `
       }
     }
 
-    previewCardsCollection(limit: 12) {
+    previewCardsCollection(limit: 12, preview: $preview) {
       items {
         title
         jsonFile
@@ -71,7 +71,7 @@ export const MAIN_PAGE_QUERY = `
       }
     }
 
-    sectionHeadCollection(limit: 5, where: { id_in: ${MAIN_PAGE_IDS} }) {
+    sectionHeadCollection(limit: 5, where: { id_in: ${MAIN_PAGE_IDS} }, preview: $preview) {
       items {
         title
         subtitle
@@ -82,7 +82,7 @@ export const MAIN_PAGE_QUERY = `
       }
     }
 
-    partnersCollection(limit: 10) {
+    partnersCollection(limit: 10, preview: $preview) {
       items {
         name
         thumb {
@@ -96,8 +96,8 @@ export const MAIN_PAGE_QUERY = `
 `;
 
 export const POSTS_QUERY = `
-  query ($limit: Int!, $filter: PostFilter) {
-    postCollection(limit: $limit, where: $filter) {
+  query ($limit: Int!, $filter: PostFilter, $preview: Boolean) {
+    postCollection(limit: $limit, where: $filter, preview: $preview) {
       items {
         title
         thumb {
@@ -114,8 +114,8 @@ export const POSTS_QUERY = `
 export const PAGE_ID = "projects";
 
 export const CONNECTIONS_PAGE_QUERY = `
-  query {
-    pageHeadersCollection(limit: 1, where: { id_in: ["${PAGE_ID}"] }) {
+  query ($preview: Boolean) {
+    pageHeadersCollection(limit: 1, where: { id_in: ["${PAGE_ID}"] }, preview: $preview) {
       items {
         title
         subtitle
@@ -123,7 +123,7 @@ export const CONNECTIONS_PAGE_QUERY = `
       }
     }
 
-    partnersCollection {
+    partnersCollection(preview: $preview) {
       items {
         name
         link
@@ -139,8 +139,8 @@ export const CONNECTIONS_PAGE_QUERY = `
 `;
 
 export const DATA_PANEL_QUERY = `
-  query ($id: String!) {
-    panelsCollection(where: { title_in: [$id] } ) {
+  query ($id: String!, $preview: Boolean) {
+    panelsCollection(where: { title_in: [$id] }, preview: $preview) {
       items {
         title
         date
@@ -152,8 +152,8 @@ export const DATA_PANEL_QUERY = `
 `;
 
 export const DATA_STORY_QUERY = `
-  query ($id: String!) {
-    dataStoriesCollection(limit: 1, where: { id_in: [$id] } ) {
+  query ($id: String!, $preview: Boolean) {
+    dataStoriesCollection(limit: 1, where: { id_in: [$id] }, preview: $preview) {
       items {
         id
       }
@@ -162,15 +162,15 @@ export const DATA_STORY_QUERY = `
 `;
 
 export const ABOUT_PAGE_QUERY = `
-  query {
-    pageHeadersCollection(limit: 1, where: { id_in: ["about"]}) {
+  query ($preview: Boolean) {
+    pageHeadersCollection(limit: 1, where: { id_in: ["about"]}, preview: $preview) {
       items {
         title
         subtitle
       }
     }
 
-    pageTabsCollection {
+    pageTabsCollection(preview: $preview) {
       items {
         name
         id
@@ -179,7 +179,7 @@ export const ABOUT_PAGE_QUERY = `
     }
 
 
-    contactInfoCollection {
+    contactInfoCollection(preview: $preview) {
       items {
         name
         type
@@ -187,7 +187,7 @@ export const ABOUT_PAGE_QUERY = `
       }
     }
 
-    partnersInfoCollection {
+    partnersInfoCollection(preview: $preview) {
       items {
         id
         details {
@@ -207,8 +207,8 @@ export const ABOUT_PAGE_QUERY = `
 `;
 
 export const ABOUT_QUERY = `
-  query {
-    aboutCollection {
+  query ($preview: Boolean) {
+    aboutCollection(preview: $preview) {
       items {
         id
         albumCollection {
@@ -228,7 +228,7 @@ export const ABOUT_QUERY = `
       }
     }
 
-    visionMissionValuesCollection {
+    visionMissionValuesCollection(preview: $preview) {
       items {
         id
         title
@@ -245,15 +245,15 @@ export const ABOUT_QUERY = `
 `;
 
 export const POST_PAGE_QUERY = `
-  query GetPosts($header_id: String!, $head_id: String!) {
-    pageHeadersCollection(limit: 1, where: { id_in: [$header_id]}) {
+  query GetPosts($header_id: String!, $head_id: String!, $preview: Boolean) {
+    pageHeadersCollection(limit: 1, where: { id_in: [$header_id]}, preview: $preview) {
       items {
         title
         subtitle
       }
     }
 
-    sectionHeadCollection(limit: 1, where: { id_in: [$head_id]}) {
+    sectionHeadCollection(limit: 1, where: { id_in: [$head_id]}, preview: $preview) {
       items {
         id
         title
@@ -264,15 +264,15 @@ export const POST_PAGE_QUERY = `
       }
     }
 
-    postCollection {
+    postCollection(preview: $preview) {
       total
     }
   }
 `;
 
 export const PUBLICATION_QUERY = `
-  query GetPosts($order: [PostOrder], $filter: PostFilter, $skip: Int!) {
-    postCollection(limit: ${POSTS_PER_PAGE}, order: $order, where: $filter, skip: $skip) {
+  query GetPosts($order: [PostOrder], $filter: PostFilter, $skip: Int!, $preview: Boolean) {
+    postCollection(limit: ${POSTS_PER_PAGE}, order: $order, where: $filter, skip: $skip, preview: $preview) {
       total
       items {
         title
@@ -289,15 +289,15 @@ export const PUBLICATION_QUERY = `
 `;
 
 export const EXPLORE_PAGE_QUERY = `
-  query GetPosts($header_id: String!, $head_id: String!) {
-    pageHeadersCollection(limit: 1, where: { id_in: [$header_id]}) {
+  query GetPosts($header_id: String!, $head_id: String!, $preview: Boolean) {
+    pageHeadersCollection(limit: 1, where: { id_in: [$header_id]}, preview: $preview) {
       items {
         title
         subtitle
       }
     }
 
-    sectionHeadCollection(limit: 1, where: { id_in: [$head_id]}) {
+    sectionHeadCollection(limit: 1, where: { id_in: [$head_id]}, preview: $preview) {
       items {
         id
         title
@@ -308,7 +308,7 @@ export const EXPLORE_PAGE_QUERY = `
       }
     }
 
-    themeCollection {
+    themeCollection(preview: $preview) {
       items {
         name
         sys {
@@ -317,7 +317,7 @@ export const EXPLORE_PAGE_QUERY = `
       }
     }
 
-    postCollection {
+    postCollection(preview: $preview) {
       total
     }
   }

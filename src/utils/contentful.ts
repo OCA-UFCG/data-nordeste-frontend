@@ -1,18 +1,22 @@
 const ENVIRONMENT = process.env.CONTENTFUL_ENVIRONMENT || "master";
 const ACCESS_TOKEN = process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || "";
 const SPACE_ID = process.env.NEXT_PUBLIC_CONTENTFUL_SPACE || "";
-const CONTENTFUL_ENPOINT = `https://graphql.contentful.com/content/v1/spaces/${SPACE_ID}/environments/${ENVIRONMENT}`;
+const USE_PREVIEW = process.env.NEXT_PUBLIC_PREVIEW ? true : false;
+const CONTENTFUL_ENDPOINT = `https://graphql.contentful.com/content/v1/spaces/${SPACE_ID}/environments/${ENVIRONMENT}`;
 
 export async function getContent<T>(
   query: string,
   variables?: Record<string, any>,
 ): Promise<T> {
-  const response = await fetch(CONTENTFUL_ENPOINT, {
+  variables = { ...variables, preview: USE_PREVIEW };
+
+  const response = await fetch(CONTENTFUL_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${ACCESS_TOKEN}`,
     },
+
     body: JSON.stringify({
       query,
       variables,
