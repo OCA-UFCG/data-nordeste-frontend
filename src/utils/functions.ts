@@ -2,9 +2,12 @@ import { createClient } from "contentful";
 
 import { POSTS_PER_PAGE } from "./constants";
 
+const DEFAULT_HOST = "cdn.contentful.com";
+
 const client = createClient({
   accessToken: process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || "",
   space: process.env.NEXT_PUBLIC_CONTENTFUL_SPACE || "",
+  host: process.env.NEXT_PUBLIC_CONTENTFUL_HOST || DEFAULT_HOST,
 });
 
 export const getContent = async (contentTypes: string[]) => {
