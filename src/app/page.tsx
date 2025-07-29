@@ -11,7 +11,7 @@ import {
 import { AboutSection } from "@/components/AboutSection/AboutSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewSection from "@/components/PreviewSection/PreviewSection";
-import MainBanner from "@/components/BannerImage/BannerImage";
+import MainBanner from "@/components/BannerCarousel/BannerCarousel";
 import DataSection from "@/components/DataSection/DataSection";
 import { getContent } from "@/utils/contentful";
 import { MAIN_PAGE_QUERY } from "@/utils/queries";
@@ -40,7 +40,7 @@ export default async function Home() {
 
   return (
     <HubTemplate>
-      <MainBanner content={mainBanner.items[0]} />
+      <MainBanner content={mainBanner.items} />
       <PreviewSection
         header={sectionHead.items.find(
           (sec: SectionHeader) => sec.id == "preview",

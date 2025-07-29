@@ -123,6 +123,8 @@ export interface IStateData {
 }
 
 export interface IMainBanner {
+  buttonLabel: string;
+  buttonUrl: string;
   title: string;
   subtitle: string;
   image: {

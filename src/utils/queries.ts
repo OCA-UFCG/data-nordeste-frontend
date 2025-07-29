@@ -32,6 +32,8 @@ export const MAIN_PAGE_QUERY = `
       items {
         title
         subtitle
+        buttonUrl
+        buttonLabel
         image {
           url
         }
