@@ -207,8 +207,8 @@ export function FilterForm({
         variant="secondary"
         className="text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit"
         onClick={() => {
-          form.reset({});
           onReset();
+          form.reset({});
         }}
       >
         <span>Limpar filtros</span>

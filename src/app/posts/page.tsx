@@ -1,30 +1,25 @@
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { Posts } from "@/components/Posts/Posts";
 import HubTemplate from "@/templates/HubTemplate";
-import { POSTS_PER_PAGE } from "@/utils/constants";
+import { REVALIDATE } from "@/utils/constants";
 import { getContent } from "@/utils/contentful";
-import { getTotalPages } from "@/utils/functions";
 import { IPageHeader, SectionHeader } from "@/utils/interfaces";
 import { POST_PAGE_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
 
-export const revalidate = 60;
-
-// [
-//     "sectionHead",
-//     "pageHeaders",
+export const revalidate = REVALIDATE;
 
 interface IPostsContent {
   pageHeadersCollection: { items: IPageHeader[] };
   sectionHeadCollection: { items: SectionHeader[] };
+  postCollection: { total: number };
 }
 
 export default async function DataPanel({}: {}) {
-  const pages = (await getTotalPages(POSTS_PER_PAGE)) || 1;
-
   const {
     sectionHeadCollection: sectionHead,
     pageHeadersCollection: pageHeaders,
+    postCollection: pages,
   }: IPostsContent = await getContent(POST_PAGE_QUERY, {
     header_id: "posts",
     head_id: "posts-content",
@@ -33,12 +28,11 @@ export default async function DataPanel({}: {}) {
   return (
     <HubTemplate>
       <PageHeader content={pageHeaders.items[0]} />
-
       <Suspense>
         <Posts
           header={sectionHead.items[0]}
           rootFilter={{ type_in: ["newsletter", "additional-content"] }}
-          totalPages={pages}
+          totalPages={pages.total || 1}
           categories={{
             title: "Tipo de publicação",
             type: "type_in",

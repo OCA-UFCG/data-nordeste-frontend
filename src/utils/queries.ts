@@ -264,7 +264,9 @@ export const POST_PAGE_QUERY = `
       }
     }
 
-
+    postCollection {
+      total
+    }
   }
 `;
 
@@ -313,6 +315,10 @@ export const EXPLORE_PAGE_QUERY = `
           id
         }
       }
+    }
+
+    postCollection {
+      total
     }
   }
 `;
