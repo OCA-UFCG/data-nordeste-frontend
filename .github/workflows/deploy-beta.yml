@@ -37,7 +37,7 @@ jobs:
             ${{ steps.meta.outputs.tags }}
           build-args: |
             NEXT_PUBLIC_CONTENTFUL_SPACE=${{ secrets.NEXT_PUBLIC_CONTENTFUL_SPACE  }}
-            NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN=${{ secrets.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN }}
+            NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN=${{ secrets.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN_PREVIEW }}
             NEXT_PUBLIC_HOST_URL=${{ vars.NEXT_PUBLIC_HOST_URL_BETA }}
             NEXT_PUBLIC_CONTENTFUL_HOST=${{ vars.NEXT_PUBLIC_CONTENTFUL_HOST_BETA }}
             
