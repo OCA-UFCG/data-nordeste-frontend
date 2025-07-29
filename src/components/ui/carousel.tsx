@@ -183,7 +183,7 @@ function CarouselItem({ className, ...props }: ComponentProps<"div">) {
       data-slot="carousel-item"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
-        orientation === "horizontal" ? "px-2" : "py-2",
+        orientation === "horizontal" ? "px-0" : "py-2",
         className,
       )}
       {...props}
