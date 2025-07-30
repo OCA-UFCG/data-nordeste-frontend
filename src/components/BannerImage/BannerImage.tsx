@@ -3,14 +3,14 @@ import { Icon } from "../Icon/Icon";
 import Image from "next/image";
 import { LinkButton } from "../LinkButton/LinkButton";
 
-const MainBanner = ({ content }: { content: { fields: IMainBanner } }) => {
-  const { title, subtitle, image } = content.fields;
+const MainBanner = ({ content }: { content: IMainBanner }) => {
+  const { title, subtitle, image } = content;
 
   return (
     <div className="overflow-hidden relative flex justify-center items-center w-full lg:mt-4 min-h-[380px] lg:min-h-[510px]">
       <Image
         className="absolute w-full min-h-[450px] h-full object-cover rounded-t-md md:rounded-l-md md:rounded-tr-none z-0"
-        src={`https:${image.fields.file.url}`}
+        src={`${image.url}`}
         alt=""
         width={1000}
         height={600}

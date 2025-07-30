@@ -1,6 +1,6 @@
 "use client";
 
-import { IPublication } from "@/utils/interfaces";
+import { IPublication, SectionHeader } from "@/utils/interfaces";
 import ContentPost from "../ContentPost/ContentPost";
 import { LinkButton } from "../LinkButton/LinkButton";
 import { Icon } from "../Icon/Icon";
@@ -15,17 +15,22 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import { FILTERS, TypeFilter } from "./TypeFilter";
 import { useCallback, useState } from "react";
-import { getEntriesByType } from "@/utils/functions";
 import { POSTS_PER_PAGE } from "@/utils/constants";
+import { getContent } from "@/utils/contentful";
+import { POSTS_QUERY } from "@/utils/queries";
 
 export const RecentSection = ({
   header,
   content,
 }: {
-  header: { fields: any };
-  content: { fields: IPublication }[];
+  header?: SectionHeader;
+  content: IPublication[];
 }) => {
-  const { id, title, subtitle } = header.fields;
+  const { id, title, subtitle } = header || {
+    title: "",
+    id: "",
+    subtitle: "",
+  };
   const [posts, setPosts] = useState(content);
   const [selectedType, setSelectedType] = useState<"all" | "panels" | "posts">(
     FILTERS.all.key,
@@ -34,15 +39,16 @@ export const RecentSection = ({
   const fetchPosts = useCallback(async (types: "all" | "panels" | "posts") => {
     setSelectedType(types);
 
-    const filteredPosts = await getEntriesByType<IPublication>(
-      "",
-      1,
-      POSTS_PER_PAGE,
-      {
-        "fields.type[in]": FILTERS[types].filter,
+    const { postCollection: filteredPosts } = await getContent<{
+      postCollection: { items: IPublication[] };
+    }>(POSTS_QUERY, {
+      limit: POSTS_PER_PAGE,
+      filter: {
+        type_in: FILTERS[types].filter,
       },
-    );
-    setPosts(filteredPosts);
+    });
+
+    setPosts(filteredPosts.items);
   }, []);
 
   return (
@@ -89,8 +95,7 @@ export const RecentSection = ({
             {posts
               .sort(
                 (a, b) =>
-                  new Date(b.fields.date).getTime() -
-                  new Date(a.fields.date).getTime(),
+                  new Date(b.date).getTime() - new Date(a.date).getTime(),
               )
               .map((card, i) => (
                 <CarouselItem

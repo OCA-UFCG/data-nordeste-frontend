@@ -16,14 +16,14 @@ export const SortSelect = ({
   onChange: (value: string) => void;
 }) => {
   return (
-    <Select onValueChange={onChange}>
+    <Select value={defaultvalue} onValueChange={onChange}>
       <SelectTrigger className="w-full lg:w-fit hover:bg-grey-100 cursor-pointer">
         <SelectValue placeholder="Ordenar por" defaultValue={defaultvalue} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           {Object.entries(sortingTypes).map(([key, value]) => (
-            <SelectItem value={value} key={key} className="cursor-pointer">
+            <SelectItem value={value} key={value} className="cursor-pointer">
               {key}
             </SelectItem>
           ))}

@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
 
-const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
-  const { title, thumb, link, date, type } = content.fields;
+const ContentPost = ({ content }: { content: IPublication }) => {
+  const { title, thumb, link, date, type } = content;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
@@ -19,7 +19,7 @@ const ContentPost = ({ content }: { content: { fields: IPublication } }) => {
           width={300}
           height={300}
           alt=""
-          src={`https:${thumb?.fields?.file?.url || ""}`}
+          src={`${thumb.url}`}
           className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
         />
       </div>

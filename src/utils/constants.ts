@@ -1,6 +1,8 @@
 import { EntrySys, OrderFilterPaths } from "contentful";
 import { ISudeneChannel } from "./interfaces";
 
+export const REVALIDATE = process.env.NEXT_PUBLIC_PREVIEW ? 60 : 3600;
+
 export const channels: ISudeneChannel[] = [
   {
     name: "@sudenebr",
@@ -39,8 +41,8 @@ export const sortingTypes: {
     | "sys.contentType.sys.id"
     | "-sys.contentType.sys.id";
 } = {
-  "Ordem Alfabética": "fields.title" as "sys.contentType.sys.id",
-  "Mais recente": "-fields.date" as "sys.contentType.sys.id",
+  "Ordem Alfabética": "title_ASC" as "sys.contentType.sys.id",
+  "Mais recente": "date_DESC" as "sys.contentType.sys.id",
 };
 
 export const POST_TYPES = {
@@ -60,30 +62,61 @@ export const macroThemes: { [key: string]: string } = {
 };
 
 export const exploreFilterMap: {
-  [key: string]: { name: string; formatFunc: (params: any) => any };
+  [key: string]: {
+    name: string;
+    formatForm: (params: any) => { [key: string]: any };
+    formatParam: (params: any) => { [key: string]: string | null };
+  };
 } = {
   category: {
-    name: "fields.category.sys.id[in]",
-    formatFunc: (selectedCats: string[]) =>
-      selectedCats.length > 0 && !("all" in selectedCats)
-        ? selectedCats.join(",")
-        : null,
+    name: "{category: {sys: id_in:",
+    formatForm: (selectedCats: string[]) =>
+      selectedCats.length
+        ? {
+            category: {
+              sys: {
+                id_in: selectedCats,
+              },
+            },
+          }
+        : { category: null },
+    formatParam: (selectedCats: string[]) => ({
+      category:
+        selectedCats.length > 0 && !("all" in selectedCats)
+          ? selectedCats.join(",")
+          : null,
+    }),
   },
-  initDate: {
+  date_gte: {
     name: "fields.date[gte]",
-    formatFunc: (date: Date | undefined) => (date ? date.toISOString() : null),
+    formatForm: (date: Date | null) => ({
+      date_gte: date ? date.toISOString() : null,
+    }),
+    formatParam: (date: Date | null) => ({
+      date_gte: date ? date.toISOString() : null,
+    }),
   },
 
-  finalDate: {
+  date_lte: {
     name: "fields.date[lte]",
-    formatFunc: (date: Date | undefined) => (date ? date.toISOString() : null),
+    formatForm: (date: Date | null) => ({
+      date_lte: date ? date.toISOString() : null,
+    }),
+    formatParam: (date: Date | null) => ({
+      date_lte: date ? date.toISOString() : null,
+    }),
   },
 
-  type: {
+  type_in: {
     name: "fields.type[in]",
-    formatFunc: (selectedCats: string[]) =>
-      selectedCats.length > 0 && !("all" in selectedCats)
-        ? selectedCats.join(",")
-        : null,
+    formatForm: (selectedCats: string[]) => ({
+      type_in: selectedCats,
+    }),
+    formatParam: (selectedCats: string[]) => ({
+      type_in:
+        selectedCats.length > 0 && !("all" in selectedCats)
+          ? selectedCats.join(",")
+          : null,
+    }),
   },
 };

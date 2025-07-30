@@ -10,12 +10,10 @@ import {
   POSTS_PER_PAGE,
   sortingTypes,
 } from "@/utils/constants";
-import {
-  createQueryString,
-  getEntriesByType,
-  getTotalPages,
-} from "@/utils/functions";
+import { createQueryString } from "@/utils/functions";
 import { SortSelect } from "../PostsGrid/SortSelect";
+import { getContent } from "@/utils/contentful";
+import { PUBLICATION_QUERY } from "@/utils/queries";
 
 export const Posts = ({
   header,
@@ -23,14 +21,14 @@ export const Posts = ({
   totalPages,
   rootFilter = {},
 }: {
-  header: { fields: SectionHeader };
+  header: SectionHeader;
   categories: {
     title: string;
     type: string;
     fields: { [key: string]: string };
   };
   totalPages: number;
-  rootFilter?: { [key: string]: string };
+  rootFilter?: { [key: string]: string | string[] };
 }) => {
   const params = useSearchParams();
   const router = useRouter();
@@ -41,15 +39,16 @@ export const Posts = ({
   const [sorting, setSorting] = useState(
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
-  const [posts, setPosts] = useState<{ fields: IPublication }[]>([]);
+  const [posts, setPosts] = useState<IPublication[]>([]);
   const filter = useMemo(
     () => ({
+      type_in: params.get("type_in")?.split(",") || undefined,
       category: params.get("category")?.split(",") || [],
-      initDate: Date.parse(params.get(`initDate`) || "")
-        ? new Date(params.get(`initDate`) || "")
+      date_lte: Date.parse(params.get(`date_lte`) || "")
+        ? new Date(params.get(`date_lte`) || "")
         : undefined,
-      finalDate: Date.parse(params.get(`finalDate`) || "")
-        ? new Date(params.get(`finalDate`) || "")
+      date_gte: Date.parse(params.get(`date_gte`) || "")
+        ? new Date(params.get(`date_gte`) || "")
         : undefined,
     }),
     [params],
@@ -64,17 +63,23 @@ export const Posts = ({
   const parseForm = (currentForm: {
     [key: string]: string | string[] | Date | undefined;
   }) => {
-    const finalForm: { [key: string]: string | string[] } = {};
-    const newParams: { [key: string]: string } = {};
+    let finalForm: { [key: string]: string | string[] } = {};
+    let newParams: { [key: string]: string } = {};
 
     Object.entries(currentForm).map(
       ([key, value]: [string, string | string[] | Date | undefined]) => {
         if (value && key in exploreFilterMap) {
-          const formatedValue = exploreFilterMap[key].formatFunc(value);
+          const formatedParam = exploreFilterMap[key].formatParam(value);
+          if (formatedParam[key]) {
+            newParams = { ...newParams, ...{ [key]: formatedParam[key] } };
+          }
 
-          if (formatedValue) {
-            newParams[key] = formatedValue;
-            finalForm[exploreFilterMap[key].name] = formatedValue;
+          const formatedForm = exploreFilterMap[key].formatForm(value);
+          if (formatedForm[key]) {
+            finalForm = {
+              ...finalForm,
+              ...{ [key]: formatedForm[key] },
+            };
           }
         }
       },
@@ -92,34 +97,35 @@ export const Posts = ({
   useEffect(() => {
     setLoading(true);
 
-    const postsPromise = new Promise((resolve) => {
+    new Promise<{
+      postCollection: { total: number; items: IPublication[] };
+    }>((resolve) => {
       resolve(
-        getEntriesByType<IPublication>(sorting, currentPage, POSTS_PER_PAGE, {
-          ...rootFilter,
-          ...parseForm(filter),
+        getContent<{
+          postCollection: { total: number; items: IPublication[] };
+        }>(PUBLICATION_QUERY, {
+          order: sorting,
+          skip: POSTS_PER_PAGE * (currentPage - 1),
+          filter: {
+            ...rootFilter,
+            ...parseForm(filter),
+          },
         }),
       );
     }).then((value) => {
-      setPosts(value as unknown as { fields: IPublication }[]);
-    });
-
-    const pagesPromise = new Promise((resolve) => {
-      resolve(getTotalPages({ ...rootFilter, ...parseForm(filter) }));
-    }).then((value) => {
-      setpages(value as number);
-    });
-
-    Promise.all([postsPromise, pagesPromise]).then(() => {
+      const { postCollection: posts } = value;
+      setPosts(posts.items);
+      setpages(Math.ceil(posts.total / POSTS_PER_PAGE));
       setLoading(false);
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pages, sorting, filter]);
+  }, [filter, rootFilter, sorting]);
 
   return (
     <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
       <div className="flex flex-col lg:flex-row justify-between lg:items-center w-full gap-4">
-        <h1 className="text-3xl font-semibold w-full">{header.fields.title}</h1>
+        <h1 className="text-3xl font-semibold w-full">{header.title}</h1>
         <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
           <FilterForm
             initSchema={filter}

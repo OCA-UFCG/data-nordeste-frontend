@@ -1,28 +1,30 @@
 import HubTemplate from "@/templates/HubTemplate";
-import { getContent } from "@/utils/functions";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import ProjectBigCard from "@/components/ProjectBigtCard/ProjectBigCard";
-import { Project } from "@/utils/interfaces";
+import { IPageHeader, Project } from "@/utils/interfaces";
+import { getContent } from "@/utils/contentful";
+import { REVALIDATE } from "@/utils/constants";
+import { CONNECTIONS_PAGE_QUERY } from "@/utils/queries";
 
-export const revalidate = 60;
+export const revalidate = REVALIDATE;
+
+interface IConnectionsContent {
+  pageHeadersCollection: { items: IPageHeader[] };
+  partnersCollection: { items: Project[] };
+}
 
 export default async function Connections({}: {}) {
-  const { pageHeaders, partners } = await getContent([
-    "pageHeaders",
-    "partners",
-  ]);
+  const {
+    pageHeadersCollection: pageHeaders,
+    partnersCollection: partners,
+  }: IConnectionsContent = await getContent(CONNECTIONS_PAGE_QUERY);
 
   return (
     <HubTemplate>
-      <PageHeader
-        content={pageHeaders.find(
-          (section: { fields: { id: string } }) =>
-            section.fields.id === "projects",
-        )}
-      />
-      {partners?.map((partner: { fields: Project }, index: number) => (
+      <PageHeader content={pageHeaders.items[0]} />
+      {partners.items.map((partner: Project, index: number) => (
         <ProjectBigCard
-          key={partner.fields.name}
+          key={partner.name}
           project={partner}
           direction={index % 2 === 0 ? "left" : "right"}
         />

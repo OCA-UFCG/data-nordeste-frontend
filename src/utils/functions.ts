@@ -1,79 +1,3 @@
-import { createClient } from "contentful";
-
-import { POSTS_PER_PAGE } from "./constants";
-
-const DEFAULT_HOST = "cdn.contentful.com";
-
-const client = createClient({
-  accessToken: process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || "",
-  space: process.env.NEXT_PUBLIC_CONTENTFUL_SPACE || "",
-  host: process.env.NEXT_PUBLIC_CONTENTFUL_HOST || DEFAULT_HOST,
-});
-
-export const getContent = async (contentTypes: string[]) => {
-  const content: any = {};
-
-  for (const type of contentTypes) {
-    const res = await client.getEntries({ content_type: type });
-    content[type] = res.items;
-  }
-
-  return content;
-};
-
-export const getTotalPages = async (filter = {}) => {
-  try {
-    const params: { [key: string]: any } = {
-      content_type: "post",
-      limit: 1,
-    };
-
-    Object.entries(filter).map(([key, value]) => {
-      params[key] = value;
-    });
-
-    const response = await client.getEntries(params);
-
-    const totalEntries = response.total;
-    const totalPages = Math.ceil(totalEntries / POSTS_PER_PAGE);
-
-    return totalPages;
-  } catch (error) {
-    console.error("Error fetching total pages:", error);
-  }
-};
-
-export const getEntriesByType = async <T>(
-  sort: string,
-  page = 1,
-  limit = 12,
-  filter: { [key: string]: any },
-  contentType?: string,
-): Promise<{ fields: T }[]> => {
-  const skip = (page - 1) * limit;
-
-  try {
-    const params: { [key: string]: any } = {
-      content_type: contentType || "post",
-      order: [sort],
-      limit: limit,
-      skip: skip,
-    };
-
-    Object.entries(filter).map(([key, value]) => {
-      params[key] = value;
-    });
-
-    const response = await client.getEntries(params);
-
-    return response.items as unknown as { fields: T }[];
-  } catch (error) {
-    console.error("Error fetching page:", error);
-
-    return [];
-  }
-};
-
 export const capitalize = (inputString: string): string => {
   return inputString
     .toLowerCase()
@@ -83,12 +7,12 @@ export const capitalize = (inputString: string): string => {
 };
 
 export const sortContentByDesiredOrder = <T extends { id: string }>(
-  content: { fields: T }[],
+  content: T[],
   desiredOrder: string[],
-): { fields: T }[] => {
+): T[] => {
   return [...content].sort((a, b) => {
-    const aIndex = desiredOrder.indexOf(a.fields.id);
-    const bIndex = desiredOrder.indexOf(b.fields.id);
+    const aIndex = desiredOrder.indexOf(a.id);
+    const bIndex = desiredOrder.indexOf(b.id);
 
     return (
       (aIndex === -1 ? Infinity : aIndex) - (bIndex === -1 ? Infinity : bIndex)

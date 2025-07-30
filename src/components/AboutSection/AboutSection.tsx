@@ -1,8 +1,13 @@
+import { SectionHeader } from "@/utils/interfaces";
 import { LinkButton } from "../LinkButton/LinkButton";
 import Image from "next/image";
 
-export const AboutSection = ({ header }: { header: { fields: any } }) => {
-  const { id, title, subtitle, thumb } = header.fields;
+export const AboutSection = ({ header }: { header?: SectionHeader }) => {
+  const { id, title, subtitle, thumb } = header || {
+    id: "",
+    title: "",
+    subtitle: "",
+  };
 
   return (
     <section id={id} className="w-full py-8 lg:py-12">
@@ -13,7 +18,7 @@ export const AboutSection = ({ header }: { header: { fields: any } }) => {
         <div className="flex flex-col lg:flex-row gap-6">
           <Image
             alt=""
-            src={`https:${thumb.fields.file.url}`}
+            src={`${thumb?.url}`}
             width={462}
             height={374}
             className="w-full lg:h-[374px] lg:w-[462px] rounded-lg"

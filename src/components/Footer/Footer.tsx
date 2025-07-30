@@ -3,26 +3,18 @@ import { channels } from "@/utils/constants";
 import { sortContentByDesiredOrder } from "@/utils/functions";
 import { ISection } from "@/utils/interfaces";
 
-const Footer = ({ content }: { content: { fields: ISection }[] }) => {
+const Footer = ({ content }: { content: ISection[] }) => {
   const mainPages = sortContentByDesiredOrder<ISection>(content, [
     "home",
     "about",
     "explore",
     "posts",
     "projects",
-  ])
-    .filter((item) => item.fields.appears)
-    .map(({ fields: { name, id, path, children } }) => ({
-      name,
-      id,
-      path,
-      children,
-    }));
+  ]).filter((item) => item.appears);
 
   const macroThemes = content
-    .filter((item) => !item.fields.appears)
-    .sort((a, b) => a.fields.name.localeCompare(b.fields.name))
-    .map(({ fields: { name, id, path } }) => ({ name, id, path }));
+    .filter((item) => !item.appears)
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const splitColumns = <T,>(array: T[], itemsPerColumn: number) => {
     const columns = [];

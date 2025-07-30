@@ -17,7 +17,7 @@ export const AboutContent = ({
   tabs: {
     [key: string]: ReactElement<any, string | JSXElementConstructor<any>>;
   };
-  tabsHeader: { fields: ITab }[];
+  tabsHeader: ITab[];
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,14 +44,14 @@ export const AboutContent = ({
             {orderedContent.map((tab, idx) => (
               <NavigationMenuItem key={idx}>
                 <button
-                  onClick={() => handleTabClick(tab.fields.path)}
+                  onClick={() => handleTabClick(tab.path)}
                   className={`cursor-pointer text-md text-center pt-[20px] pb-[18px] px-[12px] rounded-none box-border ${
-                    currentTab === tab.fields.path
+                    currentTab === tab.path
                       ? "text-green-800 border-b-10 border-b-green-800"
                       : "text-muted-foreground"
                   }`}
                 >
-                  {tab.fields.name}
+                  {tab.name}
                 </button>
               </NavigationMenuItem>
             ))}

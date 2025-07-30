@@ -3,26 +3,26 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export const FILTERS: {
   [key: string]: {
-    filter: string;
+    filter: string[];
     text: string;
     href: string;
     key: "all" | "panels" | "posts";
   };
 } = {
   all: {
-    filter: "data-panel,newsletter,additional-content",
+    filter: ["data-panel", "newsletter", "additional-content"],
     text: "Todos",
     href: "/",
     key: "all",
   },
   panels: {
-    filter: "data-panel",
+    filter: ["data-panel"],
     text: "Painéis de dados",
     href: "/explore?page=1",
     key: "panels",
   },
   posts: {
-    filter: "newsletter,additional-content",
+    filter: ["newsletter", "additional-content"],
     text: "Publicações",
     href: "/posts?page=1",
     key: "posts",

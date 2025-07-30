@@ -2,15 +2,15 @@ import { Project } from "@/utils/interfaces";
 import { LinkButton } from "../LinkButton/LinkButton";
 import Image from "next/image";
 
-const ProjectCard = ({ project }: { project: { fields: Project } }) => {
-  const { name, description, link, thumb } = project.fields;
+const ProjectCard = ({ project }: { project: Project }) => {
+  const { name, description, link, thumb } = project;
 
   return (
     <div className="flex flex-col md:flex-row gap-4 justify-between items-center w-full bg-white border border-grey-200 rounded-md hover:scale-[1.01] transition-transform duration-300">
       <a href={link} className="w-full h-full">
         <Image
           className="w-full h-full object-cover rounded-t-md md:rounded-l-md md:rounded-tr-none"
-          src={`https:${thumb.fields.file.url}`}
+          src={`${thumb.url}`}
           alt=""
           width={800}
           height={800}

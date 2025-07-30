@@ -7,19 +7,19 @@ const DataSection = ({
   header,
   categories,
 }: {
-  header?: { fields: SectionHeader };
-  categories?: { fields: MacroTheme; sys: { id: string } }[];
+  header?: SectionHeader;
+  categories?: MacroTheme[];
 }) => {
-  const { title, subtitle } = header?.fields || {
+  const { title, subtitle } = header || {
     title: "",
     subtitle: "",
   };
 
   const filteredData = categories?.sort((a, b) => {
-    if (a.fields.id < b.fields.id) {
+    if (a.sys.id < b.sys.id) {
       return -1;
     }
-    if (a.fields.id > b.fields.id) {
+    if (a.sys.id > b.sys.id) {
       return 1;
     }
 
@@ -44,11 +44,9 @@ const DataSection = ({
           <p className="text-sm">{subtitle}</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredData?.map(
-            (category: { fields: MacroTheme; sys: { id: string } }) => (
-              <CategoryCard key={category.fields.id} category={category} />
-            ),
-          )}
+          {filteredData?.map((category: MacroTheme) => (
+            <CategoryCard key={category.id} category={category} />
+          ))}
         </div>
         <LinkButton
           href="/explore?page=1"
