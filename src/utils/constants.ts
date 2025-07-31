@@ -1,7 +1,9 @@
 import { EntrySys, OrderFilterPaths } from "contentful";
 import { ISudeneChannel } from "./interfaces";
 
-export const REVALIDATE = process.env.NEXT_PUBLIC_PREVIEW ? 60 : 3600;
+export const REVALIDATE = process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW
+  ? 60
+  : 3600;
 
 export const channels: ISudeneChannel[] = [
   {

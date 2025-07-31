@@ -1,7 +1,7 @@
 const ENVIRONMENT = process.env.CONTENTFUL_ENVIRONMENT || "master";
 const ACCESS_TOKEN = process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || "";
 const SPACE_ID = process.env.NEXT_PUBLIC_CONTENTFUL_SPACE || "";
-const USE_PREVIEW = process.env.NEXT_PUBLIC_PREVIEW ? true : false;
+const USE_PREVIEW = process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW ? true : false;
 const CONTENTFUL_ENDPOINT = `https://graphql.contentful.com/content/v1/spaces/${SPACE_ID}/environments/${ENVIRONMENT}`;
 
 export async function getContent<T>(
