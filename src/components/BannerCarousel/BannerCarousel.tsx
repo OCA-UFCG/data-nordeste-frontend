@@ -32,6 +32,7 @@ const MainBanner = ({ content }: { content: IMainBanner[] }) => {
       <CarouselContent>
         {content.map((item, index) => {
           const { title, subtitle, image, buttonUrl, buttonLabel } = item;
+          console.log(item);
 
           return (
             <CarouselItem
@@ -41,7 +42,7 @@ const MainBanner = ({ content }: { content: IMainBanner[] }) => {
               <div className="relative flex justify-center items-center px-4 w-full h-full min-h-[380px] lg:min-h-[510px]">
                 <Image
                   className="absolute inset-0 w-full h-full object-cover z-0"
-                  src={image.url || ""}
+                  src={image?.url || ""}
                   alt=""
                   width={1920}
                   height={1080}

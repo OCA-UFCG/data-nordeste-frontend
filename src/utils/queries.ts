@@ -1,3 +1,4 @@
+import { gql } from "@apollo/client";
 import { POSTS_PER_PAGE } from "./constants";
 
 export const HEAD_QUERY = `
@@ -97,7 +98,7 @@ export const MAIN_PAGE_QUERY = `
   }
 `;
 
-export const POSTS_QUERY = `
+export const POSTS_QUERY = gql`
   query ($limit: Int!, $filter: PostFilter, $preview: Boolean) {
     postCollection(limit: $limit, where: $filter, preview: $preview) {
       items {
@@ -110,7 +111,6 @@ export const POSTS_QUERY = `
       }
     }
   }
-
 `;
 
 export const PAGE_ID = "projects";

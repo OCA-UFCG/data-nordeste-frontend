@@ -14,10 +14,18 @@ import {
 } from "../ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { FILTERS, TypeFilter } from "./TypeFilter";
-import { useCallback, useState } from "react";
+import { useMemo, useState } from "react";
 import { POSTS_PER_PAGE } from "@/utils/constants";
-import { getContent } from "@/utils/contentful";
 import { POSTS_QUERY } from "@/utils/queries";
+import { useLazyQuery } from "@apollo/client";
+
+type GetContentData = {
+  postCollection: {
+    items: IPublication[];
+  };
+};
+
+type GetContentVars = { limit: number; filter: { type_in: string[] } };
 
 export const RecentSection = ({
   header,
@@ -31,25 +39,34 @@ export const RecentSection = ({
     id: "",
     subtitle: "",
   };
-  const [posts, setPosts] = useState(content);
   const [selectedType, setSelectedType] = useState<"all" | "panels" | "posts">(
     FILTERS.all.key,
   );
 
-  const fetchPosts = useCallback(async (types: "all" | "panels" | "posts") => {
-    setSelectedType(types);
+  const [getContent, { loading, data }] = useLazyQuery<
+    GetContentData,
+    GetContentVars
+  >(POSTS_QUERY);
 
-    const { postCollection: filteredPosts } = await getContent<{
-      postCollection: { items: IPublication[] };
-    }>(POSTS_QUERY, {
-      limit: POSTS_PER_PAGE,
-      filter: {
-        type_in: FILTERS[types].filter,
+  const posts = useMemo(() => {
+    if (!loading && data) {
+      return [...data?.postCollection?.items];
+    }
+
+    return content;
+  }, [content, data, loading]);
+
+  const onContentSelect = (type: "all" | "panels" | "posts") => {
+    getContent({
+      variables: {
+        limit: POSTS_PER_PAGE,
+        filter: {
+          type_in: FILTERS[type].filter,
+        },
       },
     });
-
-    setPosts(filteredPosts.items);
-  }, []);
+    setSelectedType(type);
+  };
 
   return (
     <section
@@ -64,7 +81,7 @@ export const RecentSection = ({
           </div>
 
           <div className="flex gap-6">
-            <TypeFilter onChange={fetchPosts} />
+            <TypeFilter onChange={onContentSelect} />
             <LinkButton
               href={FILTERS[selectedType].href}
               variant="secondary"
@@ -92,19 +109,20 @@ export const RecentSection = ({
           className="flex flex-col gap-4 content-carousel"
         >
           <CarouselContent className="-ml-0">
-            {posts
-              .sort(
-                (a, b) =>
-                  new Date(b.date).getTime() - new Date(a.date).getTime(),
-              )
-              .map((card, i) => (
-                <CarouselItem
-                  key={i}
-                  className="basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
-                >
-                  <ContentPost content={card} key={i} />
-                </CarouselItem>
-              ))}
+            {!loading &&
+              posts
+                .sort(
+                  (a, b) =>
+                    new Date(b.date).getTime() - new Date(a.date).getTime(),
+                )
+                .map((card, i) => (
+                  <CarouselItem
+                    key={i}
+                    className="basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
+                  >
+                    <ContentPost content={card} key={i} />
+                  </CarouselItem>
+                ))}
           </CarouselContent>
           <div className="flex md:hidden gap-2 w-full justify-center">
             {content.map((_, i) => (

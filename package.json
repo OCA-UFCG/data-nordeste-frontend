@@ -17,6 +17,7 @@
     ]
   },
   "dependencies": {
+    "@apollo/client": "^3.13.9",
     "@contentful/rich-text-react-renderer": "^15.21.2",
     "@google/earthengine": "^0.1.402",
     "@hookform/resolvers": "^5.0.1",
@@ -40,6 +41,7 @@
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "express": "^4.19.2",
+    "graphql": "^16.11.0",
     "lightgallery": "^2.7.2",
     "lucide-react": "^0.503.0",
     "maplibre-gl": "^4.2.0",
