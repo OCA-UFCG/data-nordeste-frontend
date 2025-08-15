@@ -174,3 +174,12 @@ export interface IDataStory {
   name: string;
   id: string;
 }
+
+export interface IFeedbackQuestion {
+  id: string;
+  question: {
+    json: any;
+  };
+  type: string;
+  shape: string;
+}

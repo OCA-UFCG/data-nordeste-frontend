@@ -23,8 +23,14 @@ export const HEAD_QUERY = `
 
 `;
 
-export const MAIN_PAGE_IDS =
-  '["preview", "new", "panels", "about", "projects"]';
+export const MAIN_PAGE_IDS = [
+  "preview",
+  "new",
+  "panels",
+  "about",
+  "projects",
+  "survey",
+];
 
 export const MAIN_PAGE_QUERY = `
   query($preview: Boolean) {
@@ -73,7 +79,7 @@ export const MAIN_PAGE_QUERY = `
       }
     }
 
-    sectionHeadCollection(limit: 5, where: { id_in: ${MAIN_PAGE_IDS} }, preview: $preview) {
+    sectionHeadCollection(limit: ${MAIN_PAGE_IDS.length}, where: { id_in: ${JSON.stringify(MAIN_PAGE_IDS)} }, preview: $preview) {
       items {
         title
         subtitle
@@ -92,6 +98,17 @@ export const MAIN_PAGE_QUERY = `
         }
         link
         description
+      }
+    }
+
+    feedbackCollection(preview: $preview) {
+      items {
+        id
+        question {
+          json
+        }
+        shape
+        type
       }
     }
   }
