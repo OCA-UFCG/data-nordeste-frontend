@@ -272,7 +272,7 @@ export const POST_PAGE_QUERY = `
   }
 `;
 
-export const PUBLICATION_QUERY = `
+export const PUBLICATION_QUERY = gql`
   query GetPosts($order: [PostOrder], $filter: PostFilter, $skip: Int!, $preview: Boolean) {
     postCollection(limit: ${POSTS_PER_PAGE}, order: $order, where: $filter, skip: $skip, preview: $preview) {
       total

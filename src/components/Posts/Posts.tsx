@@ -12,8 +12,21 @@ import {
 } from "@/utils/constants";
 import { createQueryString } from "@/utils/functions";
 import { SortSelect } from "../PostsGrid/SortSelect";
-import { getContent } from "@/utils/contentful";
 import { PUBLICATION_QUERY } from "@/utils/queries";
+import { useLazyQuery } from "@apollo/client";
+
+type GetContentData = {
+  postCollection: {
+    total: number;
+    items: IPublication[];
+  };
+};
+
+type GetContentVars = {
+  order: string;
+  skip: number;
+  filter: { [key: string]: any };
+};
 
 export const Posts = ({
   header,
@@ -34,14 +47,32 @@ export const Posts = ({
   const router = useRouter();
   const pathname = usePathname();
 
-  const [loading, setLoading] = useState(true);
-  const [pages, setpages] = useState(totalPages);
+  const [getContent, { loading, data }] = useLazyQuery<
+    GetContentData,
+    GetContentVars
+  >(PUBLICATION_QUERY);
+
+  const pages = useMemo(() => {
+    if (data?.postCollection?.total) {
+      return data.postCollection.total / POSTS_PER_PAGE;
+    }
+
+    return totalPages;
+  }, [totalPages, data]);
+
+  const posts = useMemo(() => {
+    if (data?.postCollection?.items) {
+      return data.postCollection.items;
+    }
+
+    return [];
+  }, [data]);
+
   const [sorting, setSorting] = useState(
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
-  const [posts, setPosts] = useState<IPublication[]>([]);
-  const filter = useMemo(
-    () => ({
+  const filter = useMemo(() => {
+    return {
       type_in: params.get("type_in")?.split(",") || undefined,
       category: params.get("category")?.split(",") || [],
       date_lte: Date.parse(params.get(`date_lte`) || "")
@@ -50,9 +81,8 @@ export const Posts = ({
       date_gte: Date.parse(params.get(`date_gte`) || "")
         ? new Date(params.get(`date_gte`) || "")
         : undefined,
-    }),
-    [params],
-  );
+    };
+  }, [params]);
 
   const currentPage = useMemo(() => {
     const paramPages = Number(params.get("page") || 1);
@@ -95,32 +125,19 @@ export const Posts = ({
   };
 
   useEffect(() => {
-    setLoading(true);
-
-    new Promise<{
-      postCollection: { total: number; items: IPublication[] };
-    }>((resolve) => {
-      resolve(
-        getContent<{
-          postCollection: { total: number; items: IPublication[] };
-        }>(PUBLICATION_QUERY, {
-          order: sorting,
-          skip: POSTS_PER_PAGE * (currentPage - 1),
-          filter: {
-            ...rootFilter,
-            ...parseForm(filter),
-          },
-        }),
-      );
-    }).then((value) => {
-      const { postCollection: posts } = value;
-      setPosts(posts.items);
-      setpages(Math.ceil(posts.total / POSTS_PER_PAGE));
-      setLoading(false);
+    getContent({
+      variables: {
+        order: sorting,
+        skip: POSTS_PER_PAGE * (currentPage - 1),
+        filter: {
+          ...rootFilter,
+          ...parseForm(filter),
+        },
+      },
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, rootFilter, sorting]);
+  }, [filter, sorting]);
 
   return (
     <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
