@@ -1,4 +1,5 @@
 import { IFeedbackQuestion } from "@/utils/interfaces";
+import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 
 export const TextArea = ({
   item,
@@ -7,7 +8,7 @@ export const TextArea = ({
 }: {
   item: IFeedbackQuestion;
   currentValue: string | number;
-  handleChange: (id: string, value: string) => void;
+  handleChange: (id: string, value: string, text: string) => void;
 }) => {
   return (
     <textarea
@@ -15,7 +16,13 @@ export const TextArea = ({
       className="w-full mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
       placeholder="Deixe seu comentário..."
       value={(currentValue as string) || ""}
-      onChange={(e) => handleChange(item.id, e.target.value)}
+      onChange={(e) =>
+        handleChange(
+          item.id,
+          e.target.value,
+          documentToPlainTextString(item.question.json),
+        )
+      }
     />
   );
 };

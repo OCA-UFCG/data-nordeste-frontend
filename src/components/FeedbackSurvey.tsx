@@ -6,6 +6,13 @@ import { Icon } from "./Icon/Icon";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { Rate } from "./Rate";
 import { TextArea } from "./TextArea";
+import { UAParser } from "ua-parser-js";
+
+interface IFeedbackAnswer {
+  id: string;
+  text: string;
+  answer: string | number;
+}
 
 export const FeedbackSurvey = ({
   header,
@@ -15,12 +22,19 @@ export const FeedbackSurvey = ({
   content: IFeedbackQuestion[];
 }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [answers, setAnswers] = useState<Record<string, string | number>>({});
+  const [answers, setAnswers] = useState<Record<string, IFeedbackAnswer>>({});
+  const parser = UAParser(window.navigator.userAgent);
+  const browserInfo = parser.browser;
+  console.log(browserInfo);
 
-  const handleAnswerChange = (questionId: string, value: string | number) => {
+  const handleAnswerChange = (
+    id: string,
+    value: string | number,
+    text: string,
+  ) => {
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
-      [questionId]: value,
+      [id]: { id: id, answer: value, text: text },
     }));
   };
 
@@ -28,6 +42,21 @@ export const FeedbackSurvey = ({
     event.preventDefault();
     console.log(event);
     console.log("Submitting answers:", answers);
+
+    const clientData = {
+      timestamp: new Date().toISOString(), // e.g., "2025-08-06T12:00:00Z"
+      browser: {
+        name: browserInfo.name || "Unknown",
+        version: browserInfo.version || "Unknown",
+      },
+      screen: {
+        width: window?.screen?.width || "unknown",
+        height: window?.screen?.height || "unknown",
+      },
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // e.g., "America/Sao_Paulo"
+      answers: Object.values(answers),
+    };
+    console.log(clientData);
 
     // onSubmit(answers);
   };
@@ -66,7 +95,7 @@ export const FeedbackSurvey = ({
 
                     {item.shape === "rate" && (
                       <Rate
-                        currentValue={answers[item.id]}
+                        currentValue={answers[item.id]?.answer}
                         item={item}
                         handleChange={handleAnswerChange}
                       />
@@ -75,7 +104,7 @@ export const FeedbackSurvey = ({
                     {item.shape === "text" && (
                       <TextArea
                         item={item}
-                        currentValue={answers[item.id]}
+                        currentValue={answers[item.id].answer}
                         handleChange={handleAnswerChange}
                       />
                     )}

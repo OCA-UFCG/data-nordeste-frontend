@@ -1,4 +1,5 @@
 import { IFeedbackQuestion } from "@/utils/interfaces";
+import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 
 const RATING_OPTIONS = [1, 2, 3, 4, 5];
 
@@ -9,8 +10,10 @@ export const Rate = ({
 }: {
   item: IFeedbackQuestion;
   currentValue: string | number;
-  handleChange: (id: string, value: number) => void;
+  handleChange: (id: string, value: number, text: string) => void;
 }) => {
+  console.log("curr", currentValue);
+
   return (
     <div className="flex items-center gap-6">
       <span className="text-sm text-gray-500">Muito Ruim</span>
@@ -28,7 +31,13 @@ export const Rate = ({
                 name={`rating-${item.id}`}
                 value={rateValue}
                 checked={isSelected}
-                onChange={() => handleChange(item.id, rateValue)}
+                onChange={() =>
+                  handleChange(
+                    item.id,
+                    rateValue,
+                    documentToPlainTextString(item.question.json),
+                  )
+                }
                 className="sr-only"
               />
               <label
