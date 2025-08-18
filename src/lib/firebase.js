@@ -24,6 +24,7 @@ const getAppCheck = () => {
       console.error("Error initializing app check", error);
     }
   }
+  
   return appCheckInstance;
 };
 
@@ -80,6 +81,7 @@ export async function sendSurveyFeedback(answers) {
     }
 
     const result = await res.json();
+
     return result;
     
   } catch (error) {
