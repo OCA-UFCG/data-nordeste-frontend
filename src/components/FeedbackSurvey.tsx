@@ -7,6 +7,7 @@ import { documentToReactComponents } from "@contentful/rich-text-react-renderer"
 import { Rate } from "./Rate";
 import { TextArea } from "./TextArea";
 import { UAParser } from "ua-parser-js";
+import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 
 interface IFeedbackAnswer {
   id: string;
@@ -87,29 +88,37 @@ export const FeedbackSurvey = ({
             <p className="text-gray-600">{header?.subtitle}</p>
             <form onSubmit={handleSubmit} className="mt-6">
               <div className="space-y-8">
-                {content.map((item) => (
-                  <div key={item.id}>
-                    <label className="block text-md font-medium text-gray-700 mb-3">
-                      {documentToReactComponents(item.question.json)}
-                    </label>
+                {content
+                  .sort((a, b) =>
+                    documentToPlainTextString(a.question.json).localeCompare(
+                      documentToPlainTextString(b.question.json),
+                    ),
+                  )
+                  .map((item) => (
+                    <div key={item.id}>
+                      <label className="block text-md font-medium text-gray-700 mb-3">
+                        {documentToReactComponents(item.question.json)}
+                      </label>
 
-                    {item.shape === "rate" && (
-                      <Rate
-                        currentValue={answers[item.id]?.answer}
-                        item={item}
-                        handleChange={handleAnswerChange}
-                      />
-                    )}
+                      {item.shape === "rate" && (
+                        <Rate
+                          currentValue={answers[item?.id]?.answer}
+                          item={item}
+                          handleChange={handleAnswerChange}
+                        />
+                      )}
 
-                    {item.shape === "text" && (
-                      <TextArea
-                        item={item}
-                        currentValue={answers[item.id].answer}
-                        handleChange={handleAnswerChange}
-                      />
-                    )}
-                  </div>
-                ))}
+                      {item.shape === "text" && (
+                        <TextArea
+                          item={item}
+                          currentValue={(
+                            answers[item?.id]?.answer || ""
+                          ).toString()}
+                          handleChange={handleAnswerChange}
+                        />
+                      )}
+                    </div>
+                  ))}
               </div>
 
               <button
