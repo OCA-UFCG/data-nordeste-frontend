@@ -183,3 +183,9 @@ export interface IFeedbackQuestion {
   type: string;
   shape: string;
 }
+
+export interface IFeedbackAnswer {
+  id: string;
+  text: string;
+  answer: string | number;
+}

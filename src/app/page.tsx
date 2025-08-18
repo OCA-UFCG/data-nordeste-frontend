@@ -17,7 +17,7 @@ import DataSection from "@/components/DataSection/DataSection";
 import { getContent } from "@/utils/contentful";
 import { MAIN_PAGE_QUERY } from "@/utils/queries";
 import { REVALIDATE } from "@/utils/constants";
-import { FeedbackSurvey } from "@/components/FeedbackSurvey";
+import { FeedbackSurvey } from "@/components/FeedbackSurvey/FeedbackSurvey";
 
 export const revalidate = REVALIDATE;
 
@@ -77,6 +77,9 @@ export default async function Home() {
       <FeedbackSurvey
         header={sectionHead.items.find(
           (sec: SectionHeader) => sec.id == "survey",
+        )}
+        submitHeader={sectionHead.items.find(
+          (sec: SectionHeader) => sec.id == "survey-thank-u",
         )}
         content={feedbackContent}
       />

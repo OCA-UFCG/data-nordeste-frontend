@@ -30,6 +30,7 @@ export const MAIN_PAGE_IDS = [
   "about",
   "projects",
   "survey",
+  "survey-thank-u",
 ];
 
 export const MAIN_PAGE_QUERY = `
