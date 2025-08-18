@@ -22,8 +22,6 @@ export const Survey = ({
   onSubmit: () => void;
 }) => {
   const [answers, setAnswers] = useState<Record<string, IFeedbackAnswer>>({});
-  const parser = UAParser(window?.navigator?.userAgent);
-  const browserInfo = parser.browser;
 
   const handleAnswerChange = (
     id: string,
@@ -37,6 +35,9 @@ export const Survey = ({
   };
 
   const handleSubmit = (event: React.FormEvent) => {
+    const parser = UAParser(window?.navigator?.userAgent);
+    const browserInfo = parser.browser;
+
     event.preventDefault();
 
     const clientData = {
