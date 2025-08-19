@@ -12,12 +12,10 @@ export const Rate = ({
   currentValue: string | number;
   handleChange: (id: string, value: number, text: string) => void;
 }) => {
-  console.log("curr", currentValue);
-
   return (
     <div className="flex items-center gap-6">
       <span className="text-sm text-gray-500">Muito Ruim</span>
-      <div className="flex gap-x-6">
+      <div className="flex gap-x-2 sm:gap-x-6">
         {RATING_OPTIONS.map((rateValue) => {
           const inputId = `rating-${item.id}-${rateValue}`;
           const isSelected = currentValue == rateValue;

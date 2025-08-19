@@ -27,7 +27,7 @@ export const Survey = ({
   onSubmit: () => void;
 }) => {
   const [answers, setAnswers] = useState<Record<string, IFeedbackAnswer>>({});
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleAnswerChange = (
     id: string,
@@ -94,8 +94,8 @@ export const Survey = ({
         <button
           type="submit"
           className={cn(
-            loading && "transparency-20",
-            "w-full bg-green-800 text-white font-bold py-3 px-4 rounded-md hover:bg-green-900 transition-colors mt-8 cursor-pointer justify-center",
+            loading && "opacity-70 pointer-events-none",
+            "flex w-full bg-green-800 text-white font-bold py-3 px-4 rounded-md hover:bg-green-900 transition-colors mt-8 cursor-pointer justify-center",
           )}
         >
           {loading ? (

@@ -16,11 +16,7 @@ export const FeedbackSurvey = ({
   submitHeader?: SectionHeader;
   content: IFeedbackQuestion[];
 }) => {
-  const [isOpen, setIsOpen] = useState(
-    typeof window !== "undefined" && localStorage?.getItem(STORAGE_KEY)
-      ? false
-      : true,
-  );
+  const [isOpen, setIsOpen] = useState(true);
   const [submitted, setSubmitted] = useState(false);
 
   const onSubmit = useCallback(() => {
@@ -32,11 +28,7 @@ export const FeedbackSurvey = ({
   }, []);
 
   useEffect(() => {
-    let stored = undefined;
-
-    if (localStorage) {
-      stored = localStorage?.getItem(STORAGE_KEY);
-    }
+    const stored = localStorage?.getItem(STORAGE_KEY);
 
     if (stored) {
       try {
