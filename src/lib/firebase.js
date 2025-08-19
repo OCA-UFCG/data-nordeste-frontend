@@ -52,12 +52,7 @@ export async function sendSurveyFeedback(answers) {
 
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    const resp = await fetch("https://api.ipify.org?format=json");
-    const data = await resp.json();
-    const userId =  data.ip; 
-
     const payload = {
-      userId: userId,
       browser: browserInfo,
       screen: screenInfo,
       timeZone,
@@ -65,7 +60,7 @@ export async function sendSurveyFeedback(answers) {
     };
 
     const res = await fetch(
-      "https://feedbacks-pihoybta5q-uc.a.run.app/submitSurveyFeedback",
+      process.env.NEXT_PUBLIC_SURVEY_FEEDBACK_URL,
       {
         method: "POST",
         headers: {
