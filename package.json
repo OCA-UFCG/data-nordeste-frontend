@@ -40,6 +40,7 @@
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "express": "^4.19.2",
+    "firebase": "^12.1.0",
     "lightgallery": "^2.7.2",
     "lucide-react": "^0.503.0",
     "maplibre-gl": "^4.2.0",
@@ -54,6 +55,7 @@
     "styled-components": "^6.1.8",
     "swiper": "^11.1.14",
     "tailwind-merge": "^3.2.0",
+    "ua-parser-js": "^2.0.4",
     "yet-another-react-lightbox": "^3.23.2",
     "zod": "^3.24.4"
   },
