@@ -9,8 +9,13 @@ import { documentToPlainTextString } from "@contentful/rich-text-plain-text-rend
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { TextArea } from "../TextArea";
 import { Rate } from "../Rate";
-import { UAParser } from "ua-parser-js";
 import { useState } from "react";
+import { sendSurveyFeedback } from "@/lib/firebase";
+import { STORAGE_KEY } from "@/utils/constants";
+import { Icon } from "../Icon/Icon";
+import { cn } from "@/lib/utils";
+
+const EXPIRY_HOURS = 24;
 
 export const Survey = ({
   header,
@@ -22,6 +27,7 @@ export const Survey = ({
   onSubmit: () => void;
 }) => {
   const [answers, setAnswers] = useState<Record<string, IFeedbackAnswer>>({});
+  const [loading, setLoading] = useState<boolean>(true);
 
   const handleAnswerChange = (
     id: string,
@@ -34,28 +40,18 @@ export const Survey = ({
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
-    const parser = UAParser(window?.navigator?.userAgent);
-    const browserInfo = parser.browser;
-
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    const clientData = {
-      timestamp: new Date().toISOString(), // e.g., "2025-08-06T12:00:00Z"
-      browser: {
-        name: browserInfo.name || "Unknown",
-        version: browserInfo.version || "Unknown",
-      },
-      screen: {
-        width: window?.screen?.width || "unknown",
-        height: window?.screen?.height || "unknown",
-      },
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // e.g., "America/Sao_Paulo"
-      answers: Object.values(answers),
-    };
-    console.log(clientData);
+    const expiry = Date.now() + EXPIRY_HOURS * 60 * 60 * 1000; // add hours in ms
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ submitted: true, expiry }),
+    );
 
-    // onSubmit(answers);
+    setLoading(true);
+    await sendSurveyFeedback(Object.values(answers));
+    setLoading(false);
     onSubmit();
   };
 
@@ -97,9 +93,16 @@ export const Survey = ({
 
         <button
           type="submit"
-          className="w-full bg-green-800 text-white font-bold py-3 px-4 rounded-md hover:bg-green-900 transition-colors mt-8 cursor-pointer"
+          className={cn(
+            loading && "transparency-20",
+            "w-full bg-green-800 text-white font-bold py-3 px-4 rounded-md hover:bg-green-900 transition-colors mt-8 cursor-pointer justify-center",
+          )}
         >
-          Enviar
+          {loading ? (
+            <Icon id="loading" size={20} className="animate-spin" />
+          ) : (
+            "Enviar"
+          )}
         </button>
       </form>
     </div>

@@ -1,10 +1,11 @@
 "use client";
 
 import { IFeedbackQuestion, SectionHeader } from "@/utils/interfaces";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Icon } from "../Icon/Icon";
 import { Survey } from "./Survey";
 import { SurveySubmitted } from "./SurveySubmitted";
+import { STORAGE_KEY } from "@/utils/constants";
 
 export const FeedbackSurvey = ({
   header,
@@ -15,20 +16,41 @@ export const FeedbackSurvey = ({
   submitHeader?: SectionHeader;
   content: IFeedbackQuestion[];
 }) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(
+    typeof window !== "undefined" && localStorage?.getItem(STORAGE_KEY)
+      ? false
+      : true,
+  );
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    if (!submitted) return;
+  const onSubmit = useCallback(() => {
+    setSubmitted(true);
 
-    const timerId = setTimeout(() => {
+    setTimeout(() => {
       setIsOpen(false);
     }, 3000);
+  }, []);
 
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [submitted]);
+  useEffect(() => {
+    let stored = undefined;
+
+    if (localStorage) {
+      stored = localStorage?.getItem(STORAGE_KEY);
+    }
+
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        if (data.expiry && Date.now() < data.expiry) {
+          setSubmitted(true);
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, []);
 
   return (
     <section className="w-full max-w-[1440px] my-12 p-6">
@@ -55,11 +77,7 @@ export const FeedbackSurvey = ({
           {submitted ? (
             <SurveySubmitted header={submitHeader} />
           ) : (
-            <Survey
-              header={header}
-              content={content}
-              onSubmit={() => setSubmitted(true)}
-            />
+            <Survey header={header} content={content} onSubmit={onSubmit} />
           )}
         </div>
       </div>
