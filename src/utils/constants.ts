@@ -5,6 +5,8 @@ export const REVALIDATE = process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW
   ? 60
   : 3600;
 
+export const STORAGE_KEY = "datane@feedback_submitted";
+
 export const channels: ISudeneChannel[] = [
   {
     name: "@sudenebr",

@@ -1,5 +1,10 @@
+import { IFeedbackAnswer } from "@/utils/interfaces";
 import { initializeApp } from "firebase/app";
-import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+import {
+  AppCheck,
+  initializeAppCheck,
+  ReCaptchaV3Provider,
+} from "firebase/app-check";
 import { getToken } from "firebase/app-check";
 import { UAParser } from "ua-parser-js";
 
@@ -11,27 +16,29 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 
-let appCheckInstance = null;
+let appCheckInstance: AppCheck | null = null;
 
 const getAppCheck = () => {
   if (!appCheckInstance) {
     try {
       appCheckInstance = initializeAppCheck(app, {
-        provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_KEY),
+        provider: new ReCaptchaV3Provider(
+          process.env.NEXT_PUBLIC_RECAPTCHA_KEY || "",
+        ),
         isTokenAutoRefreshEnabled: true,
       });
     } catch (error) {
       console.error("Error initializing app check", error);
     }
   }
-  
+
   return appCheckInstance;
 };
 
-export async function sendSurveyFeedback(answers) {
+export async function sendSurveyFeedback(answers: IFeedbackAnswer[]) {
   try {
     const appCheck = getAppCheck();
-    
+
     if (!appCheck) {
       throw new Error("App Check not initialized");
     }
@@ -42,12 +49,12 @@ export async function sendSurveyFeedback(answers) {
 
     const browserInfo = {
       name: parser.browser.name,
-      version: parser.browser.version
+      version: parser.browser.version,
     };
 
     const screenInfo = {
       width: window.screen.width,
-      height: window.screen.height
+      height: window.screen.height,
     };
 
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -56,20 +63,17 @@ export async function sendSurveyFeedback(answers) {
       browser: browserInfo,
       screen: screenInfo,
       timeZone,
-      answers 
+      answers,
     };
 
-    const res = await fetch(
-      process.env.NEXT_PUBLIC_SURVEY_FEEDBACK_URL,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Firebase-AppCheck": tokenResult.token
-        },
-        body: JSON.stringify(payload)
-      }
-    );
+    const res = await fetch(process.env.NEXT_PUBLIC_SURVEY_FEEDBACK_URL || "", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Firebase-AppCheck": tokenResult.token,
+      },
+      body: JSON.stringify(payload),
+    });
 
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
@@ -78,10 +82,8 @@ export async function sendSurveyFeedback(answers) {
     const result = await res.json();
 
     return result;
-    
   } catch (error) {
     console.error("Survey feedback error", error);
     throw error;
   }
 }
-

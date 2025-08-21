@@ -17,6 +17,7 @@
     ]
   },
   "dependencies": {
+    "@contentful/rich-text-plain-text-renderer": "^17.1.0",
     "@contentful/rich-text-react-renderer": "^15.21.2",
     "@google/earthengine": "^0.1.402",
     "@hookform/resolvers": "^5.0.1",
@@ -52,7 +53,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.56.3",
     "sass": "^1.77.8",
-    "styled-components": "^6.1.8",
+    "styled-components": "^6.1.19",
     "swiper": "^11.1.14",
     "tailwind-merge": "^3.2.0",
     "ua-parser-js": "^2.0.4",
