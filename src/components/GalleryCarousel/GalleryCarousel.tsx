@@ -50,7 +50,7 @@ const GalleryCarousel = ({
               return (
                 <CarouselItem
                   key={index}
-                  className={`flex justify-center items-center ${length}`}
+                  className={`pl-0 md:pl-4 flex justify-center items-center ${length}`}
                 >
                   {path ? (
                     <Link href={path}>

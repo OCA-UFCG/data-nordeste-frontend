@@ -10,7 +10,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
       <a href={link} className="w-full h-full">
         <Image
           className="w-full h-full object-cover rounded-t-md md:rounded-l-md md:rounded-tr-none"
-          src={`${thumb.url}`}
+          src={thumb?.url || ""}
           alt=""
           width={800}
           height={800}
