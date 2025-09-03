@@ -18,7 +18,7 @@ export const AboutSection = ({ header }: { header?: SectionHeader }) => {
         <div className="flex flex-col lg:flex-row gap-6">
           <Image
             alt=""
-            src={`${thumb?.url}`}
+            src={thumb?.url || ""}
             width={462}
             height={374}
             className="w-full lg:h-[374px] lg:w-[462px] rounded-lg"

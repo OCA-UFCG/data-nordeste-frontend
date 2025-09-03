@@ -19,7 +19,7 @@ const ContentPost = ({ content }: { content: IPublication }) => {
           width={300}
           height={300}
           alt=""
-          src={`${thumb.url}`}
+          src={thumb?.url || ""}
           className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
         />
       </div>

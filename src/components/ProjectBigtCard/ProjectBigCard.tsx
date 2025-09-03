@@ -24,7 +24,7 @@ const ProjectBigCard = ({
           >
             <Image
               className="w-full h-full object-cover rounded-md aspect-[16/9] mb-4"
-              src={`${thumb.url}`}
+              src={thumb?.url || ""}
               alt={name}
               width={800}
               height={800}
