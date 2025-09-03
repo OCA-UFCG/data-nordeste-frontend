@@ -16,7 +16,7 @@ export const LinkButton = ({
   variant?: "primary" | "secondary";
   className?: string;
   disabled?: boolean;
-  target: "_self" | "_blank";
+  target?: "_self" | "_blank";
 }) => {
   return (
     <Button
