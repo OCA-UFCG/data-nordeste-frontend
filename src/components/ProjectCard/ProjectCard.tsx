@@ -22,7 +22,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
           <h3 className="text-xl font-semibold text-gray-800">{name}</h3>
           <p className="text-sm text-grey-600 leading-5">{description}</p>
         </div>
-        <LinkButton href={link} className="md:w-full">
+        <LinkButton href={link} target="_blank" className="md:w-full">
           Acessar
         </LinkButton>
       </div>

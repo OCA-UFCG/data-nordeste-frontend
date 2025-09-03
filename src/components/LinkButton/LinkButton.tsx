@@ -9,12 +9,14 @@ export const LinkButton = ({
   variant = "primary",
   className = "",
   disabled = false,
+  target = "_self",
 }: {
   href: string;
   children: ReactNode;
   variant?: "primary" | "secondary";
   className?: string;
   disabled?: boolean;
+  target: "_self" | "_blank";
 }) => {
   return (
     <Button
@@ -27,7 +29,9 @@ export const LinkButton = ({
         className,
       )}
     >
-      <Link href={href}>{children}</Link>
+      <Link href={href} target={target}>
+        {children}
+      </Link>
     </Button>
   );
 };
