@@ -46,6 +46,7 @@ jobs:
             NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
             NEXT_PUBLIC_RECAPTCHA_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_KEY }}
             NEXT_PUBLIC_SURVEY_FEEDBACK_URL=${{ secrets.NEXT_PUBLIC_SURVEY_FEEDBACK_URL }}
+            NEXT_PUBLIC_APP_ENV="prod"
 
   push-prod:
     needs: build-image
