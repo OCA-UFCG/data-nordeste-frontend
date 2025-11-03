@@ -117,13 +117,12 @@ export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
         />
       </div>
       <Suspense fallback={<div>Carregando...</div>}>
-        {" "}
         <DataList
           posts={metadata}
           pages={pages}
           currentPage={currentPage}
           loading={loading}
-        />{" "}
+        />
       </Suspense>
     </section>
   );
