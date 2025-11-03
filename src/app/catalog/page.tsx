@@ -2,6 +2,7 @@ import { DataRecords } from "@/components/DataRecords/DataRecords";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
 import { FILTERS_QUERY } from "@/utils/queries";
+import { Suspense } from "react";
 
 interface IFilterDataPage {
   filterDataPageCollection: {
@@ -32,7 +33,9 @@ export default async function CatalogPage() {
 
   return (
     <HubTemplate>
-      <DataRecords filters={filters} />
+      <Suspense>
+        <DataRecords filters={filters} />
+      </Suspense>
     </HubTemplate>
   );
 }
