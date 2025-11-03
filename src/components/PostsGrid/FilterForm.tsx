@@ -19,35 +19,52 @@ import { cn } from "@/lib/utils";
 import { Icon } from "../Icon/Icon";
 import { format } from "date-fns";
 
+interface FilterGroup {
+  title: string;
+  type: string;
+  fields: { [key: string]: string };
+}
+
 export function FilterForm({
   initSchema,
   selectFields,
+  filterGroups,
   onReset,
   onSubmit,
+  layout = "vertical",
 }: {
   initSchema: { [key: string]: string[] | string | Date | undefined };
-  selectFields: {
-    title: string;
-    type: string;
-    fields: { [key: string]: string };
-  };
   onReset: () => void;
   onSubmit: SubmitHandler<{}>;
-}) {
-  const formSchema = z.object({
-    category: z.array(z.string()).optional(),
-    type_in: z.array(z.string()).optional(),
-    date_gte: z
-      .date({
-        invalid_type_error: "Isso não é uma data",
-      })
-      .optional(),
-    date_lte: z
-      .date({
-        invalid_type_error: "Isso não é uma data",
-      })
-      .optional(),
-  });
+  layout?: "vertical" | "horizontal";
+} & (
+  | { selectFields: FilterGroup; filterGroups?: never }
+  | { filterGroups: FilterGroup[]; selectFields?: never }
+)) {
+  const groups = filterGroups || (selectFields ? [selectFields] : []);
+
+  const createFormSchema = () => {
+    const schemaFields: any = {
+      date_gte: z
+        .date({
+          invalid_type_error: "Isso não é uma data",
+        })
+        .optional(),
+      date_lte: z
+        .date({
+          invalid_type_error: "Isso não é uma data",
+        })
+        .optional(),
+    };
+
+    groups.forEach((group) => {
+      schemaFields[group.type] = z.array(z.string()).optional();
+    });
+
+    return z.object(schemaFields);
+  };
+
+  const formSchema = createFormSchema();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -135,64 +152,63 @@ export function FilterForm({
                 ))}
               </div>
 
-              <FormField
-                control={form.control}
-                name={
-                  selectFields.type as
-                    | "date_lte"
-                    | "date_gte"
-                    | "type_in"
-                    | "category"
-                    | `type_in.${number}`
-                    | `category.${number}`
-                }
-                render={() => (
-                  <FormItem>
-                    <div className="mb-2">
-                      <FormLabel className="text-lg font-semibold">
-                        {selectFields.title}
-                      </FormLabel>
-                    </div>
-                    {Object.entries(selectFields.fields)?.map(([key, val]) => (
-                      <FormField
-                        key={key}
-                        control={form.control}
-                        name={selectFields.type as "type_in" | "category"}
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={key}
-                              className="flex flex-row items-start space-x-3 space-y-0"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(key)}
-                                  onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([
-                                          ...(field?.value || ""),
-                                          key,
-                                        ])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== key,
-                                          ),
-                                        );
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="text-sm font-normal">
-                                {val}
-                              </FormLabel>
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    ))}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {groups.map((group) => (
+                <FormField
+                  key={group.type}
+                  control={form.control}
+                  name={group.type as any}
+                  render={() => (
+                    <FormItem>
+                      <div className="mb-2">
+                        <FormLabel className="text-lg font-semibold">
+                          {group.title}
+                        </FormLabel>
+                      </div>
+                      <div
+                        className={cn(
+                          "flex flex-col gap-2",
+                          layout === "horizontal" &&
+                            "flex-row flex-wrap gap-4 max-w-[200px] md:max-w-[550px]",
+                        )}
+                      >
+                        {Object.entries(group.fields)?.map(([key, val]) => (
+                          <FormField
+                            key={key}
+                            control={form.control}
+                            name={group.type as any}
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(key)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([
+                                            ...(field?.value || []),
+                                            key,
+                                          ])
+                                        : field.onChange(
+                                            field.value?.filter(
+                                              (v: any) => v !== key,
+                                            ),
+                                          );
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-sm font-normal">
+                                  {val}
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+
               <div className="flex w-full justify-end gap-2">
                 <Button variant="secondary" type="reset">
                   Cancelar

@@ -38,6 +38,7 @@ export const channels: ISudeneChannel[] = [
 ];
 
 export const POSTS_PER_PAGE = 12;
+export const DATA_PER_PAGE = 6;
 
 export const sortingTypes: {
   [x: string]:
@@ -47,6 +48,11 @@ export const sortingTypes: {
 } = {
   "Ordem Alfabética": "title_ASC" as "sys.contentType.sys.id",
   "Mais recente": "date_DESC" as "sys.contentType.sys.id",
+};
+
+export const dataSortingTypes = {
+  "Mais recente": "mostrecent",
+  "Mais visualizados": "mostviewed",
 };
 
 export const POST_TYPES = {
