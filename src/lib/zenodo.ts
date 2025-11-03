@@ -48,7 +48,7 @@ export async function getZenodoCommunityRecords(
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    next: { revalidate: 0 },
+    next: { revalidate: 300 },
   });
 
   if (!res.ok) {
