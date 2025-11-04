@@ -3,27 +3,46 @@ export async function getZenodoCommunityRecords(
   size: number,
   filters: Record<string, any> = {},
 ) {
+  const query = buildBaseQuery(page, size, filters);
+  const url = `https://zenodo.org/api/records?${query.toString()}`;
+  const json = await fetchZenodoData(url);
+  const records = parseZenodoRecords(json);
+
+  return {
+    records,
+    totalPages: Math.ceil(json.hits.total / size),
+    currentPage: page,
+  };
+}
+
+const buildBaseQuery = (
+  page: number,
+  size: number,
+  filters: Record<string, any>,
+) => {
   const query = new URLSearchParams({
     communities: "datane",
     size: size.toString(),
     page: page.toString(),
   });
 
-  if (filters.sort) {
-    query.append("sort", filters.sort);
-  }
+  if (filters.sort) query.append("sort", filters.sort);
 
+  const conditions = buildConditions(filters);
+  if (conditions.length) query.append("q", conditions.join(" OR "));
+
+  return query;
+};
+
+const buildConditions = (filters: Record<string, any>): string[] => {
   const conditions: string[] = [];
-  const formatDate = (date: Date) => date.toISOString().split("T")[0];
-  const buildArrayQuery = (items: string[]) =>
-    items.length ? `(${items.join(" OR ")})` : null;
 
   Object.entries(filters).forEach(([key, value]) => {
     if (!value) return;
+    if (["sort", "date_gte", "date_lte"].includes(key) && !Array.isArray(value))
+      return;
 
     if (Array.isArray(value) && value.length) {
-      if (["sort", "date_gte", "date_lte"].includes(key)) return;
-
       const arrQuery = buildArrayQuery(value);
       if (arrQuery) conditions.push(arrQuery);
     }
@@ -37,12 +56,18 @@ export async function getZenodoCommunityRecords(
     }
   });
 
-  if (conditions.length) {
-    query.append("q", conditions.join(" AND "));
-  }
+  return conditions;
+};
 
-  const url = `https://zenodo.org/api/records?${query.toString()}`;
+const buildArrayQuery = (items: string[]): string | null => {
+  return items.length ? `(${items.join(" OR ")})` : null;
+};
 
+const formatDate = (date: Date): string => {
+  return date.toISOString().split("T")[0];
+};
+
+const fetchZenodoData = async (url: string) => {
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
@@ -52,12 +77,14 @@ export async function getZenodoCommunityRecords(
   });
 
   if (!res.ok) {
-    throw new Error(`Error: ${res.statusText}`);
+    throw new Error(`Error fetching Zenodo data: ${res.statusText}`);
   }
 
-  const json = await res.json();
+  return res.json();
+};
 
-  const records = (json.hits?.hits ?? []).map((r: any) => ({
+const parseZenodoRecords = (json: any) => {
+  return (json.hits?.hits ?? []).map((r: any) => ({
     title: r.metadata?.title,
     description: r.metadata?.description ?? "",
     publication_date: r.metadata?.publication_date,
@@ -69,10 +96,4 @@ export async function getZenodoCommunityRecords(
       downloadUrl: f.links.self,
     })),
   }));
-
-  return {
-    records,
-    totalPages: Math.ceil(json.hits.total / size),
-    currentPage: page,
-  };
-}
+};
