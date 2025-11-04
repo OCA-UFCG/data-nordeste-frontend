@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useMemo, useState, Suspense } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { FilterForm } from "@/components/PostsGrid/FilterForm";
 import { SortSelect } from "@/components/PostsGrid/SortSelect";
 import { getZenodoCommunityRecords } from "@/lib/zenodo";
-import { DATA_PER_PAGE, dataSortingTypes } from "@/utils/constants";
+import { RECORDS_PER_PAGE, dataSortingTypes } from "@/utils/constants";
 import { FilterGroup, Filters } from "@/utils/interfaces";
 import { DataList } from "../DataList/DataList";
 
@@ -75,7 +75,7 @@ export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
 
   useEffect(() => {
     setLoading(true);
-    getZenodoCommunityRecords(currentPage, DATA_PER_PAGE, filtersFromUrl)
+    getZenodoCommunityRecords(currentPage, RECORDS_PER_PAGE, filtersFromUrl)
       .then((res: any) => {
         const recordsFormattedTags = res.records.map((record: any) => ({
           ...record,
@@ -116,14 +116,12 @@ export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
           sortingTypes={dataSortingTypes}
         />
       </div>
-      <Suspense fallback={<div>Carregando...</div>}>
-        <DataList
-          posts={metadata}
-          pages={pages}
-          currentPage={currentPage}
-          loading={loading}
-        />
-      </Suspense>
+      <DataList
+        posts={metadata}
+        pages={pages}
+        currentPage={currentPage}
+        loading={loading}
+      />
     </section>
   );
 };

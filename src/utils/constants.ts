@@ -38,7 +38,8 @@ export const channels: ISudeneChannel[] = [
 ];
 
 export const POSTS_PER_PAGE = 12;
-export const DATA_PER_PAGE = 6;
+export const RECORDS_PER_PAGE = 6;
+export const PAGINATION_SIZE = 3;
 
 export const sortingTypes: {
   [x: string]:

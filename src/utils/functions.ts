@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { PAGINATION_SIZE } from "./constants";
 
 export const capitalize = (inputString: string): string => {
   return inputString
@@ -44,8 +45,6 @@ export const isHrefActive = (
 
   return pathname === hrefPath && hrefParams === category;
 };
-
-const PAGINATION_SIZE = 3;
 
 export const usePaginationRange = (currentPage: number, totalPages: number) => {
   return useMemo(() => {
