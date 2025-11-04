@@ -39,8 +39,6 @@ const buildConditions = (filters: Record<string, any>): string[] => {
 
   Object.entries(filters).forEach(([key, value]) => {
     if (!value) return;
-    if (["sort", "date_gte", "date_lte"].includes(key) && !Array.isArray(value))
-      return;
 
     if (Array.isArray(value) && value.length) {
       const arrQuery = buildArrayQuery(value);
