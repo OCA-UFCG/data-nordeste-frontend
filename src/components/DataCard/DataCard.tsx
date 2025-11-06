@@ -1,82 +1,62 @@
-import React from "react";
-import { Icon } from "@/components/Icon/Icon";
+"use client";
 
-interface Tag {
-  label: string;
-  color: string;
-}
+import { IMetadata } from "@/utils/interfaces";
 
-interface DataCardProps {
-  title: string;
-  tags: Tag[];
-  description: string;
-  publishedAt: string;
-  version: string;
-  sourceUrl: string;
-  downloadUrl: string;
-}
+export const DataCard = ({ post }: { post: IMetadata }) => {
+  const handleDownload = async (url: string, name: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = name;
+      link.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Error", err);
+    }
+  };
 
-export default function DataCard({
-  title,
-  tags,
-  description,
-  publishedAt,
-  version,
-  sourceUrl,
-  downloadUrl,
-}: DataCardProps) {
   return (
-    <div className="flex flex-col bg-white border border-gray-200 rounded-md shadow-sm p-6 mb-6 max-w-3xl mx-auto hover:scale-[1.01] transition-transform duration-300">
-      {/* Cabeçalho */}
-      <div className="flex flex-row justify-between items-start mb-4">
-        {/* Bloco do Título e Tags */}
-        <div className="flex flex-col">
-          <h2 className="font-bold text-xl">{title}</h2>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {tags.map((tag) => (
-              <span
-                key={tag.label}
-                style={{
-                  backgroundColor: tag.color,
-                  color: "#fff",
-                }}
-                className="rounded-full px-3 py-1 text-xs font-medium"
-              >
-                {tag.label}
-              </span>
-            ))}
-          </div>
-        </div>
+    <div className="flex flex-col justify-between border rounded-lg p-4 ">
+      <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
+      <p className="text-sm text-gray-600 line-clamp-3">{post.description}</p>
+      <p className="text-xs text-gray-500 mt-2">Versão: {post.version}</p>
 
-        {/* Bloco dos Botões */}
-        <div className="flex gap-3 flex-shrink-0 ml-4">
-          <a
-            href={sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-[#038f39] transition-all hover:bg-green-50 hover:text-green-900 hover:scale-105"
-          >
-            <Icon id="icon-external" size={16} className="text-[#038f39]" />
-            Ir para fonte
-          </a>
-          <a
-            href={downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-md border border-[#038f39] bg-[#038f39] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-green-900 hover:scale-105"
-          >
-            <Icon id="icon-download" size={16} className="text-white" />
-            Baixar dados
-          </a>
-        </div>
-      </div>
+      {post.license && (
+        <p className="text-xs text-gray-500 mt-2">
+          Licença: {post.license.title ?? post.license}
+        </p>
+      )}
 
-      {/* Descrição e informações adicionais */}
-      <div className="mb-4 text-base text-gray-700">{description}</div>
-      <div className="text-sm text-gray-500">
-        <span>Publicado em: {publishedAt}</span> |{" "}
-        <span>Versão: {version}</span>
-      </div>
+      {post.tags && post.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500">
+          {post.tags.map((tag: any, i: number) => (
+            <span key={i} className="px-2 py-1 bg-gray-200 rounded">
+              {tag.title ?? tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {post.files && post.files.length > 0 && (
+        <div className="flex flex-col mt-2 text-xs">
+          {post.files.map((file, i) => (
+            <button
+              key={i}
+              onClick={() => handleDownload(file.downloadUrl, file.name)}
+              className="text-blue-600 underline"
+            >
+              {file.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-gray-500 mt-2">
+        Publication: {post.publication_date}
+      </p>
     </div>
   );
-}
+};

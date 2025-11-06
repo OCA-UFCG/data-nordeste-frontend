@@ -1,3 +1,6 @@
+import { useMemo } from "react";
+import { PAGINATION_SIZE } from "./constants";
+
 export const capitalize = (inputString: string): string => {
   return inputString
     .toLowerCase()
@@ -41,4 +44,26 @@ export const isHrefActive = (
   const hrefParams = new URLSearchParams(hrefQuery).get("category");
 
   return pathname === hrefPath && hrefParams === category;
+};
+
+export const usePaginationRange = (currentPage: number, totalPages: number) => {
+  return useMemo(() => {
+    let init = 0;
+    let end = totalPages;
+
+    if (totalPages >= PAGINATION_SIZE) {
+      init = currentPage - PAGINATION_SIZE;
+      end = currentPage + PAGINATION_SIZE;
+
+      if (currentPage + PAGINATION_SIZE > totalPages) {
+        init = totalPages - PAGINATION_SIZE;
+        end = totalPages;
+      } else if (currentPage - PAGINATION_SIZE <= 0) {
+        init = 0;
+        end = PAGINATION_SIZE;
+      }
+    }
+
+    return Array.from({ length: totalPages }, (_, i) => i + 1).slice(init, end);
+  }, [currentPage, totalPages]);
 };

@@ -11,10 +11,14 @@ import {
 export const SortSelect = ({
   onChange,
   defaultvalue,
+  sortingTypes: customSortingTypes,
 }: {
   defaultvalue: string;
   onChange: (value: string) => void;
+  sortingTypes?: { [key: string]: string };
 }) => {
+  const types = customSortingTypes || sortingTypes;
+
   return (
     <Select value={defaultvalue} onValueChange={onChange}>
       <SelectTrigger className="w-full lg:w-fit hover:bg-grey-100 cursor-pointer">
@@ -22,7 +26,7 @@ export const SortSelect = ({
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          {Object.entries(sortingTypes).map(([key, value]) => (
+          {Object.entries(types).map(([key, value]) => (
             <SelectItem value={value} key={value} className="cursor-pointer">
               {key}
             </SelectItem>

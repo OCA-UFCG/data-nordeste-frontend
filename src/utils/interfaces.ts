@@ -189,3 +189,38 @@ export interface IFeedbackAnswer {
   text: string;
   answer: string | number;
 }
+
+export interface IMetadata {
+  id: string;
+  title: string;
+  description: string;
+  publication_date: string;
+  version: string;
+  tags: string[];
+  license: {
+    [key: string]: string;
+  };
+  files: {
+    name: string;
+    downloadUrl: string;
+  }[];
+}
+
+export interface FilterGroup {
+  title: string;
+  type: string;
+  options: {
+    slug: string;
+    title: string;
+  }[];
+}
+
+export interface Filters {
+  [key: string]: string[] | Date | string | undefined;
+  category?: string[];
+  license?: string[];
+  download?: string[];
+  date_gte?: Date;
+  date_lte?: Date;
+  sort?: string;
+}
