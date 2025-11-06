@@ -28,33 +28,44 @@ const buildBaseQuery = (
 
   if (filters.sort) query.append("sort", filters.sort);
 
-  const conditions = buildConditions(filters);
-  if (conditions.length) query.append("q", conditions.join(" OR "));
+  const { dateCondition, otherConditions } = buildConditions(filters);
+
+  let finalQuery = "";
+
+  if (dateCondition && otherConditions.length) {
+    finalQuery = `${dateCondition} AND (${otherConditions.join(" OR ")})`;
+  } else if (dateCondition) {
+    finalQuery = dateCondition;
+  } else if (otherConditions.length) {
+    finalQuery = otherConditions.join(" OR ");
+  }
+
+  if (finalQuery) query.append("q", finalQuery);
 
   return query;
 };
 
-const buildConditions = (filters: Record<string, any>): string[] => {
-  const conditions: string[] = [];
+const buildConditions = (filters: Record<string, any>) => {
+  let dateCondition = "";
+  const otherConditions: string[] = [];
+
+  const gte = filters.date_gte ? formatDate(filters.date_gte) : "*";
+  const lte = filters.date_lte ? formatDate(filters.date_lte) : "*";
+
+  if (filters.date_gte || filters.date_lte) {
+    dateCondition = `publication_date:[${gte} TO ${lte}]`;
+  }
 
   Object.entries(filters).forEach(([key, value]) => {
-    if (!value) return;
+    if (!value || key.startsWith("date_")) return;
 
     if (Array.isArray(value) && value.length) {
       const arrQuery = buildArrayQuery(value);
-      if (arrQuery) conditions.push(arrQuery);
-    }
-
-    if (key === "date_gte") {
-      conditions.push(`publication_date:[${formatDate(value)} TO *]`);
-    }
-
-    if (key === "date_lte") {
-      conditions.push(`publication_date:[* TO ${formatDate(value)}]`);
+      if (arrQuery) otherConditions.push(arrQuery);
     }
   });
 
-  return conditions;
+  return { dateCondition, otherConditions };
 };
 
 const buildArrayQuery = (items: string[]): string | null => {
