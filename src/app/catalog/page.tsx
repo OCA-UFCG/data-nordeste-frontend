@@ -3,6 +3,7 @@ import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
 import { FILTERS_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
+import { MacroTheme } from "@/utils/interfaces";
 
 interface IFilterDataPage {
   filterDataPageCollection: {
@@ -17,12 +18,16 @@ interface IFilterDataPage {
       };
     }[];
   };
+  themeCollection: {
+    items: MacroTheme[];
+  };
 }
 
 export default async function CatalogPage() {
-  const filterDataPage: IFilterDataPage = await getContent(FILTERS_QUERY);
+  const { filterDataPageCollection, themeCollection }: IFilterDataPage =
+    await getContent(FILTERS_QUERY);
 
-  const filters = filterDataPage.filterDataPageCollection.items.map((item) => ({
+  const filters = filterDataPageCollection.items.map((item) => ({
     title: item.title,
     type: item.type,
     options: item.optionsCollection.items.map((opt) => ({
@@ -31,10 +36,14 @@ export default async function CatalogPage() {
     })),
   }));
 
+  const themes = (themeCollection?.items || []).filter(
+    (theme): theme is MacroTheme => Boolean(theme),
+  );
+
   return (
     <HubTemplate>
       <Suspense>
-        <DataRecords filters={filters} />
+        <DataRecords filters={filters} themes={themes} />
       </Suspense>
     </HubTemplate>
   );

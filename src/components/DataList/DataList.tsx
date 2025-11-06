@@ -1,4 +1,4 @@
-import { IMetadata } from "@/utils/interfaces";
+import { IMetadata, MacroTheme } from "@/utils/interfaces";
 import { DataCard } from "../DataCard/DataCard";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { Skeleton } from "../ui/skeleton";
@@ -10,11 +10,13 @@ export const DataList = ({
   loading,
   currentPage,
   pages,
+  themes,
 }: {
-  posts: IMetadata[];
+  posts: (IMetadata & { tagSlugs?: string[] })[];
   loading: boolean;
   currentPage: number;
   pages: number;
+  themes: MacroTheme[];
 }) => (
   <div className="flex flex-col items-center gap-8 w-full max-w-[1440px]">
     <div className="flex flex-col gap-4 w-full">
@@ -23,7 +25,7 @@ export const DataList = ({
           <Skeleton className="w-full h-[200px] rounded-lg" key={i} />
         ))
       ) : posts.length > 0 ? (
-        posts.map((post, i) => <DataCard key={i} post={post} />)
+        posts.map((post, i) => <DataCard key={i} post={post} themes={themes} />)
       ) : (
         <div className="flex flex-col gap-4 justify-center items-center w-full py-12 bg-gray-50 rounded-lg">
           <Icon id="no-mail" size={48} />

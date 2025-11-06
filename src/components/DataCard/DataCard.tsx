@@ -1,41 +1,80 @@
 "use client";
 
+import { useMemo } from "react";
 import { Icon } from "@/components/Icon/Icon";
+import { macroThemes } from "@/utils/constants";
 import { IMetadata, MacroTheme } from "@/utils/interfaces";
 
-export const DataCard = ({ post }: { post: IMetadata }) => {
+const normalizeKey = (value?: string) =>
+  value
+    ?.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\s-]+/g, "_")
+    .toLowerCase() ?? "";
+
+export const DataCard = ({
+  post,
+  themes,
+}: {
+  post: IMetadata & { tagSlugs?: string[] };
+  themes: MacroTheme[];
+}) => {
   const primaryFile = post.files?.[0];
   const additionalFiles = post.files?.slice(1) ?? [];
 
-  const rawTags = Array.isArray(post.tags)
-    ? (post.tags as (
-        | string
-        | (Partial<MacroTheme> & {
-            label?: string;
-            title?: string;
-            name?: string;
-            color?: string;
-          })
-      )[])
-    : [];
+  const themeLookup = useMemo(() => {
+    const map: Record<string, MacroTheme> = {};
 
-  const normalizedTags = rawTags
-    .map((tag, index) => {
-      if (typeof tag === "string") {
-        return { key: `${tag}-${index}`, label: tag };
+    themes.forEach((theme) => {
+      if (!theme) return;
+      const candidates = new Set<string>();
+
+      const idKey = normalizeKey(theme.id);
+      const sysIdKey = normalizeKey(theme.sys?.id);
+      const nameKey = normalizeKey(theme.name);
+
+      [idKey, sysIdKey, nameKey].forEach((key) => key && candidates.add(key));
+      if (nameKey) {
+        candidates.add(nameKey.replace(/_/g, "-"));
+        candidates.add(nameKey.replace(/-/g, "_"));
       }
 
-      const label =
-        tag.name ?? tag.title ?? tag.label ?? tag.id ?? `tag-${index}`;
-      const color = tag.color;
+      Object.keys(macroThemes).forEach((macroKey) => {
+        const macroNormalized = normalizeKey(macroKey);
+        if ([idKey, sysIdKey, nameKey].includes(macroNormalized)) {
+          candidates.add(macroNormalized);
+        }
+      });
 
-      return {
-        key: `${tag.id ?? label}-${index}`,
-        label,
-        color,
-      };
-    })
-    .filter(({ label }) => Boolean(label));
+      candidates.forEach((key) => {
+        if (!map[key]) {
+          map[key] = theme;
+        }
+      });
+    });
+
+    return map;
+  }, [themes]);
+
+  const normalizedTags = (post.tags || []).map((label, index) => {
+    const rawKey = post.tagSlugs?.[index] ?? label;
+    const normalized = normalizeKey(rawKey);
+    const themeMatch =
+      themeLookup[normalized] ||
+      themeLookup[normalized.replace(/-/g, "_")] ||
+      themeLookup[normalized.replace(/_/g, "-")] ||
+      themeLookup[normalizeKey(label)];
+
+    const finalLabel = themeMatch?.name ?? label;
+    const color = themeMatch?.color ?? "#018F39";
+
+    return {
+      key: `${normalized}-${index}`,
+      label: finalLabel,
+      color,
+      iconId: themeMatch ? macroThemes[themeMatch.id] : undefined,
+    };
+  });
 
   const formattedDate = (() => {
     if (!post.publication_date) return "-";
