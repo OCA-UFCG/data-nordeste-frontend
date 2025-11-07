@@ -342,3 +342,22 @@ export const EXPLORE_PAGE_QUERY = `
     }
   }
 `;
+
+export const FILTERS_QUERY = `
+  query GetFilters($preview: Boolean) {
+    filterDataPageCollection(preview: $preview) {
+      items {
+        title
+        type
+        optionsCollection { 
+          items {
+            ... on FilterOptions { 
+              title
+              slug
+            }
+          }
+        }
+      }
+    }
+  }
+`;
