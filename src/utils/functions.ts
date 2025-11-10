@@ -67,3 +67,10 @@ export const usePaginationRange = (currentPage: number, totalPages: number) => {
     return Array.from({ length: totalPages }, (_, i) => i + 1).slice(init, end);
   }, [currentPage, totalPages]);
 };
+
+export const normalizeKey = (value?: string) =>
+  value
+    ?.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\s-]+/g, "_")
+    .toLowerCase() ?? "";

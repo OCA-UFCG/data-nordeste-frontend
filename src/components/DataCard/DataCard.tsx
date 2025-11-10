@@ -4,68 +4,64 @@ import { useMemo } from "react";
 import { Icon } from "@/components/Icon/Icon";
 import { macroThemes } from "@/utils/constants";
 import { IMetadata, MacroTheme } from "@/utils/interfaces";
+import { normalizeKey } from "@/utils/functions";
+import DOMPurify from "dompurify";
 
-const normalizeKey = (value?: string) =>
-  value
-    ?.normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[\s-]+/g, "_")
-    .toLowerCase() ?? "";
+const buildThemeLookup = (themes: MacroTheme[]) => {
+  const map: Record<string, MacroTheme> = {};
+
+  themes.forEach((theme) => {
+    if (!theme) return;
+    const candidates = new Set<string>();
+
+    const idKey = normalizeKey(theme.id);
+    const sysIdKey = normalizeKey(theme.sys?.id);
+    const nameKey = normalizeKey(theme.name);
+
+    [idKey, sysIdKey, nameKey].forEach((key) => key && candidates.add(key));
+    if (nameKey) {
+      candidates.add(nameKey.replace(/_/g, "-"));
+      candidates.add(nameKey.replace(/-/g, "_"));
+    }
+
+    Object.keys(macroThemes).forEach((macroKey) => {
+      const macroNormalized = normalizeKey(macroKey);
+      if ([idKey, sysIdKey, nameKey].includes(macroNormalized)) {
+        candidates.add(macroNormalized);
+      }
+    });
+
+    candidates.forEach((key) => {
+      if (!map[key]) {
+        map[key] = theme;
+      }
+    });
+  });
+
+  return map;
+};
 
 export const DataCard = ({
   post,
   themes,
 }: {
-  post: IMetadata & { tagSlugs?: string[] };
+  post: IMetadata & { tags?: { name: string; slug?: string }[] };
   themes: MacroTheme[];
 }) => {
   const primaryFile = post.files?.[0];
   const additionalFiles = post.files?.slice(1) ?? [];
 
-  const themeLookup = useMemo(() => {
-    const map: Record<string, MacroTheme> = {};
+  const themeLookup = buildThemeLookup(themes);
 
-    themes.forEach((theme) => {
-      if (!theme) return;
-      const candidates = new Set<string>();
-
-      const idKey = normalizeKey(theme.id);
-      const sysIdKey = normalizeKey(theme.sys?.id);
-      const nameKey = normalizeKey(theme.name);
-
-      [idKey, sysIdKey, nameKey].forEach((key) => key && candidates.add(key));
-      if (nameKey) {
-        candidates.add(nameKey.replace(/_/g, "-"));
-        candidates.add(nameKey.replace(/-/g, "_"));
-      }
-
-      Object.keys(macroThemes).forEach((macroKey) => {
-        const macroNormalized = normalizeKey(macroKey);
-        if ([idKey, sysIdKey, nameKey].includes(macroNormalized)) {
-          candidates.add(macroNormalized);
-        }
-      });
-
-      candidates.forEach((key) => {
-        if (!map[key]) {
-          map[key] = theme;
-        }
-      });
-    });
-
-    return map;
-  }, [themes]);
-
-  const normalizedTags = (post.tags || []).map((label, index) => {
-    const rawKey = post.tagSlugs?.[index] ?? label;
-    const normalized = normalizeKey(rawKey);
+  const normalizedTags = (post.tags || []).map(({ name, slug }, index) => {
+    const normalized = normalizeKey(slug ?? name);
     const themeMatch =
       themeLookup[normalized] ||
       themeLookup[normalized.replace(/-/g, "_")] ||
       themeLookup[normalized.replace(/_/g, "-")] ||
-      themeLookup[normalizeKey(label)];
+      themeLookup[normalizeKey(name)];
 
-    const finalLabel = themeMatch?.name ?? label;
+    const finalLabel = themeMatch?.name ?? name;
     const color = themeMatch?.color ?? "#018F39";
 
     return {
@@ -114,8 +110,15 @@ export const DataCard = ({
     }
   };
 
+  const sanitizedDescription = useMemo(() => {
+    if (!post.description) return "";
+    return DOMPurify.sanitize(post.description, {
+      USE_PROFILES: { html: true },
+    });
+  }, [post.description]);
+
   return (
-    <div className="flex min-h-[176px] w-full flex-col gap-6 rounded-lg border border-[#EFEFEF] bg-[#F8F7F8] px-4 py-4 transition-transform duration-300 hover:scale-[1.01]">
+    <div className="flex w-full flex-col gap-6 rounded-lg bg-grey-100 p-4 transition-bg duration-300 hover:bg-grey-200">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         <div className="flex flex-1 flex-col gap-4">
           <div className="flex flex-col gap-3">
@@ -129,10 +132,10 @@ export const DataCard = ({
                   <span
                     key={key}
                     style={{
-                      backgroundColor: color ?? "#018F39",
-                      color: "#fff",
+                      backgroundColor: color ?? "var(--color-green-800)",
                     }}
-                    className="min-h-[20px] min-w-[51px] rounded-full border border-[#E2E8F0] px-[10px] py-[2px] text-xs font-medium leading-4"
+                    className="
+                        rounded-full px-3 py-1 text-xs text-white"
                   >
                     {label}
                   </span>
@@ -141,16 +144,17 @@ export const DataCard = ({
             )}
           </div>
 
-          {post.description && (
-            <p className="text-base font-normal leading-[150%] text-[#292829]">
-              {post.description}
-            </p>
+          {sanitizedDescription && (
+            <div
+              className="text-base font-normal leading-[150%] text-[#292829]"
+              dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+            />
           )}
 
-          <div className="flex flex-wrap items-center gap-3 text-xs font-normal leading-5 text-[#7E797B]">
-            <span>
-              Publicado em: {formattedDate} | Versão: {post.version || "N/A"}
-            </span>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600">
+            <span>Publicado em: {formattedDate}</span>
+            <span className="text-[#7E797B]">|</span>
+            <span>Versão: {post.version || "N/A"}</span>
           </div>
         </div>
 
@@ -163,7 +167,7 @@ export const DataCard = ({
                 rel="noopener noreferrer"
                 className="flex min-w-[138px] items-center justify-center gap-2 rounded-md border border-[#DCDBDC] bg-white px-4 py-2 text-sm font-semibold text-[#038F39] transition-all hover:bg-emerald-50 hover:text-emerald-900 hover:scale-105"
               >
-                <Icon id="icon-external" size={16} className="text-[#038F39]" />
+                <Icon id="icon-external" size={16} className="text-green-800" />
                 Ir para fonte
               </a>
             )}
@@ -174,7 +178,7 @@ export const DataCard = ({
                 onClick={() =>
                   handleDownload(primaryFile.downloadUrl, primaryFile.name)
                 }
-                className="flex min-w-[145px] items-center justify-center gap-2 rounded-md border border-[#018F39] bg-[#018F39] px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-emerald-900 hover:scale-105"
+                className="flex items-center justify-center gap-2 rounded-md border border-green-800 bg-green-800 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-emerald-900 cursor-pointer"
               >
                 <Icon id="icon-download" size={16} className="text-white" />
                 Baixar dados

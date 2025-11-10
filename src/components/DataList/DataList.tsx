@@ -12,7 +12,7 @@ export const DataList = ({
   pages,
   themes,
 }: {
-  posts: (IMetadata & { tagSlugs?: string[] })[];
+  posts: (IMetadata & { tags?: { name: string; slug: string }[] })[];
   loading: boolean;
   currentPage: number;
   pages: number;

@@ -27,7 +27,7 @@ export const DataRecords = ({
   const [loading, setLoading] = useState(true);
   const [pages, setPages] = useState(1);
   const [metadata, setMetadata] = useState<
-    (IMetadata & { tagSlugs?: string[] })[]
+    (IMetadata & { tags?: { name: string; slug: string }[] })[]
   >([]);
 
   const currentPage = useMemo(() => Number(params.get("page") || 1), [params]);
@@ -95,12 +95,15 @@ export const DataRecords = ({
             const tagSlugs = Array.isArray(record.tags)
               ? record.tags.map((slug) => String(slug))
               : [];
-            const tagLabels = tagSlugs.map((slug) => slugToTitle[slug] || slug);
+
+            const tags = tagSlugs.map((slug) => ({
+              slug,
+              name: slugToTitle[slug] || slug,
+            }));
 
             return {
               ...record,
-              tags: tagLabels,
-              tagSlugs,
+              tags,
             };
           },
         );
