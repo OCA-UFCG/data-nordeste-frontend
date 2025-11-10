@@ -112,6 +112,7 @@ export const DataCard = ({
 
   const sanitizedDescription = useMemo(() => {
     if (!post.description) return "";
+
     return DOMPurify.sanitize(post.description, {
       USE_PROFILES: { html: true },
     });
