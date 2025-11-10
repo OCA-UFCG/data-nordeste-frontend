@@ -6,6 +6,8 @@ import { macroThemes } from "@/utils/constants";
 import { IMetadata, MacroTheme } from "@/utils/interfaces";
 import { normalizeKey } from "@/utils/functions";
 import DOMPurify from "dompurify";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const buildThemeLookup = (themes: MacroTheme[]) => {
   const map: Record<string, MacroTheme> = {};
@@ -168,28 +170,32 @@ export const DataCard = ({
         {(sourceUrl || primaryFile) && (
           <div className="flex w-full flex-row flex-wrap items-center justify-between gap-3 lg:w-auto lg:flex-nowrap lg:justify-end">
             {sourceUrl && (
-              <a
-                href={sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex min-w-[138px] items-center justify-center gap-2 rounded-md border border-[#DCDBDC] bg-white px-4 py-2 text-sm font-semibold text-[#038F39] transition-all hover:bg-emerald-50 hover:text-emerald-900 hover:scale-105"
-              >
-                <Icon id="icon-external" size={16} className="text-green-800" />
-                Ir para fonte
-              </a>
+              <Button asChild variant="secondary">
+                <Link
+                  href={sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Icon
+                    id="icon-external"
+                    size={16}
+                    className="text-[#038f39]"
+                  />
+                  Ir para fonte
+                </Link>
+              </Button>
             )}
 
             {primaryFile && (
-              <button
-                type="button"
+              <Button
+                variant="primary"
                 onClick={() =>
                   handleDownload(primaryFile.downloadUrl, primaryFile.name)
                 }
-                className="flex items-center justify-center gap-2 rounded-md border border-green-800 bg-green-800 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-emerald-900 cursor-pointer"
               >
                 <Icon id="icon-download" size={16} className="text-white" />
                 Baixar dados
-              </button>
+              </Button>
             )}
           </div>
         )}
