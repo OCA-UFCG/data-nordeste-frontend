@@ -41,6 +41,9 @@ const buildThemeLookup = (themes: MacroTheme[]) => {
   return map;
 };
 
+// Ensure tags are treated as a union of string | object with name/slug
+type TagItem = string | { name: string; slug?: string };
+
 export const DataCard = ({
   post,
   themes,
@@ -53,22 +56,26 @@ export const DataCard = ({
 
   const themeLookup = buildThemeLookup(themes);
 
-  const normalizedTags = (post.tags || []).map(({ name, slug }, index) => {
-    const normalized = normalizeKey(slug ?? name);
+  const normalizedTags = (
+    Array.isArray(post.tags) ? (post.tags as TagItem[]) : []
+  ).map((tag: TagItem, index) => {
+    const tagName = typeof tag === "string" ? tag : tag.name ?? "";
+    const tagSlug = typeof tag === "string" ? tag : tag.slug ?? tagName;
+
+    const normalized = normalizeKey(tagSlug || tagName);
     const themeMatch =
       themeLookup[normalized] ||
       themeLookup[normalized.replace(/-/g, "_")] ||
       themeLookup[normalized.replace(/_/g, "-")] ||
-      themeLookup[normalizeKey(name)];
+      themeLookup[normalizeKey(tagName)];
 
-    const finalLabel = themeMatch?.name ?? name;
+    const finalLabel = themeMatch?.name ?? tagName;
     const color = themeMatch?.color ?? "#018F39";
 
     return {
-      key: `${normalized}-${index}`,
+      key: `${normalized || `tag-${index}`}-${index}`,
       label: finalLabel,
       color,
-      iconId: themeMatch ? macroThemes[themeMatch.id] : undefined,
     };
   });
 
@@ -129,18 +136,17 @@ export const DataCard = ({
 
             {normalizedTags.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {normalizedTags.map(({ key, label, color }) => (
-                  <span
-                    key={key}
-                    style={{
-                      backgroundColor: color ?? "var(--color-green-800)",
-                    }}
-                    className="
-                        rounded-full px-3 py-1 text-xs text-white"
-                  >
-                    {label}
-                  </span>
-                ))}
+                {normalizedTags
+                  .filter(({ label }) => !!label)
+                  .map(({ key, label, color }) => (
+                    <span
+                      key={key}
+                      style={{ backgroundColor: color, color: "#fff" }}
+                      className="min-h-[20px] min-w-[51px] rounded-full border border-[#E2E8F0] px-[10px] py-[2px] text-xs font-medium leading-4"
+                    >
+                      {label}
+                    </span>
+                  ))}
               </div>
             )}
           </div>
