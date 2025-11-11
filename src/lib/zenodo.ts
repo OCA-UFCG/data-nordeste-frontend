@@ -6,7 +6,6 @@ export async function getZenodoCommunityRecords(
   const query = buildBaseQuery(page, size, filters);
   const url = `https://zenodo.org/api/records?${query.toString()}`;
   const json = await fetchZenodoData(url);
-  console.log(json);
   const records = parseZenodoRecords(json);
 
   return {
