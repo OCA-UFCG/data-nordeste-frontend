@@ -1,4 +1,5 @@
 import { DataRecords } from "@/components/DataRecords/DataRecords";
+import PageHeader from "@/components/PageHeader/PageHeader";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
 import { FILTERS_QUERY } from "@/utils/queries";
@@ -17,12 +18,20 @@ interface IFilterDataPage {
       };
     }[];
   };
+  pageHeadersCollection: {
+    items: {
+      title: string;
+      subtitle: string;
+    }[];
+  };
 }
 
 export default async function CatalogPage() {
-  const filterDataPage: IFilterDataPage = await getContent(FILTERS_QUERY);
+  const data: IFilterDataPage = await getContent(FILTERS_QUERY);
 
-  const filters = filterDataPage.filterDataPageCollection.items.map((item) => ({
+  const header = data.pageHeadersCollection?.items?.[0];
+
+  const filters = data.filterDataPageCollection.items.map((item) => ({
     title: item.title,
     type: item.type,
     options: item.optionsCollection.items.map((opt) => ({
@@ -33,6 +42,14 @@ export default async function CatalogPage() {
 
   return (
     <HubTemplate>
+      <PageHeader
+        content={{
+          title: header?.title || "Catálogo de dados",
+          subtitle:
+            header?.subtitle ||
+            "Aqui você encontra todas as bases de dados utilizadas nos painéis e publicações do Data Nordeste.",
+        }}
+      />
       <Suspense>
         <DataRecords filters={filters} />
       </Suspense>

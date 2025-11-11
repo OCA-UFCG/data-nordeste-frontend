@@ -29,6 +29,7 @@ export const MAIN_PAGE_IDS = [
   "panels",
   "about",
   "projects",
+  "catalog",
   "survey",
   "survey-thank-u",
 ];
@@ -343,8 +344,10 @@ export const EXPLORE_PAGE_QUERY = `
   }
 `;
 
+export const CATALOG_ID = "catalog";
+
 export const FILTERS_QUERY = `
-  query GetFilters($preview: Boolean) {
+  query GetFiltersAndThemes($preview: Boolean) {
     filterDataPageCollection(preview: $preview) {
       items {
         title
@@ -356,6 +359,24 @@ export const FILTERS_QUERY = `
               slug
             }
           }
+        }
+      }
+    }
+
+    pageHeadersCollection(limit: 1, where: { id_in: ["${CATALOG_ID}"] }, preview: $preview) {
+      items {
+        title
+        subtitle
+      }
+    }
+
+    themeCollection(limit: 30, preview: $preview) {
+      items {
+        name
+        id
+        color
+        sys {
+          id
         }
       }
     }

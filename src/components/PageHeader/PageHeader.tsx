@@ -8,7 +8,7 @@ const PageHeader = ({ content }: { content: IPageHeader }) => {
       <div className="flex flex-col items-left gap-6 max-w-[1440px]">
         <h1 className="font-extrabold text-[30px] lg:text-[48px]">{title}</h1>
 
-        <h2 className="text-[16px]">{subtitle}</h2>
+        <h2 className="text-[16px] whitespace-pre-line">{subtitle}</h2>
       </div>
     </section>
   );
