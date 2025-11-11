@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Icon } from "@/components/Icon/Icon";
 import { macroThemes } from "@/utils/constants";
-import { IMetadata, MacroTheme } from "@/utils/interfaces";
+import { IMetadata, MacroTheme, Tag } from "@/utils/interfaces";
 import { normalizeKey } from "@/utils/functions";
 import DOMPurify from "dompurify";
 import Link from "next/link";
@@ -43,9 +43,6 @@ const buildThemeLookup = (themes: MacroTheme[]) => {
   return map;
 };
 
-// Ensure tags are treated as a union of string | object with name/slug
-type TagItem = string | { name: string; slug?: string };
-
 export const DataCard = ({
   post,
   themes,
@@ -58,9 +55,7 @@ export const DataCard = ({
 
   const themeLookup = buildThemeLookup(themes);
 
-  const normalizedTags = (
-    Array.isArray(post.tags) ? (post.tags as TagItem[]) : []
-  ).map((tag: TagItem, index) => {
+  const normalizedTags = ((post.tags ?? []) as Tag[]).map((tag: Tag, index) => {
     const tagName = typeof tag === "string" ? tag : tag.name ?? "";
     const tagSlug = typeof tag === "string" ? tag : tag.slug ?? tagName;
 
