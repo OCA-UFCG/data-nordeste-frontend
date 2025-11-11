@@ -50,7 +50,7 @@ export const DataCard = ({
   post,
   themes,
 }: {
-  post: IMetadata & { tags?: { name: string; slug?: string }[] };
+  post: IMetadata;
   themes: MacroTheme[];
 }) => {
   const primaryFile = post.files?.[0];
@@ -92,18 +92,6 @@ export const DataCard = ({
       year: "numeric",
     });
   })();
-
-  const sourceUrlFromId =
-    post.id && /^\d+$/.test(post.id)
-      ? `https://zenodo.org/records/${post.id}`
-      : "test"; // <-- change this later for proper redirect button workflow
-
-  const sourceUrl =
-    (post as any)?.recordUrl ??
-    (post as any)?.url ??
-    (post as any)?.source ??
-    sourceUrlFromId;
-
   const handleDownload = async (url: string, name: string) => {
     try {
       const response = await fetch(url);
@@ -167,26 +155,15 @@ export const DataCard = ({
           </div>
         </div>
 
-        {(sourceUrl || primaryFile) && (
+        {primaryFile && (
           <div className="flex w-full flex-row flex-wrap items-center justify-between gap-3 lg:w-auto lg:flex-nowrap lg:justify-end">
-            {sourceUrl && (
-              <Button asChild variant="secondary">
-                <Link
-                  href={sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Icon
-                    id="icon-external"
-                    size={16}
-                    className="text-[#038f39]"
-                  />
-                  Ir para fonte
-                </Link>
-              </Button>
-            )}
-
-            {primaryFile && (
+            <Button asChild variant="secondary">
+              <Link href={post.html} target="_blank" rel="noopener noreferrer">
+                <Icon id="icon-external" size={16} className="text-[#038f39]" />
+                Ir para fonte
+              </Link>
+            </Button>
+            {
               <Button
                 variant="primary"
                 onClick={() =>
@@ -196,7 +173,7 @@ export const DataCard = ({
                 <Icon id="icon-download" size={16} className="text-white" />
                 Baixar dados
               </Button>
-            )}
+            }
           </div>
         )}
       </div>

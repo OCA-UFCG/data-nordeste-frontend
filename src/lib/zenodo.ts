@@ -6,6 +6,7 @@ export async function getZenodoCommunityRecords(
   const query = buildBaseQuery(page, size, filters);
   const url = `https://zenodo.org/api/records?${query.toString()}`;
   const json = await fetchZenodoData(url);
+  console.log(json);
   const records = parseZenodoRecords(json);
 
   return {
@@ -88,6 +89,7 @@ const parseZenodoRecords = (json: any) => {
     publication_date: r.metadata?.publication_date,
     version: r.metadata?.version ?? "1.0",
     tags: r.metadata?.keywords ?? [],
+    html: r.links.self_html,
     license: r.metadata?.license?.id ?? "Desconhecida",
     files: (r.files ?? []).map((f: any) => ({
       name: f.key,

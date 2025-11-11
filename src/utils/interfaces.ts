@@ -190,13 +190,16 @@ export interface IFeedbackAnswer {
   answer: string | number;
 }
 
+export type Tag = string | { name: string; slug?: string };
+
 export interface IMetadata {
   id: string;
   title: string;
   description: string;
   publication_date: string;
   version: string;
-  tags: string[];
+  tags?: Tag[];
+  html: string;
   license: {
     [key: string]: string;
   };
