@@ -69,7 +69,11 @@ const buildConditions = (filters: Record<string, any>) => {
 };
 
 const buildArrayQuery = (items: string[]): string | null => {
-  return items.length ? `(${items.join(" OR ")})` : null;
+  if (!items.length) return null;
+
+  const queries = items.map((item) => `"${item}"`);
+
+  return queries.join(" OR ");
 };
 
 const formatDate = (date: Date): string => {
