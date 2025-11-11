@@ -350,7 +350,7 @@ export const EXPLORE_PAGE_QUERY = `
 `;
 
 export const FILTERS_QUERY = `
-  query GetFilters($preview: Boolean) {
+  query GetFiltersAndThemes($preview: Boolean) {
     filterDataPageCollection(preview: $preview) {
       items {
         title
@@ -362,6 +362,17 @@ export const FILTERS_QUERY = `
               slug
             }
           }
+        }
+      }
+    }
+
+    themeCollection(limit: 30, preview: $preview) {
+      items {
+        name
+        id
+        color
+        sys {
+          id
         }
       }
     }

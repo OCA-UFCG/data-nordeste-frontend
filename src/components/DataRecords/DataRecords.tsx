@@ -5,17 +5,29 @@ import { FilterForm } from "@/components/PostsGrid/FilterForm";
 import { SortSelect } from "@/components/PostsGrid/SortSelect";
 import { getZenodoCommunityRecords } from "@/lib/zenodo";
 import { RECORDS_PER_PAGE, dataSortingTypes } from "@/utils/constants";
-import { FilterGroup, Filters } from "@/utils/interfaces";
+import {
+  FilterGroup,
+  Filters,
+  IMetadata,
+  MacroTheme,
+  Tag,
+} from "@/utils/interfaces";
 import { DataList } from "../DataList/DataList";
 
-export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
+export const DataRecords = ({
+  filters,
+  themes,
+}: {
+  filters: FilterGroup[];
+  themes: MacroTheme[];
+}) => {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   const [loading, setLoading] = useState(true);
   const [pages, setPages] = useState(1);
-  const [metadata, setMetadata] = useState([]);
+  const [metadata, setMetadata] = useState<IMetadata[]>([]);
 
   const currentPage = useMemo(() => Number(params.get("page") || 1), [params]);
 
@@ -77,12 +89,25 @@ export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
     setLoading(true);
     getZenodoCommunityRecords(currentPage, RECORDS_PER_PAGE, filtersFromUrl)
       .then((res: any) => {
-        const recordsFormattedTags = res.records.map((record: any) => ({
-          ...record,
-          tags: (record.tags || []).map(
-            (slug: string) => slugToTitle[slug] || slug,
-          ),
-        }));
+        const recordsFormattedTags: IMetadata[] = res.records.map(
+          (record: IMetadata) => {
+            const rawTags = Array.isArray(record.tags) ? record.tags : [];
+
+            const tags: Tag[] = rawTags.map((t) => {
+              if (typeof t === "string") {
+                return { slug: t, name: slugToTitle[t] || t };
+              }
+              const key = t.slug ?? t.name ?? "";
+
+              return { slug: key, name: slugToTitle[key] || t.name || key };
+            });
+
+            return {
+              ...record,
+              tags,
+            };
+          },
+        );
 
         setMetadata(recordsFormattedTags);
         setPages(res.totalPages);
@@ -121,6 +146,7 @@ export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
         pages={pages}
         currentPage={currentPage}
         loading={loading}
+        themes={themes}
       />
     </section>
   );
