@@ -1,3 +1,4 @@
+import AnchorSection from "@/components/AnchorSection/AnchorSection";
 import PowerBIContainer from "@/components/PowerBIContainer/PowerBiContainer";
 import HubTemplate from "@/templates/HubTemplate";
 import { REVALIDATE } from "@/utils/constants";
@@ -36,6 +37,7 @@ export default async function DataPanel({
           pageName={searchParams.pageName}
         />
       </div>
+      <AnchorSection macroTheme={panels.items[0].macroTheme} />
     </HubTemplate>
   );
 }

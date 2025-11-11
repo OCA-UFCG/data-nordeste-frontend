@@ -72,6 +72,16 @@ export const macroThemes: { [key: string]: string } = {
   meio_ambiente: "leaf",
 };
 
+export const themes = {
+  "Economia e Renda": "economia-e-renda",
+  Demografia: "demografia",
+  Saúde: "saude",
+  Educação: "educacao",
+  "Infraestrutura e Saneamento": "infraestrutura-e-saneamento",
+  "Segurança Hídrica": "seguranca-hidrica",
+  "Meio Ambiente": "meio-ambiente",
+};
+
 export const exploreFilterMap: {
   [key: string]: {
     name: string;
