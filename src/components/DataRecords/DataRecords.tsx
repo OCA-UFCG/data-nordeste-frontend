@@ -10,6 +10,7 @@ import {
   Filters,
   IMetadata,
   MacroTheme,
+  Tag,
 } from "@/utils/interfaces";
 import { DataList } from "../DataList/DataList";
 
@@ -26,9 +27,7 @@ export const DataRecords = ({
 
   const [loading, setLoading] = useState(true);
   const [pages, setPages] = useState(1);
-  const [metadata, setMetadata] = useState<
-    (IMetadata & { tags?: { name: string; slug: string }[] })[]
-  >([]);
+  const [metadata, setMetadata] = useState<IMetadata[]>([]);
 
   const currentPage = useMemo(() => Number(params.get("page") || 1), [params]);
 
@@ -90,16 +89,18 @@ export const DataRecords = ({
     setLoading(true);
     getZenodoCommunityRecords(currentPage, RECORDS_PER_PAGE, filtersFromUrl)
       .then((res: any) => {
-        const recordsFormattedTags = res.records.map(
-          (record: IMetadata & { tags?: string[] }) => {
-            const tagSlugs = Array.isArray(record.tags)
-              ? record.tags.map((slug) => String(slug))
-              : [];
+        const recordsFormattedTags: IMetadata[] = res.records.map(
+          (record: IMetadata) => {
+            const rawTags = Array.isArray(record.tags) ? record.tags : [];
 
-            const tags = tagSlugs.map((slug) => ({
-              slug,
-              name: slugToTitle[slug] || slug,
-            }));
+            const tags: Tag[] = rawTags.map((t) => {
+              if (typeof t === "string") {
+                return { slug: t, name: slugToTitle[t] || t };
+              }
+              const key = t.slug ?? t.name ?? "";
+
+              return { slug: key, name: slugToTitle[key] || t.name || key };
+            });
 
             return {
               ...record,
