@@ -369,16 +369,5 @@ export const FILTERS_QUERY = `
         subtitle
       }
     }
-
-    themeCollection(limit: 30, preview: $preview) {
-      items {
-        name
-        id
-        color
-        sys {
-          id
-        }
-      }
-    }
   }
 `;
