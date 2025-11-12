@@ -367,6 +367,9 @@ export const FILTERS_QUERY = `
       items {
         title
         subtitle
+        richSubtitle {
+          json
+        }
       }
     }
   }

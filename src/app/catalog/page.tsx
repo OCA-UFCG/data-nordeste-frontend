@@ -21,7 +21,8 @@ interface IFilterDataPage {
   pageHeadersCollection: {
     items: {
       title: string;
-      subtitle: string;
+      subtitle?: string;
+      richSubtitle?: { json: any };
     }[];
   };
 }
@@ -30,7 +31,6 @@ export default async function CatalogPage() {
   const data: IFilterDataPage = await getContent(FILTERS_QUERY);
 
   const header = data.pageHeadersCollection?.items?.[0];
-
   const filters = data.filterDataPageCollection.items.map((item) => ({
     title: item.title,
     type: item.type,
@@ -48,6 +48,7 @@ export default async function CatalogPage() {
           subtitle:
             header?.subtitle ||
             "Aqui você encontra todas as bases de dados utilizadas nos painéis e publicações do Data Nordeste.",
+          richSubtitle: header?.richSubtitle,
         }}
       />
       <Suspense>
