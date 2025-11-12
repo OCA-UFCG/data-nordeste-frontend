@@ -168,6 +168,12 @@ export const DATA_PANEL_QUERY = `
         macroTheme
       }
     }
+    pageHeadersCollection(limit: 1, where: { id_in: ["anchor"]}, preview: $preview) {
+      items {
+        title
+        subtitle
+      }
+    }
   }
 `;
 

@@ -59,7 +59,7 @@ export const dataSortingTypes = {
 export const POST_TYPES = {
   "additional-content": "Notícia",
   "data-panel": "Painel de dados",
-  newsletter: "Boletim",
+  "newsletter": "Boletim",
 };
 
 export const macroThemes: { [key: string]: string } = {
@@ -70,6 +70,16 @@ export const macroThemes: { [key: string]: string } = {
   infraestrutura_e_saneamento: "screwdriver",
   seguranca_hidrica: "drop",
   meio_ambiente: "leaf",
+};
+
+export const themes = {
+  "Economia e Renda": "economia-e-renda",
+  "Demografia": "demografia",
+  "Saúde": "saude",
+  "Educação": "educacao",
+  "Infraestrutura e Saneamento": "infraestrutura-e-saneamento",
+  "Segurança Hídrica": "seguranca-hidrica",
+  "Meio Ambiente": "meio-ambiente",
 };
 
 export const exploreFilterMap: {
