@@ -18,6 +18,7 @@ import { Calendar } from "../ui/calendar";
 import { cn } from "@/lib/utils";
 import { Icon } from "../Icon/Icon";
 import { format } from "date-fns";
+import { useState } from "react";
 
 interface FilterGroup {
   title: string;
@@ -42,6 +43,7 @@ export function FilterForm({
   | { filterGroups: FilterGroup[]; selectFields?: never }
 )) {
   const groups = filterGroups || (selectFields ? [selectFields] : []);
+  const [open, setOpen] = useState(false);
 
   const createFormSchema = () => {
     const schemaFields: any = {
@@ -73,7 +75,7 @@ export function FilterForm({
 
   return (
     <div className="flex gap-4 items-center w-full justify-end">
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <Button asChild className="grow lg:grow-0">
           <PopoverTrigger>
             <Icon id="filter" size={14} />
@@ -90,7 +92,10 @@ export function FilterForm({
           <h3 className="text-xl font-semibold">Filtros</h3>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit((e) => onSubmit(e))}
+              onSubmit={form.handleSubmit(async (data) => {
+                await onSubmit(data);
+                setOpen(false);
+              })}
               className="space-y-8"
             >
               <div className="flex flex-col md:flex-row gap-4">
@@ -210,7 +215,7 @@ export function FilterForm({
               ))}
 
               <div className="flex w-full justify-end gap-2">
-                <Button variant="secondary" type="reset">
+                <Button variant="secondary" onClick={() => setOpen(false)}>
                   Cancelar
                 </Button>
                 <Button type="submit">Aplicar</Button>
