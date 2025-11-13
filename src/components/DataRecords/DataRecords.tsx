@@ -126,7 +126,7 @@ export const DataRecords = ({
   }));
 
   return (
-    <section className="flex flex-col items-center gap-8 px-6 py-10 w-full max-w-[1440px]">
+    <section className="flex flex-col items-center gap-8 w-full max-w-[1440px] mx-auto px-6 sm:px-10 md:px-[40px] lg:px-[80px] py-[18px]">
       <div className="flex flex-col lg:flex-row justify-between items-center w-full gap-4">
         <h2 className="text-3xl font-semibold mr-auto">Listagem dos dados</h2>
         <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto justify-end">
