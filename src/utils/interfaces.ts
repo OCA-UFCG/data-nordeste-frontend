@@ -134,8 +134,7 @@ export interface IMainBanner {
 
 export interface IPageHeader {
   title: string;
-  subtitle?: string;
-  richSubtitle?: { json: any };
+  subtitle: string;
 }
 
 export interface ITab {
