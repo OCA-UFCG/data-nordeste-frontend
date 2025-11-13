@@ -4,6 +4,7 @@ import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
 import { FILTERS_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
+import { MacroTheme } from "@/utils/interfaces";
 
 interface IFilterDataPage {
   filterDataPageCollection: {
@@ -24,6 +25,8 @@ interface IFilterDataPage {
       subtitle?: string;
       richSubtitle?: { json: any };
     }[];
+  themeCollection: {
+    items: MacroTheme[];
   };
 }
 
@@ -32,6 +35,10 @@ export default async function CatalogPage() {
 
   const header = data.pageHeadersCollection?.items?.[0];
   const filters = data.filterDataPageCollection.items.map((item) => ({
+  const { filterDataPageCollection, themeCollection }: IFilterDataPage =
+    await getContent(FILTERS_QUERY);
+
+  const filters = filterDataPageCollection.items.map((item) => ({
     title: item.title,
     type: item.type,
     options: item.optionsCollection.items.map((opt) => ({
@@ -40,11 +47,15 @@ export default async function CatalogPage() {
     })),
   }));
 
+  const themes = (themeCollection?.items || []).filter(
+    (theme): theme is MacroTheme => Boolean(theme),
+  );
+
   return (
     <HubTemplate>
       <PageHeader content={header} />
       <Suspense>
-        <DataRecords filters={filters} />
+        <DataRecords filters={filters} themes={themes} />
       </Suspense>
     </HubTemplate>
   );

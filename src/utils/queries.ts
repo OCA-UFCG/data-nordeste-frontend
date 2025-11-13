@@ -169,6 +169,12 @@ export const DATA_PANEL_QUERY = `
         macroTheme
       }
     }
+    pageHeadersCollection(limit: 1, where: { id_in: ["anchor"]}, preview: $preview) {
+      items {
+        title
+        subtitle
+      }
+    }
   }
 `;
 
@@ -369,6 +375,13 @@ export const FILTERS_QUERY = `
         subtitle
         richSubtitle {
           json
+    themeCollection(limit: 30, preview: $preview) {
+      items {
+        name
+        id
+        color
+        sys {
+          id
         }
       }
     }

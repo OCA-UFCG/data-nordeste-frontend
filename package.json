@@ -38,6 +38,7 @@
     "contentful": "^10.11.10",
     "contentful-management": "^11.48.0",
     "date-fns": "^3.6.0",
+    "dompurify": "^3.3.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "express": "^4.19.2",

@@ -5,17 +5,29 @@ import { FilterForm } from "@/components/PostsGrid/FilterForm";
 import { SortSelect } from "@/components/PostsGrid/SortSelect";
 import { getZenodoCommunityRecords } from "@/lib/zenodo";
 import { RECORDS_PER_PAGE, dataSortingTypes } from "@/utils/constants";
-import { FilterGroup, Filters } from "@/utils/interfaces";
+import {
+  FilterGroup,
+  Filters,
+  IMetadata,
+  MacroTheme,
+  Tag,
+} from "@/utils/interfaces";
 import { DataList } from "../DataList/DataList";
 
-export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
+export const DataRecords = ({
+  filters,
+  themes,
+}: {
+  filters: FilterGroup[];
+  themes: MacroTheme[];
+}) => {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   const [loading, setLoading] = useState(true);
   const [pages, setPages] = useState(1);
-  const [metadata, setMetadata] = useState([]);
+  const [metadata, setMetadata] = useState<IMetadata[]>([]);
 
   const currentPage = useMemo(() => Number(params.get("page") || 1), [params]);
 
@@ -77,12 +89,25 @@ export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
     setLoading(true);
     getZenodoCommunityRecords(currentPage, RECORDS_PER_PAGE, filtersFromUrl)
       .then((res: any) => {
-        const recordsFormattedTags = res.records.map((record: any) => ({
-          ...record,
-          tags: (record.tags || []).map(
-            (slug: string) => slugToTitle[slug] || slug,
-          ),
-        }));
+        const recordsFormattedTags: IMetadata[] = res.records.map(
+          (record: IMetadata) => {
+            const rawTags = Array.isArray(record.tags) ? record.tags : [];
+
+            const tags: Tag[] = rawTags.map((t) => {
+              if (typeof t === "string") {
+                return { slug: t, name: slugToTitle[t] || t };
+              }
+              const key = t.slug ?? t.name ?? "";
+
+              return { slug: key, name: slugToTitle[key] || t.name || key };
+            });
+
+            return {
+              ...record,
+              tags,
+            };
+          },
+        );
 
         setMetadata(recordsFormattedTags);
         setPages(res.totalPages);
@@ -101,26 +126,31 @@ export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
   }));
 
   return (
-    <section className="flex flex-col items-center gap-4 px-6 py-16 w-full max-w-[1440px]">
-      <div className="flex flex-col lg:flex-row justify-between w-full gap-4">
-        <FilterForm
-          initSchema={filtersFromUrl}
-          filterGroups={filterGroups}
-          onSubmit={handleSubmit}
-          onReset={() => router.push(pathname)}
-          layout="horizontal"
-        />
-        <SortSelect
-          defaultvalue={filtersFromUrl.sort || ""}
-          onChange={handleSortChange}
-          sortingTypes={dataSortingTypes}
-        />
+    <section className="flex flex-col items-center gap-8 px-6 py-10 w-full max-w-[1440px]">
+      <div className="flex flex-col lg:flex-row justify-between items-center w-full gap-4">
+        <h2 className="text-3xl font-semibold mr-auto">Listagem dos dados</h2>
+        <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto justify-end">
+          <FilterForm
+            initSchema={filtersFromUrl}
+            filterGroups={filterGroups}
+            onSubmit={handleSubmit}
+            onReset={() => router.push(pathname)}
+            layout="horizontal"
+          />
+          <SortSelect
+            defaultvalue={filtersFromUrl.sort || ""}
+            onChange={handleSortChange}
+            sortingTypes={dataSortingTypes}
+          />
+        </div>
       </div>
+
       <DataList
         posts={metadata}
         pages={pages}
         currentPage={currentPage}
         loading={loading}
+        themes={themes}
       />
     </section>
   );

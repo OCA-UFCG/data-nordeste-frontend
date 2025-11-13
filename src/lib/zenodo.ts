@@ -69,7 +69,11 @@ const buildConditions = (filters: Record<string, any>) => {
 };
 
 const buildArrayQuery = (items: string[]): string | null => {
-  return items.length ? `(${items.join(" OR ")})` : null;
+  if (!items.length) return null;
+
+  const queries = items.map((item) => `"${item}"`);
+
+  return queries.join(" OR ");
 };
 
 const formatDate = (date: Date): string => {
@@ -99,6 +103,7 @@ const parseZenodoRecords = (json: any) => {
     publication_date: r.metadata?.publication_date,
     version: r.metadata?.version ?? "1.0",
     tags: r.metadata?.keywords ?? [],
+    html: r.links.self_html,
     license: r.metadata?.license?.id ?? "Desconhecida",
     files: (r.files ?? []).map((f: any) => ({
       name: f.key,
