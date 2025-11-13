@@ -28,6 +28,7 @@ export const MAIN_PAGE_IDS = [
   "new",
   "panels",
   "about",
+  "catalog",
   "projects",
   "survey",
   "survey-thank-u",
@@ -349,6 +350,8 @@ export const EXPLORE_PAGE_QUERY = `
   }
 `;
 
+export const CATALOG_ID = "catalog";
+
 export const FILTERS_QUERY = `
   query GetFiltersAndThemes($preview: Boolean) {
     filterDataPageCollection(preview: $preview) {
@@ -362,6 +365,16 @@ export const FILTERS_QUERY = `
               slug
             }
           }
+        }
+      }
+    }
+
+    pageHeadersCollection(limit: 1, where: { id_in: ["${CATALOG_ID}"] }, preview: $preview) {
+      items {
+        title
+        subtitle
+        richSubtitle {
+          json
         }
       }
     }
