@@ -42,15 +42,7 @@ export default async function CatalogPage() {
 
   return (
     <HubTemplate>
-      <PageHeader
-        content={{
-          title: header?.title || "Catálogo de dados",
-          subtitle:
-            header?.subtitle ||
-            "Aqui você encontra todas as bases de dados utilizadas nos painéis e publicações do Data Nordeste.",
-          richSubtitle: header?.richSubtitle,
-        }}
-      />
+      <PageHeader content={header} />
       <Suspense>
         <DataRecords filters={filters} />
       </Suspense>
