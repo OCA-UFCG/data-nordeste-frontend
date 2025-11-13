@@ -101,21 +101,25 @@ export const DataRecords = ({ filters }: { filters: FilterGroup[] }) => {
   }));
 
   return (
-    <section className="flex flex-col items-center gap-4 px-6 py-16 w-full max-w-[1440px]">
-      <div className="flex flex-col lg:flex-row justify-between w-full gap-4">
-        <FilterForm
-          initSchema={filtersFromUrl}
-          filterGroups={filterGroups}
-          onSubmit={handleSubmit}
-          onReset={() => router.push(pathname)}
-          layout="horizontal"
-        />
-        <SortSelect
-          defaultvalue={filtersFromUrl.sort || ""}
-          onChange={handleSortChange}
-          sortingTypes={dataSortingTypes}
-        />
+    <section className="flex flex-col items-center gap-8 px-6 py-10 w-full max-w-[1440px]">
+      <div className="flex flex-col lg:flex-row justify-between items-center w-full gap-4">
+        <h2 className="text-3xl font-semibold mr-auto">Listagem dos dados</h2>
+        <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto justify-end">
+          <FilterForm
+            initSchema={filtersFromUrl}
+            filterGroups={filterGroups}
+            onSubmit={handleSubmit}
+            onReset={() => router.push(pathname)}
+            layout="horizontal"
+          />
+          <SortSelect
+            defaultvalue={filtersFromUrl.sort || ""}
+            onChange={handleSortChange}
+            sortingTypes={dataSortingTypes}
+          />
+        </div>
       </div>
+
       <DataList
         posts={metadata}
         pages={pages}
