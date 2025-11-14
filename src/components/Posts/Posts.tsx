@@ -123,8 +123,8 @@ export const Posts = ({
   }, [filter, rootFilter, sorting]);
 
   return (
-    <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
-      <div className="flex flex-col lg:flex-row justify-between lg:items-center w-full gap-4">
+    <section className="flex flex-col items-center gap-4 box-border w-full px-6 py-16 lg:px-20">
+      <div className="flex flex-col lg:flex-row justify-between lg:items-center w-full gap-4 max-w-[1440px]">
         <h1 className="text-3xl font-semibold w-full">{header.title}</h1>
         <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
           <FilterForm
