@@ -14,7 +14,7 @@ const PowerBIContainer = ({
 
   return (
     <div className="flex flex-col w-full max-w-[1240px] h-full z-0 bg-white gap-2 overflow-x-scroll p-4">
-      <div className="flex flex-col sm:flex-row justify-between w-full py-4 sticky left-0">
+      <div className="flex flex-col sm:flex-row justify-between items-center w-full py-4 sticky left-0">
         <h2 className="text-left font-semibold text-3xl">{macroTheme}</h2>
         <span className="font-medium text-base mt-2 sm:mt-0">
           Publicado em: {formattedDate}
