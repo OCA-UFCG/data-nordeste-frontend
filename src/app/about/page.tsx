@@ -46,10 +46,10 @@ export default async function AboutPage() {
   }: IAboutTab = await getContent(ABOUT_QUERY);
 
   const tabs: { [key: string]: React.ReactElement } = {
-    contato: <ContactSection content={contactInfo} />,
+    "contato": <ContactSection content={contactInfo} />,
     "rede-colaboracao": <PartnersSection content={partnersInfo[0]} />,
     "nossa-historia": <HistorySection content={about[0]} />,
-    compromisso: <ValuesSection content={visionMissionValues} />,
+    "compromisso": <ValuesSection content={visionMissionValues} />,
   };
 
   return (
