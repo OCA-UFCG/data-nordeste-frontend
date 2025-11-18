@@ -34,7 +34,7 @@ const Header = ({ content }: { content: ISection[] }) => {
                       >
                         {item.name}
                       </NavigationMenuTrigger>
-                      <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col">
+                      <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15">
                         {item.childrenCollection.items.map((child) => (
                           <NavigationMenuLink
                             key={child.id}
