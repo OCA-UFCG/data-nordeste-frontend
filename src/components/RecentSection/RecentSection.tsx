@@ -53,7 +53,7 @@ export const RecentSection = ({
 
   return (
     <section
-      className="w-full max-w-[1440px] px-4 pt-8 lg:pt-0 pb-8 ontent-center flex flex-col gap-6 box-border"
+      className="w-full max-w-[1440px] px-20 pt-8 lg:pt-0 pb-8 ontent-center flex flex-col gap-6 box-border"
       id={id}
     >
       <div className="flex flex-col gap-3">
