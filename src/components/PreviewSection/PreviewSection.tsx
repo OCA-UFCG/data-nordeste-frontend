@@ -61,7 +61,7 @@ const PreviewSection = ({
   };
 
   return (
-    <section className="w-full bg-grey-100">
+    <section className="w-full bg-white">
       <div className="w-full max-w-[1440px] mx-auto px-3 lg:px-20">
         <div
           className="flex flex-col w-full bg-white gap-3 box-border py-5 lg:px-6 py-10 
