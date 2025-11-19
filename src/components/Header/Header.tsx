@@ -24,7 +24,7 @@ const Header = ({ content }: { content: ISection[] }) => {
           {content
             .filter((item) => item.appears)
             .map((item, idx) => (
-              <NavigationMenuItem key={idx} className="px-4 py-2">
+              <NavigationMenuItem key={idx}>
                 {item.childrenCollection?.items.length ? (
                   <>
                     <NavigationMenuTrigger
