@@ -76,7 +76,7 @@ const MainBanner = ({ content }: { content: IMainBanner[] }) => {
         })}
       </CarouselContent>
 
-      <div className="absolute bottom-0 left-0 right-0 w-full z-20 pb-12 lg:pb-[65px]">
+      <div className="absolute bottom-0 left-0 right-0 w-full z-1 pb-12 lg:pb-[65px]">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
           <div className="bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 md:px-4 md:py-2 flex gap-2">
             {content.map((_, indexDot) => (
@@ -86,8 +86,8 @@ const MainBanner = ({ content }: { content: IMainBanner[] }) => {
         </div>
       </div>
 
-      <CarouselPrevious className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
-      <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
+      <CarouselPrevious className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-1 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
+      <CarouselNext className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-1 text-white bg-transparent hover:bg-white/50 hover:text-white transition-colors" />
     </Carousel>
   );
 };
