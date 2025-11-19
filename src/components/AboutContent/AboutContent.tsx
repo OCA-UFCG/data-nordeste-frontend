@@ -38,27 +38,29 @@ export const AboutContent = ({
 
   return (
     <>
-      <section className="flex justify-center w-full h-[60px] border-b border-grey-400">
-        <NavigationMenu className="flex flex-row justify-start w-full max-w-[1440px] mx-6 lg:mx-20 overflow-x-auto overflow-y-hidden">
-          <NavigationMenuList className="gap-4 min-w-max">
-            {orderedContent.map((tab, idx) => (
-              <NavigationMenuItem key={idx}>
-                <button
-                  onClick={() => handleTabClick(tab.path)}
-                  className={`cursor-pointer text-md text-center pt-[20px] pb-[18px] px-[12px] rounded-none box-border ${
-                    currentTab === tab.path
-                      ? "text-green-800 border-b-10 border-b-green-800"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {tab.name}
-                </button>
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
-      </section>
-      {tabs[currentTab]}
+      <div className="w-full border-b border-grey-400">
+        <section className="flex justify-center w-full h-[60px] max-w-[1440px] mx-auto">
+          <NavigationMenu className="flex flex-row justify-start w-full max-w-[1440px] mx-6 lg:mx-20 overflow-x-auto overflow-y-hidden">
+            <NavigationMenuList className="gap-4 min-w-max">
+              {orderedContent.map((tab, idx) => (
+                <NavigationMenuItem key={idx}>
+                  <button
+                    onClick={() => handleTabClick(tab.path)}
+                    className={`cursor-pointer text-md text-center pt-[20px] pb-[18px] px-[12px] rounded-none box-border ${
+                      currentTab === tab.path
+                        ? "text-green-800 border-b-10 border-b-green-800"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {tab.name}
+                  </button>
+                </NavigationMenuItem>
+              ))}
+            </NavigationMenuList>
+          </NavigationMenu>
+        </section>
+      </div>
+      <div className="max-w-[1440px]">{tabs[currentTab]}</div>
     </>
   );
 };
