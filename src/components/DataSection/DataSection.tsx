@@ -28,7 +28,7 @@ const DataSection = ({
 
   return (
     <section className="bg-grey-100 w-full" id={title}>
-      <div className="max-w-[1440px] px-20 py-10 mx-auto my-0 lg:my-8 content-center flex flex-col gap-6 box-border">
+      <div className="max-w-[1440px] px-4 md:px-20 py-10 mx-auto my-0 lg:my-8 content-center flex flex-col gap-6 box-border">
         <div className="flex flex-col gap-3">
           <div className="flex justify-between w-full">
             <h2 className="text-3xl font-semibold">{title}</h2>

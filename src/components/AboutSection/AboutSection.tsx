@@ -11,7 +11,7 @@ export const AboutSection = ({ header }: { header?: SectionHeader }) => {
 
   return (
     <section id={id} className="w-full py-8 lg:py-12">
-      <div className="w-full max-w-[1440px] mx-auto px-20 flex flex-col gap-6">
+      <div className="w-full max-w-[1440px] mx-auto px-4 md:px-20 flex flex-col gap-6">
         <h2 className="text-[30px] leading-[36px] tracking-[-0.0075em] font-bold text-left">
           {title}
         </h2>
