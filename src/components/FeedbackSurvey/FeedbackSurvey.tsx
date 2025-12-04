@@ -45,8 +45,8 @@ export const FeedbackSurvey = ({
   }, []);
 
   return (
-    <section className="w-full max-w-[1440px] my-12 p-6">
-      <div className="bg-white rounded-lg shadow-md w-full ">
+    <section className="w-full flex items-center justify-center p-6 py-12 bg-grey-100">
+      <div className="bg-white rounded-lg shadow-md w-full max-w-[1440px]">
         <div
           className="bg-gray-100 hover:bg-gray-200 transition duration-300 p-6 flex justify-between items-center cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}

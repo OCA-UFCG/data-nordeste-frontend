@@ -18,6 +18,7 @@ import { getContent } from "@/utils/contentful";
 import { MAIN_PAGE_QUERY } from "@/utils/queries";
 import { REVALIDATE } from "@/utils/constants";
 import { FeedbackSurvey } from "@/components/FeedbackSurvey/FeedbackSurvey";
+import CatalogSection from "@/components/CatalogSection/CatalogSection";
 
 export const revalidate = REVALIDATE;
 
@@ -68,6 +69,12 @@ export default async function Home() {
           (section: SectionHeader) => section.id === "about",
         )}
       />
+      <CatalogSection
+        header={sectionHead.items.find(
+          (section: SectionHeader) => section.id === "catalog",
+        )}
+      />
+
       <ProjectSection
         header={sectionHead.items.find(
           (sec: SectionHeader) => sec.id == "projects",
