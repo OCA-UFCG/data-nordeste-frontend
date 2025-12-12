@@ -22,13 +22,15 @@ export default async function Connections({}: {}) {
   return (
     <HubTemplate>
       <PageHeader content={pageHeaders.items[0]} />
-      {partners.items.map((partner: Project, index: number) => (
-        <ProjectBigCard
-          key={partner.name}
-          project={partner}
-          direction={index % 2 === 0 ? "left" : "right"}
-        />
-      ))}
+      <div className="w-full max-w-[1440px]">
+        {partners.items.map((partner: Project, index: number) => (
+          <ProjectBigCard
+            key={partner.name}
+            project={partner}
+            direction={index % 2 === 0 ? "left" : "right"}
+          />
+        ))}
+      </div>
     </HubTemplate>
   );
 }
