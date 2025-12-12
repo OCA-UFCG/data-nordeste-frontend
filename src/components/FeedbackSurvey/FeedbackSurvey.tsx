@@ -45,7 +45,7 @@ export const FeedbackSurvey = ({
   }, []);
 
   return (
-    <section className="w-full max-w-[1440px] my-12 p-6 px-4 md:px-20">
+    <section className="w-full max-w-[1440px] my-12 p-6 px-4 lg:px-20">
       <div className="bg-white rounded-lg shadow-md w-full ">
         <div
           className="bg-gray-100 hover:bg-gray-200 transition duration-300 p-6 flex justify-between items-center cursor-pointer"
