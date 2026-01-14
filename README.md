@@ -2,6 +2,14 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
+### Prerequisites
+
+To run the project locally, make sure you have the following installed:
+
+- [Docker Engine](https://docs.docker.com/engine/install/)
+
+- [GNU Make](https://www.gnu.org/software/make/)
+
 #### Configure your .env
 ```
 cp .env.sample .env
@@ -10,16 +18,28 @@ source .env
 ```
 
 #### Install the dependencies
-You can install the dependencies with one of the following options:
+Even when running the project with Docker, it is recommended to install the dependencies locally so that the code editor can properly resolve imports, formatting rules, and linting configuration:
 ```
 npm install
 ```
-
 #### Run the development server
+You can run the project using Makefile commands.
+```
+make docker-build-dev
+make docker-run-dev
+```
+Open http://localhost:3000 with your browser to see the result.
+
+#### Running without Docker (not recommended)
+If you prefer not to use Docker, you can run the project directly with npm.
+```
+npm run dev
+```
+
+#### Available Make commands
 You can run the development server manually with **Makefile** commands:
 * `make run-dev`: Runs the development environment using npm.
 * `make run-prod`: Builds the project and starts the production server using npm.
-* `docker-build-dev`: Builds the development environment Docker image with specified configurations.
 * `make docker-run-dev`: Runs the development environment using Docker, mapping the container port to 3000 and mounting necessary volumes.
 * `make docker-build-prod`: Builds the production environment Docker image with specified build arguments.
 * `make docker-run-prod`: Runs the production environment Docker container with specified configurations.
