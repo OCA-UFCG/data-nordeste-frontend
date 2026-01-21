@@ -1,0 +1,45 @@
+import HubTemplate from "@/templates/HubTemplate";
+import { REVALIDATE } from "@/utils/constants";
+import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
+import { MacroTheme } from "@/utils/interfaces";
+import { notFound } from "next/navigation";
+import { getContent } from "@/utils/contentful";
+import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
+
+export const revalidate = REVALIDATE;
+
+interface IMacroThemePageContent {
+  themeCollection: { items: MacroTheme[] };
+}
+
+export default async function MacroThemePage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const { slug } = params;
+
+  const { themeCollection }: IMacroThemePageContent = await getContent(
+    MACROTHEME_PAGE_QUERY,
+    { slug },
+  );
+
+  const theme = themeCollection.items?.[0];
+  if (!theme) notFound();
+
+  return (
+    <HubTemplate>
+      <MacroThemeBanner content={theme} />
+
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10">
+        <h2 className="text-2xl font-semibold">{theme.name}</h2>
+
+        {!!theme.textPage && (
+          <p className="mt-4 text-base leading-relaxed whitespace-pre-line">
+            {theme.textPage}
+          </p>
+        )}
+      </div>
+    </HubTemplate>
+  );
+}

@@ -391,3 +391,24 @@ export const FILTERS_QUERY = `
     }
   }
 `;
+
+export const MACROTHEME_PAGE_QUERY = `
+  query GetMacroThemePage($slug: String!, $preview: Boolean) {
+    themeCollection(limit: 1, where: { id: $slug }, preview: $preview) {
+      items {
+        name
+        id
+        color
+        textBanner
+        textPage
+        textSlogan
+        imageBanner {
+          url
+        }
+        sys {
+          id
+        }
+      }
+    }
+  }
+`;
