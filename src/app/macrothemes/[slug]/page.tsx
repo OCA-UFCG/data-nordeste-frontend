@@ -32,7 +32,7 @@ export default async function MacroThemePage({
       <MacroThemeBanner content={theme} />
 
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10">
-        <h2 className="text-2xl font-semibold">{theme.name}</h2>
+        <h2 className="text-2xl font-semibold">{theme.textSlogan}</h2>
 
         {!!theme.textPage && (
           <p className="mt-4 text-base leading-relaxed whitespace-pre-line">

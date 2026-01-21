@@ -19,7 +19,6 @@ export function MacroThemeBanner({
 }: Props) {
   const title = content.name;
   const textBanner = content.textBanner ?? "";
-  const textSlogan = content.textSlogan ?? "";
   const derivedTags = tags ?? (content.textSlogan ? [content.textSlogan] : []);
   const backgroundUrl = content.imageBanner?.url ?? "";
 
@@ -56,7 +55,7 @@ export function MacroThemeBanner({
 
                 <div className="flex-1 w-full text-center lg:text-left">
                   <h1 className="text-white text-3xl sm:text-4xl lg:text-6xl font-semibold tracking-tight leading-[1.05]">
-                    {textSlogan}
+                    {title}
                   </h1>
 
                   {!!derivedTags?.length && (
