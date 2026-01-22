@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
 import { MacroTheme } from "@/utils/interfaces";
+import { macroThemes } from "@/utils/constants";
 
 type Props = {
   content: MacroTheme;
@@ -15,12 +16,14 @@ export function MacroThemeBanner({
   className = "",
   priorityImage = true,
   tags = ["tag1", "tag2"], // AJUSTAR DEPOIS, PUXA DO CONTENTFUL?
-  logoIconId = "logo-DNE",
+  //iconId = content.id,
 }: Props) {
   const title = content.name;
   const textBanner = content.textBanner ?? "";
   const derivedTags = tags ?? (content.textSlogan ? [content.textSlogan] : []);
   const backgroundUrl = content.imageBanner?.url ?? "";
+
+  const logoIconId = macroThemes[content.id];
 
   return (
     <section className={`relative w-full ${className}`}>
