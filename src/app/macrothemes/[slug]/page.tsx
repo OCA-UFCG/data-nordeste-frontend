@@ -19,9 +19,11 @@ export default async function MacroThemePage({
 }) {
   const { slug } = params;
 
+  const normalizedSlug = slug.replace(/-/g, "_");
+
   const { themeCollection }: IMacroThemePageContent = await getContent(
     MACROTHEME_PAGE_QUERY,
-    { slug },
+    { slug: normalizedSlug },
   );
 
   const theme = themeCollection.items?.[0];

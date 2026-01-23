@@ -15,12 +15,15 @@ export function MacroThemeBanner({
   content,
   className = "",
   priorityImage = true,
-  tags = ["tag1", "tag2"], // AJUSTAR DEPOIS, PUXA DO CONTENTFUL?
-  //iconId = content.id,
+  tags,
 }: Props) {
   const title = content.name;
   const textBanner = content.textBanner ?? "";
-  const derivedTags = tags ?? (content.textSlogan ? [content.textSlogan] : []);
+  const derivedTags = tags?.length
+    ? tags
+    : content.tags?.length
+      ? content.tags
+      : [];
   const backgroundUrl = content.imageBanner?.url ?? "";
 
   const logoIconId = macroThemes[content.id];

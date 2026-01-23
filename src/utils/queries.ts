@@ -405,6 +405,7 @@ export const MACROTHEME_PAGE_QUERY = `
         imageBanner {
           url
         }
+        tags
         sys {
           id
         }
