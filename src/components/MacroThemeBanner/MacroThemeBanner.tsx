@@ -33,7 +33,7 @@ export function MacroThemeBanner({
       <div className="relative w-full overflow-hidden z-0">
         {backgroundUrl ? (
           <Image
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-[center_45%]"
             src={backgroundUrl}
             alt={title}
             width={1920}

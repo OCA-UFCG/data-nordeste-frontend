@@ -3,6 +3,7 @@ import { REVALIDATE } from "@/utils/constants";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
 import { MacroTheme } from "@/utils/interfaces";
 import { notFound } from "next/navigation";
+import { RecentSection } from "@/components/RecentSection/RecentSection";
 import { getContent } from "@/utils/contentful";
 import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
 
