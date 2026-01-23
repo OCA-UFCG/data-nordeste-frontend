@@ -9,6 +9,7 @@ type Props = {
   priorityImage?: boolean;
   tags?: string[];
   logoIconId?: string;
+  logoBackgroundColor?: string;
 };
 
 export function MacroThemeBanner({
@@ -16,6 +17,8 @@ export function MacroThemeBanner({
   className = "",
   priorityImage = true,
   tags,
+  logoIconId,
+  logoBackgroundColor,
 }: Props) {
   const title = content.name;
   const textBanner = content.textBanner ?? "";
@@ -26,7 +29,8 @@ export function MacroThemeBanner({
       : [];
   const backgroundUrl = content.imageBanner?.url ?? "";
 
-  const logoIconId = macroThemes[content.id];
+  const derivedLogoIconId = logoIconId ?? macroThemes[content.id];
+  const derivedLogoBackgroundColor = logoBackgroundColor ?? content.color;
 
   return (
     <section className={`relative w-full ${className}`}>
@@ -50,11 +54,14 @@ export function MacroThemeBanner({
           <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">
             <div className="min-h-[500px] py-12 flex items-center">
               <div className="w-full flex flex-col lg:flex-row items-center gap-6 lg:gap-9">
-                <div className="shrink-0 flex items-center justify-center">
+                <div
+                  className="shrink-0 flex items-center justify-center rounded-sm w-[200px] h-[200px]"
+                  style={{ backgroundColor: derivedLogoBackgroundColor }}
+                >
                   <Icon
-                    id={logoIconId}
-                    width={210}
-                    height={105}
+                    id={derivedLogoIconId}
+                    width={225}
+                    height={120}
                     className="filter brightness-0 invert opacity-95"
                   />
                 </div>

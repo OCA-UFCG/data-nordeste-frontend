@@ -1,9 +1,8 @@
 import HubTemplate from "@/templates/HubTemplate";
-import { REVALIDATE } from "@/utils/constants";
+import { REVALIDATE, macroThemes } from "@/utils/constants";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
 import { MacroTheme } from "@/utils/interfaces";
 import { notFound } from "next/navigation";
-import { RecentSection } from "@/components/RecentSection/RecentSection";
 import { getContent } from "@/utils/contentful";
 import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
 
@@ -30,9 +29,16 @@ export default async function MacroThemePage({
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
 
+  const logoIconId = macroThemes[theme.id];
+  const logoBackgroundColor = theme.color;
+
   return (
     <HubTemplate>
-      <MacroThemeBanner content={theme} />
+      <MacroThemeBanner
+        content={theme}
+        logoIconId={logoIconId}
+        logoBackgroundColor={logoBackgroundColor}
+      />
 
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10">
         <h2 className="text-2xl font-semibold">{theme.textSlogan}</h2>
