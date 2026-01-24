@@ -52,40 +52,42 @@ export function MacroThemeBanner({
 
         <div className="relative z-10 w-full">
           <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">
-            <div className="min-h-[500px] py-12 flex items-center">
-              <div className="w-full flex flex-col lg:flex-row items-center gap-6 lg:gap-9">
+            <div className="min-h-[500px] py-12 flex items-end">
+              <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-[36px] w-full">
                 <div
-                  className="shrink-0 flex items-center justify-center rounded-sm w-[200px] h-[200px]"
+                  className="flex items-center justify-center w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] lg:w-[200px] lg:h-[200px] rounded-[8px] shrink-0"
                   style={{ backgroundColor: derivedLogoBackgroundColor }}
                 >
                   <Icon
                     id={derivedLogoIconId}
-                    width={225}
-                    height={120}
-                    className="filter brightness-0 invert opacity-95"
+                    width={168}
+                    height={117}
+                    className="filter brightness-0 invert opacity-100"
                   />
                 </div>
 
-                <div className="flex-1 w-full text-center lg:text-left">
-                  <h1 className="text-white text-3xl sm:text-4xl lg:text-6xl font-semibold tracking-tight leading-[1.05]">
-                    {title}
-                  </h1>
+                <div className="flex flex-col gap-4 sm:gap-5 lg:gap-[24px] w-full max-w-[1044px]">
+                  <div className="flex flex-col gap-2">
+                    <h1 className="text-white font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-[48px] leading-tight lg:leading-[48px] tracking-tight lg:tracking-[-0.012em]">
+                      {title}
+                    </h1>
 
-                  {!!derivedTags?.length && (
-                    <div className="mt-4 flex flex-wrap justify-center lg:justify-start gap-2">
-                      {derivedTags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-white/80 text-xs sm:text-sm font-medium px-3 py-1 rounded-full bg-white/8 border border-white/12 backdrop-blur-sm"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                    {!!derivedTags?.length && (
+                      <div className="flex flex-row flex-wrap gap-2">
+                        {derivedTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="flex items-center justify-center px-[10px] py-[2px] h-[20px] rounded-full bg-[#D65384] text-white text-[12px] leading-[16px] font-semibold"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   {!!textBanner && (
-                    <p className="mt-5 text-white/90 text-base sm:text-lg leading-relaxed max-w-[72ch] mx-auto lg:mx-0">
+                    <p className="text-white text-sm sm:text-base lg:text-[16px] leading-relaxed lg:leading-[150%] font-medium max-w-[1044px]">
                       {textBanner}
                     </p>
                   )}
