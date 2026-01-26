@@ -1,15 +1,19 @@
 import HubTemplate from "@/templates/HubTemplate";
 import { REVALIDATE, macroThemes } from "@/utils/constants";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
-import { MacroTheme } from "@/utils/interfaces";
+import { IPublication, MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { notFound } from "next/navigation";
 import { getContent } from "@/utils/contentful";
-import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
+import { MACROTHEME_PAGE_QUERY, MAIN_PAGE_QUERY } from "@/utils/queries";
+import { Carousel } from "@/components/ui/carousel";
+import { RecentSection } from "@/components/RecentSection/RecentSection";
 
 export const revalidate = REVALIDATE;
 
 interface IMacroThemePageContent {
   themeCollection: { items: MacroTheme[] };
+  postCollection: { items: IPublication[] };
+  sectionHeadCollection: { items: SectionHeader[] };
 }
 
 export default async function MacroThemePage({
@@ -25,6 +29,9 @@ export default async function MacroThemePage({
     MACROTHEME_PAGE_QUERY,
     { slug: normalizedSlug },
   );
+
+  const { postCollection: posts} : IMacroThemePageContent = await getContent(MAIN_PAGE_QUERY);
+  const { sectionHeadCollection: sectionHead } : IMacroThemePageContent = await getContent(MAIN_PAGE_QUERY);
 
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
@@ -49,6 +56,15 @@ export default async function MacroThemePage({
           </p>
         )}
       </div>
+
+      <RecentSection
+              content={posts.items}
+              header={sectionHead.items.find(
+                (section: SectionHeader) => section.id === "new",
+              )}
+        />
+
+      
     </HubTemplate>
   );
 }
