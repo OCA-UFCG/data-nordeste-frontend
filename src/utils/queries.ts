@@ -411,5 +411,21 @@ export const MACROTHEME_PAGE_QUERY = `
         }
       }
     }
+
+    previewCardsCollection(
+      limit: 12
+      where: { category: { id: $slug } }
+      preview: $preview
+    ) {
+      items {
+        title
+        jsonFile
+        category {
+          name
+          id
+          color
+        }
+      }
+    }
   }
 `;
