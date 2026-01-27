@@ -427,5 +427,31 @@ export const MACROTHEME_PAGE_QUERY = `
         }
       }
     }
+
+    postCollection(
+      limit: 8
+      where: { 
+        type: "data-panel",
+        category: { id: $slug } 
+      }
+      preview: $preview
+    ) {
+      items {
+        title
+        link
+        type
+        thumb { url }
+        date
+        description
+      }
+    }
+
+    sectionHeadCollection(where: { id: "new" }, limit: 1, preview: $preview) {
+      items {
+        title
+        subtitle
+        id
+      }
+    }
   }
 `;

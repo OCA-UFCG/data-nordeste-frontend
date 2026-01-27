@@ -26,8 +26,12 @@ export default async function MacroThemePage({
 
   const normalizedSlug = slug.replace(/-/g, "_");
 
-  const { themeCollection, previewCardsCollection }: IMacroThemePageContent =
-    await getContent(MACROTHEME_PAGE_QUERY, { slug: normalizedSlug });
+  const { 
+    themeCollection, 
+    previewCardsCollection,
+    postCollection,
+    sectionHeadCollection 
+  }: IMacroThemePageContent = await getContent(MACROTHEME_PAGE_QUERY, { slug: normalizedSlug });
 
   const { postCollection: posts} : IMacroThemePageContent = await getContent(MAIN_PAGE_QUERY);
   const { sectionHeadCollection: sectionHead } : IMacroThemePageContent = await getContent(MAIN_PAGE_QUERY);
@@ -67,12 +71,36 @@ export default async function MacroThemePage({
         )}
       </div>
 
-      <RecentSection
-              content={posts.items}
-              header={sectionHead.items.find(
-                (section: SectionHeader) => section.id === "new",
-              )}
+      {!!postCollection?.items?.length && (
+        <RecentSection
+          content={postCollection.items}
+          header={{
+            ...sectionHeadCollection.items[0],
+            subtitle: "",
+            
+          }}
         />
+      )}
+
+      {!!postCollection?.items?.length && (
+        <RecentSection
+          content={postCollection.items}
+          header={{
+            ...sectionHeadCollection.items[0],
+            subtitle: ""
+          }}
+        />
+      )}
+
+      {!!postCollection?.items?.length && (
+        <RecentSection
+          content={postCollection.items}
+          header={{
+            ...sectionHeadCollection.items[0],
+            subtitle: ""
+          }}
+        />
+      )}
 
       
     </HubTemplate>
