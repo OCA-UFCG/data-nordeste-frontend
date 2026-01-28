@@ -10,6 +10,7 @@ const HeaderSection = ({ content }: { content: ISection[] }) => {
   const orderedContent = sortContentByDesiredOrder<ISection>(content, [
     "home",
     "about",
+    "macrothemes",
     "explore",
     "posts",
     "projects",
