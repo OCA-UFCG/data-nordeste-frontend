@@ -1,8 +1,5 @@
-const ENVIRONMENT = process.env.CONTENTFUL_ENVIRONMENT || "master";
-const ACCESS_TOKEN = process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || "";
-const SPACE_ID = process.env.NEXT_PUBLIC_CONTENTFUL_SPACE || "";
 const USE_PREVIEW = process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW ? true : false;
-const CONTENTFUL_ENDPOINT = `https://beta-datanordeste.lsd.ufcg.edu.br/contentful-api/content/v1/spaces/${SPACE_ID}/environments/${ENVIRONMENT}`;
+const CONTENTFUL_ENDPOINT = `https://beta-datanordeste.lsd.ufcg.edu.br/contentful-api`;
 
 export async function getContent<T>(
   query: string,
@@ -12,10 +9,6 @@ export async function getContent<T>(
 
   const response = await fetch(CONTENTFUL_ENDPOINT, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${ACCESS_TOKEN}`,
-    },
 
     body: JSON.stringify({
       query,
