@@ -1,12 +1,19 @@
 import HubTemplate from "@/templates/HubTemplate";
 import { REVALIDATE, macroThemes } from "@/utils/constants";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
-import { IPreviewCards, IPublication, MacroTheme, SectionHeader } from "@/utils/interfaces";
+import {
+  IPreviewCards,
+  IPublication,
+  MacroTheme,
+  SectionHeader,
+} from "@/utils/interfaces";
 import { notFound } from "next/navigation";
 import { getContent } from "@/utils/contentful";
 import { MACROTHEME_PAGE_QUERY, MAIN_PAGE_QUERY } from "@/utils/queries";
 import PreviewSection from "@/components/PreviewSection/PreviewSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
+import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
+//import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
 
 export const revalidate = REVALIDATE;
 
@@ -26,15 +33,19 @@ export default async function MacroThemePage({
 
   const normalizedSlug = slug.replace(/-/g, "_");
 
-  const { 
-    themeCollection, 
+  const {
+    themeCollection,
     previewCardsCollection,
     postCollection,
-    sectionHeadCollection 
-  }: IMacroThemePageContent = await getContent(MACROTHEME_PAGE_QUERY, { slug: normalizedSlug });
+    sectionHeadCollection,
+  }: IMacroThemePageContent = await getContent(MACROTHEME_PAGE_QUERY, {
+    slug: normalizedSlug,
+  });
 
-  const { postCollection: posts} : IMacroThemePageContent = await getContent(MAIN_PAGE_QUERY);
-  const { sectionHeadCollection: sectionHead } : IMacroThemePageContent = await getContent(MAIN_PAGE_QUERY);
+  const { postCollection: posts }: IMacroThemePageContent =
+    await getContent(MAIN_PAGE_QUERY);
+  const { sectionHeadCollection: sectionHead }: IMacroThemePageContent =
+    await getContent(MAIN_PAGE_QUERY);
 
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
@@ -50,14 +61,21 @@ export default async function MacroThemePage({
         logoBackgroundColor={logoBackgroundColor}
       />
 
+      {/* testando ainda */}
       {!!previewCardsCollection?.items?.length && (
-        <PreviewSection
-          header={{
-            id: "preview",
-            title: "Indicadores em destaques",
-            subtitle: "",
-          }}
-          cards={previewCardsCollection.items}
+        <PreviewCarousel
+          cards={previewCardsCollection.items.map((regionData) => {
+            const source = regionData.jsonFile;
+
+            return {
+              title: source.title,
+              subtitle: source.subtitle,
+              data: source.data,
+              link: source.link,
+              note: source.note,
+              category: regionData.category,
+            };
+          })}
         />
       )}
 
@@ -77,7 +95,6 @@ export default async function MacroThemePage({
           header={{
             ...sectionHeadCollection.items[0],
             subtitle: "",
-            
           }}
         />
       )}
@@ -87,7 +104,7 @@ export default async function MacroThemePage({
           content={postCollection.items}
           header={{
             ...sectionHeadCollection.items[0],
-            subtitle: ""
+            subtitle: "",
           }}
         />
       )}
@@ -97,12 +114,10 @@ export default async function MacroThemePage({
           content={postCollection.items}
           header={{
             ...sectionHeadCollection.items[0],
-            subtitle: ""
+            subtitle: "",
           }}
         />
       )}
-
-      
     </HubTemplate>
   );
 }
