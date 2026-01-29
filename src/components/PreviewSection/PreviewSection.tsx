@@ -44,6 +44,7 @@ const PreviewSection = ({
           }
         : null;
     }) as IPreviewCard[];
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedState]);
 

@@ -9,11 +9,8 @@ import {
 } from "@/utils/interfaces";
 import { notFound } from "next/navigation";
 import { getContent } from "@/utils/contentful";
-import { MACROTHEME_PAGE_QUERY, MAIN_PAGE_QUERY } from "@/utils/queries";
-import PreviewSection from "@/components/PreviewSection/PreviewSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
-//import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
 
 export const revalidate = REVALIDATE;
 
@@ -42,10 +39,10 @@ export default async function MacroThemePage({
     slug: normalizedSlug,
   });
 
-  const { postCollection: posts }: IMacroThemePageContent =
-    await getContent(MAIN_PAGE_QUERY);
-  const { sectionHeadCollection: sectionHead }: IMacroThemePageContent =
-    await getContent(MAIN_PAGE_QUERY);
+  // const { postCollection: posts }: IMacroThemePageContent =
+  //   await getContent(MAIN_PAGE_QUERY);
+  // const { sectionHeadCollection: sectionHead }: IMacroThemePageContent =
+  //   await getContent(MAIN_PAGE_QUERY);
 
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
@@ -62,6 +59,7 @@ export default async function MacroThemePage({
       />
 
       {/* testando ainda */}
+
       {!!previewCardsCollection?.items?.length && (
         <PreviewCarousel
           cards={previewCardsCollection.items.map((regionData) => {
