@@ -9,6 +9,7 @@ import {
 } from "@/utils/interfaces";
 import { notFound } from "next/navigation";
 import { getContent } from "@/utils/contentful";
+import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
 
