@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 export default function VerifyPage() {
@@ -36,8 +36,10 @@ export default function VerifyPage() {
   }, [returnTo, router]);
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="cf-turnstile" />
-    </div>
+    <Suspense fallback={null}>
+      <div className="flex h-screen items-center justify-center">
+        <div className="cf-turnstile" />
+      </div>
+    </Suspense>
   );
 }
