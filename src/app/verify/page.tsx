@@ -3,7 +3,7 @@
 import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function VerifyPage() {
+function VerifyContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -15,15 +15,13 @@ export default function VerifyPage() {
     script.async = true;
     script.onload = () => {
       window.turnstile.render(".cf-turnstile", {
-        sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY! as string,
+        sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!,
         callback: async (token: string) => {
           const res = await fetch("/api/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token }),
           });
-
-          console.log("VERIFY STATUS:", res.status);
 
           if (res.ok) {
             router.replace(returnTo);
@@ -36,10 +34,16 @@ export default function VerifyPage() {
   }, [returnTo, router]);
 
   return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="cf-turnstile" />
+    </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
     <Suspense fallback={null}>
-      <div className="flex h-screen items-center justify-center">
-        <div className="cf-turnstile" />
-      </div>
+      <VerifyContent />
     </Suspense>
   );
 }
