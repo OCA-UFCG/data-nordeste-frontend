@@ -98,6 +98,7 @@ const fetchZenodoData = async (url: string) => {
 
 const parseZenodoRecords = (json: any) => {
   return (json.hits?.hits ?? []).map((r: any) => ({
+    id: r.id,
     title: r.metadata?.title,
     description: r.metadata?.description ?? "",
     publication_date: r.metadata?.publication_date,

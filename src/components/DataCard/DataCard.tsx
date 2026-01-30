@@ -50,8 +50,7 @@ export const DataCard = ({
   post: IMetadata;
   themes: MacroTheme[];
 }) => {
-  const primaryFile = post.files?.[0];
-  const additionalFiles = post.files?.slice(1) ?? [];
+  const files = post.files || [];
 
   const themeLookup = buildThemeLookup(themes);
 
@@ -102,6 +101,12 @@ export const DataCard = ({
     }
   };
 
+  const handleDownloadZippedFiles = async () => {
+    const zipUrl = `https://zenodo.org/api/records/${post.id}/files-archive`;
+    const fileName = post.title.replace(/\s+/g, "_").toLowerCase() + ".zip";
+    await handleDownload(zipUrl, fileName);
+  };
+
   const sanitizedDescription = useMemo(() => {
     if (!post.description) return "";
 
@@ -150,7 +155,7 @@ export const DataCard = ({
           </div>
         </div>
 
-        {primaryFile && (
+        {files.length > 0 && (
           <div className="flex w-full flex-row flex-wrap items-center justify-between gap-3 lg:w-auto lg:flex-nowrap lg:justify-end">
             <Button asChild variant="secondary">
               <Link href={post.html} target="_blank" rel="noopener noreferrer">
@@ -161,9 +166,7 @@ export const DataCard = ({
             {
               <Button
                 variant="primary"
-                onClick={() =>
-                  handleDownload(primaryFile.downloadUrl, primaryFile.name)
-                }
+                onClick={handleDownloadZippedFiles}
               >
                 <Icon id="icon-download" size={16} className="text-white" />
                 Baixar dados
@@ -173,13 +176,13 @@ export const DataCard = ({
         )}
       </div>
 
-      {additionalFiles.length > 0 && (
+      {files.length > 0 && (
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold text-gray-700">
             Arquivos adicionais
           </h3>
           <div className="flex flex-wrap gap-2">
-            {additionalFiles.map((file) => (
+            {files.map((file) => (
               <button
                 key={file.name}
                 type="button"
