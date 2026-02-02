@@ -2,7 +2,6 @@ import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
 import { MacroTheme } from "@/utils/interfaces";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
-import { cn } from "@/lib/utils";
 
 type Props = {
   content: MacroTheme;
@@ -31,7 +30,7 @@ export function MacroThemeBanner({
   const backgroundUrl = content.banner?.url ?? "";
 
   return (
-    <section className={cn(`relative w-full`, className)}>
+    <section className={`relative w-full ${className}`}>
       <div className="relative w-full overflow-hidden z-0">
         {backgroundUrl ? (
           <Image
@@ -51,16 +50,16 @@ export function MacroThemeBanner({
         <div className="relative z-10 w-full">
           <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">
             <div className="min-h-[500px] py-12 flex items-end">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-[36px] w-full">
+              <div className="flex flex-col md:flex-row items-start md:items-start gap-6 md:gap-[36px] w-full">
                 <div
-                  className="flex items-center justify-center p-8 rounded-[8px] shrink-0"
+                  className="flex items-center justify-center p-8 rounded-[8px] shrink-0 mx-auto md:mx-0"
                   style={{ backgroundColor: logoBackgroundColor }}
                 >
                   <Icon
                     id={logoIconId}
                     width={168}
                     height={117}
-                    className="h-40 lg:h-32 w-40 lg:w-32 filter brightness-0 invert opacity-100"
+                    className="filter brightness-0 invert opacity-100"
                   />
                 </div>
 
@@ -72,6 +71,7 @@ export function MacroThemeBanner({
 
                     {!!derivedTags?.length && (
                       <div className="flex flex-row flex-wrap gap-2 justify-center md:justify-start">
+                        {" "}
                         {derivedTags.map((tag) => (
                           <span
                             key={tag}
