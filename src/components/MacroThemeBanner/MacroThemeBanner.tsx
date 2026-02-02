@@ -8,8 +8,8 @@ type Props = {
   className?: string;
   priorityImage?: boolean;
   tags?: string[];
-  logoIconId?: string;
-  logoBackgroundColor?: string;
+  logoIconId: string;
+  logoBackgroundColor: string;
 };
 
 export function MacroThemeBanner({
