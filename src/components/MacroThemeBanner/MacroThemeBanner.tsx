@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
 import { MacroTheme } from "@/utils/interfaces";
 import { macroThemes } from "@/utils/constants";
+import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 
 type Props = {
   content: MacroTheme;
@@ -21,13 +22,13 @@ export function MacroThemeBanner({
   logoBackgroundColor,
 }: Props) {
   const title = content.name;
-  const textBanner = content.textBanner ?? "";
+
   const derivedTags = tags?.length
     ? tags
     : content.tags?.length
       ? content.tags
       : [];
-  const backgroundUrl = content.imageBanner?.url ?? "";
+  const backgroundUrl = content.banner?.url ?? "";
 
   const derivedLogoIconId = logoIconId ?? macroThemes[content.id];
   const derivedLogoBackgroundColor = logoBackgroundColor ?? content.color;
@@ -86,10 +87,10 @@ export function MacroThemeBanner({
                     )}
                   </div>
 
-                  {!!textBanner && (
-                    <p className="text-white text-sm sm:text-base lg:text-[16px] leading-relaxed lg:leading-[150%] font-medium max-w-[1044px]">
-                      {textBanner}
-                    </p>
+                  {!!content.description?.json && (
+                    <div className="text-white text-sm sm:text-base lg:text-[16px] leading-relaxed lg:leading-[150%] font-medium max-w-[1044px]">
+                      {documentToReactComponents(content.description.json)}
+                    </div>
                   )}
                 </div>
               </div>
