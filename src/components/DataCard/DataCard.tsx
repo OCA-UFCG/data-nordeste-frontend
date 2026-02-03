@@ -187,7 +187,7 @@ export const DataCard = ({
                 key={file.name}
                 type="button"
                 onClick={() => handleDownload(file.downloadUrl, file.name)}
-                className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer"
               >
                 <Icon
                   id="icon-download"
