@@ -8,6 +8,7 @@ import { normalizeKey } from "@/utils/functions";
 import DOMPurify from "dompurify";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ZENODO_BASE_URL } from "@/utils/constants";
 
 const buildThemeLookup = (themes: MacroTheme[]) => {
   const map: Record<string, MacroTheme> = {};
@@ -84,6 +85,7 @@ export const DataCard = ({
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
+      timeZone: "UTC",
     });
   })();
   const handleDownload = async (url: string, name: string) => {
@@ -102,7 +104,7 @@ export const DataCard = ({
   };
 
   const handleDownloadZippedFiles = async () => {
-    const zipUrl = `https://zenodo.org/api/records/${post.id}/files-archive`;
+    const zipUrl = `${ZENODO_BASE_URL}/${post.id}/files-archive`;
     const fileName = post.title.replace(/\s+/g, "_").toLowerCase() + ".zip";
     await handleDownload(zipUrl, fileName);
   };
@@ -150,8 +152,6 @@ export const DataCard = ({
 
           <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600">
             <span>Publicado em: {formattedDate}</span>
-            <span className="text-[#7E797B]">|</span>
-            <span>Versão: {post.version || "N/A"}</span>
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export const DataCard = ({
       {files.length > 0 && (
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold text-gray-700">
-            Arquivos adicionais
+            Arquivos
           </h3>
           <div className="flex flex-wrap gap-2">
             {files.map((file) => (

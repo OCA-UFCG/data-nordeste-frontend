@@ -1,10 +1,12 @@
+import { ZENODO_BASE_URL } from "@/utils/constants";
+
 export async function getZenodoCommunityRecords(
   page: number,
   size: number,
   filters: Record<string, any> = {},
 ) {
   const query = buildBaseQuery(page, size, filters);
-  const url = `https://zenodo.org/api/records?${query.toString()}`;
+  const url = `${ZENODO_BASE_URL}?${query.toString()}`;
   const json = await fetchZenodoData(url);
   const records = parseZenodoRecords(json);
 
@@ -98,9 +100,10 @@ const fetchZenodoData = async (url: string) => {
 
 const parseZenodoRecords = (json: any) => {
   return (json.hits?.hits ?? []).map((r: any) => ({
+    id: r.id,
     title: r.metadata?.title,
     description: r.metadata?.description ?? "",
-    publication_date: r.metadata?.publication_date,
+    publication_date: r.created,
     version: r.metadata?.version ?? "1.0",
     tags: r.metadata?.keywords ?? [],
     html: r.links.self_html,
