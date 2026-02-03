@@ -12,6 +12,7 @@ import { getContent } from "@/utils/contentful";
 import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
+import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 
 export const revalidate = REVALIDATE;
 
@@ -79,12 +80,14 @@ export default async function MacroThemePage({
       )}
 
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10">
-        <h2 className="text-2xl font-semibold">{theme.textSlogan}</h2>
+        {!!theme.articleTitle && (
+          <h2 className="text-2xl font-semibold">{theme.articleTitle}</h2>
+        )}
 
-        {!!theme.textPage && (
-          <p className="mt-4 text-base leading-relaxed whitespace-pre-line">
-            {theme.textPage}
-          </p>
+        {!!theme.article?.json && (
+          <div className="mt-4 text-base leading-relaxed whitespace-pre-line">
+            {documentToReactComponents(theme.article.json)}
+          </div>
         )}
       </div>
 

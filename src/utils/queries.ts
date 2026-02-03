@@ -399,13 +399,17 @@ export const MACROTHEME_PAGE_QUERY = `
         name
         id
         color
-        textBanner
-        textPage
-        textSlogan
-        imageBanner {
+        tags
+        description {
+          json
+        }
+        articleTitle
+        article {
+          json
+        }
+        banner {
           url
         }
-        tags
         sys {
           id
         }
