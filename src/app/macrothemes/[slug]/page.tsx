@@ -1,5 +1,5 @@
 import HubTemplate from "@/templates/HubTemplate";
-import { REVALIDATE, macroThemes } from "@/utils/constants";
+import { REVALIDATE } from "@/utils/constants";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
 import { MacroTheme } from "@/utils/interfaces";
 import { notFound } from "next/navigation";
@@ -30,16 +30,9 @@ export default async function MacroThemePage({
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
 
-  const logoIconId = macroThemes[theme.id];
-  const logoBackgroundColor = theme.color;
-
   return (
     <HubTemplate>
-      <MacroThemeBanner
-        content={theme}
-        logoIconId={logoIconId}
-        logoBackgroundColor={logoBackgroundColor}
-      />
+      <MacroThemeBanner content={theme} />
 
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10">
         {!!theme.articleTitle && (
