@@ -11,8 +11,9 @@ import { notFound } from "next/navigation";
 import { getContent } from "@/utils/contentful";
 import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
-import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
+import PreviewSection from "@/components/PreviewSection/PreviewSection";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
+import PreviewContent from "@/components/PreviewSection/PreviewContent";
 
 export const revalidate = REVALIDATE;
 
@@ -63,20 +64,14 @@ export default async function MacroThemePage({
       {/* testando ainda */}
 
       {!!previewCardsCollection?.items?.length && (
-        <PreviewCarousel
-          cards={previewCardsCollection.items.map((regionData) => {
-            const source = regionData.jsonFile;
-
-            return {
-              title: source.title,
-              subtitle: source.subtitle,
-              data: source.data,
-              link: source.link,
-              note: source.note,
-              category: regionData.category,
-            };
-          })}
-        />
+        <section className="w-full bg-white py-10 lg:py-16">
+          <div className="w-full max-w-[1440px] mx-auto px-3 lg:px-20">
+            <PreviewContent
+              cards={previewCardsCollection.items}
+              header={sectionHeadCollection.items[0]}
+            />
+          </div>
+        </section>
       )}
 
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10">
@@ -101,25 +96,7 @@ export default async function MacroThemePage({
         />
       )}
 
-      {!!postCollection?.items?.length && (
-        <RecentSection
-          content={postCollection.items}
-          header={{
-            ...sectionHeadCollection.items[0],
-            subtitle: "",
-          }}
-        />
-      )}
 
-      {!!postCollection?.items?.length && (
-        <RecentSection
-          content={postCollection.items}
-          header={{
-            ...sectionHeadCollection.items[0],
-            subtitle: "",
-          }}
-        />
-      )}
     </HubTemplate>
   );
 }
