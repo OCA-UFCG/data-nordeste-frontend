@@ -88,6 +88,11 @@ export interface MacroTheme {
   sys: {
     id: string;
   };
+  description: { json: any };
+  article: { json: any };
+  articleTitle: string;
+  banner: { url: string };
+  tags: string[];
 }
 
 export interface IPreviewCard {
