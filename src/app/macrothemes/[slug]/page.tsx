@@ -13,6 +13,8 @@ import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
 import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { PostCarousel } from "@/components/PostCarousel/PostCarousel";
+import { LinkButton } from "@/components/LinkButton/LinkButton";
+import { Icon } from "@/components/Icon/Icon";
 
 export const revalidate = REVALIDATE;
 
@@ -50,6 +52,8 @@ export default async function MacroThemePage({
 
   const logoIconId = macroThemes[theme.id];
   const logoBackgroundColor = theme.color;
+
+  const postsByThemeHref = `/posts?category=${encodeURIComponent(theme.sys.id)}`;
 
   const publicacoes = postCollection.items.filter(
     (post) => post.type === "newsletter" || "additional-content",
@@ -129,6 +133,15 @@ export default async function MacroThemePage({
           <section className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Publicações</h2>
+
+              <LinkButton
+                href={postsByThemeHref}
+                variant="secondary"
+                className="w-fit"
+              >
+                <p>Ver Todos</p>
+                <Icon className="rotate-270 size-2" id="expand" />
+              </LinkButton>
             </div>
 
             <PostCarousel posts={publicacoes} />
