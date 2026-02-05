@@ -10,9 +10,9 @@ import {
 import { notFound } from "next/navigation";
 import { getContent } from "@/utils/contentful";
 import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
-import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
+import { PostCarousel } from "@/components/PostCarousel/PostCarousel";
 
 export const revalidate = REVALIDATE;
 
@@ -36,7 +36,6 @@ export default async function MacroThemePage({
     themeCollection,
     previewCardsCollection,
     postCollection,
-    sectionHeadCollection,
   }: IMacroThemePageContent = await getContent(MACROTHEME_PAGE_QUERY, {
     slug: normalizedSlug,
   });
@@ -51,6 +50,10 @@ export default async function MacroThemePage({
 
   const logoIconId = macroThemes[theme.id];
   const logoBackgroundColor = theme.color;
+
+  const publicacoes = postCollection.items.filter(
+    (post) => post.type === "newsletter" || "additional-content",
+  );
 
   return (
     <HubTemplate>
@@ -91,7 +94,7 @@ export default async function MacroThemePage({
         )}
       </div>
 
-      {!!postCollection?.items?.length && (
+      {/* {!!postCollection?.items?.length && (
         <RecentSection
           content={postCollection.items}
           header={{
@@ -119,6 +122,18 @@ export default async function MacroThemePage({
             subtitle: "",
           }}
         />
+      )} */}
+
+      {!!publicacoes.length && (
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
+          <section className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Publicações</h2>
+            </div>
+
+            <PostCarousel posts={publicacoes} />
+          </section>
+        </div>
       )}
     </HubTemplate>
   );
