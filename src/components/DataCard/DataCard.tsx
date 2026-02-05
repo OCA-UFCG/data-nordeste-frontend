@@ -8,6 +8,7 @@ import { normalizeKey } from "@/utils/functions";
 import DOMPurify from "dompurify";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ZENODO_BASE_URL } from "@/utils/constants";
 
 const buildThemeLookup = (themes: MacroTheme[]) => {
   const map: Record<string, MacroTheme> = {};
@@ -50,8 +51,7 @@ export const DataCard = ({
   post: IMetadata;
   themes: MacroTheme[];
 }) => {
-  const primaryFile = post.files?.[0];
-  const additionalFiles = post.files?.slice(1) ?? [];
+  const files = post.files || [];
 
   const themeLookup = buildThemeLookup(themes);
 
@@ -85,6 +85,7 @@ export const DataCard = ({
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
+      timeZone: "UTC",
     });
   })();
   const handleDownload = async (url: string, name: string) => {
@@ -100,6 +101,12 @@ export const DataCard = ({
     } catch (err) {
       console.error("Erro ao baixar arquivo:", err);
     }
+  };
+
+  const handleDownloadZippedFiles = async () => {
+    const zipUrl = `${ZENODO_BASE_URL}/${post.id}/files-archive`;
+    const fileName = post.title.replace(/\s+/g, "_").toLowerCase() + ".zip";
+    await handleDownload(zipUrl, fileName);
   };
 
   const sanitizedDescription = useMemo(() => {
@@ -145,12 +152,10 @@ export const DataCard = ({
 
           <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600">
             <span>Publicado em: {formattedDate}</span>
-            <span className="text-[#7E797B]">|</span>
-            <span>Versão: {post.version || "N/A"}</span>
           </div>
         </div>
 
-        {primaryFile && (
+        {files.length > 0 && (
           <div className="flex w-full flex-row flex-wrap items-center justify-between gap-3 lg:w-auto lg:flex-nowrap lg:justify-end">
             <Button asChild variant="secondary">
               <Link href={post.html} target="_blank" rel="noopener noreferrer">
@@ -161,9 +166,7 @@ export const DataCard = ({
             {
               <Button
                 variant="primary"
-                onClick={() =>
-                  handleDownload(primaryFile.downloadUrl, primaryFile.name)
-                }
+                onClick={handleDownloadZippedFiles}
               >
                 <Icon id="icon-download" size={16} className="text-white" />
                 Baixar dados
@@ -173,18 +176,18 @@ export const DataCard = ({
         )}
       </div>
 
-      {additionalFiles.length > 0 && (
+      {files.length > 0 && (
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold text-gray-700">
-            Arquivos adicionais
+            Arquivos
           </h3>
           <div className="flex flex-wrap gap-2">
-            {additionalFiles.map((file) => (
+            {files.map((file) => (
               <button
                 key={file.name}
                 type="button"
                 onClick={() => handleDownload(file.downloadUrl, file.name)}
-                className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer"
               >
                 <Icon
                   id="icon-download"
