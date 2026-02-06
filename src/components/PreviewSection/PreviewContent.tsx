@@ -72,7 +72,6 @@ const PreviewContent = ({ header, cards }: PreviewContentProps) => {
           </SelectContent>
         </Select>
       </div>
-      {/* Carousel separado */}
       <PreviewCarousel cards={filteredCards} />
     </>
   );

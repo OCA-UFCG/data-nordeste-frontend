@@ -64,12 +64,16 @@ export default async function MacroThemePage({
       {/* testando ainda */}
 
       {!!previewCardsCollection?.items?.length && (
-        <section className="w-full bg-white py-10 lg:py-16">
+        <section className="w-full bg-white">
           <div className="w-full max-w-[1440px] mx-auto px-3 lg:px-20">
-            <PreviewContent
-              cards={previewCardsCollection.items}
-              header={sectionHeadCollection.items[0]}
-            />
+            <div
+              className="flex flex-col gap-3 lg:px-6 py-10 lg:py-16 justify-center items-center"
+            >
+              <PreviewContent
+                cards={previewCardsCollection.items}
+                header={sectionHeadCollection.items[0]}
+              />
+            </div>
           </div>
         </section>
       )}
