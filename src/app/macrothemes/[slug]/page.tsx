@@ -1,5 +1,5 @@
 import HubTemplate from "@/templates/HubTemplate";
-import { REVALIDATE } from "@/utils/constants";
+import { REVALIDATE, macroThemes } from "@/utils/constants";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
 import {
   IPreviewCards,
@@ -42,19 +42,14 @@ export default async function MacroThemePage({
     slug: normalizedSlug,
   });
 
-  // const { postCollection: posts }: IMacroThemePageContent =
-  //   await getContent(MAIN_PAGE_QUERY);
-  // const { sectionHeadCollection: sectionHead }: IMacroThemePageContent =
-  //   await getContent(MAIN_PAGE_QUERY);
-
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
 
   return (
     <HubTemplate>
-      <MacroThemeBanner content={theme} />
-
-      {/* testando ainda */}
+      <MacroThemeBanner
+        content={theme}
+      />
 
       {!!previewCardsCollection?.items?.length && (
         <section className="w-full bg-white">
