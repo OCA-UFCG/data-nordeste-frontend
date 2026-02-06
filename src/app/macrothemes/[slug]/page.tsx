@@ -1,5 +1,5 @@
 import HubTemplate from "@/templates/HubTemplate";
-import { REVALIDATE, macroThemes } from "@/utils/constants";
+import { REVALIDATE } from "@/utils/constants";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
 import {
   IPreviewCards,
@@ -50,16 +50,9 @@ export default async function MacroThemePage({
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
 
-  const logoIconId = macroThemes[theme.id];
-  const logoBackgroundColor = theme.color;
-
   return (
     <HubTemplate>
-      <MacroThemeBanner
-        content={theme}
-        logoIconId={logoIconId}
-        logoBackgroundColor={logoBackgroundColor}
-      />
+      <MacroThemeBanner content={theme} />
 
       {/* testando ainda */}
 

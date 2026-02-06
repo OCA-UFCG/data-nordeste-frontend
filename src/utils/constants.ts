@@ -41,6 +41,8 @@ export const POSTS_PER_PAGE = 12;
 export const RECORDS_PER_PAGE = 6;
 export const PAGINATION_SIZE = 3;
 
+export const ZENODO_BASE_URL = "https://zenodo.org/api/records";
+
 export const sortingTypes: {
   [x: string]:
     | OrderFilterPaths<EntrySys, "sys">
