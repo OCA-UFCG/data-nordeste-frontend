@@ -3,31 +3,22 @@ import { Icon } from "@/components/Icon/Icon";
 import { MacroTheme } from "@/utils/interfaces";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { cn } from "@/lib/utils";
+import { macroThemes } from "@/utils/constants";
 
 type Props = {
   content: MacroTheme;
   className?: string;
   priorityImage?: boolean;
-  tags?: string[];
-  logoIconId: string;
-  logoBackgroundColor: string;
 };
 
 export function MacroThemeBanner({
   content,
   className = "",
   priorityImage = true,
-  tags,
-  logoIconId,
-  logoBackgroundColor,
 }: Props) {
   const title = content.name;
 
-  const derivedTags = tags?.length
-    ? tags
-    : content.tags?.length
-      ? content.tags
-      : [];
+  const derivedTags = content.tags || [];
   const backgroundUrl = content.banner?.url ?? "";
 
   return (
@@ -52,20 +43,20 @@ export function MacroThemeBanner({
         <div className="relative z-10 w-full">
           <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">
             <div className="min-h-[500px] py-12 flex items-end">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-[36px] w-full">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-9 w-full">
                 <div
                   className="flex items-center justify-center p-8 rounded-[8px] shrink-0"
-                  style={{ backgroundColor: logoBackgroundColor }}
+                  style={{ backgroundColor: content.color }}
                 >
                   <Icon
-                    id={logoIconId}
+                    id={macroThemes[content.id]}
                     width={168}
                     height={117}
                     className="h-40 lg:h-32 w-40 lg:w-32 filter brightness-0 invert opacity-100"
                   />
                 </div>
 
-                <div className="flex flex-col gap-4 sm:gap-5 lg:gap-[24px] w-full max-w-[1044px]">
+                <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6 w-full max-w-[1044px]">
                   <div className="flex flex-col gap-2 md:text-left text-center">
                     <h1 className="text-white font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-[48px] leading-tight lg:leading-[48px] tracking-tight lg:tracking-[-0.012em]">
                       {title}

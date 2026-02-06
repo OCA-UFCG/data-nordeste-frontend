@@ -433,9 +433,7 @@ export const MACROTHEME_PAGE_QUERY = `
     }
 
     postCollection(
-      limit: 8
       where: { 
-        type: "data-panel",
         category: { id: $slug } 
       }
       preview: $preview

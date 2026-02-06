@@ -1,5 +1,5 @@
 import HubTemplate from "@/templates/HubTemplate";
-import { REVALIDATE, macroThemes } from "@/utils/constants";
+import { REVALIDATE } from "@/utils/constants";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
 import {
   IPreviewCards,
@@ -10,7 +10,6 @@ import {
 import { notFound } from "next/navigation";
 import { getContent } from "@/utils/contentful";
 import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
-import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { PostCarousel } from "@/components/PostCarousel/PostCarousel";
 import { LinkButton } from "@/components/LinkButton/LinkButton";
@@ -34,57 +33,23 @@ export default async function MacroThemePage({
 
   const normalizedSlug = slug.replace(/-/g, "_");
 
-  const {
-    themeCollection,
-    previewCardsCollection,
-    postCollection,
-  }: IMacroThemePageContent = await getContent(MACROTHEME_PAGE_QUERY, {
-    slug: normalizedSlug,
-  });
-
-  // const { postCollection: posts }: IMacroThemePageContent =
-  //   await getContent(MAIN_PAGE_QUERY);
-  // const { sectionHeadCollection: sectionHead }: IMacroThemePageContent =
-  //   await getContent(MAIN_PAGE_QUERY);
+  const { themeCollection, postCollection }: IMacroThemePageContent =
+    await getContent(MACROTHEME_PAGE_QUERY, {
+      slug: normalizedSlug,
+    });
 
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
 
-  const logoIconId = macroThemes[theme.id];
-  const logoBackgroundColor = theme.color;
-
   const postsByThemeHref = `/posts?category=${encodeURIComponent(theme.sys.id)}`;
 
   const publicacoes = postCollection.items.filter(
-    (post) => post.type === "newsletter" || "additional-content",
+    (post) => post.type === "newsletter" || post.type === "additional-content",
   );
 
   return (
     <HubTemplate>
-      <MacroThemeBanner
-        content={theme}
-        logoIconId={logoIconId}
-        logoBackgroundColor={logoBackgroundColor}
-      />
-
-      {/* testando ainda */}
-
-      {!!previewCardsCollection?.items?.length && (
-        <PreviewCarousel
-          cards={previewCardsCollection.items.map((regionData) => {
-            const source = regionData.jsonFile;
-
-            return {
-              title: source.title,
-              subtitle: source.subtitle,
-              data: source.data,
-              link: source.link,
-              note: source.note,
-              category: regionData.category,
-            };
-          })}
-        />
-      )}
+      <MacroThemeBanner content={theme} />
 
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10">
         {!!theme.articleTitle && (
@@ -97,36 +62,6 @@ export default async function MacroThemePage({
           </div>
         )}
       </div>
-
-      {/* {!!postCollection?.items?.length && (
-        <RecentSection
-          content={postCollection.items}
-          header={{
-            ...sectionHeadCollection.items[0],
-            subtitle: "",
-          }}
-        />
-      )}
-
-      {!!postCollection?.items?.length && (
-        <RecentSection
-          content={postCollection.items}
-          header={{
-            ...sectionHeadCollection.items[0],
-            subtitle: "",
-          }}
-        />
-      )}
-
-      {!!postCollection?.items?.length && (
-        <RecentSection
-          content={postCollection.items}
-          header={{
-            ...sectionHeadCollection.items[0],
-            subtitle: "",
-          }}
-        />
-      )} */}
 
       {!!publicacoes.length && (
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
