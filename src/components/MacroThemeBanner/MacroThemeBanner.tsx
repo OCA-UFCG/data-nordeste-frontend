@@ -26,7 +26,7 @@ export function MacroThemeBanner({
       <div className="relative w-full overflow-hidden z-0">
         {backgroundUrl ? (
           <Image
-            className="absolute inset-0 w-full h-full object-cover object-[center_45%]"
+            className="absolute inset-0 w-full h-full object-cover object-[center_43%]"
             src={backgroundUrl}
             alt={title}
             width={1920}
@@ -38,6 +38,7 @@ export function MacroThemeBanner({
         )}
 
         <div className="absolute inset-0 bg-[linear-gradient(90deg,_#000000_0%,_rgba(0,0,0,0)_100%)] opacity-100" />
+        <div className="absolute top-0 right-0 h-full w-full bg-gradient-to-l from-black via-transparent to-transparent"></div>
 
         <div className="relative z-10 w-full">
           <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">

@@ -38,7 +38,7 @@ export default async function Home() {
     themeCollection: theme,
     mainBannerCollection: mainBanner,
     previewCardsCollection: previewCards,
-    sectionHeadCollection: sectionHead,
+    sectionHeadCollection: sectionHead, 
     feedbackCollection: { items: feedbackContent },
   }: IMainContent = await getContent(MAIN_PAGE_QUERY);
 
