@@ -41,7 +41,6 @@ export default async function MacroThemePage({
   }: IMacroThemePageContent = await getContent(MACROTHEME_PAGE_QUERY, {
     slug: normalizedSlug,
   });
-
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
 
@@ -59,7 +58,9 @@ export default async function MacroThemePage({
             >
               <PreviewContent
                 cards={previewCardsCollection.items}
-                header={sectionHeadCollection.items[0]}
+                header={sectionHeadCollection.items.find(
+                  (sec: SectionHeader) => sec.id == "preview",
+                )}
               />
             </div>
           </div>

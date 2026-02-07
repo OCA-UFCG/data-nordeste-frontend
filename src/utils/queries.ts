@@ -450,7 +450,7 @@ export const MACROTHEME_PAGE_QUERY = `
       }
     }
 
-    sectionHeadCollection(where: { id: "new" }, limit: 1, preview: $preview) {
+    sectionHeadCollection(where: { id_in: ["preview", "new"] }, limit: 2, preview: $preview) {
       items {
         title
         subtitle
