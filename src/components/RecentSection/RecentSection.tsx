@@ -75,7 +75,7 @@ export const RecentSection = ({
       <LinkButton
         href={FILTERS[selectedType].href}
         variant="secondary"
-        className="w-fit hidden md flex:flex"
+        className="lg:hidden"
         disabled={selectedType === FILTERS.all.key}
       >
         <p>Ver Todos</p>

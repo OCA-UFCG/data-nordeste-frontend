@@ -47,6 +47,10 @@ export default async function MacroThemePage({
     (post) => post.type === "newsletter" || post.type === "additional-content",
   );
 
+  const dashboards = postCollection.items.filter(
+    (post) => post.type === "data-panel",
+  );
+
   return (
     <HubTemplate>
       <MacroThemeBanner content={theme} />
@@ -63,6 +67,26 @@ export default async function MacroThemePage({
         )}
       </div>
 
+      {!!dashboards.length && (
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
+          <section className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Dashboards</h2>
+
+              <LinkButton
+                href={postsByThemeHref}
+                variant="secondary"
+                className="w-fit"
+              >
+                <p>Ver Todos</p>
+                <Icon className="rotate-270 size-2" id="expand" />
+              </LinkButton>
+            </div>
+            <PostCarousel posts={dashboards} />
+          </section>
+        </div>
+      )}
+
       {!!publicacoes.length && (
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
           <section className="space-y-6">
@@ -78,7 +102,6 @@ export default async function MacroThemePage({
                 <Icon className="rotate-270 size-2" id="expand" />
               </LinkButton>
             </div>
-
             <PostCarousel posts={publicacoes} />
           </section>
         </div>
