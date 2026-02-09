@@ -62,6 +62,7 @@ export const POST_TYPES = {
   "additional-content": "Notícia",
   "data-panel": "Painel de dados",
   "newsletter": "Boletim",
+  "data-story": "Datastory",
 };
 
 export const macroThemes: { [key: string]: string } = {
