@@ -41,7 +41,7 @@ export default async function MacroThemePage({
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
 
-  const postsByThemeHref = `/posts?category=${encodeURIComponent(theme.sys.id)}`;
+  const postsByThemeHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=newsletter,additional-content`;
   const dashboardsHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=data-panel`;
   const datastoriesHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=data-story`;
 
