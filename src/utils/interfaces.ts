@@ -68,7 +68,7 @@ export interface IPublication {
   thumb: {
     url: string;
   };
-  type: "additional-content" | "data-panel" | "newsletter";
+  type: "additional-content" | "data-panel" | "newsletter" | "data-story";
   date: string;
   description: string;
 }

@@ -85,7 +85,7 @@ export const Posts = ({
       },
     );
 
-    router.push(
+    router.replace(
       pathname +
         "?" +
         createQueryString({ ...newParams, page: currentPage.toString() }),

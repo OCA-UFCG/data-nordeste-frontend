@@ -42,6 +42,8 @@ export default async function MacroThemePage({
   if (!theme) notFound();
 
   const postsByThemeHref = `/posts?category=${encodeURIComponent(theme.sys.id)}`;
+  const dashboardsHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=data-panel`;
+  const datastoriesHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=data-story`;
 
   const publicacoes = postCollection.items.filter(
     (post) => post.type === "newsletter" || post.type === "additional-content",
@@ -49,6 +51,10 @@ export default async function MacroThemePage({
 
   const dashboards = postCollection.items.filter(
     (post) => post.type === "data-panel",
+  );
+
+  const datastories = postCollection.items.filter(
+    (post) => post.type === "data-story",
   );
 
   return (
@@ -74,7 +80,7 @@ export default async function MacroThemePage({
               <h2 className="text-2xl font-semibold">Dashboards</h2>
 
               <LinkButton
-                href={postsByThemeHref}
+                href={dashboardsHref}
                 variant="secondary"
                 className="w-fit"
               >
@@ -83,6 +89,26 @@ export default async function MacroThemePage({
               </LinkButton>
             </div>
             <PostCarousel posts={dashboards} />
+          </section>
+        </div>
+      )}
+
+      {!!datastories.length && (
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
+          <section className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Datastories</h2>
+
+              <LinkButton
+                href={datastoriesHref}
+                variant="secondary"
+                className="w-fit"
+              >
+                <p>Ver Todos</p>
+                <Icon className="rotate-270 size-2" id="expand" />
+              </LinkButton>
+            </div>
+            <PostCarousel posts={datastories} />
           </section>
         </div>
       )}
