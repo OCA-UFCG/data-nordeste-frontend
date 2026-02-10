@@ -53,9 +53,7 @@ export default async function MacroThemePage({
       {!!previewCardsCollection?.items?.length && (
         <section className="w-full bg-white">
           <div className="w-full max-w-[1440px] mx-auto px-3 lg:px-20">
-            <div
-              className="flex flex-col gap-3 lg:px-6 py-10 lg:py-16 justify-center items-center"
-            >
+            <div className="flex flex-col lg:px-6 pt-10 lg:pt-16 items-center [&>div:nth-child(2)]:mt-[28px]">
               <PreviewContent
                 cards={previewCardsCollection.items}
                 header={sectionHeadCollection.items.find(
@@ -67,7 +65,7 @@ export default async function MacroThemePage({
         </section>
       )}
 
-      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 mt-12 pb-10 pt-0">
         {!!theme.articleTitle && (
           <h2 className="text-2xl font-semibold">{theme.articleTitle}</h2>
         )}
@@ -78,16 +76,6 @@ export default async function MacroThemePage({
           </div>
         )}
       </div>
-
-      {!!postCollection?.items?.length && (
-        <RecentSection
-          content={postCollection.items}
-          header={{
-            ...sectionHeadCollection.items[0],
-            subtitle: "",
-          }}
-        />
-      )}
 
 
     </HubTemplate>
