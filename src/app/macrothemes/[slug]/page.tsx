@@ -41,9 +41,9 @@ export default async function MacroThemePage({
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
 
-  const postsByThemeHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=newsletter,additional-content`;
-  const dashboardsHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=data-panel`;
-  const datastoriesHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=data-story`;
+  const postsByThemeHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=newsletter,additional-content&page=1`;
+  const dashboardsHref = `/explore?category=${encodeURIComponent(theme.sys.id)}&page=1`;
+  const datastoriesHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=data-story&page=1`;
 
   const publicacoes = postCollection.items.filter(
     (post) => post.type === "newsletter" || post.type === "additional-content",

@@ -32,12 +32,7 @@ export default async function DataPanel({}: {}) {
         <Posts
           header={sectionHead.items[0]}
           rootFilter={{
-            type_in: [
-              "newsletter",
-              "additional-content",
-              "data-panel",
-              "data-story",
-            ],
+            type_in: ["newsletter", "additional-content", "data-story"],
           }}
           totalPages={pages.total || 1}
           categories={{
@@ -46,7 +41,6 @@ export default async function DataPanel({}: {}) {
             fields: {
               "additional-content": "Notícia",
               "newsletter": "Boletim",
-              "data-panel": "Dashboard",
               "data-story": "DataStories",
             },
           }}
