@@ -415,5 +415,47 @@ export const MACROTHEME_PAGE_QUERY = `
         }
       }
     }
+
+    previewCardsCollection(
+      limit: 12
+      where: { category: { id: $slug } }
+      preview: $preview
+    ) {
+      items {
+        title
+        jsonFile
+        category {
+          name
+          id
+          color
+        }
+      }
+    }
+
+    postCollection(
+      limit: 8
+      where: { 
+        type: "data-panel",
+        category: { id: $slug } 
+      }
+      preview: $preview
+    ) {
+      items {
+        title
+        link
+        type
+        thumb { url }
+        date
+        description
+      }
+    }
+
+    sectionHeadCollection(where: { id_in: ["preview", "new"] }, limit: 2, preview: $preview) {
+      items {
+        title
+        subtitle
+        id
+      }
+    }
   }
 `;
