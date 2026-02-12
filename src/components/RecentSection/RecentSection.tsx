@@ -8,7 +8,7 @@ import { useCallback, useState } from "react";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { getContent } from "@/utils/contentful";
 import { POSTS_QUERY } from "@/utils/queries";
-import { PostCarousel } from "../PostCarousel/PostCarousel";
+import { CardCarousel } from "../CardCarousel/CardCarousel";
 
 export const RecentSection = ({
   header,
@@ -70,7 +70,7 @@ export const RecentSection = ({
         <p className="hidden md:block text-sm">{subtitle}</p>
       </div>
 
-      <PostCarousel posts={posts} />
+      <CardCarousel items={posts} variant="post" />
 
       <LinkButton
         href={FILTERS[selectedType].href}

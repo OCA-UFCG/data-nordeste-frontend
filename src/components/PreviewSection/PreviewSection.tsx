@@ -1,7 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
 import { IPreviewCard, IPreviewCards, SectionHeader } from "@/utils/interfaces";
-import PreviewCarousel from "@/components/PreviewCarousel/PreviewCarousel";
 import {
   Select,
   SelectContent,
@@ -11,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { CardCarousel } from "../CardCarousel/CardCarousel";
 
 const PreviewSection = ({
   header,
@@ -83,7 +83,7 @@ const PreviewSection = ({
           </div>
 
           {/* Carousel separado */}
-          <PreviewCarousel cards={filteredCards} />
+          <CardCarousel items={filteredCards} variant="preview" />
         </div>
       </div>
     </section>

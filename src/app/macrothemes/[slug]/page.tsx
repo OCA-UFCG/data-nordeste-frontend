@@ -1,5 +1,4 @@
 import HubTemplate from "@/templates/HubTemplate";
-import { REVALIDATE } from "@/utils/constants";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
 import {
   IPreviewCards,
@@ -11,9 +10,13 @@ import { notFound } from "next/navigation";
 import { getContent } from "@/utils/contentful";
 import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
-import { PostCarousel } from "@/components/PostCarousel/PostCarousel";
 import { LinkButton } from "@/components/LinkButton/LinkButton";
 import { Icon } from "@/components/Icon/Icon";
+import { CardCarousel } from "@/components/CardCarousel/CardCarousel";
+import { REVALIDATE } from "@/utils/constants";
+
+//import ContentPost from "@/components/ContentPost/ContentPost";
+//import { PostCarousel } from "@/components/PostCarousel/PostCarousel";
 
 export const revalidate = REVALIDATE;
 
@@ -88,7 +91,7 @@ export default async function MacroThemePage({
                 <Icon className="rotate-270 size-2" id="expand" />
               </LinkButton>
             </div>
-            <PostCarousel posts={dashboards} />
+            <CardCarousel items={dashboards} variant="post" />
           </section>
         </div>
       )}
@@ -108,7 +111,7 @@ export default async function MacroThemePage({
                 <Icon className="rotate-270 size-2" id="expand" />
               </LinkButton>
             </div>
-            <PostCarousel posts={datastories} />
+            <CardCarousel items={datastories} variant="post" />
           </section>
         </div>
       )}
@@ -128,7 +131,7 @@ export default async function MacroThemePage({
                 <Icon className="rotate-270 size-2" id="expand" />
               </LinkButton>
             </div>
-            <PostCarousel posts={publicacoes} />
+            <CardCarousel items={publicacoes} variant="post" />
           </section>
         </div>
       )}
