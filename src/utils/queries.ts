@@ -415,5 +415,95 @@ export const MACROTHEME_PAGE_QUERY = `
         }
       }
     }
+
+    previewCardsCollection(
+      limit: 12
+      where: { category: { id: $slug } }
+      preview: $preview
+    ) {
+      items {
+        title
+        jsonFile
+        category {
+          name
+          id
+          color
+        }
+      }
+    }
+
+    postCollection(
+      where: { 
+        category: { id: $slug } 
+      }
+      preview: $preview
+    ) {
+      items {
+        title
+        link
+        type
+        thumb { url }
+        date
+        description
+      }
+    }
+
+    dataStoriesCollection: postCollection(
+      where: { 
+        category: { id: $slug },
+        type: "data-story"
+      }
+      preview: $preview
+    ) {
+      items {
+        title
+        link
+        type
+        thumb { url }
+        date
+        description
+      }
+    }
+    
+    dashboardCollection: postCollection(
+      where: { 
+        category: { id: $slug },
+        type: "data-panel"
+      }
+      preview: $preview
+    ) {
+      items {
+        title
+        link
+        type
+        thumb { url }
+        date
+        description
+      }
+    }
+    postsCollection: postCollection(
+      where: { 
+        category: { id: $slug },
+        type_in: ["newsletter", "additional-content"]
+      }
+      preview: $preview
+    ) {
+      items {
+        title
+        link
+        type
+        thumb { url }
+        date
+        description
+      }
+    }
+
+    sectionHeadCollection(where: { id: "new" }, limit: 1, preview: $preview) {
+      items {
+        title
+        subtitle
+        id
+      }
+    }
   }
 `;

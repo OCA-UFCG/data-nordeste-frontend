@@ -1,16 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import Autoplay from "embla-carousel-autoplay";
 import { IPreviewCard, IPreviewCards, SectionHeader } from "@/utils/interfaces";
-import PreviewCard from "@/components/PreviewCard/PreviewCard";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  DotButton,
-} from "../ui/carousel";
 import {
   Select,
   SelectContent,
@@ -20,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { CardCarousel } from "../CardCarousel/CardCarousel";
 
 const PreviewSection = ({
   header,
@@ -53,6 +44,7 @@ const PreviewSection = ({
           }
         : null;
     }) as IPreviewCard[];
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedState]);
 
@@ -70,6 +62,7 @@ const PreviewSection = ({
         >
           <div className="flex flex-col lg:flex-row gap-3 justify-between w-full">
             <h2 className="text-3xl font-semibold">{header?.title}</h2>
+
             <Select onValueChange={handleFilterChange}>
               <SelectTrigger className="w-full lg:w-[180px]">
                 <SelectValue placeholder="Nordeste" />
@@ -89,36 +82,8 @@ const PreviewSection = ({
             </Select>
           </div>
 
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            plugins={[
-              Autoplay({
-                delay: 10000,
-              }),
-            ]}
-            className="flex flex-col gap-2 content-carousel"
-          >
-            <CarouselContent className="-ml-0">
-              {filteredCards.map((card, i) => (
-                <CarouselItem
-                  key={i}
-                  className="basis-1/1 md:basis-1/2 lg:basis-1/4 p-1 md:p-2"
-                >
-                  <PreviewCard content={card} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <div className="flex md:hidden gap-2 w-full justify-center">
-              {filteredCards.map((_, i) => (
-                <DotButton tabIndex={i} key={i} />
-              ))}
-            </div>
-            <CarouselPrevious className="hidden md:flex" />
-            <CarouselNext className="hidden md:flex" />
-          </Carousel>
+          {/* Carousel separado */}
+          <CardCarousel items={filteredCards} variant="preview" />
         </div>
       </div>
     </section>
