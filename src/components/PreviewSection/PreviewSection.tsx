@@ -1,5 +1,4 @@
 import { IPreviewCards, SectionHeader } from "@/utils/interfaces";
-import SectionWrapper from "../SectionWrapper/SectionWrapper";
 import PreviewContent from "./PreviewContent";
 
 const PreviewSection = ({
