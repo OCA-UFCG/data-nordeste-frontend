@@ -17,6 +17,7 @@ import { REVALIDATE } from "@/utils/constants";
 
 //import ContentPost from "@/components/ContentPost/ContentPost";
 //import { PostCarousel } from "@/components/PostCarousel/PostCarousel";
+import PreviewContent from "@/components/PreviewSection/PreviewContent";
 
 export const revalidate = REVALIDATE;
 
@@ -36,11 +37,14 @@ export default async function MacroThemePage({
 
   const normalizedSlug = slug.replace(/-/g, "_");
 
-  const { themeCollection, postCollection }: IMacroThemePageContent =
-    await getContent(MACROTHEME_PAGE_QUERY, {
-      slug: normalizedSlug,
-    });
-
+  const {
+    themeCollection,
+    previewCardsCollection,
+    sectionHeadCollection,
+    postCollection,
+  }: IMacroThemePageContent = await getContent(MACROTHEME_PAGE_QUERY, {
+    slug: normalizedSlug,
+  });
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
 
@@ -64,7 +68,22 @@ export default async function MacroThemePage({
     <HubTemplate>
       <MacroThemeBanner content={theme} />
 
-      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10">
+      {!!previewCardsCollection?.items?.length && (
+        <section className="w-full bg-white">
+          <div className="w-full max-w-[1440px] mx-auto px-3 lg:px-20">
+            <div className="flex flex-col lg:px-6 pt-10 lg:pt-16 items-center [&>div:nth-child(2)]:mt-[28px]">
+              <PreviewContent
+                cards={previewCardsCollection.items}
+                header={sectionHeadCollection.items.find(
+                  (sec: SectionHeader) => sec.id == "preview",
+                )}
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 mt-12 pb-10 pt-0">
         {!!theme.articleTitle && (
           <h2 className="text-2xl font-semibold">{theme.articleTitle}</h2>
         )}
