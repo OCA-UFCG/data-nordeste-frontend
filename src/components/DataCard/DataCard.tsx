@@ -164,10 +164,7 @@ export const DataCard = ({
               </Link>
             </Button>
             {
-              <Button
-                variant="primary"
-                onClick={handleDownloadZippedFiles}
-              >
+              <Button variant="primary" onClick={handleDownloadZippedFiles}>
                 <Icon id="icon-download" size={16} className="text-white" />
                 Baixar dados
               </Button>
@@ -178,9 +175,7 @@ export const DataCard = ({
 
       {files.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-semibold text-gray-700">
-            Arquivos
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-700">Arquivos</h3>
           <div className="flex flex-wrap gap-2">
             {files.map((file) => (
               <button

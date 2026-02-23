@@ -86,7 +86,7 @@ const fetchZenodoData = async (url: string) => {
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
+      "Accept": "application/json",
     },
     next: { revalidate: 300 },
   });

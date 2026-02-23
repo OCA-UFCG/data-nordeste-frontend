@@ -433,9 +433,7 @@ export const MACROTHEME_PAGE_QUERY = `
     }
 
     postCollection(
-      limit: 8
       where: { 
-        type: "data-panel",
         category: { id: $slug } 
       }
       preview: $preview
@@ -450,7 +448,62 @@ export const MACROTHEME_PAGE_QUERY = `
       }
     }
 
-    sectionHeadCollection(where: { id_in: ["preview", "new"] }, limit: 2, preview: $preview) {
+    dataStoriesCollection: postCollection(
+      where: { 
+        category: { id: $slug },
+        type: "data-story"
+      }
+      preview: $preview
+    ) {
+      items {
+        title
+        link
+        type
+        thumb { url }
+        date
+        description
+      }
+    }
+    
+    dashboardCollection: postCollection(
+      where: { 
+        category: { id: $slug },
+        type: "data-panel"
+      }
+      preview: $preview
+    ) {
+      items {
+        title
+        link
+        type
+        thumb { url }
+        date
+        description
+      }
+    }
+
+    postsCollection: postCollection(
+      where: { 
+        category: { id: $slug },
+        type_in: ["newsletter", "additional-content"]
+      }
+      preview: $preview
+    ) {
+      items {
+        title
+        link
+        type
+        thumb { url }
+        date
+        description
+      }
+    }
+
+    sectionHeadCollection(
+      where: { id_in: ["preview", "new"] }
+      limit: 2
+      preview: $preview
+    ) {
       items {
         title
         subtitle

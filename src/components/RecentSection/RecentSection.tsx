@@ -1,23 +1,14 @@
 "use client";
 
 import { IPublication, SectionHeader } from "@/utils/interfaces";
-import ContentPost from "../ContentPost/ContentPost";
 import { LinkButton } from "../LinkButton/LinkButton";
 import { Icon } from "../Icon/Icon";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  DotButton,
-} from "../ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
 import { FILTERS, TypeFilter } from "./TypeFilter";
 import { useCallback, useState } from "react";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { getContent } from "@/utils/contentful";
 import { POSTS_QUERY } from "@/utils/queries";
+import { CardCarousel } from "../CardCarousel/CardCarousel";
 
 export const RecentSection = ({
   header,
@@ -78,43 +69,9 @@ export const RecentSection = ({
         </div>
         <p className="hidden md:block text-sm">{subtitle}</p>
       </div>
-      <div className="flex justify-center">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          plugins={[
-            Autoplay({
-              delay: 10000,
-            }),
-          ]}
-          className="flex flex-col gap-4 content-carousel"
-        >
-          <CarouselContent className="-ml-0">
-            {posts
-              .sort(
-                (a, b) =>
-                  new Date(b.date).getTime() - new Date(a.date).getTime(),
-              )
-              .map((card, i) => (
-                <CarouselItem
-                  key={i}
-                  className="basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
-                >
-                  <ContentPost content={card} key={i} />
-                </CarouselItem>
-              ))}
-          </CarouselContent>
-          <div className="flex md:hidden gap-2 w-full justify-center">
-            {content.map((_, i) => (
-              <DotButton tabIndex={i} key={i} />
-            ))}
-          </div>
-          <CarouselPrevious className="hidden md:flex" />
-          <CarouselNext className="hidden md:flex" />
-        </Carousel>
-      </div>
+
+      <CardCarousel items={posts} variant="post" />
+
       <LinkButton
         href={FILTERS[selectedType].href}
         variant="secondary"
