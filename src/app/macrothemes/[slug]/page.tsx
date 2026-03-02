@@ -14,9 +14,6 @@ import { LinkButton } from "@/components/LinkButton/LinkButton";
 import { Icon } from "@/components/Icon/Icon";
 import { CardCarousel } from "@/components/CardCarousel/CardCarousel";
 import { REVALIDATE } from "@/utils/constants";
-
-//import ContentPost from "@/components/ContentPost/ContentPost";
-//import { PostCarousel } from "@/components/PostCarousel/PostCarousel";
 import PreviewContent from "@/components/PreviewSection/PreviewContent";
 
 export const revalidate = REVALIDATE;
@@ -99,7 +96,7 @@ export default async function MacroThemePage({
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
           <section className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Dashboards</h2>
+              <h2 className="text-2xl font-semibold">Painéis Interativos</h2>
 
               <LinkButton
                 href={dashboardsHref}
