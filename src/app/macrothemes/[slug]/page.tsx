@@ -67,8 +67,8 @@ export default async function MacroThemePage({
 
       {!!previewCardsCollection?.items?.length && (
         <section className="w-full bg-white">
-          <div className="w-full max-w-[1440px] mx-auto px-3 lg:px-20">
-            <div className="flex flex-col lg:px-6 pt-10 lg:pt-16 items-center [&>div:nth-child(2)]:mt-[28px]">
+          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">
+            <div className="flex flex-col pt-10 lg:pt-16 items-center [&>div:nth-child(2)]:mt-[28px]">
               <PreviewContent
                 cards={previewCardsCollection.items}
                 header={sectionHeadCollection.items.find(
