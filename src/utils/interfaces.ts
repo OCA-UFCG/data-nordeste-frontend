@@ -108,6 +108,7 @@ export interface IPreviewCards {
   title: string;
   jsonFile: IRegionData;
   category: MacroTheme;
+  mostrarNaHomepage?: boolean;
 }
 
 export interface IRegionData {

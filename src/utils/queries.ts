@@ -69,7 +69,7 @@ export const MAIN_PAGE_QUERY = `
       }
     }
 
-    previewCardsCollection(limit: 12, preview: $preview) {
+    previewCardsCollection(limit: 100, preview: $preview, where: { mostrarNaHomepage: true }) {
       items {
         title
         jsonFile
