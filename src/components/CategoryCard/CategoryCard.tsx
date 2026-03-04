@@ -4,9 +4,11 @@ import { macroThemes } from "@/utils/constants";
 import Link from "next/link";
 
 const CategoryCard = ({ category }: { category: MacroTheme }) => {
+  const normalizedId = category.id.replace(/_/g, "-");
+
   return (
     <Link
-      href={`/explore?category=${category.sys.id}&page=1`}
+      href={`/macrothemes/${normalizedId}`}
       className="flex justify-between items-center rounded-sm shadow-sm p-4 w-full bg-white hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300"
       key={category.id}
     >
