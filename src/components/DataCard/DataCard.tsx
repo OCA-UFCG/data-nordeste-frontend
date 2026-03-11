@@ -133,8 +133,8 @@ export const DataCard = ({
                   .map(({ key, label, color }) => (
                     <span
                       key={key}
-                      style={{ backgroundColor: color, color: "#fff" }}
-                      className="min-h-[20px] min-w-[51px] rounded-full border border-[#E2E8F0] px-[10px] py-[2px] text-xs font-medium leading-4"
+                      style={{ backgroundColor: color, color: "#ffffff" }}
+                      className="flex items-center justify-center min-h-[20px] min-w-[51px] rounded-full border border-[#E2E8F0] px-[10px] py-[4px] text-xs leading-4 text-center font-semibold"
                     >
                       {label}
                     </span>
@@ -155,43 +155,95 @@ export const DataCard = ({
           </div>
         </div>
 
-        {files.length > 0 && (
-          <div className="flex w-full flex-row flex-wrap items-center justify-between gap-3 lg:w-auto lg:flex-nowrap lg:justify-end">
-            <Button asChild variant="secondary">
-              <Link href={post.html} target="_blank" rel="noopener noreferrer">
-                <Icon id="icon-external" size={16} className="text-[#038f39]" />
-                Ir para fonte
-              </Link>
-            </Button>
-            {
-              <Button variant="primary" onClick={handleDownloadZippedFiles}>
-                <Icon id="icon-download" size={16} className="text-white" />
-                Baixar dados
-              </Button>
-            }
-          </div>
-        )}
+        <div className="flex flex-row justify-center gap-[16px] sm:justify-normal items-center">
+          {files.length > 0 && (
+            <div className="flex sm:hidden flex-row flex-wrap items-center justify-between gap-3 lg:flex-nowrap lg:justify-end  w-[150px] h-[40px]">
+              {
+                <Button
+                  asChild
+                  variant="secondary"
+                  className="bg-transparent border border-1 border-[#DCDBDC] md:w-[225px] w-full"
+                >
+                  <Link
+                    href={post.html}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Icon
+                      id="icon-external"
+                      size={16}
+                      className="text-[#038f39]"
+                    />
+                    Ir para Fonte
+                  </Link>
+                </Button>
+              }
+            </div>
+          )}
+          {files.length > 0 && (
+            <div className="flex flex-row flex-wrap items-center justify-between gap-3 lg:flex-nowrap lg:justify-end w-[150px] sm:w-[225px] h-[40px]">
+              {
+                <Button
+                  variant="primary"
+                  onClick={handleDownloadZippedFiles}
+                  className="w-full text-[14px] font-medium text-[#F8F7F8]"
+                >
+                  <Icon id="icon-download" size={16} />
+                  <span className="hidden sm:block">
+                    Baixar Todos os Arquivos
+                  </span>
+
+                  <span className="block sm:hidden">Baixar Dados</span>
+                </Button>
+              }
+            </div>
+          )}
+        </div>
       </div>
 
       {files.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-semibold text-gray-700">Arquivos</h3>
-          <div className="flex flex-wrap gap-2">
-            {files.map((file) => (
-              <button
-                key={file.name}
-                type="button"
-                onClick={() => handleDownload(file.downloadUrl, file.name)}
-                className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer"
+          <h3 className="hidden sm:block text-[12px] font-semibold text-gray-700">
+            Arquivos recentes
+          </h3>
+          <div className="flex gap-2 items-center h-auto justify-between">
+            <div className="hidden sm:flex flex-wrap self-end">
+              {files.map((file) => (
+                <button
+                  key={file.name}
+                  type="button"
+                  onClick={() => handleDownload(file.downloadUrl, file.name)}
+                  className="flex items-center gap-2 rounded-full bg-transparent px-3 py-1 md:text-[14px] font-medium text-[#018F39] transition-colors hover:bg-gray-100 cursor-pointer text-[12px]"
+                >
+                  <Icon
+                    id="icon-download"
+                    size={14}
+                    className="text-emerald-700"
+                  />
+                  {file.name}
+                </button>
+              ))}
+            </div>
+            <div className="hidden sm:block self-end">
+              <Button
+                asChild
+                variant="secondary"
+                className="bg-transparent border border-1 border-[#DCDBDC] md:w-[225px] w-[100px]"
               >
-                <Icon
-                  id="icon-download"
-                  size={14}
-                  className="text-emerald-700"
-                />
-                {file.name}
-              </button>
-            ))}
+                <Link
+                  href={post.html}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Icon
+                    id="icon-external"
+                    size={16}
+                    className="text-[#038f39]"
+                  />
+                  <span className="hidden sm:block">Ver todos</span>
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       )}
