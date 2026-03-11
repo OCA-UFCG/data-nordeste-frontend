@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update docker metadata with the tag 
+      - name: Update docker metadata with the tag
         uses: docker/metadata-action@v4
         id: meta
         with:
@@ -46,7 +46,7 @@ jobs:
             NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
             NEXT_PUBLIC_RECAPTCHA_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_KEY }}
             NEXT_PUBLIC_SURVEY_FEEDBACK_URL=${{ secrets.NEXT_PUBLIC_SURVEY_FEEDBACK_URL }}
-            NEXT_PUBLIC_APP_ENV="prod"
+            NEXT_PUBLIC_APP_ENV=prod
 
   push-prod:
     needs: build-image
@@ -56,8 +56,8 @@ jobs:
         run: sudo docker pull ${{ vars.DOCKER_IMAGE_PROD }}:latest
 
       - name: Stop existing container
-        run: sudo docker rm -f ${{ vars.CONTAINER_NAME_PROD }} || true 
-            
+        run: sudo docker rm -f ${{ vars.CONTAINER_NAME_PROD }} || true
+
       - name: Run new container
         run: sudo docker run --name ${{ vars.CONTAINER_NAME_PROD }} --restart unless-stopped -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
 
@@ -66,11 +66,11 @@ jobs:
 
       - name: Prune unused Docker images
         run: sudo docker system prune -f
-    
+
   push-failover:
-      needs: build-image
-      runs-on: failover-runner
-      steps:
+    needs: build-image
+    runs-on: failover-runner
+    steps:
       - name: Pull the latest image
         run: sudo docker pull ${{ vars.DOCKER_IMAGE_PROD }}:latest
 
