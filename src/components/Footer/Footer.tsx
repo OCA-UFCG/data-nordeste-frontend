@@ -13,7 +13,7 @@ const Footer = ({ content }: { content: ISection[] }) => {
   ]).filter((item) => item.appears);
 
   const macroThemes = content
-    .filter((item) => !item.appears)
+    .filter((item) => !item.appears && item.path?.startsWith("/macrothemes/"))
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const splitColumns = <T,>(array: T[], itemsPerColumn: number) => {
