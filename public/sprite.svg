@@ -237,6 +237,15 @@
     </symbol>
         
 
-   
+<symbol id="instruments" viewBox="0 0 24 15.134" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.1413 7.6H9.8469C7.7493 7.6 6.275 5.8978 6.5558 3.7998C6.8374 1.701 8.7663 0 10.8651 0H14.1583L13.1413 7.6Z" fill="currentColor"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M22.4241 0L23.9998 3.7992L21.4062 7.6003Z" fill="currentColor"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M15.7319 7.6H13.6475L14.664 0H16.7485L15.7319 7.6Z" fill="currentColor"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M18.3188 7.6H16.2344L17.2526 0H19.3358L18.3188 7.6Z" fill="currentColor"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M20.9053 7.6H18.8208L19.839 0H21.9222L20.9053 7.6Z" fill="currentColor"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M6.059 7.5339H9.3534C11.4522 7.5339 12.9253 9.2353 12.6449 11.3341C12.3645 13.4317 10.4344 15.1331 8.3368 15.1331H5.042L6.059 7.5339Z" fill="currentColor"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M4.6013 15.1334H2.5181L3.535 7.5341H5.6195L4.6013 15.1334Z" fill="currentColor"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M2.0845 15.1335H0L1.01657 7.5343H3.101L2.0845 15.1335Z" fill="currentColor"/>
+        </symbol>
     </defs>
 </svg>

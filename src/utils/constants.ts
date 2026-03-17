@@ -73,6 +73,7 @@ export const macroThemes: { [key: string]: string } = {
   infraestrutura_e_saneamento: "screwdriver",
   seguranca_hidrica: "drop",
   meio_ambiente: "leaf",
+  instrumentos_sudene: "instruments",
 };
 
 export const themes = {
@@ -83,6 +84,7 @@ export const themes = {
   "Infraestrutura e Saneamento": "infraestrutura-e-saneamento",
   "Segurança Hídrica": "seguranca-hidrica",
   "Meio Ambiente": "meio-ambiente",
+  "Instrumentos da Sudene": "instrumentos-sudene",
 };
 
 export const exploreFilterMap: {
