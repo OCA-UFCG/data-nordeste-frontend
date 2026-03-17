@@ -12,6 +12,7 @@ const ContentPost = ({ content }: { content: IPublication }) => {
   return (
     <Link
       href={link}
+      target="_blank"
       className="group flex flex-col overflow-hidden rounded-md w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
     >
       <div className="w-full overflow-hidden">
