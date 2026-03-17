@@ -174,7 +174,7 @@ export const DataCard = ({
                       size={16}
                       className="text-[#038f39]"
                     />
-                    Ir para Fonte
+                    Ir para fonte
                   </Link>
                 </Button>
               }
