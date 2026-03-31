@@ -208,7 +208,7 @@ export const DataCard = ({
           </h3>
           <div className="flex gap-2 items-center h-auto justify-between">
             <div className="hidden sm:flex flex-wrap self-end">
-              {files.map((file) => (
+              {files.slice(0, 3).map((file) => (
                 <button
                   key={file.name}
                   type="button"
