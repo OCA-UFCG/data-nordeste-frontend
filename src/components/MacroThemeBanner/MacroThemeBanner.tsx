@@ -77,7 +77,11 @@ export function MacroThemeBanner({
                   </div>
 
                   {!!content.description?.json && (
-                    <div className="text-white text-sm sm:text-base lg:text-[16px] leading-relaxed lg:leading-[150%] font-medium max-w-[1044px] md:text-left text-center">
+                    <div
+                      className="prose prose-invert max-w-[1044px] md:text-left text-center
+                      prose-p:text-sm prose-p:sm:text-base prose-p:lg:text-[16px] 
+                      prose-p:leading-relaxed prose-p:lg:leading-[150%] prose-p:font-medium"
+                    >
                       {documentToReactComponents(content.description.json)}
                     </div>
                   )}
