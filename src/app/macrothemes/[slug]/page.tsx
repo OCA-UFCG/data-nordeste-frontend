@@ -44,7 +44,6 @@ export default async function MacroThemePage({
   });
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
-
   const postsByThemeHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=newsletter,additional-content&page=1`;
   const dashboardsHref = `/explore?category=${encodeURIComponent(theme.sys.id)}&page=1`;
   const datastoriesHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=data-story&page=1`;
@@ -86,7 +85,7 @@ export default async function MacroThemePage({
         )}
 
         {!!theme.article?.json && (
-          <div className="mt-4 text-base leading-relaxed whitespace-pre-line">
+          <div className="mt-4 mt-4 prose prose-lg max-w-none">
             {documentToReactComponents(theme.article.json)}
           </div>
         )}
