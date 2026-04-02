@@ -397,6 +397,9 @@ export const MACROTHEME_PAGE_QUERY = `
     themeCollection(limit: 1, where: { id: $slug }, preview: $preview) {
       items {
         name
+        title {
+          json
+        }
         id
         color
         tags

@@ -83,6 +83,7 @@ export interface ReportData {
 
 export interface MacroTheme {
   name: string;
+  title: { json: any };
   id: string;
   color: string;
   sys: {

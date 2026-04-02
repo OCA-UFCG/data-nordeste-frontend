@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
 import { MacroTheme } from "@/utils/interfaces";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
+import { BLOCKS } from "@contentful/rich-text-types";
 import { cn } from "@/lib/utils";
 import { macroThemes } from "@/utils/constants";
 
@@ -16,10 +17,19 @@ export function MacroThemeBanner({
   className = "",
   priorityImage = true,
 }: Props) {
-  const title = content.name;
+  const name = content.name;
+  const title = content.title;
 
   const derivedTags = content.tags || [];
   const backgroundUrl = content.banner?.url ?? "";
+
+  const titleRenderOptions = {
+    renderNode: {
+      [BLOCKS.PARAGRAPH]: (_node: any, children: any) => (
+        <span className="block">{children}</span>
+      ),
+    },
+  };
 
   return (
     <section className={cn(`relative w-full`, className)}>
@@ -28,7 +38,7 @@ export function MacroThemeBanner({
           <Image
             className="absolute inset-0 w-full h-full object-cover object-[center_43%]"
             src={backgroundUrl}
-            alt={title}
+            alt={name}
             width={1920}
             height={1080}
             priority={priorityImage}
@@ -59,7 +69,10 @@ export function MacroThemeBanner({
                 <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6 w-full max-w-[1044px]">
                   <div className="flex flex-col gap-2 md:text-left text-center">
                     <h1 className="text-white font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-[48px] leading-tight lg:leading-[48px] tracking-tight lg:tracking-[-0.012em]">
-                      {title}
+                      {documentToReactComponents(
+                        title.json,
+                        titleRenderOptions,
+                      )}
                     </h1>
 
                     {!!derivedTags?.length && (
