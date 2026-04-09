@@ -2,6 +2,7 @@ import { MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { Icon } from "@/components/Icon/Icon";
 import { LinkButton } from "@/components/LinkButton/LinkButton";
 import CategoryCard from "../CategoryCard/CategoryCard";
+import { THEMES_NAVIGATION_ORDER } from "@/utils/constants";
 
 const DataSection = ({
   header,
@@ -16,14 +17,13 @@ const DataSection = ({
   };
 
   const filteredData = categories?.sort((a, b) => {
-    if (a.sys.id < b.sys.id) {
-      return -1;
-    }
-    if (a.sys.id > b.sys.id) {
-      return 1;
-    }
+    const indexA = THEMES_NAVIGATION_ORDER.indexOf(a.id);
+    const indexB = THEMES_NAVIGATION_ORDER.indexOf(b.id);
 
-    return 0;
+    const posA = indexA === -1 ? 99 : indexA;
+    const posB = indexB === -1 ? 99 : indexB;
+
+    return posA - posB;
   });
 
   return (
