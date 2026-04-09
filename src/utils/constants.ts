@@ -76,6 +76,17 @@ export const macroThemes: { [key: string]: string } = {
   instrumentos_sudene: "instruments",
 };
 
+export const THEMES_NAVIGATION_ORDER = [
+  "saude",
+  "educacao",
+  "economia_e_renda",
+  "demografia",
+  "infraestrutura_e_saneamento",
+  "meio_ambiente",
+  "seguranca_hidrica",
+  "instrumentos_sudene",
+];
+
 export const themes = {
   "Economia e Renda": "economia-e-renda",
   "Demografia": "demografia",
