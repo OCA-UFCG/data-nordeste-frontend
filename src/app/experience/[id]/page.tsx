@@ -1,0 +1,17 @@
+import ArcGisContainer from "@/components/ArcGisContainer/ArcGisContainer";
+import HubTemplate from "@/templates/HubTemplate";
+import { notFound } from "next/navigation";
+
+const isValidExperienceId = (value: string) => /^[0-9a-f]{32}$/i.test(value);
+
+export default function Experience({ params }: { params: { id: string } }) {
+  if (!isValidExperienceId(params.id)) return notFound();
+
+  return (
+    <HubTemplate>
+      <ArcGisContainer
+        source={`https://experience.arcgis.com/experience/${params.id}`}
+      />
+    </HubTemplate>
+  );
+}
