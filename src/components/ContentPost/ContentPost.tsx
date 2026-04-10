@@ -4,15 +4,32 @@ import Link from "next/link";
 import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
 
+const extractArcGisStoryId = (url: string) => {
+  try {
+    const parsed = new URL(url);
+    const match = parsed.pathname.match(/\/stories\/([0-9a-f]{32})/i);
+
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
+};
+
 const ContentPost = ({ content }: { content: IPublication }) => {
   const { title, thumb, link, date, type } = content;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
+  const storyId = type === "data-story" ? extractArcGisStoryId(link) : null;
+  const href =
+    type === "data-story" && storyId ? `/data-stories/${storyId}` : link;
+  const openInNewTab = !(type === "data-story" && storyId);
+
   return (
     <Link
-      href={link}
-      target="_blank"
+      href={href}
+      target={openInNewTab ? "_blank" : undefined}
+      rel={openInNewTab ? "noopener noreferrer" : undefined}
       className="group flex flex-col overflow-hidden rounded-md w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
     >
       <div className="w-full overflow-hidden">
