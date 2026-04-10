@@ -21,6 +21,16 @@ const addEmbedQueryIfMissing = (url: string) => {
       }
     }
 
+    // Experience Builder also supports embed=true.
+    if (
+      parsed.hostname.endsWith("experience.arcgis.com") &&
+      parsed.pathname.startsWith("/experience/")
+    ) {
+      if (!parsed.searchParams.has("embed")) {
+        parsed.searchParams.set("embed", "true");
+      }
+    }
+
     return parsed.toString();
   } catch {
     return url;
