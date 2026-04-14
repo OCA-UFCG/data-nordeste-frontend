@@ -40,7 +40,14 @@ export default async function DataPanel({}: {}) {
             ),
           }}
           header={sectionHead.items[0]}
-          rootFilter={{ type_in: ["data-panel"] }}
+          rootFilter={{
+            type_in: [
+              "data-panel",
+              "newsletter",
+              "additional-content",
+              "data-story",
+            ],
+          }}
           totalPages={pages.total || 1}
         />
       </Suspense>
