@@ -43,7 +43,7 @@ export function MacroThemeBanner({
         <div className="relative z-10 w-full">
           <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-0">
             <div className="flex min-h-[296px] items-end px-4 py-8 sm:px-6 lg:h-[296px] lg:min-h-[296px] lg:px-20 lg:py-12">
-              <div className="flex w-full flex-col items-center gap-6 md:flex-row md:items-end lg:gap-9">
+              <div className="flex w-full flex-col items-center gap-6 md:flex-row md:items-start lg:gap-9">
                 <div
                   className="flex h-32 w-32 shrink-0 items-center justify-center rounded-[8px] p-2 sm:h-40 sm:w-40 lg:h-[200px] lg:w-[200px]"
                   style={{ backgroundColor: content.color }}
@@ -56,7 +56,7 @@ export function MacroThemeBanner({
                   />
                 </div>
 
-                <div className="flex w-full max-w-[1044px] flex-col gap-4 sm:gap-5 lg:gap-5">
+                <div className="flex w-full max-w-[1044px] flex-col gap-4 sm:gap-5 lg:min-h-[200px] lg:justify-start">
                   <div className="flex flex-col gap-2 text-center md:text-left">
                     <h1 className="text-white text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl md:text-4xl lg:text-[48px] lg:leading-[48px] lg:tracking-[-0.012em]">
                       {title}
