@@ -17,13 +17,14 @@ export function MacroThemeBanner({
   priorityImage = true,
 }: Props) {
   const title = content.name;
+  const iconId = macroThemes[content.id] || "list";
 
   const derivedTags = content.tags || [];
   const backgroundUrl = content.banner?.url ?? "";
 
   return (
     <section className={cn(`relative w-full`, className)}>
-      <div className="relative w-full overflow-hidden z-0">
+      <div className="relative z-0 w-full overflow-hidden">
         {backgroundUrl ? (
           <Image
             className="absolute inset-0 w-full h-full object-cover object-[center_43%]"
@@ -37,37 +38,36 @@ export function MacroThemeBanner({
           <div className="absolute inset-0 bg-neutral-900" />
         )}
 
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,_#000000_0%,_rgba(0,0,0,0)_100%)] opacity-100" />
-        <div className="absolute top-0 right-0 h-full w-full bg-gradient-to-l from-black via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,_#000000_0%,_rgba(0,0,0,0)_100%)]" />
 
         <div className="relative z-10 w-full">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">
-            <div className="min-h-[500px] py-12 flex items-end">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-9 w-full">
+          <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-0">
+            <div className="flex min-h-[296px] items-end px-4 py-8 sm:px-6 lg:h-[296px] lg:min-h-[296px] lg:px-20 lg:py-12">
+              <div className="flex w-full flex-col items-center gap-6 md:flex-row md:items-end lg:gap-9">
                 <div
-                  className="flex items-center justify-center p-8 rounded-[8px] shrink-0"
+                  className="flex h-32 w-32 shrink-0 items-center justify-center rounded-[8px] p-2 sm:h-40 sm:w-40 lg:h-[200px] lg:w-[200px]"
                   style={{ backgroundColor: content.color }}
                 >
                   <Icon
-                    id={macroThemes[content.id]}
-                    width={168}
-                    height={117}
-                    className="h-40 lg:h-32 w-40 lg:w-32 filter brightness-0 invert opacity-100"
+                    id={iconId}
+                    width={184}
+                    height={184}
+                    className="h-24 w-24 text-white sm:h-32 sm:w-32 lg:h-[184px] lg:w-[184px]"
                   />
                 </div>
 
-                <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6 w-full max-w-[1044px]">
-                  <div className="flex flex-col gap-2 md:text-left text-center">
-                    <h1 className="text-white font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-[48px] leading-tight lg:leading-[48px] tracking-tight lg:tracking-[-0.012em]">
+                <div className="flex w-full max-w-[1044px] flex-col gap-4 sm:gap-5 lg:gap-5">
+                  <div className="flex flex-col gap-2 text-center md:text-left">
+                    <h1 className="text-white text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl md:text-4xl lg:text-[48px] lg:leading-[48px] lg:tracking-[-0.012em]">
                       {title}
                     </h1>
 
                     {!!derivedTags?.length && (
-                      <div className="flex flex-row flex-wrap gap-2 justify-center md:justify-start">
+                      <div className="flex flex-row flex-wrap justify-center gap-2 md:justify-start">
                         {derivedTags.map((tag) => (
                           <span
                             key={tag}
-                            className="flex items-center justify-center px-[10px] py-[2px] h-[20px] rounded-full bg-[#D65384] text-white text-[12px] leading-[16px] font-semibold"
+                            className="flex h-[29px] items-center justify-center rounded-full bg-[#D65384] px-[10px] py-[2px] text-[14px] leading-[16px] font-semibold text-white"
                           >
                             {tag}
                           </span>
@@ -78,9 +78,9 @@ export function MacroThemeBanner({
 
                   {!!content.description?.json && (
                     <div
-                      className="prose prose-invert max-w-[1044px] md:text-left text-center
-                      prose-p:text-sm prose-p:sm:text-base prose-p:lg:text-[16px] 
-                      prose-p:leading-relaxed prose-p:lg:leading-[150%] prose-p:font-medium"
+                      className="prose prose-invert max-w-[1044px] text-center md:text-left
+                      prose-p:my-0 prose-p:text-sm prose-p:font-medium prose-p:leading-relaxed
+                      prose-p:sm:text-base prose-p:lg:text-[16px] prose-p:lg:leading-[150%]"
                     >
                       {documentToReactComponents(content.description.json)}
                     </div>
