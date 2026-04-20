@@ -4,7 +4,12 @@ import { macroThemes } from "@/utils/constants";
 import Link from "next/link";
 
 const CategoryCard = ({ category }: { category: MacroTheme }) => {
+  if (!category?.id) {
+    return null;
+  }
+
   const normalizedId = category.id.replace(/_/g, "-");
+  const iconId = macroThemes[category.id] || "list";
 
   return (
     <Link
@@ -17,11 +22,7 @@ const CategoryCard = ({ category }: { category: MacroTheme }) => {
           className="flex items-center justify-center rounded-sm min-w-[40px] w-[40px] h-[40px]"
           style={{ backgroundColor: category.color }}
         >
-          <Icon
-            className="text-white"
-            id={macroThemes[category.id]}
-            size={20}
-          />
+          <Icon className="text-white" id={iconId} size={20} />
         </div>
         <span className="text-base text-center md:text-start font-semibold md:max-w-[90%]">
           {category.name}

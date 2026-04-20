@@ -16,7 +16,11 @@ const DataSection = ({
     subtitle: "",
   };
 
-  const filteredData = categories?.sort((a, b) => {
+  const validCategories = (categories || []).filter(
+    (category): category is MacroTheme => Boolean(category?.id),
+  );
+
+  const filteredData = validCategories.sort((a, b) => {
     const indexA = THEMES_NAVIGATION_ORDER.indexOf(a.id);
     const indexB = THEMES_NAVIGATION_ORDER.indexOf(b.id);
 
@@ -44,7 +48,7 @@ const DataSection = ({
           <p className="text-sm">{subtitle}</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredData?.map((category: MacroTheme) => (
+          {filteredData.map((category: MacroTheme) => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>

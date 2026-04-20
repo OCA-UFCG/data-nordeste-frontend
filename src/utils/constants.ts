@@ -68,6 +68,7 @@ export const POST_TYPES = {
 export const macroThemes: { [key: string]: string } = {
   economia_e_renda: "money",
   demografia: "user",
+  desenvolvimento_social: "social-development",
   saude: "health",
   educacao: "book",
   infraestrutura_e_saneamento: "screwdriver",
@@ -79,6 +80,7 @@ export const macroThemes: { [key: string]: string } = {
 export const THEMES_NAVIGATION_ORDER = [
   "saude",
   "educacao",
+  "desenvolvimento_social",
   "economia_e_renda",
   "demografia",
   "infraestrutura_e_saneamento",
@@ -90,6 +92,7 @@ export const THEMES_NAVIGATION_ORDER = [
 export const themes = {
   "Economia e Renda": "economia-e-renda",
   "Demografia": "demografia",
+  "Desenvolvimento Social": "desenvolvimento-social",
   "Saúde": "saude",
   "Educação": "educacao",
   "Infraestrutura e Saneamento": "infraestrutura-e-saneamento",
