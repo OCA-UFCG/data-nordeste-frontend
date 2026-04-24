@@ -78,6 +78,9 @@ export const MAIN_PAGE_QUERY = `
           id
           color
         }
+        iconsvg {  
+              url
+        }
       }
     }
 
