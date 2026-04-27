@@ -20,17 +20,45 @@ interface PreviewContentProps {
 const PreviewContent = ({ header, cards }: PreviewContentProps) => {
   const [selectedState, setSelectedState] = useState("all");
 
-  const allCardsData = cards.map((card) => ({
-    category: card.category,
-    ...card.jsonFile,
-  }));
+  const allCardsData = cards.map((card) => {
+    const json = (card as any).jsonFile ?? {};
+
+    const normalizedStates = (json.states ?? []).map((s: any) => ({
+      ...s,
+      icon: s.icon ?? s.icons ?? s.iconsvg ?? undefined,
+      iconsvg: s.iconsvg ?? s.iconsvg ?? s.icon_svg ?? undefined,
+      iconUrl: s.iconUrl ?? s.iconurl ?? s.icon_url ?? undefined,
+    }));
+
+    return {
+      category: card.category,
+      ...json,
+      states: normalizedStates,
+      icon: (card as any).icon ?? (card as any).icons ?? json.icon ?? undefined,
+      iconsvg:
+        (card as any).iconsvg ??
+        (card as any).iconsvg ??
+        json.iconsvg ??
+        json.iconsvg ??
+        undefined,
+      iconUrl:
+        (card as any).iconUrl ??
+        (card as any).iconurl ??
+        json.iconUrl ??
+        json.iconurl ??
+        undefined,
+    } as any;
+  });
 
   const filteredCards = useMemo(() => {
     return allCardsData.map((regionData) => {
-      const source =
-        selectedState !== "all"
-          ? regionData.states.find((state) => state.name === selectedState)
-          : regionData;
+      const foundState = regionData.states?.find(
+        (state: any) => state.name === selectedState,
+      );
+      const source = selectedState !== "all" ? foundState : regionData;
+
+      const stateSource =
+        selectedState !== "all" ? foundState : regionData.states?.[0];
 
       return source
         ? {
@@ -40,6 +68,18 @@ const PreviewContent = ({ header, cards }: PreviewContentProps) => {
             link: source.link,
             note: source.note,
             category: regionData.category,
+            icon:
+              (stateSource as any)?.icon ??
+              (regionData as any).icon ??
+              undefined,
+            iconsvg:
+              (stateSource as any)?.iconsvg ??
+              (regionData as any).iconsvg ??
+              undefined,
+            iconUrl:
+              (stateSource as any)?.iconUrl ??
+              (regionData as any).iconUrl ??
+              undefined,
           }
         : null;
     }) as IPreviewCard[];
@@ -63,7 +103,7 @@ const PreviewContent = ({ header, cards }: PreviewContentProps) => {
             <SelectGroup>
               <SelectLabel>Estados</SelectLabel>
               {allCardsData &&
-                allCardsData[0].states.map((state, i) => (
+                allCardsData[0].states.map((state: any, i: number) => (
                   <SelectItem value={state.name} key={i}>
                     {state.name}
                   </SelectItem>

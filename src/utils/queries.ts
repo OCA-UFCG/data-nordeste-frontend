@@ -79,7 +79,7 @@ export const MAIN_PAGE_QUERY = `
           color
         }
         iconsvg {  
-              url
+            url
         }
       }
     }
@@ -427,6 +427,9 @@ export const MACROTHEME_PAGE_QUERY = `
       items {
         title
         jsonFile
+        iconsvg {
+          url
+        }
         category {
           name
           id
