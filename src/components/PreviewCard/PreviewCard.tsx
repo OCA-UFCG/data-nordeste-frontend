@@ -5,9 +5,6 @@ import Link from "next/link";
 
 const PreviewCard = ({ content }: { content: IPreviewCard }) => {
   const { title, subtitle, data, note, link, category, iconsvg } = content;
-  console.log("--- DEBUG PREVIEW CARD ---");
-  console.log("Título:", content.title);
-  console.log("IconSVG completo:", content.iconsvg);
 
   return (
     <Link href={link || ""}>
