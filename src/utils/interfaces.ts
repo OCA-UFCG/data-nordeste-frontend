@@ -102,6 +102,7 @@ export interface IPreviewCard {
   link: string;
   data: string;
   note?: string;
+  iconsvg?: { url: string };
 }
 
 export interface IPreviewCards {

@@ -4,7 +4,7 @@ import { macroThemes } from "@/utils/constants";
 import Link from "next/link";
 
 const PreviewCard = ({ content }: { content: IPreviewCard }) => {
-  const { title, subtitle, data, note, link, category } = content;
+  const { title, subtitle, data, note, link, category, iconsvg } = content;
 
   return (
     <Link href={link || ""}>
@@ -14,11 +14,23 @@ const PreviewCard = ({ content }: { content: IPreviewCard }) => {
             className="flex items-center justify-center rounded-sm min-w-[40px] w-[40px] h-[40px]"
             style={{ backgroundColor: category.color }}
           >
-            <Icon
-              className="text-white"
-              id={macroThemes[category.id]}
-              size={20}
-            />
+            {iconsvg?.url ? (
+              <img
+                src={
+                  iconsvg.url.startsWith("//")
+                    ? `https:${iconsvg.url}`
+                    : iconsvg.url
+                }
+                alt={title}
+                className="w-5 h-5 object-contain"
+              />
+            ) : (
+              <Icon
+                className="text-white"
+                id={macroThemes[category.id] || "default"}
+                size={20}
+              />
+            )}
           </div>
           <div className="flex flex-col w-full">
             <h3 className="text-sm">{title}</h3>
