@@ -68,6 +68,7 @@ export function MacroThemeBanner({
                           <span
                             key={tag}
                             className="flex h-[29px] items-center justify-center rounded-full bg-[#D65384] px-[10px] py-[2px] text-[14px] leading-[16px] font-semibold text-white"
+                            style={{ backgroundColor: content.color }}
                           >
                             {tag}
                           </span>
