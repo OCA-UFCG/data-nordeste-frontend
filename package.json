@@ -65,7 +65,7 @@
   "devDependencies": {
     "@eslint/js": "^9.1.1",
     "@tailwindcss/oxide": "^4.1.6",
-    "@tailwindcss/postcss": "^4.1.4",
+    "@tailwindcss/postcss": "^4.2.4",
     "@types/express": "^4.17.21",
     "@types/node": "^20.17.24",
     "@types/nodemailer": "^6.4.15",
