@@ -37,7 +37,7 @@
     "braces": ">=3.0.3",
     "class-variance-authority": "^0.7.1",
     "contentful": "^10.11.10",
-    "contentful-management": "^11.48.0",
+    "contentful-management": "^12.3.2",
     "date-fns": "^3.6.0",
     "dompurify": "^3.3.0",
     "embla-carousel-autoplay": "^8.6.0",
