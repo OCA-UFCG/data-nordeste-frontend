@@ -5,15 +5,12 @@ import { FilterForm } from "../PostsGrid/FilterForm";
 import { PostsGrid } from "../PostsGrid/PostsGrid";
 import { IPublication, SectionHeader } from "@/utils/interfaces";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import {
-  exploreFilterMap,
-  POSTS_PER_PAGE,
-  sortingTypes,
-} from "@/utils/constants";
+import { POSTS_PER_PAGE, sortingTypes } from "@/utils/constants";
 import { createQueryString } from "@/utils/functions";
 import { SortSelect } from "../PostsGrid/SortSelect";
 import { getContent } from "@/utils/contentful";
 import { PUBLICATION_QUERY } from "@/utils/queries";
+import { parsePostsFilters, PostsFilterForm } from "@/features/posts/filters";
 
 export const Posts = ({
   header,
@@ -33,6 +30,7 @@ export const Posts = ({
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const paramsKey = params.toString();
 
   const [loading, setLoading] = useState(true);
   const [pages, setpages] = useState(totalPages);
@@ -40,58 +38,35 @@ export const Posts = ({
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
   const [posts, setPosts] = useState<IPublication[]>([]);
-  const filter = useMemo(
-    () => ({
-      type_in: params.get("type_in")?.split(",") || undefined,
-      category: params.get("category")?.split(",") || [],
-      date_lte: Date.parse(params.get(`date_lte`) || "")
-        ? new Date(params.get(`date_lte`) || "")
+  const filter = useMemo(() => {
+    const searchParams = new URLSearchParams(paramsKey);
+
+    return {
+      type_in: searchParams.get("type_in")?.split(",") || undefined,
+      category: searchParams.get("category")?.split(",") || [],
+      date_lte: Date.parse(searchParams.get(`date_lte`) || "")
+        ? new Date(searchParams.get(`date_lte`) || "")
         : undefined,
-      date_gte: Date.parse(params.get(`date_gte`) || "")
-        ? new Date(params.get(`date_gte`) || "")
+      date_gte: Date.parse(searchParams.get(`date_gte`) || "")
+        ? new Date(searchParams.get(`date_gte`) || "")
         : undefined,
-    }),
-    [params],
-  );
+    };
+  }, [paramsKey]);
 
   const currentPage = useMemo(() => {
-    const paramPages = Number(params.get("page") || 1);
+    const searchParams = new URLSearchParams(paramsKey);
+    const paramPages = Number(searchParams.get("page") || 1);
 
     return pages >= paramPages ? paramPages : 1;
-  }, [params, pages]);
+  }, [pages, paramsKey]);
 
-  const parseForm = (currentForm: {
-    [key: string]: string | string[] | Date | undefined;
-  }) => {
-    let finalForm: { [key: string]: string | string[] } = {};
-    let newParams: { [key: string]: string } = {};
-
-    Object.entries(currentForm).map(
-      ([key, value]: [string, string | string[] | Date | undefined]) => {
-        if (value && key in exploreFilterMap) {
-          const formatedParam = exploreFilterMap[key].formatParam(value);
-          if (formatedParam[key]) {
-            newParams = { ...newParams, ...{ [key]: formatedParam[key] } };
-          }
-
-          const formatedForm = exploreFilterMap[key].formatForm(value);
-          if (formatedForm[key]) {
-            finalForm = {
-              ...finalForm,
-              ...{ [key]: formatedForm[key] },
-            };
-          }
-        }
-      },
-    );
-
+  const syncUrlFromForm = (currentForm: PostsFilterForm) => {
+    const { urlParams } = parsePostsFilters(currentForm);
     router.replace(
       pathname +
         "?" +
-        createQueryString({ ...newParams, page: currentPage.toString() }),
+        createQueryString({ ...urlParams, page: currentPage.toString() }),
     );
-
-    return finalForm;
   };
 
   useEffect(() => {
@@ -108,7 +83,7 @@ export const Posts = ({
           skip: POSTS_PER_PAGE * (currentPage - 1),
           filter: {
             ...rootFilter,
-            ...parseForm(filter),
+            ...parsePostsFilters(filter).contentfulFilter,
           },
         }),
       );
@@ -118,9 +93,7 @@ export const Posts = ({
       setpages(Math.ceil(posts.total / POSTS_PER_PAGE));
       setLoading(false);
     });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, rootFilter, sorting]);
+  }, [currentPage, filter, rootFilter, sorting]);
 
   return (
     <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
@@ -131,7 +104,7 @@ export const Posts = ({
             initSchema={filter}
             selectFields={categories}
             onReset={() => router.push(pathname)}
-            onSubmit={(newForm) => parseForm(newForm)}
+            onSubmit={(newForm) => syncUrlFromForm(newForm)}
           />
           <SortSelect defaultvalue={sorting} onChange={setSorting} />
         </div>

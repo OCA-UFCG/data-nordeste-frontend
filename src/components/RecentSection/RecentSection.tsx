@@ -17,11 +17,6 @@ export const RecentSection = ({
   header?: SectionHeader;
   content: IPublication[];
 }) => {
-  const { id, title, subtitle } = header || {
-    title: "",
-    id: "",
-    subtitle: "",
-  };
   const [posts, setPosts] = useState(content);
   const [selectedType, setSelectedType] = useState<"all" | "panels" | "posts">(
     FILTERS.all.key,
@@ -43,6 +38,33 @@ export const RecentSection = ({
   }, []);
 
   return (
+    <RecentSectionView
+      header={header}
+      posts={posts}
+      selectedType={selectedType}
+      onTypeChange={fetchPosts}
+    />
+  );
+};
+
+export const RecentSectionView = ({
+  header,
+  posts,
+  selectedType,
+  onTypeChange,
+}: {
+  header?: SectionHeader;
+  posts: IPublication[];
+  selectedType: "all" | "panels" | "posts";
+  onTypeChange: (value: "all" | "panels" | "posts") => void;
+}) => {
+  const { id, title, subtitle } = header || {
+    title: "",
+    id: "",
+    subtitle: "",
+  };
+
+  return (
     <section
       className="w-full max-w-[1440px] px-4 lg:px-20 pt-8 lg:pt-0 pb-8 ontent-center flex flex-col gap-6 box-border"
       id={id}
@@ -55,7 +77,7 @@ export const RecentSection = ({
           </div>
 
           <div className="flex gap-6">
-            <TypeFilter onChange={fetchPosts} />
+            <TypeFilter onChange={onTypeChange} />
             <LinkButton
               href={FILTERS[selectedType].href}
               variant="secondary"

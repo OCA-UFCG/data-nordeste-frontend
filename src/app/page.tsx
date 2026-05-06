@@ -17,6 +17,7 @@ import DataSection from "@/components/DataSection/DataSection";
 import { getContent } from "@/utils/contentful";
 import { MAIN_PAGE_QUERY } from "@/utils/queries";
 import { FeedbackSurvey } from "@/components/FeedbackSurvey/FeedbackSurvey";
+import { findHomeSection } from "@/features/home/content";
 
 interface IMainContent {
   partnersCollection: { items: Project[] };
@@ -43,28 +44,18 @@ export default async function Home() {
     <HubTemplate>
       <MainBanner content={mainBanner.items} />
       <PreviewSection
-        header={sectionHead.items.find(
-          (sec: SectionHeader) => sec.id == "preview",
-        )}
+        header={findHomeSection(sectionHead.items, "preview")}
         cards={previewCards.items}
       />
       <RecentSection
         content={posts.items}
-        header={sectionHead.items.find(
-          (section: SectionHeader) => section.id === "new",
-        )}
+        header={findHomeSection(sectionHead.items, "new")}
       />
       <DataSection
-        header={sectionHead.items.find(
-          (sec: SectionHeader) => sec.id == "panels",
-        )}
+        header={findHomeSection(sectionHead.items, "panels")}
         categories={theme.items}
       />
-      <AboutSection
-        header={sectionHead.items.find(
-          (section: SectionHeader) => section.id === "about",
-        )}
-      />
+      <AboutSection header={findHomeSection(sectionHead.items, "about")} />
       {/* <CatalogSection
         header={sectionHead.items.find(
           (section: SectionHeader) => section.id === "catalog",
@@ -72,18 +63,12 @@ export default async function Home() {
       /> */}
 
       <ProjectSection
-        header={sectionHead.items.find(
-          (sec: SectionHeader) => sec.id == "projects",
-        )}
+        header={findHomeSection(sectionHead.items, "projects")}
         projects={partners.items}
       />
       <FeedbackSurvey
-        header={sectionHead.items.find(
-          (sec: SectionHeader) => sec.id == "survey",
-        )}
-        submitHeader={sectionHead.items.find(
-          (sec: SectionHeader) => sec.id == "survey-thank-u",
-        )}
+        header={findHomeSection(sectionHead.items, "survey")}
+        submitHeader={findHomeSection(sectionHead.items, "survey-thank-u")}
         content={feedbackContent}
       />
     </HubTemplate>
