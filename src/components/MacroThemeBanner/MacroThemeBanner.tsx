@@ -50,9 +50,9 @@ export function MacroThemeBanner({
                 >
                   <Icon
                     id={iconId}
-                    width={184}
-                    height={184}
-                    className="h-24 w-24 text-white sm:h-32 sm:w-32 lg:h-[184px] lg:w-[184px]"
+                    width={168}
+                    height={117}
+                    className="h-40 lg:h-32 w-40 lg:w-32 filter brightness-0 invert opacity-100"
                   />
                 </div>
 
