@@ -1,5 +1,7 @@
 const USE_PREVIEW = process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW ? true : false;
-const CONTENTFUL_ENDPOINT = `https://beta-datanordeste.lsd.ufcg.edu.br/contentful-api`;
+const CONTENTFUL_ENDPOINT =
+  process.env.NEXT_PUBLIC_CONTENTFUL_ENDPOINT ||
+  `${process.env.NEXT_PUBLIC_HOST_URL?.replace(/\/$/, "")}/contentful-api`;
 
 export async function getContent<T>(
   query: string,
