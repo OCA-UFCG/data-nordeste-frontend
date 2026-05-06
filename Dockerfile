@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY --chown=node:node . .
 
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 USER node
 

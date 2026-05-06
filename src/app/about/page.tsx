@@ -6,7 +6,6 @@ import HistorySection from "@/components/HistorySection/HistorySection";
 import ValuesSection from "@/components/ValuesSection/ValuesSection";
 import { AboutContent } from "@/components/AboutContent/AboutContent";
 import { Suspense } from "react";
-import { REVALIDATE } from "@/utils/constants";
 import {
   IAbout,
   IContact,
@@ -17,8 +16,6 @@ import {
 } from "@/utils/interfaces";
 import { ABOUT_PAGE_QUERY, ABOUT_QUERY } from "@/utils/queries";
 import { getContent } from "@/utils/contentful";
-
-export const revalidate = REVALIDATE;
 
 interface IAboutContent {
   pageHeadersCollection: { items: IPageHeader[] };

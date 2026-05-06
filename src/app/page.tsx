@@ -16,10 +16,7 @@ import MainBanner from "@/components/BannerCarousel/BannerCarousel";
 import DataSection from "@/components/DataSection/DataSection";
 import { getContent } from "@/utils/contentful";
 import { MAIN_PAGE_QUERY } from "@/utils/queries";
-import { REVALIDATE } from "@/utils/constants";
 import { FeedbackSurvey } from "@/components/FeedbackSurvey/FeedbackSurvey";
-
-export const revalidate = REVALIDATE;
 
 interface IMainContent {
   partnersCollection: { items: Project[] };

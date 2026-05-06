@@ -3,10 +3,7 @@ import PageHeader from "@/components/PageHeader/PageHeader";
 import ProjectBigCard from "@/components/ProjectBigtCard/ProjectBigCard";
 import { IPageHeader, Project } from "@/utils/interfaces";
 import { getContent } from "@/utils/contentful";
-import { REVALIDATE } from "@/utils/constants";
 import { CONNECTIONS_PAGE_QUERY } from "@/utils/queries";
-
-export const revalidate = REVALIDATE;
 
 interface IConnectionsContent {
   pageHeadersCollection: { items: IPageHeader[] };

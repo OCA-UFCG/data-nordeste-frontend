@@ -1,13 +1,10 @@
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { Posts } from "@/components/Posts/Posts";
 import HubTemplate from "@/templates/HubTemplate";
-import { REVALIDATE } from "@/utils/constants";
 import { getContent } from "@/utils/contentful";
 import { IPageHeader, MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { EXPLORE_PAGE_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
-
-export const revalidate = REVALIDATE;
 
 interface IPostsContent {
   pageHeadersCollection: { items: IPageHeader[] };

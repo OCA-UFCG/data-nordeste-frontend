@@ -1,3 +1,5 @@
+import { REVALIDATE } from "./constants";
+
 const USE_PREVIEW = process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW ? true : false;
 
 function buildContentfulEndpoint(): string {
@@ -17,6 +19,9 @@ export async function getContent<T>(
 
   const response = await fetch(CONTENTFUL_ENDPOINT, {
     method: "POST",
+    next: {
+      revalidate: REVALIDATE,
+    },
 
     body: JSON.stringify({
       query,

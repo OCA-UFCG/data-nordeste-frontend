@@ -13,10 +13,7 @@ import { documentToReactComponents } from "@contentful/rich-text-react-renderer"
 import { LinkButton } from "@/components/LinkButton/LinkButton";
 import { Icon } from "@/components/Icon/Icon";
 import { CardCarousel } from "@/components/CardCarousel/CardCarousel";
-import { REVALIDATE } from "@/utils/constants";
 import PreviewContent from "@/components/PreviewSection/PreviewContent";
-
-export const revalidate = REVALIDATE;
 
 interface IMacroThemePageContent {
   themeCollection: { items: MacroTheme[] };

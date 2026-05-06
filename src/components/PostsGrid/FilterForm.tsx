@@ -49,12 +49,12 @@ export function FilterForm({
     const schemaFields: any = {
       date_gte: z
         .date({
-          invalid_type_error: "Isso não é uma data",
+          error: "Isso não é uma data",
         })
         .optional(),
       date_lte: z
         .date({
-          invalid_type_error: "Isso não é uma data",
+          error: "Isso não é uma data",
         })
         .optional(),
     };
@@ -122,7 +122,7 @@ export function FilterForm({
                             >
                               <PopoverTrigger className="w-fit">
                                 {field.value ? (
-                                  format(field.value, "PPP")
+                                  format(field.value as Date, "PPP")
                                 ) : (
                                   <span>Escolha uma data</span>
                                 )}
@@ -140,7 +140,7 @@ export function FilterForm({
                           >
                             <Calendar
                               mode="single"
-                              selected={field.value}
+                              selected={field.value as Date | undefined}
                               onSelect={field.onChange}
                               disabled={(date) =>
                                 date > new Date() ||
@@ -181,30 +181,36 @@ export function FilterForm({
                             key={key}
                             control={form.control}
                             name={group.type as any}
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(key)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([
-                                            ...(field?.value || []),
-                                            key,
-                                          ])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (v: any) => v !== key,
-                                            ),
-                                          );
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-normal">
-                                  {val}
-                                </FormLabel>
-                              </FormItem>
-                            )}
+                            render={({ field }) => {
+                              const selectedValues = Array.isArray(field.value)
+                                ? field.value
+                                : [];
+
+                              return (
+                                <FormItem className="flex items-center space-x-2">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={selectedValues.includes(key)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([
+                                              ...selectedValues,
+                                              key,
+                                            ])
+                                          : field.onChange(
+                                              selectedValues.filter(
+                                                (v: string) => v !== key,
+                                              ),
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="text-sm font-normal">
+                                    {val}
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
                           />
                         ))}
                       </div>

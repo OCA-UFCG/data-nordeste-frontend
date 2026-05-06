@@ -1,9 +1,11 @@
 import { EntrySys, OrderFilterPaths } from "contentful";
 import { ISudeneChannel } from "./interfaces";
 
-export const REVALIDATE = process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW
-  ? 60
-  : 3600;
+export const REVALIDATE =
+  process.env.NEXT_PUBLIC_APP_ENV === "beta" ||
+  process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW
+    ? 60
+    : 3600;
 
 export const STORAGE_KEY = "datane@feedback_submitted";
 

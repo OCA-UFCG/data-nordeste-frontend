@@ -1,13 +1,10 @@
 // import AnchorSection from "@/components/AnchorSection/AnchorSection";
 import PowerBIContainer from "@/components/PowerBIContainer/PowerBiContainer";
 import HubTemplate from "@/templates/HubTemplate";
-import { REVALIDATE } from "@/utils/constants";
 import { getContent } from "@/utils/contentful";
 import { IPageHeader, ReportData } from "@/utils/interfaces";
 import { DATA_PANEL_QUERY } from "@/utils/queries";
 import { notFound } from "next/navigation";
-
-export const revalidate = REVALIDATE;
 
 interface IDataPanelContent {
   panelsCollection: { items: ReportData[] };
