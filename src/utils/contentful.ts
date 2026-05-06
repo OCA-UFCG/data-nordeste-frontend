@@ -1,8 +1,14 @@
 import { REVALIDATE } from "./constants";
 
 const USE_PREVIEW = process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW ? true : false;
+const CONTENTFUL_SPACE = process.env.NEXT_PUBLIC_CONTENTFUL_SPACE;
+const CONTENTFUL_ACCESS_TOKEN = process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN;
 
 function buildContentfulEndpoint(): string {
+  if (CONTENTFUL_SPACE && CONTENTFUL_ACCESS_TOKEN) {
+    return `https://graphql.contentful.com/content/v1/spaces/${CONTENTFUL_SPACE}`;
+  }
+
   const hostUrl = process.env.NEXT_PUBLIC_HOST_URL || "http://localhost:3000";
   const base = hostUrl.replace(/\/+$/, "");
 
@@ -19,6 +25,12 @@ export async function getContent<T>(
 
   const response = await fetch(CONTENTFUL_ENDPOINT, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(CONTENTFUL_ACCESS_TOKEN
+        ? { Authorization: `Bearer ${CONTENTFUL_ACCESS_TOKEN}` }
+        : {}),
+    },
     next: {
       revalidate: REVALIDATE,
     },
@@ -28,6 +40,12 @@ export async function getContent<T>(
       variables,
     }),
   });
+
+  if (!response.ok) {
+    throw new Error(
+      `Contentful request failed with status ${response.status}: ${await response.text()}`,
+    );
+  }
 
   const json = await response.json();
 
