@@ -7,7 +7,7 @@ integration changes.
 Keep this file updated whenever you learn or change context that future agents
 need: routes, business rules, content model assumptions, integrations,
 environment behavior, or operational knowledge. Code-writing and implementation
-style rules live in `rules.md`; do not duplicate them here.
+style rules live in `AGENTS.md`; do not duplicate them here.
 
 ## What This Application Is
 
@@ -111,12 +111,22 @@ outside the repository and rendered through frontend route/component logic.
 - Treat this file as the durable orientation layer for future agents. If a
   product behavior is learned during a task and is likely to matter again, add it
   here.
-- Keep `rules.md` focused on how agents should write code. Keep this document
+- Keep `AGENTS.md` focused on how agents should write code. Keep this document
   focused on what the project is, how it behaves, and what external systems it
   depends on.
+- Prefer AI-oriented architectural comments near critical code paths when the
+  context belongs to a specific invariant, guard, query, adapter, compatibility
+  branch, or performance tradeoff. Use this document for broader project memory;
+  use local comments for durable steering that future humans and coding agents
+  need during refactors or code generation.
+- Local comments should explain intent, constraints, legacy compatibility,
+  production concerns, edge cases, and non-obvious decisions. Avoid comments that
+  merely describe syntax or repeat what the next line of code already says.
+- Useful high-signal prefixes include `IMPORTANT:`, `WARNING:`, `INTENTIONAL:`,
+  `LEGACY:`, `PERF:`, and `DO NOT CHANGE:`.
 - Before changing a route or integration, inspect the related Contentful query,
   constants, and component behavior. Many business decisions are encoded across
   `src/app`, `src/utils/queries.ts`, `src/utils/constants.ts`,
   `src/utils/contentful.ts`, `src/lib/zenodo.ts`, and `src/lib/firebase.ts`.
 - For docs-only changes, no application test is normally required. If the change
-  touches code, follow the validation guidance in `rules.md`.
+  touches code, follow the validation guidance in `AGENTS.md`.

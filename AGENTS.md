@@ -15,6 +15,48 @@ Keep your own comments. Don't strip them on refactor — they carry intent and p
 Write WHY, not WHAT. Skip // increment counter above i++.
 Docstrings on public functions: intent + one usage example.
 Reference issue numbers / commit SHAs when a line exists because of a specific bug or upstream constraint.
+Prefer architectural comments near the critical code path they explain. Locality
+matters: a comment beside the invariant, guard, query, adapter, or compatibility
+branch is more useful to humans and AI coding agents than context hidden in a
+distant document.
+Use intent/constraint comments to preserve architectural decisions, production
+constraints, legacy compatibility requirements, performance tradeoffs, edge
+cases, and invariants.
+Treat these comments as persistent steering for AI coding agents during
+refactors and code generation. They should make it harder for future edits to
+accidentally erase non-obvious behavior.
+Use clear prefixes when the risk is high: IMPORTANT:, WARNING:, INTENTIONAL:,
+LEGACY:, PERF:, DO NOT CHANGE:.
+Avoid redundant comments that merely restate syntax or obvious control flow.
+
+GOOD:
+
+```ts
+// LEGACY: Contentful stores macrotheme IDs with underscores, while public URLs
+// use hyphens. Keep this normalization or existing shared links will break.
+const contentfulMacrothemeId = routeSlug.replaceAll("-", "_");
+
+// PERF: This fetch is cached for the whole page render because the Zenodo
+// endpoint is slow and the catalog filters reuse the same response.
+const records = await getCachedZenodoRecords();
+
+// DO NOT CHANGE: ArcGIS accepts many URL shapes, but these routes intentionally
+// reject non-hex IDs before rendering to avoid embedding arbitrary external URLs.
+if (!ARC_GIS_ID_PATTERN.test(id)) notFound();
+```
+
+BAD:
+
+```ts
+// Replace hyphens with underscores.
+const contentfulMacrothemeId = routeSlug.replaceAll("-", "_");
+
+// Get records.
+const records = await getCachedZenodoRecords();
+
+// If id is invalid, show 404.
+if (!ARC_GIS_ID_PATTERN.test(id)) notFound();
+```
 
 # Tests
 
