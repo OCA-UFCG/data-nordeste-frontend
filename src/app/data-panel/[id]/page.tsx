@@ -15,14 +15,16 @@ export default async function DataPanel({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: { pageName?: string };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ pageName?: string }>;
 }) {
+  const [{ id }, { pageName }] = await Promise.all([params, searchParams]);
+
   const {
     panelsCollection: panels,
 
     // pageHeadersCollection: pageHeaders,
-  }: IDataPanelContent = await getContent(DATA_PANEL_QUERY, { id: params.id });
+  }: IDataPanelContent = await getContent(DATA_PANEL_QUERY, { id });
 
   if (!panels.items.length) {
     notFound();
@@ -31,10 +33,7 @@ export default async function DataPanel({
   return (
     <HubTemplate>
       <div className="flex justify-center h-full w-full items-center overflow-hidden">
-        <PowerBIContainer
-          panel={panels.items[0]}
-          pageName={searchParams.pageName}
-        />
+        <PowerBIContainer panel={panels.items[0]} pageName={pageName} />
       </div>
       {/* <AnchorSection
         macroTheme={panels.items[0].macroTheme}

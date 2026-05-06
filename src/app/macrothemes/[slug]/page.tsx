@@ -25,9 +25,9 @@ interface IMacroThemePageContent {
 export default async function MacroThemePage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params;
+  const { slug } = await params;
 
   const normalizedSlug = slug.replace(/-/g, "_");
 

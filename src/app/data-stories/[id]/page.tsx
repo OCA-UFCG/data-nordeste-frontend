@@ -4,14 +4,18 @@ import { notFound } from "next/navigation";
 
 const isValidStoryId = (value: string) => /^[0-9a-f]{32}$/i.test(value);
 
-export default function DataStory({ params }: { params: { id: string } }) {
-  if (!isValidStoryId(params.id)) return notFound();
+export default async function DataStory({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  if (!isValidStoryId(id)) return notFound();
 
   return (
     <HubTemplate>
-      <ArcGisContainer
-        source={`https://storymaps.arcgis.com/stories/${params.id}`}
-      />
+      <ArcGisContainer source={`https://storymaps.arcgis.com/stories/${id}`} />
     </HubTemplate>
   );
 }
