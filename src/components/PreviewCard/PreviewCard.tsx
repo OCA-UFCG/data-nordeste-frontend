@@ -6,6 +6,10 @@ import Link from "next/link";
 const PreviewCard = ({ content }: { content: IPreviewCard }) => {
   const { title, subtitle, data, note, link, category } = content;
 
+  if (!category) {
+    return null;
+  }
+
   return (
     <Link href={link || ""}>
       <div className="group w-full rounded-lg shadow h-full">
