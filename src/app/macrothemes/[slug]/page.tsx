@@ -14,12 +14,45 @@ import { LinkButton } from "@/components/LinkButton/LinkButton";
 import { Icon } from "@/components/Icon/Icon";
 import { CardCarousel } from "@/components/CardCarousel/CardCarousel";
 import PreviewContent from "@/components/PreviewSection/PreviewContent";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/config/seo";
+import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 
 interface IMacroThemePageContent {
   themeCollection: { items: MacroTheme[] };
   postCollection: { items: IPublication[] };
   sectionHeadCollection: { items: SectionHeader[] };
   previewCardsCollection: { items: IPreviewCards[] };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const normalizedSlug = slug.replace(/-/g, "_");
+  const { themeCollection }: Pick<IMacroThemePageContent, "themeCollection"> =
+    await getContent(MACROTHEME_PAGE_QUERY, {
+      slug: normalizedSlug,
+    });
+  const theme = themeCollection.items?.[0];
+
+  if (!theme) {
+    return buildMetadata({
+      title: "Macrotema",
+      path: `/macrothemes/${slug}`,
+    });
+  }
+
+  return buildMetadata({
+    title: theme.name,
+    description:
+      theme.description?.json &&
+      documentToPlainTextString(theme.description.json),
+    path: `/macrothemes/${slug}`,
+    images: theme.banner?.url ? [theme.banner.url] : ["/banner.png"],
+  });
 }
 
 export default async function MacroThemePage({
@@ -29,6 +62,8 @@ export default async function MacroThemePage({
 }) {
   const { slug } = await params;
 
+  // LEGACY: public macrotheme URLs use hyphens, while Contentful stores the IDs
+  // with underscores. Keep this normalization or shared links will stop loading.
   const normalizedSlug = slug.replace(/-/g, "_");
 
   const {
@@ -82,7 +117,7 @@ export default async function MacroThemePage({
         )}
 
         {!!theme.article?.json && (
-          <div className="mt-4 mt-4 prose prose-lg max-w-none">
+          <div className="mt-4 prose prose-lg max-w-none">
             {documentToReactComponents(theme.article.json)}
           </div>
         )}

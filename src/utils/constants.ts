@@ -1,11 +1,15 @@
 import { EntrySys, OrderFilterPaths } from "contentful";
 import { ISudeneChannel } from "./interfaces";
+import { CONTENT_REVALIDATE_SECONDS } from "@/config/revalidation";
+import {
+  MACROTHEME_ICON_BY_ID,
+  MACROTHEME_ROUTE_BY_NAME,
+  THEMES_NAVIGATION_ORDER,
+} from "@/features/macrothemes/constants";
+import { POST_TYPE_LABELS } from "@/features/posts/postTypes";
+import type { FilterFormValue } from "@/features/filters/form";
 
-export const REVALIDATE =
-  process.env.NEXT_PUBLIC_APP_ENV === "beta" ||
-  process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW
-    ? 60
-    : 3600;
+export const REVALIDATE = CONTENT_REVALIDATE_SECONDS;
 
 export const STORAGE_KEY = "datane@feedback_submitted";
 
@@ -60,105 +64,109 @@ export const dataSortingTypes = {
   "Mais visualizados": "mostviewed",
 };
 
-export const POST_TYPES = {
-  "additional-content": "Notícia",
-  "data-panel": "Painel de dados",
-  "newsletter": "Boletim",
-  "data-story": "Datastory",
-};
+export const POST_TYPES = POST_TYPE_LABELS;
 
-export const macroThemes: { [key: string]: string } = {
-  economia_e_renda: "money",
-  demografia: "user",
-  desenvolvimento_social: "social-development",
-  saude: "health",
-  educacao: "book",
-  infraestrutura_e_saneamento: "screwdriver",
-  seguranca_hidrica: "drop",
-  meio_ambiente: "leaf",
-  instrumentos_sudene: "instruments",
-};
+export const macroThemes = MACROTHEME_ICON_BY_ID;
 
-export const THEMES_NAVIGATION_ORDER = [
-  "saude",
-  "educacao",
-  "desenvolvimento_social",
-  "economia_e_renda",
-  "demografia",
-  "infraestrutura_e_saneamento",
-  "meio_ambiente",
-  "seguranca_hidrica",
-  "instrumentos_sudene",
-];
+export { THEMES_NAVIGATION_ORDER };
 
-export const themes = {
-  "Economia e Renda": "economia-e-renda",
-  "Demografia": "demografia",
-  "Desenvolvimento Social": "desenvolvimento-social",
-  "Saúde": "saude",
-  "Educação": "educacao",
-  "Infraestrutura e Saneamento": "infraestrutura-e-saneamento",
-  "Segurança Hídrica": "seguranca-hidrica",
-  "Meio Ambiente": "meio-ambiente",
-  "Instrumentos da Sudene": "instrumentos-sudene",
-};
+export const themes = MACROTHEME_ROUTE_BY_NAME;
 
-export const exploreFilterMap: {
-  [key: string]: {
-    name: string;
-    formatForm: (params: any) => { [key: string]: any };
-    formatParam: (params: any) => { [key: string]: string | null };
+type ExploreFilterFormatter = {
+  name: string;
+  formatForm: (params: FilterFormValue) => {
+    [key: string]: ContentfulFilterValue;
   };
-} = {
+  formatParam: (params: FilterFormValue) => { [key: string]: string | null };
+};
+
+type ContentfulCategoryFilter = {
+  sys: {
+    id_in: string[];
+  };
+};
+
+type ContentfulFilterValue =
+  | string
+  | string[]
+  | ContentfulCategoryFilter
+  | undefined;
+
+const selectedValues = (params: FilterFormValue): string[] =>
+  Array.isArray(params) ? params : [];
+
+const selectedDate = (params: FilterFormValue): Date | null =>
+  params instanceof Date ? params : null;
+
+export const exploreFilterMap: { [key: string]: ExploreFilterFormatter } = {
   category: {
     name: "{category: {sys: id_in:",
-    formatForm: (selectedCats: string[]) =>
-      selectedCats.length
+    formatForm: (params: FilterFormValue) => {
+      const values = selectedValues(params);
+
+      return values.length
         ? {
             category: {
               sys: {
-                id_in: selectedCats,
+                id_in: values,
               },
             },
           }
-        : { category: null },
-    formatParam: (selectedCats: string[]) => ({
-      category:
-        selectedCats.length > 0 && !("all" in selectedCats)
-          ? selectedCats.join(",")
-          : null,
-    }),
+        : { category: undefined };
+    },
+    formatParam: (params: FilterFormValue) => {
+      const values = selectedValues(params);
+
+      return {
+        category:
+          values.length > 0 && !values.includes("all")
+            ? values.join(",")
+            : null,
+      };
+    },
   },
   date_gte: {
     name: "fields.date[gte]",
-    formatForm: (date: Date | null) => ({
-      date_gte: date ? date.toISOString() : null,
-    }),
-    formatParam: (date: Date | null) => ({
-      date_gte: date ? date.toISOString() : null,
-    }),
+    formatForm: (params: FilterFormValue) => {
+      const date = selectedDate(params);
+
+      return { date_gte: date ? date.toISOString() : undefined };
+    },
+    formatParam: (params: FilterFormValue) => {
+      const date = selectedDate(params);
+
+      return { date_gte: date ? date.toISOString() : null };
+    },
   },
 
   date_lte: {
     name: "fields.date[lte]",
-    formatForm: (date: Date | null) => ({
-      date_lte: date ? date.toISOString() : null,
-    }),
-    formatParam: (date: Date | null) => ({
-      date_lte: date ? date.toISOString() : null,
-    }),
+    formatForm: (params: FilterFormValue) => {
+      const date = selectedDate(params);
+
+      return { date_lte: date ? date.toISOString() : undefined };
+    },
+    formatParam: (params: FilterFormValue) => {
+      const date = selectedDate(params);
+
+      return { date_lte: date ? date.toISOString() : null };
+    },
   },
 
   type_in: {
     name: "fields.type[in]",
-    formatForm: (selectedCats: string[]) => ({
-      type_in: selectedCats,
+    formatForm: (params: FilterFormValue) => ({
+      type_in: selectedValues(params),
     }),
-    formatParam: (selectedCats: string[]) => ({
-      type_in:
-        selectedCats.length > 0 && !("all" in selectedCats)
-          ? selectedCats.join(",")
-          : null,
-    }),
+    formatParam: (params: FilterFormValue) => {
+      const values = selectedValues(params);
+
+      return {
+        type_in:
+          values.length > 0 && !values.includes("all")
+            ? values.join(",")
+            : null,
+      };
+    },
   },
 };

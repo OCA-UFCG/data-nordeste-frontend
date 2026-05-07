@@ -16,6 +16,15 @@ import {
 } from "@/utils/interfaces";
 import { ABOUT_PAGE_QUERY, ABOUT_QUERY } from "@/utils/queries";
 import { getContent } from "@/utils/contentful";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/config/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Sobre",
+  description:
+    "Conheca o Data Nordeste, suas formas de contato, rede de colaboracao, historia e compromisso com dados para o desenvolvimento regional.",
+  path: "/about",
+});
 
 interface IAboutContent {
   pageHeadersCollection: { items: IPageHeader[] };

@@ -1,28 +1,34 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  RECENT_PANEL_POST_TYPES,
+  RECENT_PUBLICATION_POST_TYPES,
+  RECENT_SECTION_POST_TYPES,
+  PostType,
+} from "@/features/posts/postTypes";
 
 export const FILTERS: {
   [key: string]: {
-    filter: string[];
+    filter: PostType[];
     text: string;
     href: string;
     key: "all" | "panels" | "posts";
   };
 } = {
   all: {
-    filter: ["data-panel", "newsletter", "additional-content"],
+    filter: RECENT_SECTION_POST_TYPES,
     text: "Todos",
     href: "/",
     key: "all",
   },
   panels: {
-    filter: ["data-panel"],
+    filter: RECENT_PANEL_POST_TYPES,
     text: "Painéis de dados",
     href: "/explore?page=1",
     key: "panels",
   },
   posts: {
-    filter: ["newsletter", "additional-content"],
+    filter: RECENT_PUBLICATION_POST_TYPES,
     text: "Publicações",
     href: "/posts?page=1",
     key: "posts",

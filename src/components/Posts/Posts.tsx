@@ -1,75 +1,83 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { FilterForm } from "../PostsGrid/FilterForm";
 import { PostsGrid } from "../PostsGrid/PostsGrid";
 import { IPublication, SectionHeader } from "@/utils/interfaces";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { POSTS_PER_PAGE, sortingTypes } from "@/utils/constants";
-import { createQueryString } from "@/utils/functions";
+import { sortingTypes } from "@/utils/constants";
 import { SortSelect } from "../PostsGrid/SortSelect";
 import { getContent } from "@/utils/contentful";
 import { PUBLICATION_QUERY } from "@/utils/queries";
-import { parsePostsFilters, PostsFilterForm } from "@/features/posts/filters";
+import {
+  buildPostsContentfulFilter,
+  buildPostsSkip,
+  buildPostsTotalPages,
+  buildPostsUrlQuery,
+  parsePostsQueryState,
+  PostsFilterForm,
+} from "@/features/posts/filters";
+import { FilterFormGroup } from "@/features/filters/form";
 
 export const Posts = ({
   header,
   categories,
+  filterGroups,
   totalPages,
+  initialPosts,
   rootFilter = {},
 }: {
   header: SectionHeader;
-  categories: {
-    title: string;
-    type: string;
-    fields: { [key: string]: string };
-  };
   totalPages: number;
+  initialPosts: IPublication[];
   rootFilter?: { [key: string]: string | string[] };
-}) => {
+} & (
+  | { categories: FilterFormGroup; filterGroups?: never }
+  | { filterGroups: FilterFormGroup[]; categories?: never }
+)) => {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const paramsKey = params.toString();
 
-  const [loading, setLoading] = useState(true);
-  const [pages, setpages] = useState(totalPages);
+  const [loading, setLoading] = useState(false);
+  const [pages, setPages] = useState(totalPages);
   const [sorting, setSorting] = useState(
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
-  const [posts, setPosts] = useState<IPublication[]>([]);
-  const filter = useMemo(() => {
+  const [posts, setPosts] = useState<IPublication[]>(initialPosts);
+  const queryState = useMemo(() => {
     const searchParams = new URLSearchParams(paramsKey);
 
-    return {
-      type_in: searchParams.get("type_in")?.split(",") || undefined,
-      category: searchParams.get("category")?.split(",") || [],
-      date_lte: Date.parse(searchParams.get(`date_lte`) || "")
-        ? new Date(searchParams.get(`date_lte`) || "")
-        : undefined,
-      date_gte: Date.parse(searchParams.get(`date_gte`) || "")
-        ? new Date(searchParams.get(`date_gte`) || "")
-        : undefined,
-    };
-  }, [paramsKey]);
-
-  const currentPage = useMemo(() => {
-    const searchParams = new URLSearchParams(paramsKey);
-    const paramPages = Number(searchParams.get("page") || 1);
-
-    return pages >= paramPages ? paramPages : 1;
+    return parsePostsQueryState(searchParams, pages);
   }, [pages, paramsKey]);
 
   const syncUrlFromForm = (currentForm: PostsFilterForm) => {
-    const { urlParams } = parsePostsFilters(currentForm);
     router.replace(
-      pathname +
-        "?" +
-        createQueryString({ ...urlParams, page: currentPage.toString() }),
+      pathname + "?" + buildPostsUrlQuery(currentForm, currentPage),
     );
   };
 
+  const { currentPage, filter } = queryState;
+  const initialRequestKey = useRef(
+    JSON.stringify({
+      currentPage,
+      filter,
+      sorting,
+      rootFilter,
+    }),
+  );
+
   useEffect(() => {
+    const requestKey = JSON.stringify({
+      currentPage,
+      filter,
+      sorting,
+      rootFilter,
+    });
+
+    if (requestKey === initialRequestKey.current) return;
+
     setLoading(true);
 
     new Promise<{
@@ -80,17 +88,14 @@ export const Posts = ({
           postCollection: { total: number; items: IPublication[] };
         }>(PUBLICATION_QUERY, {
           order: sorting,
-          skip: POSTS_PER_PAGE * (currentPage - 1),
-          filter: {
-            ...rootFilter,
-            ...parsePostsFilters(filter).contentfulFilter,
-          },
+          skip: buildPostsSkip(currentPage),
+          filter: buildPostsContentfulFilter(filter, rootFilter),
         }),
       );
     }).then((value) => {
       const { postCollection: posts } = value;
       setPosts(posts.items);
-      setpages(Math.ceil(posts.total / POSTS_PER_PAGE));
+      setPages(buildPostsTotalPages(posts.total));
       setLoading(false);
     });
   }, [currentPage, filter, rootFilter, sorting]);
@@ -102,11 +107,13 @@ export const Posts = ({
         <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
           <FilterForm
             initSchema={filter}
-            selectFields={categories}
+            {...(filterGroups
+              ? { filterGroups }
+              : { selectFields: categories })}
             onReset={() => router.push(pathname)}
             onSubmit={(newForm) => syncUrlFromForm(newForm)}
           />
-          <SortSelect defaultvalue={sorting} onChange={setSorting} />
+          <SortSelect defaultValue={sorting} onChange={setSorting} />
         </div>
       </div>
       <Suspense>

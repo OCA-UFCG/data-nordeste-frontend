@@ -1,3 +1,12 @@
+import type { Document } from "@contentful/rich-text-types";
+import type { PostType } from "@/features/posts/postTypes";
+
+export type ContentfulRichText = Document;
+
+export type ContentfulRichTextField = {
+  json: ContentfulRichText;
+};
+
 export interface ISudeneChannel {
   name: string;
   href: string;
@@ -30,9 +39,7 @@ export interface Project {
   name: string;
   description: string;
   link: string;
-  details: {
-    json: any;
-  };
+  details: ContentfulRichTextField;
   thumb: {
     url: string;
   };
@@ -48,7 +55,7 @@ export interface IAbout {
       description: string;
     }[];
   };
-  details: any;
+  details: ContentfulRichTextField;
   thumb: {
     url: string;
   };
@@ -68,7 +75,7 @@ export interface IPublication {
   thumb: {
     url: string;
   };
-  type: "additional-content" | "data-panel" | "newsletter" | "data-story";
+  type: PostType;
   date: string;
   description: string;
 }
@@ -88,8 +95,8 @@ export interface MacroTheme {
   sys: {
     id: string;
   };
-  description: { json: any };
-  article: { json: any };
+  description: ContentfulRichTextField;
+  article: ContentfulRichTextField;
   articleTitle: string;
   banner: { url: string };
   tags: string[];
@@ -142,7 +149,7 @@ export interface IMainBanner {
 export interface IPageHeader {
   title: string;
   subtitle?: string;
-  richSubtitle?: { json: any };
+  richSubtitle?: ContentfulRichTextField;
 }
 
 export interface ITab {
@@ -159,7 +166,7 @@ export interface IContact {
 
 export interface IPartners {
   id: string;
-  details: any;
+  details: ContentfulRichTextField;
   albumCollection: {
     items: {
       url: string;
@@ -174,7 +181,7 @@ export interface IValues {
   thumb: {
     url: string;
   };
-  details: any;
+  details: ContentfulRichTextField;
   id: string;
 }
 
@@ -185,9 +192,7 @@ export interface IDataStory {
 
 export interface IFeedbackQuestion {
   id: string;
-  question: {
-    json: any;
-  };
+  question: ContentfulRichTextField;
   type: string;
   shape: string;
 }
@@ -208,9 +213,7 @@ export interface IMetadata {
   version: string;
   tags?: Tag[];
   html: string;
-  license: {
-    [key: string]: string;
-  };
+  license: string;
   files: {
     name: string;
     downloadUrl: string;

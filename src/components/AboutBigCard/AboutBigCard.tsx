@@ -5,8 +5,6 @@ import { documentToReactComponents } from "@contentful/rich-text-react-renderer"
 const AboutBigCard = ({ content }: { content: IAbout }) => {
   const { details, thumb, id } = content;
 
-  console.log(thumb);
-
   return (
     <section className="flex items-center justify-center w-full">
       <div className="flex flex-col items-left">

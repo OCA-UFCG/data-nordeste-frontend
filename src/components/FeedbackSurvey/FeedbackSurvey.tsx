@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Icon } from "../Icon/Icon";
 import { Survey } from "./Survey";
 import { SurveySubmitted } from "./SurveySubmitted";
-import { STORAGE_KEY } from "@/utils/constants";
+import { readFeedbackSubmissionState } from "@/features/feedback/submissionStorage";
 
 export const FeedbackSurvey = ({
   header,
@@ -28,20 +28,7 @@ export const FeedbackSurvey = ({
   }, []);
 
   useEffect(() => {
-    const stored = localStorage?.getItem(STORAGE_KEY);
-
-    if (stored) {
-      try {
-        const data = JSON.parse(stored);
-        if (data.expiry && Date.now() < data.expiry) {
-          setSubmitted(true);
-        } else {
-          localStorage.removeItem(STORAGE_KEY);
-        }
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    }
+    setSubmitted(readFeedbackSubmissionState(localStorage));
   }, []);
 
   return (

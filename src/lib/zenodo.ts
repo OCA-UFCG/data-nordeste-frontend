@@ -1,13 +1,64 @@
 import { ZENODO_BASE_URL } from "@/utils/constants";
+import { IMetadata } from "@/utils/interfaces";
+
+export type ZenodoFilters = {
+  [key: string]: string[] | Date | string | undefined;
+  date_gte?: Date;
+  date_lte?: Date;
+  sort?: string;
+};
+
+type ZenodoApiFile = {
+  key: string;
+  links: {
+    self: string;
+  };
+};
+
+type ZenodoApiRecord = {
+  id: number | string;
+  created: string;
+  metadata?: {
+    title?: string;
+    description?: string;
+    version?: string;
+    keywords?: string[];
+    license?: {
+      id?: string;
+    };
+  };
+  links: {
+    self_html: string;
+  };
+  files?: ZenodoApiFile[];
+};
+
+type ZenodoApiResponse = {
+  hits: {
+    total: number;
+    hits?: ZenodoApiRecord[];
+  };
+};
+
+export type ZenodoCommunityRecordsResult = {
+  records: IMetadata[];
+  totalPages: number;
+  currentPage: number;
+};
+
+export type ZenodoRecordsFetcher = (
+  url: string,
+) => Promise<ZenodoApiResponse | ZenodoApiRecord>;
 
 export async function getZenodoCommunityRecords(
   page: number,
   size: number,
-  filters: Record<string, any> = {},
-) {
-  const query = buildBaseQuery(page, size, filters);
+  filters: ZenodoFilters = {},
+  fetchRecords: ZenodoRecordsFetcher = fetchZenodoData,
+): Promise<ZenodoCommunityRecordsResult> {
+  const query = buildZenodoRecordsQuery(page, size, filters);
   const url = `${ZENODO_BASE_URL}?${query.toString()}`;
-  const json = await fetchZenodoData(url);
+  const json = (await fetchRecords(url)) as ZenodoApiResponse;
   const records = parseZenodoRecords(json);
 
   return {
@@ -17,11 +68,22 @@ export async function getZenodoCommunityRecords(
   };
 }
 
-const buildBaseQuery = (
+export async function getZenodoRecord(
+  recordId: string,
+  fetchRecord: ZenodoRecordsFetcher = fetchZenodoData,
+): Promise<IMetadata> {
+  const json = (await fetchRecord(
+    `${ZENODO_BASE_URL}/${encodeURIComponent(recordId)}`,
+  )) as ZenodoApiRecord;
+
+  return parseZenodoRecord(json);
+}
+
+export const buildZenodoRecordsQuery = (
   page: number,
   size: number,
-  filters: Record<string, any>,
-) => {
+  filters: ZenodoFilters,
+): URLSearchParams => {
   const query = new URLSearchParams({
     communities: "datane",
     size: size.toString(),
@@ -47,7 +109,13 @@ const buildBaseQuery = (
   return query;
 };
 
-const buildConditions = (filters: Record<string, any>) => {
+export const buildZenodoFilesArchiveUrl = (recordId: string): string =>
+  `${ZENODO_BASE_URL}/${recordId}/files-archive`;
+
+export const buildZenodoArchiveFileName = (title: string): string =>
+  title.replace(/\s+/g, "_").toLowerCase() + ".zip";
+
+const buildConditions = (filters: ZenodoFilters) => {
   let dateCondition = "";
   const otherConditions: string[] = [];
 
@@ -82,7 +150,11 @@ const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
-const fetchZenodoData = async (url: string) => {
+const fetchZenodoData = async (
+  url: string,
+): Promise<ZenodoApiResponse | ZenodoApiRecord> => {
+  // PERF: Zenodo catalog data is shared by filters and pagination, so keep a
+  // short Next revalidation window instead of refetching every request.
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
@@ -92,25 +164,29 @@ const fetchZenodoData = async (url: string) => {
   });
 
   if (!res.ok) {
-    throw new Error(`Error fetching Zenodo data: ${res.statusText}`);
+    throw new Error(
+      `Zenodo request failed for url "${url}" with status ${res.status}; expected records response for community "datane". Status text: ${res.statusText}`,
+    );
   }
 
   return res.json();
 };
 
-const parseZenodoRecords = (json: any) => {
-  return (json.hits?.hits ?? []).map((r: any) => ({
-    id: r.id,
-    title: r.metadata?.title,
-    description: r.metadata?.description ?? "",
-    publication_date: r.created,
-    version: r.metadata?.version ?? "1.0",
-    tags: r.metadata?.keywords ?? [],
-    html: r.links.self_html,
-    license: r.metadata?.license?.id ?? "Desconhecida",
-    files: (r.files ?? []).map((f: any) => ({
-      name: f.key,
-      downloadUrl: f.links.self,
-    })),
-  }));
+export const parseZenodoRecords = (json: ZenodoApiResponse): IMetadata[] => {
+  return (json.hits.hits ?? []).map(parseZenodoRecord);
 };
+
+const parseZenodoRecord = (r: ZenodoApiRecord): IMetadata => ({
+  id: String(r.id),
+  title: r.metadata?.title ?? "",
+  description: r.metadata?.description ?? "",
+  publication_date: r.created,
+  version: r.metadata?.version ?? "1.0",
+  tags: r.metadata?.keywords ?? [],
+  html: r.links.self_html,
+  license: r.metadata?.license?.id ?? "Desconhecida",
+  files: (r.files ?? []).map((f: ZenodoApiFile) => ({
+    name: f.key,
+    downloadUrl: f.links.self,
+  })),
+});

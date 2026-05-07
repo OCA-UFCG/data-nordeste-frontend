@@ -4,7 +4,27 @@ import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
 import { FILTERS_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
-import { MacroTheme } from "@/utils/interfaces";
+import {
+  ContentfulRichTextField,
+  IMetadata,
+  MacroTheme,
+} from "@/utils/interfaces";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/config/seo";
+import { getZenodoCommunityRecords } from "@/lib/zenodo";
+import { RECORDS_PER_PAGE } from "@/utils/constants";
+import {
+  buildCatalogFilterValues,
+  buildCatalogSlugTitleMap,
+} from "@/features/catalog/filters";
+import { applyCatalogFilterLabels } from "@/features/catalog/records";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Catalogo de dados",
+  description:
+    "Catalogo de datasets abertos do Data Nordeste com arquivos, licencas, fontes e registros publicados no Zenodo.",
+  path: "/catalog",
+});
 
 interface IFilterDataPage {
   filterDataPageCollection: {
@@ -23,7 +43,7 @@ interface IFilterDataPage {
     items: {
       title: string;
       subtitle?: string;
-      richSubtitle?: { json: any };
+      richSubtitle?: ContentfulRichTextField;
     }[];
   };
   themeCollection?: {
@@ -31,7 +51,12 @@ interface IFilterDataPage {
   };
 }
 
-export default async function CatalogPage() {
+export default async function CatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const rawSearchParams = await searchParams;
   const data: IFilterDataPage = await getContent(FILTERS_QUERY);
 
   const header = data.pageHeadersCollection?.items?.[0];
@@ -47,12 +72,38 @@ export default async function CatalogPage() {
   const themes = (data.themeCollection?.items || []).filter(
     (theme): theme is MacroTheme => Boolean(theme),
   );
+  const urlSearchParams = new URLSearchParams(
+    Object.entries(rawSearchParams).flatMap(([key, value]) =>
+      Array.isArray(value)
+        ? value.map((item) => [key, item])
+        : value
+          ? [[key, value]]
+          : [],
+    ),
+  );
+  const currentPage = Number(urlSearchParams.get("page") || 1);
+  const filtersFromUrl = buildCatalogFilterValues(urlSearchParams, filters);
+  const slugToTitle = buildCatalogSlugTitleMap(filters);
+  const initialRecordsResult = await getZenodoCommunityRecords(
+    currentPage,
+    RECORDS_PER_PAGE,
+    filtersFromUrl,
+  );
+  const initialRecords: IMetadata[] = applyCatalogFilterLabels(
+    initialRecordsResult.records,
+    slugToTitle,
+  );
 
   return (
     <HubTemplate>
       {header && <PageHeader content={header} />}
       <Suspense>
-        <DataRecords filters={filters} themes={themes} />
+        <DataRecords
+          filters={filters}
+          themes={themes}
+          initialRecords={initialRecords}
+          initialTotalPages={initialRecordsResult.totalPages}
+        />
       </Suspense>
     </HubTemplate>
   );

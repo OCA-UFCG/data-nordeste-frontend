@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Lato } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import {
+  buildMetadata,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  siteUrl,
+} from "@/config/seo";
 
 import "./globals.css";
 
@@ -14,8 +20,20 @@ const lato = Lato({
 const IS_BETA = process.env.NEXT_PUBLIC_APP_ENV === "beta";
 
 export const metadata: Metadata = {
-  title: "Data Nordeste",
-  description: "Data Nordeste",
+  ...buildMetadata({
+    description: SITE_DESCRIPTION,
+  }),
+  metadataBase: new URL(siteUrl),
+  applicationName: SITE_NAME,
+  keywords: [
+    "Data Nordeste",
+    "SUDENE",
+    "dados Nordeste",
+    "indicadores Nordeste",
+    "semiarido",
+    "desenvolvimento regional",
+    "dados abertos",
+  ],
   icons: {
     icon: "datane-logo.png",
     shortcut: "datane-logo.png",
@@ -26,9 +44,9 @@ export const metadata: Metadata = {
     follow: !IS_BETA,
     nocache: false,
     googleBot: {
-      index: !IS_BETA,
-      follow: !IS_BETA,
-      noimageindex: false,
+      "index": !IS_BETA,
+      "follow": !IS_BETA,
+      "noimageindex": false,
       "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,

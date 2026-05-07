@@ -1,14 +1,40 @@
-// import AnchorSection from "@/components/AnchorSection/AnchorSection";
 import PowerBIContainer from "@/components/PowerBIContainer/PowerBiContainer";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
-import { IPageHeader, ReportData } from "@/utils/interfaces";
+import { ReportData } from "@/utils/interfaces";
 import { DATA_PANEL_QUERY } from "@/utils/queries";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/config/seo";
 
 interface IDataPanelContent {
   panelsCollection: { items: ReportData[] };
-  pageHeadersCollection: { items: IPageHeader[] };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const { panelsCollection: panels }: IDataPanelContent = await getContent(
+    DATA_PANEL_QUERY,
+    { id },
+  );
+  const panel = panels.items[0];
+
+  if (!panel) {
+    return buildMetadata({
+      title: "Painel de dados",
+      path: `/data-panel/${id}`,
+    });
+  }
+
+  return buildMetadata({
+    title: panel.title,
+    description: panel.description || panel.source,
+    path: `/data-panel/${id}`,
+  });
 }
 
 export default async function DataPanel({
@@ -20,11 +46,10 @@ export default async function DataPanel({
 }) {
   const [{ id }, { pageName }] = await Promise.all([params, searchParams]);
 
-  const {
-    panelsCollection: panels,
-
-    // pageHeadersCollection: pageHeaders,
-  }: IDataPanelContent = await getContent(DATA_PANEL_QUERY, { id });
+  const { panelsCollection: panels }: IDataPanelContent = await getContent(
+    DATA_PANEL_QUERY,
+    { id },
+  );
 
   if (!panels.items.length) {
     notFound();
@@ -35,10 +60,6 @@ export default async function DataPanel({
       <div className="flex justify-center h-full w-full items-center overflow-hidden">
         <PowerBIContainer panel={panels.items[0]} pageName={pageName} />
       </div>
-      {/* <AnchorSection
-        macroTheme={panels.items[0].macroTheme}
-        sectionTexts={pageHeaders.items[0]}
-      /> */}
     </HubTemplate>
   );
 }

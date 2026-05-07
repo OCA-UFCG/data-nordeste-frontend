@@ -1,38 +1,16 @@
 import { IPublication } from "@/utils/interfaces";
-import { POST_TYPES } from "@/utils/constants";
+import { POST_TYPE_LABELS } from "@/features/posts/postTypes";
 import Link from "next/link";
 import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
-
-const getArcGisEmbedHref = (url: string) => {
-  try {
-    const parsed = new URL(url);
-    const hostname = parsed.hostname.toLowerCase();
-
-    if (hostname.endsWith("storymaps.arcgis.com")) {
-      const match = parsed.pathname.match(/\/stories\/([0-9a-f]{32})/i);
-
-      if (match?.[1]) return `/data-stories/${match[1]}`;
-    }
-
-    if (hostname.endsWith("experience.arcgis.com")) {
-      const match = parsed.pathname.match(/\/experience\/([0-9a-f]{32})/i);
-
-      if (match?.[1]) return `/experience/${match[1]}`;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-};
+import { getArcGisInternalEmbedHref } from "@/features/embeds/arcgis";
 
 const ContentPost = ({ content }: { content: IPublication }) => {
   const { title, thumb, link, date, type } = content;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
-  const embedHref = getArcGisEmbedHref(link);
+  const embedHref = getArcGisInternalEmbedHref(link);
   const href = embedHref ?? link;
   const openInNewTab = !embedHref;
 
@@ -54,7 +32,7 @@ const ContentPost = ({ content }: { content: IPublication }) => {
       </div>
       <div className="flex flex-col grow-1 justify-between">
         <div className="flex flex-row justify-between items-center bg-gray-200 px-5 py-1">
-          <p className="font-semibold text-xs">{POST_TYPES[type]}</p>
+          <p className="font-semibold text-xs">{POST_TYPE_LABELS[type]}</p>
           <p className="text-grey-600 text-xs">{formattedDate}</p>
         </div>
 

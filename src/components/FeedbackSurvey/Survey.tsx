@@ -11,11 +11,9 @@ import { TextArea } from "../TextArea";
 import { Rate } from "../Rate";
 import { useState } from "react";
 import { sendSurveyFeedback } from "@/lib/firebase";
-import { STORAGE_KEY } from "@/utils/constants";
 import { Icon } from "../Icon/Icon";
 import { cn } from "@/lib/utils";
-
-const EXPIRY_HOURS = 24;
+import { writeFeedbackSubmissionState } from "@/features/feedback/submissionStorage";
 
 export const Survey = ({
   header,
@@ -43,11 +41,7 @@ export const Survey = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    const expiry = Date.now() + EXPIRY_HOURS * 60 * 60 * 1000; // add hours in ms
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ submitted: true, expiry }),
-    );
+    writeFeedbackSubmissionState(localStorage);
 
     setLoading(true);
     await sendSurveyFeedback(Object.values(answers));

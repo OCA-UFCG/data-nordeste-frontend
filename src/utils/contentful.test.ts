@@ -94,8 +94,10 @@ describe("Contentful client", () => {
     });
 
     await expect(httpClient("query")).rejects.toThrow(
-      "Contentful request failed with status 500: upstream down",
+      'Contentful request failed for endpoint "https://contentful.example.com/graphql" with status 500',
     );
-    await expect(graphQlClient("query")).rejects.toThrow("bad query");
+    await expect(graphQlClient("query")).rejects.toThrow(
+      'Contentful GraphQL returned errors for variables {"preview":false}',
+    );
   });
 });

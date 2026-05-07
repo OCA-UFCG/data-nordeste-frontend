@@ -1,8 +1,27 @@
 import ArcGisContainer from "@/components/ArcGisContainer/ArcGisContainer";
 import HubTemplate from "@/templates/HubTemplate";
 import { notFound } from "next/navigation";
+import {
+  buildExperienceSource,
+  isValidArcGisId,
+} from "@/features/embeds/arcgis";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/config/seo";
 
-const isValidExperienceId = (value: string) => /^[0-9a-f]{32}$/i.test(value);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  return buildMetadata({
+    title: "Experiencia de dados",
+    description:
+      "Experiencia interativa do Data Nordeste para exploracao visual de dados e indicadores regionais.",
+    path: `/experience/${id}`,
+  });
+}
 
 export default async function Experience({
   params,
@@ -11,13 +30,12 @@ export default async function Experience({
 }) {
   const { id } = await params;
 
-  if (!isValidExperienceId(id)) return notFound();
+  // DO NOT CHANGE: reject non-hex Experience IDs before embedding ArcGIS content.
+  if (!isValidArcGisId(id)) return notFound();
 
   return (
     <HubTemplate>
-      <ArcGisContainer
-        source={`https://experience.arcgis.com/experience/${id}`}
-      />
+      <ArcGisContainer source={buildExperienceSource(id)} />
     </HubTemplate>
   );
 }

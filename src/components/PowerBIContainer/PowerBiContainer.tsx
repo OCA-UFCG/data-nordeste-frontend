@@ -1,5 +1,6 @@
 "use client";
 import { ReportData } from "@/utils/interfaces";
+import { buildPowerBiSource } from "@/features/embeds/powerBi";
 
 const PowerBIContainer = ({
   panel,
@@ -20,8 +21,11 @@ const PowerBIContainer = ({
           Publicado em: {formattedDate}
         </span>
       </div>
+
+      {/* IMPORTANT: pageName is a public query parameter, so keep URL encoding
+      centralized here before passing the Power BI source into the iframe. */}
       <iframe
-        src={pageName ? `${source}&pageName=${pageName}` : source}
+        src={buildPowerBiSource(source, pageName)}
         allowFullScreen
         title={title}
         className="w-full aspect-[32/25] h-auto"

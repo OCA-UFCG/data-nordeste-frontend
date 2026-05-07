@@ -29,7 +29,7 @@ vi.mock("../PostsGrid/SortSelect", () => ({
 }));
 
 describe("Posts", () => {
-  it("fetches posts on mount without replacing the current route", async () => {
+  it("renders server-provided posts on mount without replacing the current route", async () => {
     vi.mocked(getContent).mockResolvedValue({
       postCollection: {
         total: 1,
@@ -41,6 +41,7 @@ describe("Posts", () => {
       <Posts
         header={{ id: "posts-content", title: "Posts", subtitle: "" }}
         totalPages={1}
+        initialPosts={[]}
         rootFilter={{ type_in: ["newsletter"] }}
         categories={{
           title: "Tipo",
@@ -50,9 +51,7 @@ describe("Posts", () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(getContent).toHaveBeenCalledTimes(1);
-    });
+    await waitFor(() => expect(getContent).not.toHaveBeenCalled());
     expect(replace).not.toHaveBeenCalled();
     expect(push).not.toHaveBeenCalled();
   });

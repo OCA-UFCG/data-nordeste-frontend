@@ -6,7 +6,7 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
 } from "../ui/navigation-menu";
-import { JSXElementConstructor, ReactElement } from "react";
+import { ReactElement } from "react";
 import { sortContentByDesiredOrder } from "@/utils/functions";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -15,7 +15,7 @@ export const AboutContent = ({
   tabsHeader,
 }: {
   tabs: {
-    [key: string]: ReactElement<any, string | JSXElementConstructor<any>>;
+    [key: string]: ReactElement;
   };
   tabsHeader: ITab[];
 }) => {
