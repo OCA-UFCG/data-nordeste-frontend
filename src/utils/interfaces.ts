@@ -208,9 +208,7 @@ export interface IMetadata {
   version: string;
   tags?: Tag[];
   html: string;
-  license: {
-    [key: string]: string;
-  };
+  license: string;
   files: {
     name: string;
     downloadUrl: string;

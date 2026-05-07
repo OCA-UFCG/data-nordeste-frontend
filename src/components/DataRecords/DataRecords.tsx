@@ -88,7 +88,7 @@ export const DataRecords = ({
   useEffect(() => {
     setLoading(true);
     getZenodoCommunityRecords(currentPage, RECORDS_PER_PAGE, filtersFromUrl)
-      .then((res: any) => {
+      .then((res) => {
         const recordsFormattedTags: IMetadata[] = res.records.map(
           (record: IMetadata) => {
             const rawTags = Array.isArray(record.tags) ? record.tags : [];

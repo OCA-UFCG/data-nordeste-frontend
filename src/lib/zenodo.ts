@@ -1,11 +1,57 @@
 import { ZENODO_BASE_URL } from "@/utils/constants";
+import { IMetadata } from "@/utils/interfaces";
+
+export type ZenodoFilters = {
+  [key: string]: string[] | Date | string | undefined;
+  date_gte?: Date;
+  date_lte?: Date;
+  sort?: string;
+};
+
+type ZenodoApiFile = {
+  key: string;
+  links: {
+    self: string;
+  };
+};
+
+type ZenodoApiRecord = {
+  id: number | string;
+  created: string;
+  metadata?: {
+    title?: string;
+    description?: string;
+    version?: string;
+    keywords?: string[];
+    license?: {
+      id?: string;
+    };
+  };
+  links: {
+    self_html: string;
+  };
+  files?: ZenodoApiFile[];
+};
+
+type ZenodoApiResponse = {
+  hits: {
+    total: number;
+    hits?: ZenodoApiRecord[];
+  };
+};
+
+export type ZenodoCommunityRecordsResult = {
+  records: IMetadata[];
+  totalPages: number;
+  currentPage: number;
+};
 
 export async function getZenodoCommunityRecords(
   page: number,
   size: number,
-  filters: Record<string, any> = {},
-) {
-  const query = buildBaseQuery(page, size, filters);
+  filters: ZenodoFilters = {},
+): Promise<ZenodoCommunityRecordsResult> {
+  const query = buildZenodoRecordsQuery(page, size, filters);
   const url = `${ZENODO_BASE_URL}?${query.toString()}`;
   const json = await fetchZenodoData(url);
   const records = parseZenodoRecords(json);
@@ -17,11 +63,11 @@ export async function getZenodoCommunityRecords(
   };
 }
 
-const buildBaseQuery = (
+export const buildZenodoRecordsQuery = (
   page: number,
   size: number,
-  filters: Record<string, any>,
-) => {
+  filters: ZenodoFilters,
+): URLSearchParams => {
   const query = new URLSearchParams({
     communities: "datane",
     size: size.toString(),
@@ -47,7 +93,7 @@ const buildBaseQuery = (
   return query;
 };
 
-const buildConditions = (filters: Record<string, any>) => {
+const buildConditions = (filters: ZenodoFilters) => {
   let dateCondition = "";
   const otherConditions: string[] = [];
 
@@ -82,7 +128,7 @@ const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
-const fetchZenodoData = async (url: string) => {
+const fetchZenodoData = async (url: string): Promise<ZenodoApiResponse> => {
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
@@ -98,10 +144,10 @@ const fetchZenodoData = async (url: string) => {
   return res.json();
 };
 
-const parseZenodoRecords = (json: any) => {
-  return (json.hits?.hits ?? []).map((r: any) => ({
-    id: r.id,
-    title: r.metadata?.title,
+export const parseZenodoRecords = (json: ZenodoApiResponse): IMetadata[] => {
+  return (json.hits.hits ?? []).map((r) => ({
+    id: String(r.id),
+    title: r.metadata?.title ?? "",
     description: r.metadata?.description ?? "",
     publication_date: r.created,
     version: r.metadata?.version ?? "1.0",
