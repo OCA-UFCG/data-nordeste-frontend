@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Pagination,
   PaginationContent,
@@ -8,6 +10,7 @@ import {
 } from "../ui/pagination";
 import { Skeleton } from "../ui/skeleton";
 import { usePaginationRange } from "@/utils/functions";
+import { useSearchParams } from "next/navigation";
 
 export const PaginationBar = ({
   currentPage,
@@ -19,6 +22,14 @@ export const PaginationBar = ({
   loading: boolean;
 }) => {
   const pagesRange = usePaginationRange(currentPage, totalPages);
+  const searchParams = useSearchParams();
+
+  const buildPageHref = (page: number) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("page", page.toString());
+
+    return `?${nextParams.toString()}`;
+  };
 
   return (
     <Pagination>
@@ -26,7 +37,7 @@ export const PaginationBar = ({
         <PaginationItem>
           <PaginationPrevious
             disabled={totalPages === 0 || currentPage <= 1}
-            href={`?page=${currentPage - 1}`}
+            href={buildPageHref(currentPage - 1)}
           />
         </PaginationItem>
 
@@ -35,7 +46,10 @@ export const PaginationBar = ({
             <Skeleton key={i} className="w-[40px] h-[40px] rounded-lg" />
           ) : (
             <PaginationItem key={i}>
-              <PaginationLink isActive={i === currentPage} href={`?page=${i}`}>
+              <PaginationLink
+                isActive={i === currentPage}
+                href={buildPageHref(i)}
+              >
                 {i}
               </PaginationLink>
             </PaginationItem>
@@ -45,7 +59,7 @@ export const PaginationBar = ({
         <PaginationItem>
           <PaginationNext
             disabled={totalPages === 0 || currentPage >= totalPages}
-            href={`?page=${currentPage + 1}`}
+            href={buildPageHref(currentPage + 1)}
           />
         </PaginationItem>
       </PaginationContent>

@@ -57,7 +57,9 @@ export const DataCard = ({
         <div className="flex flex-1 flex-col gap-4">
           <div className="flex flex-col gap-3">
             <h2 className="text-base font-semibold leading-4 text-[#292829]">
-              {post.title}
+              <Link href={`/catalog/${post.id}`} className="hover:underline">
+                {post.title}
+              </Link>
             </h2>
 
             {normalizedTags.length > 0 && (
@@ -86,6 +88,12 @@ export const DataCard = ({
 
           <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600">
             <span>Publicado em: {formattedDate}</span>
+            <Link
+              href={`/catalog/${post.id}`}
+              className="font-semibold text-[#018F39] hover:underline"
+            >
+              Ver detalhes
+            </Link>
           </div>
         </div>
 

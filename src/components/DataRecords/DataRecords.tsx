@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { FilterForm } from "@/components/PostsGrid/FilterForm";
 import { SortSelect } from "@/components/PostsGrid/SortSelect";
@@ -23,17 +23,21 @@ import {
 export const DataRecords = ({
   filters,
   themes,
+  initialRecords,
+  initialTotalPages,
 }: {
   filters: FilterGroup[];
   themes: MacroTheme[];
+  initialRecords: IMetadata[];
+  initialTotalPages: number;
 }) => {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  const [loading, setLoading] = useState(true);
-  const [pages, setPages] = useState(1);
-  const [metadata, setMetadata] = useState<IMetadata[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pages, setPages] = useState(initialTotalPages);
+  const [metadata, setMetadata] = useState<IMetadata[]>(initialRecords);
 
   const currentPage = useMemo(() => Number(params.get("page") || 1), [params]);
 
@@ -45,6 +49,12 @@ export const DataRecords = ({
   const filtersFromUrl = useMemo((): Filters => {
     return buildCatalogFilterValues(params, filters);
   }, [params, filters]);
+  const initialRequestKey = useRef(
+    JSON.stringify({
+      currentPage,
+      filtersFromUrl,
+    }),
+  );
 
   const updateUrl = (newFilters: Filters, page: number = 1) => {
     const urlParams = buildCatalogUrlParams(newFilters, page);
@@ -53,6 +63,13 @@ export const DataRecords = ({
   };
 
   useEffect(() => {
+    const requestKey = JSON.stringify({
+      currentPage,
+      filtersFromUrl,
+    });
+
+    if (requestKey === initialRequestKey.current) return;
+
     setLoading(true);
     getZenodoCommunityRecords(currentPage, RECORDS_PER_PAGE, filtersFromUrl)
       .then((res) => {

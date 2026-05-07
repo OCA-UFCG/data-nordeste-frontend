@@ -46,7 +46,9 @@ export type ZenodoCommunityRecordsResult = {
   currentPage: number;
 };
 
-export type ZenodoRecordsFetcher = (url: string) => Promise<ZenodoApiResponse>;
+export type ZenodoRecordsFetcher = (
+  url: string,
+) => Promise<ZenodoApiResponse | ZenodoApiRecord>;
 
 export async function getZenodoCommunityRecords(
   page: number,
@@ -56,7 +58,7 @@ export async function getZenodoCommunityRecords(
 ): Promise<ZenodoCommunityRecordsResult> {
   const query = buildZenodoRecordsQuery(page, size, filters);
   const url = `${ZENODO_BASE_URL}?${query.toString()}`;
-  const json = await fetchRecords(url);
+  const json = (await fetchRecords(url)) as ZenodoApiResponse;
   const records = parseZenodoRecords(json);
 
   return {
@@ -64,6 +66,17 @@ export async function getZenodoCommunityRecords(
     totalPages: Math.ceil(json.hits.total / size),
     currentPage: page,
   };
+}
+
+export async function getZenodoRecord(
+  recordId: string,
+  fetchRecord: ZenodoRecordsFetcher = fetchZenodoData,
+): Promise<IMetadata> {
+  const json = (await fetchRecord(
+    `${ZENODO_BASE_URL}/${encodeURIComponent(recordId)}`,
+  )) as ZenodoApiRecord;
+
+  return parseZenodoRecord(json);
 }
 
 export const buildZenodoRecordsQuery = (
@@ -137,7 +150,9 @@ const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
-const fetchZenodoData = async (url: string): Promise<ZenodoApiResponse> => {
+const fetchZenodoData = async (
+  url: string,
+): Promise<ZenodoApiResponse | ZenodoApiRecord> => {
   // PERF: Zenodo catalog data is shared by filters and pagination, so keep a
   // short Next revalidation window instead of refetching every request.
   const res = await fetch(url, {
@@ -158,18 +173,20 @@ const fetchZenodoData = async (url: string): Promise<ZenodoApiResponse> => {
 };
 
 export const parseZenodoRecords = (json: ZenodoApiResponse): IMetadata[] => {
-  return (json.hits.hits ?? []).map((r) => ({
-    id: String(r.id),
-    title: r.metadata?.title ?? "",
-    description: r.metadata?.description ?? "",
-    publication_date: r.created,
-    version: r.metadata?.version ?? "1.0",
-    tags: r.metadata?.keywords ?? [],
-    html: r.links.self_html,
-    license: r.metadata?.license?.id ?? "Desconhecida",
-    files: (r.files ?? []).map((f: ZenodoApiFile) => ({
-      name: f.key,
-      downloadUrl: f.links.self,
-    })),
-  }));
+  return (json.hits.hits ?? []).map(parseZenodoRecord);
 };
+
+const parseZenodoRecord = (r: ZenodoApiRecord): IMetadata => ({
+  id: String(r.id),
+  title: r.metadata?.title ?? "",
+  description: r.metadata?.description ?? "",
+  publication_date: r.created,
+  version: r.metadata?.version ?? "1.0",
+  tags: r.metadata?.keywords ?? [],
+  html: r.links.self_html,
+  license: r.metadata?.license?.id ?? "Desconhecida",
+  files: (r.files ?? []).map((f: ZenodoApiFile) => ({
+    name: f.key,
+    downloadUrl: f.links.self,
+  })),
+});

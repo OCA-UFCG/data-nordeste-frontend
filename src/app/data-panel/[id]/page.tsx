@@ -4,9 +4,37 @@ import { getContent } from "@/utils/contentful";
 import { ReportData } from "@/utils/interfaces";
 import { DATA_PANEL_QUERY } from "@/utils/queries";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/config/seo";
 
 interface IDataPanelContent {
   panelsCollection: { items: ReportData[] };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const { panelsCollection: panels }: IDataPanelContent = await getContent(
+    DATA_PANEL_QUERY,
+    { id },
+  );
+  const panel = panels.items[0];
+
+  if (!panel) {
+    return buildMetadata({
+      title: "Painel de dados",
+      path: `/data-panel/${id}`,
+    });
+  }
+
+  return buildMetadata({
+    title: panel.title,
+    description: panel.description || panel.source,
+    path: `/data-panel/${id}`,
+  });
 }
 
 export default async function DataPanel({

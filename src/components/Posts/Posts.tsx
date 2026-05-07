@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { FilterForm } from "../PostsGrid/FilterForm";
 import { PostsGrid } from "../PostsGrid/PostsGrid";
 import { IPublication, SectionHeader } from "@/utils/interfaces";
@@ -24,10 +24,12 @@ export const Posts = ({
   categories,
   filterGroups,
   totalPages,
+  initialPosts,
   rootFilter = {},
 }: {
   header: SectionHeader;
   totalPages: number;
+  initialPosts: IPublication[];
   rootFilter?: { [key: string]: string | string[] };
 } & (
   | { categories: FilterFormGroup; filterGroups?: never }
@@ -38,12 +40,12 @@ export const Posts = ({
   const pathname = usePathname();
   const paramsKey = params.toString();
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [pages, setPages] = useState(totalPages);
   const [sorting, setSorting] = useState(
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
-  const [posts, setPosts] = useState<IPublication[]>([]);
+  const [posts, setPosts] = useState<IPublication[]>(initialPosts);
   const queryState = useMemo(() => {
     const searchParams = new URLSearchParams(paramsKey);
 
@@ -57,8 +59,25 @@ export const Posts = ({
   };
 
   const { currentPage, filter } = queryState;
+  const initialRequestKey = useRef(
+    JSON.stringify({
+      currentPage,
+      filter,
+      sorting,
+      rootFilter,
+    }),
+  );
 
   useEffect(() => {
+    const requestKey = JSON.stringify({
+      currentPage,
+      filter,
+      sorting,
+      rootFilter,
+    });
+
+    if (requestKey === initialRequestKey.current) return;
+
     setLoading(true);
 
     new Promise<{

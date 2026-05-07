@@ -5,6 +5,23 @@ import {
   buildExperienceSource,
   isValidArcGisId,
 } from "@/features/embeds/arcgis";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/config/seo";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  return buildMetadata({
+    title: "Experiencia de dados",
+    description:
+      "Experiencia interativa do Data Nordeste para exploracao visual de dados e indicadores regionais.",
+    path: `/experience/${id}`,
+  });
+}
 
 export default async function Experience({
   params,

@@ -18,6 +18,14 @@ import { getContent } from "@/utils/contentful";
 import { MAIN_PAGE_QUERY } from "@/utils/queries";
 import { FeedbackSurvey } from "@/components/FeedbackSurvey/FeedbackSurvey";
 import { findHomeSection } from "@/features/home/content";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/config/seo";
+
+export const metadata: Metadata = buildMetadata({
+  description:
+    "Consulte dados, indicadores, paineis interativos, datastories e publicacoes sobre desenvolvimento regional no Nordeste brasileiro.",
+  path: "/",
+});
 
 interface IMainContent {
   partnersCollection: { items: Project[] };
