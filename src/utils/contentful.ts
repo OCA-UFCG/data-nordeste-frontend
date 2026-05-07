@@ -18,6 +18,16 @@ type ContentfulClientConfig = {
   revalidate: number;
 };
 
+type ContentfulVariable =
+  | string
+  | number
+  | boolean
+  | null
+  | ContentfulVariable[]
+  | { [key: string]: ContentfulVariable };
+
+type ContentfulVariables = { [key: string]: ContentfulVariable };
+
 export function buildContentfulEndpoint(env: ContentfulEnv): string {
   const space = env.NEXT_PUBLIC_CONTENTFUL_SPACE;
   const accessToken = env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN;
@@ -29,8 +39,8 @@ export function buildContentfulEndpoint(env: ContentfulEnv): string {
   const hostUrl = env.NEXT_PUBLIC_HOST_URL || "http://localhost:3000";
   const base = hostUrl.replace(/\/+$/, "");
 
-  // LEGACY: /contentful-api is provided by the deployment Nginx proxy when the
-  // app is not configured to call Contentful GraphQL directly.
+  // LEGACY: /contentful-api is a required production fallback served by the
+  // deployment Nginx proxy when direct Contentful GraphQL env vars are absent.
   return `${base}/contentful-api`;
 }
 
@@ -43,7 +53,7 @@ export function createContentfulClient({
 }: ContentfulClientConfig) {
   return async function requestContentful<T>(
     query: string,
-    variables?: Record<string, any>,
+    variables?: ContentfulVariables,
   ): Promise<T> {
     const finalVariables = { ...variables, preview };
 
@@ -64,15 +74,19 @@ export function createContentfulClient({
     });
 
     if (!response.ok) {
+      const responseBody = await response.text();
+
       throw new Error(
-        `Contentful request failed with status ${response.status}: ${await response.text()}`,
+        `Contentful request failed for endpoint "${endpoint}" with status ${response.status}; expected GraphQL JSON response. Body: ${responseBody}`,
       );
     }
 
     const json = await response.json();
 
     if (json.errors) {
-      throw new Error(JSON.stringify(json.errors, null, 2));
+      throw new Error(
+        `Contentful GraphQL returned errors for variables ${JSON.stringify(finalVariables)}; expected data field. Errors: ${JSON.stringify(json.errors)}`,
+      );
     }
 
     return json.data;

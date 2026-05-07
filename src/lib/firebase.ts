@@ -14,6 +14,26 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+const getRequiredPublicEnv = (name: string): string => {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(
+      `Missing public env "${name}"; expected it to be configured before submitting survey feedback.`,
+    );
+  }
+
+  return value;
+};
+
+const serializeError = (error: unknown) => {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message };
+  }
+
+  return { message: String(error) };
+};
+
 export const app = initializeApp(firebaseConfig);
 
 let appCheckInstance: AppCheck | null = null;
@@ -23,12 +43,18 @@ const getAppCheck = () => {
     try {
       appCheckInstance = initializeAppCheck(app, {
         provider: new ReCaptchaV3Provider(
-          process.env.NEXT_PUBLIC_RECAPTCHA_KEY || "",
+          getRequiredPublicEnv("NEXT_PUBLIC_RECAPTCHA_KEY"),
         ),
         isTokenAutoRefreshEnabled: true,
       });
     } catch (error) {
-      console.error("Error initializing app check", error);
+      console.error(
+        JSON.stringify({
+          message: "Firebase App Check initialization failed",
+          hasRecaptchaKey: Boolean(process.env.NEXT_PUBLIC_RECAPTCHA_KEY),
+          error: serializeError(error),
+        }),
+      );
     }
   }
 
@@ -40,7 +66,9 @@ export async function sendSurveyFeedback(answers: IFeedbackAnswer[]) {
     const appCheck = getAppCheck();
 
     if (!appCheck) {
-      throw new Error("App Check not initialized");
+      throw new Error(
+        "Firebase App Check was not initialized; expected a valid NEXT_PUBLIC_RECAPTCHA_KEY and browser App Check support.",
+      );
     }
 
     const tokenResult = await getToken(appCheck);
@@ -66,7 +94,9 @@ export async function sendSurveyFeedback(answers: IFeedbackAnswer[]) {
       answers,
     };
 
-    const res = await fetch(process.env.NEXT_PUBLIC_SURVEY_FEEDBACK_URL || "", {
+    const feedbackUrl = getRequiredPublicEnv("NEXT_PUBLIC_SURVEY_FEEDBACK_URL");
+
+    const res = await fetch(feedbackUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -76,14 +106,22 @@ export async function sendSurveyFeedback(answers: IFeedbackAnswer[]) {
     });
 
     if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
+      throw new Error(
+        `Survey feedback request failed for endpoint "${feedbackUrl}" with status ${res.status}; expected 2xx JSON response.`,
+      );
     }
 
     const result = await res.json();
 
     return result;
   } catch (error) {
-    console.error("Survey feedback error", error);
+    console.error(
+      JSON.stringify({
+        message: "Survey feedback submission failed",
+        answerCount: answers.length,
+        error: serializeError(error),
+      }),
+    );
     throw error;
   }
 }

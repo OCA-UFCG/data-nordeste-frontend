@@ -43,7 +43,7 @@ export const Survey = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    const expiry = Date.now() + EXPIRY_HOURS * 60 * 60 * 1000; // add hours in ms
+    const expiry = Date.now() + EXPIRY_HOURS * 60 * 60 * 1000;
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ submitted: true, expiry }),

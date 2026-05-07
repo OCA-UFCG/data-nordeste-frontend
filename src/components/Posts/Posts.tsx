@@ -33,7 +33,7 @@ export const Posts = ({
   const paramsKey = params.toString();
 
   const [loading, setLoading] = useState(true);
-  const [pages, setpages] = useState(totalPages);
+  const [pages, setPages] = useState(totalPages);
   const [sorting, setSorting] = useState(
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
@@ -90,7 +90,7 @@ export const Posts = ({
     }).then((value) => {
       const { postCollection: posts } = value;
       setPosts(posts.items);
-      setpages(Math.ceil(posts.total / POSTS_PER_PAGE));
+      setPages(Math.ceil(posts.total / POSTS_PER_PAGE));
       setLoading(false);
     });
   }, [currentPage, filter, rootFilter, sorting]);
@@ -106,7 +106,7 @@ export const Posts = ({
             onReset={() => router.push(pathname)}
             onSubmit={(newForm) => syncUrlFromForm(newForm)}
           />
-          <SortSelect defaultvalue={sorting} onChange={setSorting} />
+          <SortSelect defaultValue={sorting} onChange={setSorting} />
         </div>
       </div>
       <Suspense>

@@ -13,7 +13,7 @@ interface IPostsContent {
   postCollection: { total: number };
 }
 
-export default async function ExplorePage({}: {}) {
+export default async function ExplorePage() {
   const {
     sectionHeadCollection: sectionHead,
     pageHeadersCollection: pageHeaders,

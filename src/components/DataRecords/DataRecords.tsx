@@ -138,7 +138,7 @@ export const DataRecords = ({
             layout="horizontal"
           />
           <SortSelect
-            defaultvalue={filtersFromUrl.sort || ""}
+            defaultValue={filtersFromUrl.sort || ""}
             onChange={handleSortChange}
             sortingTypes={dataSortingTypes}
           />

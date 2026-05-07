@@ -1,6 +1,21 @@
 "use client";
 import { ReportData } from "@/utils/interfaces";
 
+const buildPowerBiSource = (source: string, pageName?: string): string => {
+  if (!pageName) return source;
+
+  try {
+    const url = new URL(source);
+    url.searchParams.set("pageName", pageName);
+
+    return url.toString();
+  } catch {
+    const separator = source.includes("?") ? "&" : "?";
+
+    return `${source}${separator}pageName=${encodeURIComponent(pageName)}`;
+  }
+};
+
 const PowerBIContainer = ({
   panel,
   pageName,
@@ -20,8 +35,11 @@ const PowerBIContainer = ({
           Publicado em: {formattedDate}
         </span>
       </div>
+
+      {/* IMPORTANT: pageName is a public query parameter, so keep URL encoding
+      centralized here before passing the Power BI source into the iframe. */}
       <iframe
-        src={pageName ? `${source}&pageName=${pageName}` : source}
+        src={buildPowerBiSource(source, pageName)}
         allowFullScreen
         title={title}
         className="w-full aspect-[32/25] h-auto"

@@ -84,7 +84,7 @@ export default async function MacroThemePage({
         )}
 
         {!!theme.article?.json && (
-          <div className="mt-4 mt-4 prose prose-lg max-w-none">
+          <div className="mt-4 prose prose-lg max-w-none">
             {documentToReactComponents(theme.article.json)}
           </div>
         )}

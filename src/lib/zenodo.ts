@@ -138,7 +138,9 @@ const fetchZenodoData = async (url: string): Promise<ZenodoApiResponse> => {
   });
 
   if (!res.ok) {
-    throw new Error(`Error fetching Zenodo data: ${res.statusText}`);
+    throw new Error(
+      `Zenodo request failed for url "${url}" with status ${res.status}; expected records response for community "datane". Status text: ${res.statusText}`,
+    );
   }
 
   return res.json();
@@ -154,7 +156,7 @@ export const parseZenodoRecords = (json: ZenodoApiResponse): IMetadata[] => {
     tags: r.metadata?.keywords ?? [],
     html: r.links.self_html,
     license: r.metadata?.license?.id ?? "Desconhecida",
-    files: (r.files ?? []).map((f: any) => ({
+    files: (r.files ?? []).map((f: ZenodoApiFile) => ({
       name: f.key,
       downloadUrl: f.links.self,
     })),

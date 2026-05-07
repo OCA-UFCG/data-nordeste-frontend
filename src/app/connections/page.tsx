@@ -1,6 +1,6 @@
 import HubTemplate from "@/templates/HubTemplate";
 import PageHeader from "@/components/PageHeader/PageHeader";
-import ProjectBigCard from "@/components/ProjectBigtCard/ProjectBigCard";
+import ProjectBigCard from "@/components/ProjectBigCard/ProjectBigCard";
 import { IPageHeader, Project } from "@/utils/interfaces";
 import { getContent } from "@/utils/contentful";
 import { CONNECTIONS_PAGE_QUERY } from "@/utils/queries";
@@ -10,7 +10,7 @@ interface IConnectionsContent {
   partnersCollection: { items: Project[] };
 }
 
-export default async function Connections({}: {}) {
+export default async function Connections() {
   const {
     pageHeadersCollection: pageHeaders,
     partnersCollection: partners,
