@@ -2,47 +2,19 @@
 
 import { useMemo } from "react";
 import { Icon } from "@/components/Icon/Icon";
-import { macroThemes } from "@/utils/constants";
-import { IMetadata, MacroTheme, Tag } from "@/utils/interfaces";
-import { normalizeKey } from "@/utils/functions";
+import { IMetadata, MacroTheme } from "@/utils/interfaces";
 import DOMPurify from "dompurify";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ZENODO_BASE_URL } from "@/utils/constants";
-
-const buildThemeLookup = (themes: MacroTheme[]) => {
-  const map: Record<string, MacroTheme> = {};
-
-  themes.forEach((theme) => {
-    if (!theme) return;
-    const candidates = new Set<string>();
-
-    const idKey = normalizeKey(theme.id);
-    const sysIdKey = normalizeKey(theme.sys?.id);
-    const nameKey = normalizeKey(theme.name);
-
-    [idKey, sysIdKey, nameKey].forEach((key) => key && candidates.add(key));
-    if (nameKey) {
-      candidates.add(nameKey.replace(/_/g, "-"));
-      candidates.add(nameKey.replace(/-/g, "_"));
-    }
-
-    Object.keys(macroThemes).forEach((macroKey) => {
-      const macroNormalized = normalizeKey(macroKey);
-      if ([idKey, sysIdKey, nameKey].includes(macroNormalized)) {
-        candidates.add(macroNormalized);
-      }
-    });
-
-    candidates.forEach((key) => {
-      if (!map[key]) {
-        map[key] = theme;
-      }
-    });
-  });
-
-  return map;
-};
+import {
+  buildCatalogTagViews,
+  formatCatalogPublicationDate,
+} from "@/features/catalog/records";
+import {
+  buildZenodoArchiveFileName,
+  buildZenodoFilesArchiveUrl,
+} from "@/lib/zenodo";
+import { downloadFile } from "@/lib/download";
 
 export const DataCard = ({
   post,
@@ -52,60 +24,22 @@ export const DataCard = ({
   themes: MacroTheme[];
 }) => {
   const files = post.files || [];
+  const normalizedTags = buildCatalogTagViews(post.tags, themes);
+  const formattedDate = formatCatalogPublicationDate(post.publication_date);
 
-  const themeLookup = buildThemeLookup(themes);
-
-  const normalizedTags = ((post.tags ?? []) as Tag[]).map((tag: Tag, index) => {
-    const tagName = typeof tag === "string" ? tag : tag.name ?? "";
-    const tagSlug = typeof tag === "string" ? tag : tag.slug ?? tagName;
-
-    const normalized = normalizeKey(tagSlug || tagName);
-    const themeMatch =
-      themeLookup[normalized] ||
-      themeLookup[normalized.replace(/-/g, "_")] ||
-      themeLookup[normalized.replace(/_/g, "-")] ||
-      themeLookup[normalizeKey(tagName)];
-
-    const finalLabel = themeMatch?.name ?? tagName;
-    const color = themeMatch?.color ?? "#018F39";
-
-    return {
-      key: `${normalized || `tag-${index}`}-${index}`,
-      label: finalLabel,
-      color,
-    };
-  });
-
-  const formattedDate = (() => {
-    if (!post.publication_date) return "-";
-    const parsed = new Date(post.publication_date);
-    if (Number.isNaN(parsed.getTime())) return post.publication_date;
-
-    return parsed.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-  })();
   const handleDownload = async (url: string, name: string) => {
     try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = name;
-      link.click();
-      URL.revokeObjectURL(blobUrl);
+      await downloadFile(url, name);
     } catch (err) {
       console.error("Erro ao baixar arquivo:", err);
     }
   };
 
   const handleDownloadZippedFiles = async () => {
-    const zipUrl = `${ZENODO_BASE_URL}/${post.id}/files-archive`;
-    const fileName = post.title.replace(/\s+/g, "_").toLowerCase() + ".zip";
+    // INTENTIONAL: Zenodo exposes a synthetic archive endpoint per record; the
+    // file list below still uses individual file API URLs.
+    const zipUrl = buildZenodoFilesArchiveUrl(post.id);
+    const fileName = buildZenodoArchiveFileName(post.title);
     await handleDownload(zipUrl, fileName);
   };
 

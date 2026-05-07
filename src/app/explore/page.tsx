@@ -5,6 +5,10 @@ import { getContent } from "@/utils/contentful";
 import { IPageHeader, MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { EXPLORE_PAGE_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
+import {
+  buildPostTypeFields,
+  EXPLORE_ROUTE_POST_TYPES,
+} from "@/features/posts/postTypes";
 
 interface IPostsContent {
   pageHeadersCollection: { items: IPageHeader[] };
@@ -33,12 +37,7 @@ export default async function ExplorePage() {
             {
               title: "Tipo de publicação",
               type: "type_in",
-              fields: {
-                "additional-content": "Notícia",
-                "data-panel": "Painel de dados",
-                "newsletter": "Boletim",
-                "data-story": "DataStories",
-              },
+              fields: buildPostTypeFields(EXPLORE_ROUTE_POST_TYPES),
             },
             {
               title: "Categorias dos painéis",
@@ -50,12 +49,7 @@ export default async function ExplorePage() {
           ]}
           header={sectionHead.items[0]}
           rootFilter={{
-            type_in: [
-              "data-panel",
-              "newsletter",
-              "additional-content",
-              "data-story",
-            ],
+            type_in: EXPLORE_ROUTE_POST_TYPES,
           }}
           totalPages={pages.total || 1}
         />

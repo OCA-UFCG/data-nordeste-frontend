@@ -1,5 +1,5 @@
 import { IFeedbackAnswer } from "@/utils/interfaces";
-import { initializeApp } from "firebase/app";
+import { FirebaseApp, initializeApp } from "firebase/app";
 import {
   AppCheck,
   initializeAppCheck,
@@ -12,6 +12,32 @@ const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
+
+type BrowserInfo = {
+  name?: string;
+  version?: string;
+};
+
+type ScreenInfo = {
+  width: number;
+  height: number;
+};
+
+type SurveyFeedbackPayload = {
+  browser: BrowserInfo;
+  screen: ScreenInfo;
+  timeZone: string;
+  answers: IFeedbackAnswer[];
+};
+
+type SurveyFeedbackClientDeps = {
+  appCheckToken: () => Promise<string>;
+  endpoint: () => string;
+  fetcher: typeof fetch;
+  getBrowserInfo: () => BrowserInfo;
+  getScreenInfo: () => ScreenInfo;
+  getTimeZone: () => string;
 };
 
 const getRequiredPublicEnv = (name: string): string => {
@@ -38,10 +64,10 @@ export const app = initializeApp(firebaseConfig);
 
 let appCheckInstance: AppCheck | null = null;
 
-const getAppCheck = () => {
+const getAppCheck = (firebaseApp: FirebaseApp = app) => {
   if (!appCheckInstance) {
     try {
-      appCheckInstance = initializeAppCheck(app, {
+      appCheckInstance = initializeAppCheck(firebaseApp, {
         provider: new ReCaptchaV3Provider(
           getRequiredPublicEnv("NEXT_PUBLIC_RECAPTCHA_KEY"),
         ),
@@ -61,46 +87,58 @@ const getAppCheck = () => {
   return appCheckInstance;
 };
 
-export async function sendSurveyFeedback(answers: IFeedbackAnswer[]) {
-  try {
-    const appCheck = getAppCheck();
+const getDefaultAppCheckToken = async (): Promise<string> => {
+  const appCheck = getAppCheck();
 
-    if (!appCheck) {
-      throw new Error(
-        "Firebase App Check was not initialized; expected a valid NEXT_PUBLIC_RECAPTCHA_KEY and browser App Check support.",
-      );
-    }
+  if (!appCheck) {
+    throw new Error(
+      "Firebase App Check was not initialized; expected a valid NEXT_PUBLIC_RECAPTCHA_KEY and browser App Check support.",
+    );
+  }
 
-    const tokenResult = await getToken(appCheck);
+  const tokenResult = await getToken(appCheck);
 
-    const parser = new UAParser().getResult();
+  return tokenResult.token;
+};
 
-    const browserInfo = {
-      name: parser.browser.name,
-      version: parser.browser.version,
-    };
+const getDefaultBrowserInfo = (): BrowserInfo => {
+  const parser = new UAParser().getResult();
 
-    const screenInfo = {
-      width: window.screen.width,
-      height: window.screen.height,
-    };
+  return {
+    name: parser.browser.name,
+    version: parser.browser.version,
+  };
+};
 
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const getDefaultScreenInfo = (): ScreenInfo => ({
+  width: window.screen.width,
+  height: window.screen.height,
+});
 
-    const payload = {
-      browser: browserInfo,
-      screen: screenInfo,
-      timeZone,
-      answers,
-    };
+const getDefaultTimeZone = (): string =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    const feedbackUrl = getRequiredPublicEnv("NEXT_PUBLIC_SURVEY_FEEDBACK_URL");
+const buildSurveyFeedbackPayload = (
+  answers: IFeedbackAnswer[],
+  deps: SurveyFeedbackClientDeps,
+): SurveyFeedbackPayload => ({
+  browser: deps.getBrowserInfo(),
+  screen: deps.getScreenInfo(),
+  timeZone: deps.getTimeZone(),
+  answers,
+});
 
-    const res = await fetch(feedbackUrl, {
+export const createSurveyFeedbackClient = (deps: SurveyFeedbackClientDeps) => {
+  return async function submitSurveyFeedback(answers: IFeedbackAnswer[]) {
+    const token = await deps.appCheckToken();
+    const feedbackUrl = deps.endpoint();
+    const payload = buildSurveyFeedbackPayload(answers, deps);
+
+    const res = await deps.fetcher(feedbackUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Firebase-AppCheck": tokenResult.token,
+        "X-Firebase-AppCheck": token,
       },
       body: JSON.stringify(payload),
     });
@@ -114,6 +152,21 @@ export async function sendSurveyFeedback(answers: IFeedbackAnswer[]) {
     const result = await res.json();
 
     return result;
+  };
+};
+
+const defaultSurveyFeedbackClient = createSurveyFeedbackClient({
+  appCheckToken: getDefaultAppCheckToken,
+  endpoint: () => getRequiredPublicEnv("NEXT_PUBLIC_SURVEY_FEEDBACK_URL"),
+  fetcher: fetch,
+  getBrowserInfo: getDefaultBrowserInfo,
+  getScreenInfo: getDefaultScreenInfo,
+  getTimeZone: getDefaultTimeZone,
+});
+
+export async function sendSurveyFeedback(answers: IFeedbackAnswer[]) {
+  try {
+    return await defaultSurveyFeedbackClient(answers);
   } catch (error) {
     console.error(
       JSON.stringify({

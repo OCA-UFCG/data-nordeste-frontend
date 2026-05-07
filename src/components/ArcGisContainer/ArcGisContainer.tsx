@@ -1,40 +1,12 @@
 "use client";
 
+import { addArcGisEmbedQueryIfMissing } from "@/features/embeds/arcgis";
+
 type ArcGisContainerProps = {
   source: string;
   title?: string;
   date?: string | null;
   allow?: string;
-};
-
-const addEmbedQueryIfMissing = (url: string) => {
-  try {
-    const parsed = new URL(url);
-
-    // IMPORTANT: ArcGIS embed routes depend on embed=true to render as framed
-    // experiences instead of full navigation pages.
-    if (
-      parsed.hostname.endsWith("storymaps.arcgis.com") &&
-      parsed.pathname.startsWith("/stories/")
-    ) {
-      if (!parsed.searchParams.has("embed")) {
-        parsed.searchParams.set("embed", "true");
-      }
-    }
-
-    if (
-      parsed.hostname.endsWith("experience.arcgis.com") &&
-      parsed.pathname.startsWith("/experience/")
-    ) {
-      if (!parsed.searchParams.has("embed")) {
-        parsed.searchParams.set("embed", "true");
-      }
-    }
-
-    return parsed.toString();
-  } catch {
-    return url;
-  }
 };
 
 const ArcGisContainer = ({
@@ -60,7 +32,7 @@ const ArcGisContainer = ({
       )}
 
       <iframe
-        src={addEmbedQueryIfMissing(source)}
+        src={addArcGisEmbedQueryIfMissing(source)}
         allowFullScreen
         allow={allow}
         title={title || "ArcGIS"}

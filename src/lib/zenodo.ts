@@ -46,14 +46,17 @@ export type ZenodoCommunityRecordsResult = {
   currentPage: number;
 };
 
+export type ZenodoRecordsFetcher = (url: string) => Promise<ZenodoApiResponse>;
+
 export async function getZenodoCommunityRecords(
   page: number,
   size: number,
   filters: ZenodoFilters = {},
+  fetchRecords: ZenodoRecordsFetcher = fetchZenodoData,
 ): Promise<ZenodoCommunityRecordsResult> {
   const query = buildZenodoRecordsQuery(page, size, filters);
   const url = `${ZENODO_BASE_URL}?${query.toString()}`;
-  const json = await fetchZenodoData(url);
+  const json = await fetchRecords(url);
   const records = parseZenodoRecords(json);
 
   return {
@@ -93,6 +96,12 @@ export const buildZenodoRecordsQuery = (
   return query;
 };
 
+export const buildZenodoFilesArchiveUrl = (recordId: string): string =>
+  `${ZENODO_BASE_URL}/${recordId}/files-archive`;
+
+export const buildZenodoArchiveFileName = (title: string): string =>
+  title.replace(/\s+/g, "_").toLowerCase() + ".zip";
+
 const buildConditions = (filters: ZenodoFilters) => {
   let dateCondition = "";
   const otherConditions: string[] = [];
@@ -129,6 +138,8 @@ const formatDate = (date: Date): string => {
 };
 
 const fetchZenodoData = async (url: string): Promise<ZenodoApiResponse> => {
+  // PERF: Zenodo catalog data is shared by filters and pagination, so keep a
+  // short Next revalidation window instead of refetching every request.
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",

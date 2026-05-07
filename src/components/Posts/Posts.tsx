@@ -5,12 +5,18 @@ import { FilterForm } from "../PostsGrid/FilterForm";
 import { PostsGrid } from "../PostsGrid/PostsGrid";
 import { IPublication, SectionHeader } from "@/utils/interfaces";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { POSTS_PER_PAGE, sortingTypes } from "@/utils/constants";
-import { createQueryString } from "@/utils/functions";
+import { sortingTypes } from "@/utils/constants";
 import { SortSelect } from "../PostsGrid/SortSelect";
 import { getContent } from "@/utils/contentful";
 import { PUBLICATION_QUERY } from "@/utils/queries";
-import { parsePostsFilters, PostsFilterForm } from "@/features/posts/filters";
+import {
+  buildPostsContentfulFilter,
+  buildPostsSkip,
+  buildPostsTotalPages,
+  buildPostsUrlQuery,
+  parsePostsQueryState,
+  PostsFilterForm,
+} from "@/features/posts/filters";
 import { FilterFormGroup } from "@/features/filters/form";
 
 export const Posts = ({
@@ -38,36 +44,19 @@ export const Posts = ({
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
   const [posts, setPosts] = useState<IPublication[]>([]);
-  const filter = useMemo(() => {
+  const queryState = useMemo(() => {
     const searchParams = new URLSearchParams(paramsKey);
 
-    return {
-      type_in: searchParams.get("type_in")?.split(",") || undefined,
-      category: searchParams.get("category")?.split(",") || [],
-      date_lte: Date.parse(searchParams.get(`date_lte`) || "")
-        ? new Date(searchParams.get(`date_lte`) || "")
-        : undefined,
-      date_gte: Date.parse(searchParams.get(`date_gte`) || "")
-        ? new Date(searchParams.get(`date_gte`) || "")
-        : undefined,
-    };
-  }, [paramsKey]);
-
-  const currentPage = useMemo(() => {
-    const searchParams = new URLSearchParams(paramsKey);
-    const paramPages = Number(searchParams.get("page") || 1);
-
-    return pages >= paramPages ? paramPages : 1;
+    return parsePostsQueryState(searchParams, pages);
   }, [pages, paramsKey]);
 
   const syncUrlFromForm = (currentForm: PostsFilterForm) => {
-    const { urlParams } = parsePostsFilters(currentForm);
     router.replace(
-      pathname +
-        "?" +
-        createQueryString({ ...urlParams, page: currentPage.toString() }),
+      pathname + "?" + buildPostsUrlQuery(currentForm, currentPage),
     );
   };
+
+  const { currentPage, filter } = queryState;
 
   useEffect(() => {
     setLoading(true);
@@ -80,17 +69,14 @@ export const Posts = ({
           postCollection: { total: number; items: IPublication[] };
         }>(PUBLICATION_QUERY, {
           order: sorting,
-          skip: POSTS_PER_PAGE * (currentPage - 1),
-          filter: {
-            ...rootFilter,
-            ...parsePostsFilters(filter).contentfulFilter,
-          },
+          skip: buildPostsSkip(currentPage),
+          filter: buildPostsContentfulFilter(filter, rootFilter),
         }),
       );
     }).then((value) => {
       const { postCollection: posts } = value;
       setPosts(posts.items);
-      setPages(Math.ceil(posts.total / POSTS_PER_PAGE));
+      setPages(buildPostsTotalPages(posts.total));
       setLoading(false);
     });
   }, [currentPage, filter, rootFilter, sorting]);

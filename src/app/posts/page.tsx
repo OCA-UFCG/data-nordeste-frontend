@@ -5,6 +5,10 @@ import { getContent } from "@/utils/contentful";
 import { IPageHeader, MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { POST_PAGE_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
+import {
+  buildPostTypeFields,
+  POSTS_ROUTE_POST_TYPES,
+} from "@/features/posts/postTypes";
 
 interface IPostsContent {
   pageHeadersCollection: { items: IPageHeader[] };
@@ -31,18 +35,14 @@ export default async function PostsPage() {
         <Posts
           header={sectionHead.items[0]}
           rootFilter={{
-            type_in: ["newsletter", "additional-content", "data-story"],
+            type_in: POSTS_ROUTE_POST_TYPES,
           }}
           totalPages={pages.total || 1}
           filterGroups={[
             {
               title: "Tipo de publicação",
               type: "type_in",
-              fields: {
-                "additional-content": "Notícia",
-                "newsletter": "Boletim",
-                "data-story": "DataStories",
-              },
+              fields: buildPostTypeFields(POSTS_ROUTE_POST_TYPES),
             },
             {
               title: "Categorias dos painéis",

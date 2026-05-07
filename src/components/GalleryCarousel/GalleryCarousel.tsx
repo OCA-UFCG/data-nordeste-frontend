@@ -17,17 +17,27 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import Link from "next/link";
 
+const DEFAULT_IMAGE_HEIGHT = 400;
+
+type GalleryPhoto = {
+  url: string;
+  width: string;
+  height: string;
+  description: string;
+  title?: string;
+};
+
 const GalleryCarousel = ({
   album,
   length,
 }: {
-  album: { url: string; width: string; height: string; description: string }[];
+  album: GalleryPhoto[];
   length: string;
 }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
-  const slides = album.map((photo: any) => ({
+  const slides = album.map((photo) => ({
     src: `${photo?.url || ""}`,
     alt: photo?.description || "",
   }));
@@ -41,9 +51,13 @@ const GalleryCarousel = ({
           className="flex flex-col gap-4 content-carousel py-4"
         >
           <CarouselContent className="-ml-0">
-            {album.map((photo: any, index: number) => {
+            {album.map((photo, index) => {
               const imageUrl = `${photo?.url || ""}`;
-              const height = (600 * photo?.height) / photo?.width;
+              const width = Number(photo.width);
+              const sourceHeight = Number(photo.height);
+              const height = width
+                ? (600 * sourceHeight) / width
+                : DEFAULT_IMAGE_HEIGHT;
 
               const path = photo?.description;
 

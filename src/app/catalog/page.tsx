@@ -4,7 +4,7 @@ import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
 import { FILTERS_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
-import { MacroTheme } from "@/utils/interfaces";
+import { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
 
 interface IFilterDataPage {
   filterDataPageCollection: {
@@ -23,7 +23,7 @@ interface IFilterDataPage {
     items: {
       title: string;
       subtitle?: string;
-      richSubtitle?: { json: any };
+      richSubtitle?: ContentfulRichTextField;
     }[];
   };
   themeCollection?: {

@@ -10,9 +10,15 @@ import {
   Filters,
   IMetadata,
   MacroTheme,
-  Tag,
 } from "@/utils/interfaces";
 import { DataList } from "../DataList/DataList";
+import { applyCatalogFilterLabels } from "@/features/catalog/records";
+import {
+  buildCatalogFilterGroups,
+  buildCatalogFilterValues,
+  buildCatalogSlugTitleMap,
+  buildCatalogUrlParams,
+} from "@/features/catalog/filters";
 
 export const DataRecords = ({
   filters,
@@ -31,56 +37,17 @@ export const DataRecords = ({
 
   const currentPage = useMemo(() => Number(params.get("page") || 1), [params]);
 
-  const slugToTitle = useMemo(() => {
-    const map: { [slug: string]: string } = {};
-    filters.forEach((filter) => {
-      filter.options.forEach((opt) => {
-        map[opt.slug] = opt.title;
-      });
-    });
-
-    return map;
-  }, [filters]);
+  const slugToTitle = useMemo(
+    () => buildCatalogSlugTitleMap(filters),
+    [filters],
+  );
 
   const filtersFromUrl = useMemo((): Filters => {
-    const base: Filters = {
-      date_gte: params.get("date_gte")
-        ? new Date(params.get("date_gte")!)
-        : undefined,
-      date_lte: params.get("date_lte")
-        ? new Date(params.get("date_lte")!)
-        : undefined,
-      sort: params.get("sort") || undefined,
-    };
-
-    filters.forEach(({ type }) => {
-      const value = params.get(type);
-      if (value) {
-        base[type] = value.split(",").filter(Boolean);
-      } else {
-        base[type] = [];
-      }
-    });
-
-    return base;
+    return buildCatalogFilterValues(params, filters);
   }, [params, filters]);
 
   const updateUrl = (newFilters: Filters, page: number = 1) => {
-    const urlParams = new URLSearchParams();
-
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (!value) return;
-
-      if (Array.isArray(value) && value.length > 0) {
-        urlParams.set(key, value.join(","));
-      } else if (value instanceof Date) {
-        urlParams.set(key, value.toISOString());
-      } else if (typeof value == "string") {
-        urlParams.set(key, value);
-      }
-    });
-
-    if (page > 1) urlParams.set("page", page.toString());
+    const urlParams = buildCatalogUrlParams(newFilters, page);
 
     router.push(urlParams.toString() ? `${pathname}?${urlParams}` : pathname);
   };
@@ -89,24 +56,9 @@ export const DataRecords = ({
     setLoading(true);
     getZenodoCommunityRecords(currentPage, RECORDS_PER_PAGE, filtersFromUrl)
       .then((res) => {
-        const recordsFormattedTags: IMetadata[] = res.records.map(
-          (record: IMetadata) => {
-            const rawTags = Array.isArray(record.tags) ? record.tags : [];
-
-            const tags: Tag[] = rawTags.map((t) => {
-              if (typeof t === "string") {
-                return { slug: t, name: slugToTitle[t] || t };
-              }
-              const key = t.slug ?? t.name ?? "";
-
-              return { slug: key, name: slugToTitle[key] || t.name || key };
-            });
-
-            return {
-              ...record,
-              tags,
-            };
-          },
+        const recordsFormattedTags: IMetadata[] = applyCatalogFilterLabels(
+          res.records,
+          slugToTitle,
         );
 
         setMetadata(recordsFormattedTags);
@@ -119,11 +71,7 @@ export const DataRecords = ({
   const handleSortChange = (sort: string) =>
     updateUrl({ ...filtersFromUrl, sort });
 
-  const filterGroups = filters.map(({ title, type, options }) => ({
-    title,
-    type,
-    fields: Object.fromEntries(options.map(({ slug, title }) => [slug, title])),
-  }));
+  const filterGroups = buildCatalogFilterGroups(filters);
 
   return (
     <section className="flex flex-col items-center gap-8 w-full max-w-[1440px] mx-auto px-6 sm:px-10 md:px-10 lg:px-20 py-4">

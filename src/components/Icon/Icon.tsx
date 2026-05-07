@@ -1,3 +1,5 @@
+import type { MouseEventHandler, SVGProps } from "react";
+
 export const Icon = ({
   id,
   size,
@@ -11,9 +13,9 @@ export const Icon = ({
   width?: number;
   height?: number;
   props?: object;
-  onClick?: (arg0: any) => void;
+  onClick?: MouseEventHandler<SVGSVGElement>;
   className?: string;
-}) => {
+} & SVGProps<SVGSVGElement>) => {
   return (
     <svg
       {...props}
