@@ -1,89 +1,120 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Data Nordeste Frontend
 
-## Getting Started
+Frontend do Data Nordeste, portal público da SUDENE para consulta de dados,
+indicadores regionais, publicações, conjuntos de dados, painéis interativos,
+datastories, parceiros e conteúdo institucional.
 
-### Prerequisites
+Este repositório é uma aplicação Next.js com App Router. A maior parte do
+conteúdo visível vem de integrações externas, principalmente Contentful, Zenodo,
+Power BI, ArcGIS e Firebase.
 
-To run the project locally, make sure you have the following installed:
+Para contexto operacional detalhado para agentes e mantenedores, leia também
+[`docs/README.md`](docs/README.md). Regras de escrita, estrutura e validação de
+código ficam em [`AGENTS.md`](AGENTS.md).
 
-- [Docker Engine](https://docs.docker.com/engine/install/)
+## Pré-requisitos
 
-- [GNU Make](https://www.gnu.org/software/make/)
+- Docker Engine
+- GNU Make
+- Node.js e npm instalados localmente para editor, lint, testes e build
 
-#### Configure your .env
-```
+## Configuração Local
+
+Crie o arquivo de ambiente a partir do exemplo:
+
+```bash
 cp .env.sample .env
-# Populate values
-source .env
 ```
 
-#### Install the dependencies
-Even when running the project with Docker, it is recommended to install the dependencies locally so that the code editor can properly resolve imports, formatting rules, and linting configuration:
-```
+Preencha as variáveis necessárias no `.env`. Não documente valores reais de
+segredos no repositório.
+
+Mesmo usando Docker, instale as dependências localmente para que o editor
+resolva imports, tipos, regras de lint e formatação:
+
+```bash
 npm install
 ```
-#### Run the development server
-You can run the project using Makefile commands.
-```
+
+## Como Rodar
+
+Fluxo recomendado com Docker:
+
+```bash
 make docker-build-dev
 make docker-run-dev
 ```
-Open http://localhost:3000 with your browser to see the result.
 
-#### Running without Docker (not recommended)
-If you prefer not to use Docker, you can run the project directly with npm.
-```
+Abra `http://localhost:3000`.
+
+Também é possível rodar sem Docker:
+
+```bash
 npm run dev
 ```
 
-#### Available Make commands
-You can run the development server manually with **Makefile** commands:
-* `make run-dev`: Runs the development environment using npm.
-* `make run-prod`: Builds the project and starts the production server using npm.
-* `make docker-run-dev`: Runs the development environment using Docker, mapping the container port to 3000 and mounting necessary volumes.
-* `make docker-build-prod`: Builds the production environment Docker image with specified build arguments.
-* `make docker-run-prod`: Runs the production environment Docker container with specified configurations.
-* `make docker-run-beta`: Runs the beta environment Docker container with specified configurations.
+## Comandos Úteis
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `npm run dev`: inicia o servidor Next.js local.
+- `npm run lint`: executa ESLint.
+- `npm test`: executa a suíte Vitest.
+- `npm run build`: gera build de produção e valida tipos/rotas do Next.js.
+- `npm start`: inicia o servidor de produção após o build.
+- `make run-dev`: roda o ambiente de desenvolvimento com npm.
+- `make run-prod`: faz build e inicia produção com npm.
+- `make docker-run-dev`: roda desenvolvimento com Docker.
+- `make docker-build-prod`: constrói imagem Docker de produção.
+- `make docker-run-prod`: roda container de produção.
+- `make docker-run-beta`: roda container beta.
 
-## Conventions
+## Rotas Principais
 
-### Branches
+- `/`: homepage com banners, cards de indicadores, publicações recentes,
+  macrotemas, seção institucional, parceiros e pesquisa de feedback.
+- `/macrothemes/[slug]`: página de um macrotema. A URL usa hífens e o código
+  normaliza para underscores antes de consultar o Contentful.
+- `/posts`: lista publicações do Contentful, como boletins, notícias e
+  datastories.
+- `/explore`: lista experiências de dados interativas e publicações relacionadas.
+- `/catalog`: lista datasets da comunidade `datane` no Zenodo.
+- `/data-panel/[id]`: carrega um painel do Contentful e embute o Power BI.
+- `/data-stories/[id]`: embute um ArcGIS StoryMap por ID.
+- `/experience/[id]`: embute uma experiência ArcGIS Experience Builder por ID.
+- `/about`: conteúdo institucional, contatos, rede de colaboração, história e
+  valores.
+- `/connections`: parceiros e projetos.
+- `/health`: endpoint de health check.
 
-When creating a new branch, we must use the following convention:
+## Integrações
 
-- `feat/<<semantic description>>`: For new features
-- `fix/<<semantic description>>`: For bux fixes
-- `refact/<<semantic description>>`: For code refactoring
-- `test/<<semantic description>>`: For new tests implementations
-- `docs/<<semantic description>>`: For new documentation
+- **Contentful:** fonte de verdade para navegação, páginas, seções, posts,
+  macrotemas, painéis, cards, parceiros, conteúdo institucional e perguntas da
+  pesquisa.
+- **Zenodo:** fonte do catálogo de datasets, usando a comunidade `datane`.
+- **Power BI:** painéis interativos embutidos via iframe com fonte configurada no
+  Contentful.
+- **ArcGIS:** StoryMaps e Experience Builder embutidos a partir de IDs públicos.
+- **Firebase App Check:** usado no envio da pesquisa de feedback.
+- **Google Analytics:** configurado por variável pública de ambiente.
 
-### Commits
+## Convenções De Trabalho
 
-When adding a new commit to our branch, we must use the following convention (similar to branch creation):
+Use branches semânticas:
 
-- `feat: implementing new feature for ...` or `feat(<<context>>): implementing new feature for ...`
-- `fix: fixing bug on ...` or `fix(<<context>>): fixing bug on ...`
-- `refact: refactoring ... logic` or `refactor(<<context>>): refactoring ... logic`
-- `test: implementing new tests for ...`
-- `docs: "new method or new function" documentation`
+- `feat/<descricao>` para novas funcionalidades.
+- `fix/<descricao>` para correções.
+- `refact/<descricao>` para refactors.
+- `test/<descricao>` para testes.
+- `docs/<descricao>` para documentação.
 
-> Credit Card IIN Ranges & Spacing Patterns information from: <https://baymard.com/checkout-usability/credit-card-patterns>
+Use commits semânticos:
 
-## Learn More
+- `feat: ...`
+- `fix: ...`
+- `refactor: ...`
+- `test: ...`
+- `docs: ...`
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Antes de finalizar mudanças de código, rode `npm run lint`. Rode também
+`npm test` quando houver lógica coberta por testes ou correção de bug. Rode
+`npm run build` quando alterar rotas, configuração Next.js, tipos ou integrações.

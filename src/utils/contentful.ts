@@ -29,6 +29,8 @@ export function buildContentfulEndpoint(env: ContentfulEnv): string {
   const hostUrl = env.NEXT_PUBLIC_HOST_URL || "http://localhost:3000";
   const base = hostUrl.replace(/\/+$/, "");
 
+  // LEGACY: /contentful-api is provided by the deployment Nginx proxy when the
+  // app is not configured to call Contentful GraphQL directly.
   return `${base}/contentful-api`;
 }
 

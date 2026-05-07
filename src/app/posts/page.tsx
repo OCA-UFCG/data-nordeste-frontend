@@ -12,7 +12,7 @@ interface IPostsContent {
   postCollection: { total: number };
 }
 
-export default async function DataPanel({}: {}) {
+export default async function PostsPage({}: {}) {
   const {
     sectionHeadCollection: sectionHead,
     pageHeadersCollection: pageHeaders,

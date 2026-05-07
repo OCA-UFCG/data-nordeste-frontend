@@ -29,6 +29,8 @@ export default async function MacroThemePage({
 }) {
   const { slug } = await params;
 
+  // LEGACY: public macrotheme URLs use hyphens, while Contentful stores the IDs
+  // with underscores. Keep this normalization or shared links will stop loading.
   const normalizedSlug = slug.replace(/-/g, "_");
 
   const {

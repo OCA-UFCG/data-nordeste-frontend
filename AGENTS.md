@@ -60,9 +60,8 @@ if (!ARC_GIS_ID_PATTERN.test(id)) notFound();
 
 # Tests
 
-This project does not currently define an automated test command in package.json.
-Before finishing changes, run npm run lint. Run npm run build when changing routes, Next.js config, types, or integrations.
-When tests are added, expose them through a single package.json script.
+This project exposes automated tests through npm test.
+Before finishing code changes, run npm run lint. Run npm test when changing tested logic or fixing bugs. Run npm run build when changing routes, Next.js config, types, or integrations.
 Bug fixes get a regression test when test infrastructure exists.
 Mock external I/O (API, DB, filesystem) with named fake classes, not inline stubs.
 Tests must be F.I.R.S.T: fast, independent, repeatable, self-validating, timely.

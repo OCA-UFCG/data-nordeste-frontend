@@ -11,7 +11,8 @@ const addEmbedQueryIfMissing = (url: string) => {
   try {
     const parsed = new URL(url);
 
-    // StoryMaps supports embed=true; keep behavior for other ArcGIS apps.
+    // IMPORTANT: ArcGIS embed routes depend on embed=true to render as framed
+    // experiences instead of full navigation pages.
     if (
       parsed.hostname.endsWith("storymaps.arcgis.com") &&
       parsed.pathname.startsWith("/stories/")
@@ -21,7 +22,6 @@ const addEmbedQueryIfMissing = (url: string) => {
       }
     }
 
-    // Experience Builder also supports embed=true.
     if (
       parsed.hostname.endsWith("experience.arcgis.com") &&
       parsed.pathname.startsWith("/experience/")
