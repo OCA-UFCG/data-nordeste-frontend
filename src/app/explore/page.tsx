@@ -29,13 +29,25 @@ export default async function ExplorePage() {
       <PageHeader content={pageHeaders.items[0]} />
       <Suspense>
         <Posts
-          categories={{
-            title: "Categorias dos painéis",
-            type: "category",
-            fields: Object.fromEntries(
-              themes.items.map((theme) => [theme.sys.id, theme.name]),
-            ),
-          }}
+          filterGroups={[
+            {
+              title: "Tipo de publicação",
+              type: "type_in",
+              fields: {
+                "additional-content": "Notícia",
+                "data-panel": "Painel de dados",
+                "newsletter": "Boletim",
+                "data-story": "DataStories",
+              },
+            },
+            {
+              title: "Categorias dos painéis",
+              type: "category",
+              fields: Object.fromEntries(
+                themes.items.map((theme) => [theme.sys.id, theme.name]),
+              ),
+            },
+          ]}
           header={sectionHead.items[0]}
           rootFilter={{
             type_in: [

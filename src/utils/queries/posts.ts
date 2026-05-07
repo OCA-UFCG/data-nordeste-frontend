@@ -20,6 +20,15 @@ export const POST_PAGE_QUERY = `
       }
     }
 
+    themeCollection(preview: $preview) {
+      items {
+        name
+        sys {
+          id
+        }
+      }
+    }
+
     postCollection(preview: $preview) {
       total
     }

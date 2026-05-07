@@ -11,22 +11,22 @@ import { SortSelect } from "../PostsGrid/SortSelect";
 import { getContent } from "@/utils/contentful";
 import { PUBLICATION_QUERY } from "@/utils/queries";
 import { parsePostsFilters, PostsFilterForm } from "@/features/posts/filters";
+import { FilterFormGroup } from "@/features/filters/form";
 
 export const Posts = ({
   header,
   categories,
+  filterGroups,
   totalPages,
   rootFilter = {},
 }: {
   header: SectionHeader;
-  categories: {
-    title: string;
-    type: string;
-    fields: { [key: string]: string };
-  };
   totalPages: number;
   rootFilter?: { [key: string]: string | string[] };
-}) => {
+} & (
+  | { categories: FilterFormGroup; filterGroups?: never }
+  | { filterGroups: FilterFormGroup[]; categories?: never }
+)) => {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -102,7 +102,9 @@ export const Posts = ({
         <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
           <FilterForm
             initSchema={filter}
-            selectFields={categories}
+            {...(filterGroups
+              ? { filterGroups }
+              : { selectFields: categories })}
             onReset={() => router.push(pathname)}
             onSubmit={(newForm) => syncUrlFromForm(newForm)}
           />

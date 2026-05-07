@@ -77,14 +77,16 @@ export function FilterForm({
             >
               <DateRangeFields form={form} />
 
-              {groups.map((group) => (
-                <CheckboxFilterGroup
-                  key={group.type}
-                  form={form}
-                  group={group}
-                  layout={layout}
-                />
-              ))}
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                {groups.map((group) => (
+                  <CheckboxFilterGroup
+                    key={group.type}
+                    form={form}
+                    group={group}
+                    layout={layout}
+                  />
+                ))}
+              </div>
 
               <FilterPopoverActions onCancel={() => setOpen(false)} />
             </form>
