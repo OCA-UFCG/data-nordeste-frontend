@@ -127,7 +127,7 @@ export default async function MacroThemePage({
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
           <section className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Painéis Interativos</h2>
+              <h2 className="text-2xl font-semibold">Painel de Dados</h2>
 
               <LinkButton
                 href={dashboardsHref}
@@ -147,7 +147,7 @@ export default async function MacroThemePage({
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
           <section className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Datastories</h2>
+              <h2 className="text-2xl font-semibold">Narrativa de Dados</h2>
 
               <LinkButton
                 href={datastoriesHref}
