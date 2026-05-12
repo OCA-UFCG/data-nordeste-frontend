@@ -55,11 +55,32 @@ export default async function DataPanel({
     notFound();
   }
 
+  const panel = panels.items[0];
+
   return (
     <HubTemplate>
-      <div className="flex justify-center h-full w-full items-center overflow-hidden">
-        <PowerBIContainer panel={panels.items[0]} pageName={pageName} />
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">
+        <div className="flex justify-center w-full items-center overflow-hidden">
+          <PowerBIContainer panel={panel} pageName={pageName} />
+        </div>
       </div>
+
+      {(panel.descriptionTitle || panel.description) && (
+        <section className="w-full bg-[#EFEFEF] py-10">
+          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 flex flex-col gap-6">
+            {panel.descriptionTitle && (
+              <h2 className="text-[30px] font-semibold leading-[36px] text-[#292829]">
+                {panel.descriptionTitle}
+              </h2>
+            )}
+            {panel.description && (
+              <p className="text-base leading-[150%] text-[#292829] whitespace-pre-line">
+                {panel.description}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
     </HubTemplate>
   );
 }

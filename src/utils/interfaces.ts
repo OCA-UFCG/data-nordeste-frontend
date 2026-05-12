@@ -85,7 +85,8 @@ export interface ReportData {
   title: string;
   source: string;
   macroTheme: string;
-  description: string;
+  description?: string;
+  descriptionTitle?: string;
 }
 
 export interface MacroTheme {

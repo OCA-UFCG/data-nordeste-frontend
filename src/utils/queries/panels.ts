@@ -6,6 +6,8 @@ export const DATA_PANEL_QUERY = `
         date
         source
         macroTheme
+        descriptionTitle
+        description
       }
     }
     pageHeadersCollection(limit: 1, where: { id_in: ["anchor"]}, preview: $preview) {
