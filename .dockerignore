@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+.husky
+*.log
+Dockerfile
+Dockerfile.production
+README.md
