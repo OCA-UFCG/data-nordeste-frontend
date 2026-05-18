@@ -81,6 +81,7 @@ export const themes = {
   "Infraestrutura e Saneamento": "infraestrutura-e-saneamento",
   "Segurança Hídrica": "seguranca-hidrica",
   "Meio Ambiente": "meio-ambiente",
+  "Instrumentos Sudene": "instrumentos-sudene",
 };
 
 export const exploreFilterMap: {
