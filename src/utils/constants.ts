@@ -65,6 +65,7 @@ export const POST_TYPES = {
 export const macroThemes: { [key: string]: string } = {
   economia_e_renda: "money",
   demografia: "user",
+  instrumentos_sudene: "instruments",
   saude: "health",
   educacao: "book",
   infraestrutura_e_saneamento: "screwdriver",
