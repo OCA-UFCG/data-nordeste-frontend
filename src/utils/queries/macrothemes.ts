@@ -121,5 +121,20 @@ export const MACROTHEME_PAGE_QUERY = `
         id
       }
     }
+
+    pageHeadersCollection(
+      where: { id_in: ["dataPanels", "dataNarrative", "publications"] }
+      limit: 3
+      preview: $preview
+    ) {
+      items {
+        id
+        title
+        subtitle
+        richSubtitle {
+          json
+        }
+      }
+    }
   }
 `;

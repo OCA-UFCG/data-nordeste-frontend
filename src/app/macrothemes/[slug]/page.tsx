@@ -1,6 +1,7 @@
 import HubTemplate from "@/templates/HubTemplate";
 import { MacroThemeBanner } from "@/components/MacroThemeBanner/MacroThemeBanner";
 import {
+  IPageHeader,
   IPreviewCards,
   IPublication,
   MacroTheme,
@@ -23,34 +24,14 @@ interface IMacroThemePageContent {
   themeCollection: { items: MacroTheme[] };
   postCollection: { items: IPublication[] };
   sectionHeadCollection: { items: SectionHeader[] };
+  pageHeadersCollection: { items: IPageHeader[] };
   previewCardsCollection: { items: IPreviewCards[] };
 }
 
-const SECTION_INFO = {
-  dashboards: {
-    label: "Saiba mais sobre painéis de dados",
-    title: "Saiba mais",
-    description:
-      "Um painel permite a interatividade e exploração dos dados de maneira dinâmica.",
-    href: "/explore",
-    ctaLabel: "Explore aqui o Panorama da Educação Regional",
-  },
-  datastories: {
-    label: "Saiba mais sobre narrativas de dados",
-    title: "Saiba mais",
-    description:
-      "Narrativas de dados apresentam análises guiadas, conectando indicadores, contexto e interpretação em um formato editorial.",
-    href: "/posts?type_in=data-story&page=1",
-    ctaLabel: "Explore aqui as narrativas de dados",
-  },
-  publications: {
-    label: "Saiba mais sobre publicações",
-    title: "Saiba mais",
-    description:
-      "Publicações reúnem boletins, notas técnicas e outros conteúdos para consulta e aprofundamento sobre os temas do portal.",
-    href: "/posts?page=1",
-    ctaLabel: "Explore aqui as publicações",
-  },
+const SECTION_HEADER_IDS = {
+  dashboards: "dataPanels",
+  datastories: "dataNarrative",
+  publications: "publications",
 } as const;
 
 export async function generateMetadata({
@@ -98,6 +79,7 @@ export default async function MacroThemePage({
     themeCollection,
     previewCardsCollection,
     sectionHeadCollection,
+    pageHeadersCollection,
     postCollection,
   }: IMacroThemePageContent = await getContent(MACROTHEME_PAGE_QUERY, {
     slug: normalizedSlug,
@@ -119,6 +101,38 @@ export default async function MacroThemePage({
   const datastories = postCollection.items.filter(
     (post) => post.type === "data-story",
   );
+
+  const pageHeadersById = new Map(
+    pageHeadersCollection.items
+      .filter((item): item is IPageHeader & { id: string } => Boolean(item?.id))
+      .map((item) => [item.id, item]),
+  );
+
+  const dashboardsHeader = pageHeadersById.get(SECTION_HEADER_IDS.dashboards);
+  const datastoriesHeader = pageHeadersById.get(SECTION_HEADER_IDS.datastories);
+  const publicationsHeader = pageHeadersById.get(
+    SECTION_HEADER_IDS.publications,
+  );
+
+  const renderTooltipContent = (header?: IPageHeader) => {
+    if (header?.richSubtitle?.json) {
+      return (
+        <div className="text-[16px] leading-6 text-[#292829] [&_a]:font-medium [&_a]:text-[#077432] [&_a]:underline-offset-2 [&_a:hover]:underline [&_p]:mb-6 [&_p:last-child]:mb-0">
+          {documentToReactComponents(header.richSubtitle.json)}
+        </div>
+      );
+    }
+
+    if (header?.subtitle) {
+      return (
+        <p className="text-[16px] leading-6 text-[#292829]">
+          {header.subtitle}
+        </p>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <HubTemplate>
@@ -156,8 +170,16 @@ export default async function MacroThemePage({
           <section className="space-y-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-semibold">Painel de Dados</h2>
-                <InfoTooltip {...SECTION_INFO.dashboards} />
+                <h2 className="text-2xl font-semibold">
+                  {dashboardsHeader?.title || "Painel de Dados"}
+                </h2>
+                {dashboardsHeader && (
+                  <InfoTooltip
+                    label={`Saiba mais sobre ${dashboardsHeader.title}`}
+                    title={dashboardsHeader.subtitle || "Saiba mais"}
+                    content={renderTooltipContent(dashboardsHeader)}
+                  />
+                )}
               </div>
 
               <LinkButton
@@ -179,8 +201,16 @@ export default async function MacroThemePage({
           <section className="space-y-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-semibold">Narrativa de Dados</h2>
-                <InfoTooltip {...SECTION_INFO.datastories} />
+                <h2 className="text-2xl font-semibold">
+                  {datastoriesHeader?.title || "Narrativa de Dados"}
+                </h2>
+                {datastoriesHeader && (
+                  <InfoTooltip
+                    label={`Saiba mais sobre ${datastoriesHeader.title}`}
+                    title={datastoriesHeader.subtitle || "Saiba mais"}
+                    content={renderTooltipContent(datastoriesHeader)}
+                  />
+                )}
               </div>
 
               <LinkButton
@@ -202,8 +232,16 @@ export default async function MacroThemePage({
           <section className="space-y-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-semibold">Publicações</h2>
-                <InfoTooltip {...SECTION_INFO.publications} />
+                <h2 className="text-2xl font-semibold">
+                  {publicationsHeader?.title || "Publicações"}
+                </h2>
+                {publicationsHeader && (
+                  <InfoTooltip
+                    label={`Saiba mais sobre ${publicationsHeader.title}`}
+                    title={publicationsHeader.subtitle || "Saiba mais"}
+                    content={renderTooltipContent(publicationsHeader)}
+                  />
+                )}
               </div>
 
               <LinkButton

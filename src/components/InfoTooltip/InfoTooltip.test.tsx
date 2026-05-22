@@ -1,16 +1,11 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { InfoTooltip } from "./InfoTooltip";
 
 describe("InfoTooltip", () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it("opens on hover and renders the configured content", async () => {
-    vi.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const user = userEvent.setup();
 
     render(
       <InfoTooltip
@@ -39,10 +34,35 @@ describe("InfoTooltip", () => {
     ).toHaveAttribute("href", "/explore");
 
     await user.unhover(screen.getByRole("button", { name: /Saiba mais/i }));
-    vi.advanceTimersByTime(130);
 
     await waitFor(() => {
       expect(screen.queryByText("Saiba mais")).not.toBeInTheDocument();
+    });
+  });
+
+  it("stays closed after clicking the close button", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <InfoTooltip
+        label="Saiba mais sobre narrativas de dados"
+        title="Saiba mais"
+        description="Narrativas de dados apresentam análises guiadas."
+      />,
+    );
+
+    await user.hover(screen.getByRole("button", { name: /Saiba mais/i }));
+
+    expect(
+      screen.getByText("Narrativas de dados apresentam análises guiadas."),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Fechar informação" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Narrativas de dados apresentam análises guiadas."),
+      ).not.toBeInTheDocument();
     });
   });
 });

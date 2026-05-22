@@ -148,6 +148,7 @@ export interface IMainBanner {
 }
 
 export interface IPageHeader {
+  id?: string;
   title: string;
   subtitle?: string;
   richSubtitle?: ContentfulRichTextField;

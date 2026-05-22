@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Info, XIcon } from "lucide-react";
 import {
   Popover,
@@ -13,7 +13,8 @@ import { cn } from "@/lib/utils";
 type InfoTooltipProps = {
   label: string;
   title: string;
-  description: string;
+  description?: string;
+  content?: ReactNode;
   href?: string;
   ctaLabel?: string;
   className?: string;
@@ -23,12 +24,14 @@ export function InfoTooltip({
   label,
   title,
   description,
+  content,
   href,
   ctaLabel,
   className,
 }: InfoTooltipProps) {
   const [open, setOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suppressOpenRef = useRef(false);
 
   const clearCloseTimeout = () => {
     if (closeTimeoutRef.current) {
@@ -38,6 +41,10 @@ export function InfoTooltip({
   };
 
   const openPopover = () => {
+    if (suppressOpenRef.current) {
+      return;
+    }
+
     clearCloseTimeout();
     setOpen(true);
   };
@@ -47,6 +54,16 @@ export function InfoTooltip({
     closeTimeoutRef.current = setTimeout(() => {
       setOpen(false);
     }, 120);
+  };
+
+  const resetSuppressedOpen = () => {
+    suppressOpenRef.current = false;
+  };
+
+  const closePopover = () => {
+    suppressOpenRef.current = true;
+    clearCloseTimeout();
+    setOpen(false);
   };
 
   useEffect(() => {
@@ -60,9 +77,21 @@ export function InfoTooltip({
           type="button"
           aria-label={label}
           onMouseEnter={openPopover}
-          onMouseLeave={scheduleClose}
+          onMouseLeave={() => {
+            resetSuppressedOpen();
+            scheduleClose();
+          }}
           onFocus={openPopover}
-          onClick={() => setOpen((current) => !current)}
+          onClick={() => {
+            if (open) {
+              closePopover();
+
+              return;
+            }
+
+            suppressOpenRef.current = false;
+            openPopover();
+          }}
           className={cn(
             "inline-flex h-10 w-10 items-center justify-center rounded-[6px] border border-[#EFEFEF] bg-white text-[#077432] transition-colors hover:border-[#D9D9D9] hover:bg-[#FAFAFA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#077432]/20 cursor-pointer",
             className,
@@ -77,7 +106,11 @@ export function InfoTooltip({
         align="start"
         sideOffset={8}
         onMouseEnter={openPopover}
-        onMouseLeave={scheduleClose}
+        onMouseLeave={() => {
+          resetSuppressedOpen();
+          scheduleClose();
+        }}
+        onCloseAutoFocus={(event) => event.preventDefault()}
         className="w-[376px] rounded-[8px] border border-[#DCDBDC] bg-white p-0 shadow-[0_10px_30px_rgba(15,23,42,0.12)]"
       >
         <div className="space-y-6 p-4 text-[#292829]">
@@ -88,14 +121,20 @@ export function InfoTooltip({
             <button
               type="button"
               aria-label="Fechar informação"
-              onClick={() => setOpen(false)}
+              onClick={closePopover}
               className="inline-flex size-7 items-center justify-center rounded-[6px] border border-[#EFEFEF] bg-white text-[#077432]/70 transition-colors hover:bg-[#F5F5F5] hover:text-[#077432] cursor-pointer"
             >
               <XIcon className="size-3" strokeWidth={2.5} />
             </button>
           </div>
 
-          <p className="text-[14px] leading-6 text-[#52525B]">{description}</p>
+          {content ? (
+            content
+          ) : description ? (
+            <p className="text-[14px] leading-6 text-[#52525B]">
+              {description}
+            </p>
+          ) : null}
 
           {href && ctaLabel && (
             <Link
