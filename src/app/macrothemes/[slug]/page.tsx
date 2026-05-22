@@ -14,6 +14,7 @@ import { LinkButton } from "@/components/LinkButton/LinkButton";
 import { Icon } from "@/components/Icon/Icon";
 import { CardCarousel } from "@/components/CardCarousel/CardCarousel";
 import PreviewContent from "@/components/PreviewSection/PreviewContent";
+import { InfoTooltip } from "@/components/InfoTooltip/InfoTooltip";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
@@ -24,6 +25,33 @@ interface IMacroThemePageContent {
   sectionHeadCollection: { items: SectionHeader[] };
   previewCardsCollection: { items: IPreviewCards[] };
 }
+
+const SECTION_INFO = {
+  dashboards: {
+    label: "Saiba mais sobre painéis de dados",
+    title: "Saiba mais",
+    description:
+      "Um painel permite a interatividade e exploração dos dados de maneira dinâmica.",
+    href: "/explore",
+    ctaLabel: "Explore aqui o Panorama da Educação Regional",
+  },
+  datastories: {
+    label: "Saiba mais sobre narrativas de dados",
+    title: "Saiba mais",
+    description:
+      "Narrativas de dados apresentam análises guiadas, conectando indicadores, contexto e interpretação em um formato editorial.",
+    href: "/posts?type_in=data-story&page=1",
+    ctaLabel: "Explore aqui as narrativas de dados",
+  },
+  publications: {
+    label: "Saiba mais sobre publicações",
+    title: "Saiba mais",
+    description:
+      "Publicações reúnem boletins, notas técnicas e outros conteúdos para consulta e aprofundamento sobre os temas do portal.",
+    href: "/posts?page=1",
+    ctaLabel: "Explore aqui as publicações",
+  },
+} as const;
 
 export async function generateMetadata({
   params,
@@ -127,7 +155,10 @@ export default async function MacroThemePage({
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
           <section className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Painel de Dados</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-semibold">Painel de Dados</h2>
+                <InfoTooltip {...SECTION_INFO.dashboards} />
+              </div>
 
               <LinkButton
                 href={dashboardsHref}
@@ -147,7 +178,10 @@ export default async function MacroThemePage({
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
           <section className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Narrativa de Dados</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-semibold">Narrativa de Dados</h2>
+                <InfoTooltip {...SECTION_INFO.datastories} />
+              </div>
 
               <LinkButton
                 href={datastoriesHref}
@@ -167,7 +201,10 @@ export default async function MacroThemePage({
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
           <section className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Publicações</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-semibold">Publicações</h2>
+                <InfoTooltip {...SECTION_INFO.publications} />
+              </div>
 
               <LinkButton
                 href={postsByThemeHref}
