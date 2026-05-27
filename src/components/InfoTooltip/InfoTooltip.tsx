@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { Info, XIcon } from "lucide-react";
+import { Info } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -118,14 +118,6 @@ export function InfoTooltip({
             <h3 className="pr-6 text-[18px] leading-7 font-semibold text-[#077432]">
               {title}
             </h3>
-            <button
-              type="button"
-              aria-label="Fechar informação"
-              onClick={closePopover}
-              className="inline-flex size-7 items-center justify-center rounded-[6px] border border-[#EFEFEF] bg-white text-[#077432]/70 transition-colors hover:bg-[#F5F5F5] hover:text-[#077432] cursor-pointer"
-            >
-              <XIcon className="size-3" strokeWidth={2.5} />
-            </button>
           </div>
 
           {content ? (
