@@ -137,7 +137,7 @@ export const SearchBar = ({
       role="search"
       className={cn(
         "relative w-full",
-        variant === "header" && "max-w-[320px]",
+        variant === "header" && "max-w-[407px]",
         variant === "page" && "max-w-3xl",
         className,
       )}
@@ -149,33 +149,40 @@ export const SearchBar = ({
       </label>
       <div
         className={cn(
-          "flex h-10 items-center gap-2 rounded-md border border-grey-300 bg-white px-3 transition focus-within:border-green-800 focus-within:ring-2 focus-within:ring-green-800/20",
-          variant === "page" && "h-12 px-4",
+          "rounded-lg bg-[#F8F7F8] px-2 transition-colors focus-within:bg-[#F2F1F2]",
+          variant === "page" && "px-3",
         )}
       >
-        <Search className="size-4 text-grey-600" aria-hidden="true" />
-        <input
-          autoComplete="off"
-          autoFocus={autoFocus}
-          className="min-w-0 flex-1 bg-transparent text-sm text-grey-1100 outline-none placeholder:text-grey-600"
-          id={inputId}
-          onChange={(event) => handleQueryChange(event.target.value)}
-          onFocus={() => {
-            setOpen(true);
-            void loadIndex();
-          }}
-          placeholder="Buscar conteúdo"
-          type="search"
-          value={query}
-        />
-        <button
-          aria-label="Buscar"
-          className="flex size-7 items-center justify-center rounded-md text-green-900 transition hover:bg-green-neutro disabled:cursor-not-allowed disabled:opacity-40"
-          disabled={!canSearch}
-          type="submit"
+        <div
+          className={cn(
+            "flex h-[47px] items-center gap-2 px-2 py-1.5",
+            variant === "page" && "h-[51px]",
+          )}
         >
-          <Search className="size-4" aria-hidden="true" />
-        </button>
+          <Search className="size-4 text-[#292829]" aria-hidden="true" />
+          <input
+            autoComplete="off"
+            autoFocus={autoFocus}
+            className="min-w-0 flex-1 bg-transparent text-sm font-normal leading-5 text-[#292829] outline-none placeholder:text-[#292829]"
+            id={inputId}
+            onChange={(event) => handleQueryChange(event.target.value)}
+            onFocus={() => {
+              setOpen(true);
+              void loadIndex();
+            }}
+            placeholder="Buscar conteúdo"
+            type="search"
+            value={query}
+          />
+          <button
+            aria-label="Buscar"
+            className="flex size-4 items-center justify-center text-[#292829] transition hover:text-green-900 disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!canSearch}
+            type="submit"
+          >
+            <Search className="size-4" aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       {showPanel && (

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Icon } from "@/components/Icon/Icon";
 import HubTemplate from "@/templates/HubTemplate";
 import { buildMetadata } from "@/config/seo";
 import { getSearchIndex } from "@/features/search/contentful";
@@ -94,7 +95,7 @@ const SearchResultGroup = ({
   return (
     <section className="flex flex-col gap-4">
       <h2 className="text-2xl font-semibold text-grey-1100">{title}</h2>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {results.map((result) => (
           <SearchResultCard key={result.id} result={result} />
         ))}
@@ -105,49 +106,54 @@ const SearchResultGroup = ({
 
 const SearchResultCard = ({ result }: { result: SearchResult }) => (
   <Link
-    className="group flex min-h-[168px] overflow-hidden rounded-md border border-grey-200 bg-white shadow-sm transition hover:border-grey-300 hover:bg-grey-100"
+    className="group flex h-full w-full flex-col overflow-hidden rounded-md border border-grey-200 bg-grey-100 shadow-md transition duration-300 hover:border-grey-300 hover:bg-grey-200"
     href={result.href}
   >
     {result.thumb && (
-      <div className="hidden w-32 shrink-0 overflow-hidden bg-grey-100 sm:block">
+      <div className="w-full overflow-hidden">
         <Image
           alt=""
-          className="h-full w-full object-cover transition group-hover:scale-105"
-          height={168}
+          className="block aspect-7/4 w-full object-cover object-top transition-transform duration-300 group-hover:scale-102"
+          height={300}
           src={result.thumb}
-          width={128}
+          width={300}
         />
       </div>
     )}
 
-    <div className="flex min-w-0 flex-1 flex-col gap-3 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-sm bg-green-neutro px-2 py-1 text-xs font-semibold text-green-900">
-          {getSearchTypeLabel(result)}
-        </span>
-        {result.date && (
-          <span className="text-xs text-grey-600">
-            {new Date(result.date).toLocaleDateString("pt-BR")}
-          </span>
-        )}
-      </div>
+    {!result.thumb && <div className="aspect-7/4 w-full bg-grey-200" />}
 
-      <div className="flex flex-col gap-2">
-        <h3 className="line-clamp-2 text-base font-semibold text-grey-1100">
-          {result.title}
-        </h3>
-        {result.description && (
-          <p className="line-clamp-3 text-sm leading-5 text-grey-700">
-            {result.description}
+    <div className="flex flex-1 flex-col justify-between">
+      <div className="flex flex-row items-center justify-between bg-gray-200 px-5 py-1">
+        <p className="text-xs font-semibold text-grey-1100">
+          {getSearchTypeLabel(result)}
+        </p>
+        {result.date && (
+          <p className="text-xs text-grey-600">
+            {new Date(result.date).toLocaleDateString("pt-BR")}
           </p>
         )}
       </div>
 
-      {result.themes.length > 0 && (
-        <p className="mt-auto line-clamp-1 text-xs font-medium text-green-900">
-          {result.themes.join(", ")}
-        </p>
-      )}
+      <div className="flex h-full items-center justify-between gap-3 px-5 py-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <p className="line-clamp-2 text-sm font-medium text-grey-1100">
+            {result.title}
+          </p>
+
+          {(result.description || result.themes.length > 0) && (
+            <p className="line-clamp-2 text-xs text-grey-700">
+              {result.description || result.themes.join(", ")}
+            </p>
+          )}
+        </div>
+
+        <Icon
+          className="size-2 min-w-2 rotate-270 md:flex"
+          id="expand"
+          size={9}
+        />
+      </div>
     </div>
   </Link>
 );
