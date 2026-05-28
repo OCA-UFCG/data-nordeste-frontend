@@ -1,3 +1,4 @@
+import { StrictMode } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -133,5 +134,25 @@ describe("SearchBar", () => {
 
     expect(screen.getByText("PIB")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("loads suggestions in StrictMode without getting stuck in loading", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json(index)),
+    );
+
+    render(
+      <StrictMode>
+        <SearchBar />
+      </StrictMode>,
+    );
+
+    const input = screen.getByRole("searchbox", { name: "Buscar conteúdo" });
+    await userEvent.click(input);
+    await userEvent.type(input, "pib");
+
+    expect(await screen.findByText("PIB")).toBeInTheDocument();
+    expect(screen.queryByText("Carregando resultados")).not.toBeInTheDocument();
   });
 });

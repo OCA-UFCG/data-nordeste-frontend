@@ -56,12 +56,13 @@ export const SearchBar = ({
     setQuery(initialQuery);
   }, [initialQuery]);
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
       isMountedRef.current = false;
-    },
-    [],
-  );
+    };
+  }, []);
 
   const normalizedQuery = normalizeSearchText(query);
   const canSearch = normalizedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
