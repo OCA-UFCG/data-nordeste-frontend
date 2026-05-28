@@ -13,12 +13,6 @@ vi.mock("@/templates/HubTemplate", () => ({
   ),
 }));
 
-vi.mock("@/components/SearchBar/SearchBar", () => ({
-  SearchBar: ({ initialQuery }: { initialQuery?: string }) => (
-    <div>SearchBar: {initialQuery}</div>
-  ),
-}));
-
 const index = {
   version: 1,
   generatedAt: "2026-05-28T00:00:00.000Z",
@@ -70,7 +64,7 @@ describe("Search page", () => {
 
     render(await SearchPage({ searchParams: Promise.resolve({ q: "pib" }) }));
 
-    expect(screen.getByText("SearchBar: pib")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Busca" })).toBeInTheDocument();
     expect(screen.getByText("Painéis")).toBeInTheDocument();
     expect(screen.getByText("Macrotemas")).toBeInTheDocument();
     expect(screen.getByText("PIB")).toBeInTheDocument();

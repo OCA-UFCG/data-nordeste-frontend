@@ -90,7 +90,8 @@ describe("Contentful search index", () => {
         expect.objectContaining({
           id: "panel:panel-1",
           href: "/data-panel/pib",
-          title: "Economia e Renda",
+          title: "Painel PIB",
+          description: "Detalhes do painel",
         }),
         expect.objectContaining({
           id: "theme:theme-1",

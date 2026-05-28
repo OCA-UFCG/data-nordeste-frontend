@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  FocusEvent,
   FormEvent,
   useCallback,
+  useEffect,
   useId,
   useMemo,
   useRef,
@@ -19,7 +21,11 @@ import {
   normalizeSearchText,
   searchItems,
 } from "@/features/search/search";
-import type { SearchIndex, SearchIndexItem } from "@/features/search/types";
+import {
+  getCachedSearchIndexItems,
+  loadSearchIndexItems,
+} from "@/features/search/clientIndex";
+import type { SearchIndexItem } from "@/features/search/types";
 
 type SearchBarProps = {
   autoFocus?: boolean;
@@ -28,8 +34,6 @@ type SearchBarProps = {
   onNavigate?: () => void;
   variant?: "header" | "mobile" | "page";
 };
-
-const SEARCH_INDEX_URL = "/search-index.json";
 
 export const SearchBar = ({
   autoFocus,
@@ -40,11 +44,24 @@ export const SearchBar = ({
 }: SearchBarProps) => {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
-  const [items, setItems] = useState<SearchIndexItem[] | null>(null);
+  const [items, setItems] = useState<SearchIndexItem[] | null>(() =>
+    getCachedSearchIndexItems(),
+  );
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  const requestRef = useRef<Promise<void> | null>(null);
+  const isMountedRef = useRef(true);
   const inputId = useId();
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
+  useEffect(
+    () => () => {
+      isMountedRef.current = false;
+    },
+    [],
+  );
 
   const normalizedQuery = normalizeSearchText(query);
   const canSearch = normalizedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
@@ -57,27 +74,29 @@ export const SearchBar = ({
   );
 
   const loadIndex = useCallback(async () => {
-    if (items || requestRef.current) return requestRef.current;
+    if (items) {
+      setStatus("idle");
+
+      return items;
+    }
 
     setStatus("loading");
-    requestRef.current = fetch(SEARCH_INDEX_URL)
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Search index request failed: ${response.status}`);
-        }
+    try {
+      const nextItems = await loadSearchIndexItems();
 
-        const index = (await response.json()) as SearchIndex;
-        setItems(index.items || []);
-        setStatus("idle");
-      })
-      .catch(() => {
+      if (!isMountedRef.current) return nextItems;
+
+      setItems(nextItems);
+      setStatus("idle");
+
+      return nextItems;
+    } catch {
+      if (isMountedRef.current) {
         setStatus("error");
-      })
-      .finally(() => {
-        requestRef.current = null;
-      });
+      }
 
-    return requestRef.current;
+      return null;
+    }
   }, [items]);
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -100,6 +119,19 @@ export const SearchBar = ({
 
   const showPanel = open && (canSearch || status === "loading");
 
+  const handleBlur = (event: FocusEvent<HTMLFormElement>) => {
+    const nextFocused = event.relatedTarget;
+
+    if (
+      nextFocused instanceof Node &&
+      event.currentTarget.contains(nextFocused)
+    ) {
+      return;
+    }
+
+    setOpen(false);
+  };
+
   return (
     <form
       role="search"
@@ -109,9 +141,7 @@ export const SearchBar = ({
         variant === "page" && "max-w-3xl",
         className,
       )}
-      onBlur={() => {
-        window.setTimeout(() => setOpen(false), 150);
-      }}
+      onBlur={handleBlur}
       onSubmit={submitSearch}
     >
       <label className="sr-only" htmlFor={inputId}>

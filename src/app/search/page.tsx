@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { SearchBar } from "@/components/SearchBar/SearchBar";
 import HubTemplate from "@/templates/HubTemplate";
 import { buildMetadata } from "@/config/seo";
 import { getSearchIndex } from "@/features/search/contentful";
@@ -41,10 +40,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <HubTemplate>
       <section className="flex w-full max-w-[1440px] flex-col gap-8 px-6 py-12 lg:px-20">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-3xl font-semibold text-grey-1100">Busca</h1>
-          <SearchBar initialQuery={query} variant="page" />
-        </div>
+        <h1 className="text-3xl font-semibold text-grey-1100">Busca</h1>
 
         {!canSearch ? (
           <SearchEmptyState message="Digite ao menos 2 caracteres para buscar." />

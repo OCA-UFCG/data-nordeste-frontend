@@ -106,9 +106,8 @@ const buildPanelItems = (panels: ContentfulPanel[]): SearchIndexItem[] =>
   panels
     .filter((panel) => Boolean(panel.sys?.id && panel.title))
     .map((panel) => {
-      const title =
-        panel.macroTheme || panel.descriptionTitle || panel.title || "";
-      const description = panel.description || panel.descriptionTitle || "";
+      const title = panel.descriptionTitle || panel.title || "";
+      const description = panel.description || "";
       const themes = panel.macroTheme ? [panel.macroTheme] : [];
 
       return {
