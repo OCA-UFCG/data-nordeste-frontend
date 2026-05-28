@@ -155,4 +155,25 @@ describe("SearchBar", () => {
     expect(await screen.findByText("PIB")).toBeInTheDocument();
     expect(screen.queryByText("Carregando resultados")).not.toBeInTheDocument();
   });
+
+  it("renders the mobile suggestion panel inline so it does not cover the menu", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json(index)),
+    );
+
+    render(<SearchBar variant="mobile" />);
+
+    const input = screen.getByRole("searchbox", { name: "Buscar conteúdo" });
+    await userEvent.click(input);
+    await userEvent.type(input, "pib");
+
+    const allResultsLink = await screen.findByRole("link", {
+      name: "Ver todos os resultados",
+    });
+    const panel = allResultsLink.closest("div");
+
+    expect(panel).toHaveClass("relative", "mt-3");
+    expect(panel).not.toHaveClass("absolute", "top-full", "z-50");
+  });
 });
