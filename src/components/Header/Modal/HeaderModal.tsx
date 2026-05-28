@@ -17,6 +17,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { isHrefActive } from "@/utils/functions";
 import { cn } from "@/lib/utils";
+import { SearchBar } from "@/components/SearchBar/SearchBar";
 
 const HeaderModal = ({ content }: { content: ISection[] }) => {
   const pathname = usePathname();
@@ -37,8 +38,11 @@ const HeaderModal = ({ content }: { content: ISection[] }) => {
 
       <SheetContent
         side="top"
-        className="w-full border-t-0 border-b-2 rounded-bl-lg rounded-br-lg shadow-[0px_6px_6px_-1px_#0000001A]"
+        className="max-h-dvh w-full overflow-y-auto border-t-0 border-b-2 rounded-bl-lg rounded-br-lg shadow-[0px_6px_6px_-1px_#0000001A]"
       >
+        <div className="px-2 pb-4">
+          <SearchBar onNavigate={() => setOpen(false)} variant="mobile" />
+        </div>
         <Accordion type="multiple" className="w-full space-y-2 py-4 px-2 pt-0">
           {content
             .filter((item) => item.appears)
