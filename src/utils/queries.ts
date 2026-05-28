@@ -5,3 +5,4 @@ export * from "./queries/home";
 export * from "./queries/macrothemes";
 export * from "./queries/panels";
 export * from "./queries/posts";
+export * from "./queries/search";
