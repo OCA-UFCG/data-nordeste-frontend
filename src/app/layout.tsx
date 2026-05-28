@@ -19,6 +19,8 @@ const lato = Lato({
 
 const IS_BETA = process.env.NEXT_PUBLIC_APP_ENV === "beta";
 
+export const revalidate = 600;
+
 export const metadata: Metadata = {
   ...buildMetadata({
     description: SITE_DESCRIPTION,

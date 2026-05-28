@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  expireTime: 600,
   compiler: {
     styledComponents: true,
   },
