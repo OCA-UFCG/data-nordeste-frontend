@@ -187,7 +187,14 @@ export const SearchBar = ({
       </div>
 
       {showPanel && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-md border border-grey-200 bg-white shadow-lg">
+        <div
+          className={cn(
+            "overflow-hidden rounded-md border border-grey-200 bg-white shadow-lg",
+            variant === "mobile"
+              ? "relative mt-3"
+              : "absolute left-0 right-0 top-full z-50 mt-2",
+          )}
+        >
           {status === "loading" && (
             <div className="flex items-center gap-2 px-4 py-3 text-sm text-grey-700">
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
