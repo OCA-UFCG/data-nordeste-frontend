@@ -20,6 +20,7 @@ import { FeedbackSurvey } from "@/components/FeedbackSurvey/FeedbackSurvey";
 import { findHomeSection } from "@/features/home/content";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
+import { HomeScrollButton } from "@/components/HomeScrollButton/HomeScrollButton";
 
 export const metadata: Metadata = buildMetadata({
   description:
@@ -79,6 +80,7 @@ export default async function Home() {
         submitHeader={findHomeSection(sectionHead.items, "survey-thank-u")}
         content={feedbackContent}
       />
+      <HomeScrollButton />
     </HubTemplate>
   );
 }
