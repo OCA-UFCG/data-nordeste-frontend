@@ -18,6 +18,7 @@ import { getContent } from "@/utils/contentful";
 import { MAIN_PAGE_QUERY } from "@/utils/queries";
 import { REVALIDATE } from "@/utils/constants";
 import { FeedbackSurvey } from "@/components/FeedbackSurvey/FeedbackSurvey";
+import { HomeScrollButton } from "@/components/HomeScrollButton/HomeScrollButton";
 
 export const revalidate = REVALIDATE;
 
@@ -89,6 +90,7 @@ export default async function Home() {
         )}
         content={feedbackContent}
       />
+      <HomeScrollButton />
     </HubTemplate>
   );
 }
