@@ -2,6 +2,8 @@ import { getContent } from "@/utils/contentful";
 import { SEARCH_INDEX_QUERY } from "@/utils/queries";
 import type { SearchIndex, SearchIndexItem, SearchItemType } from "./types";
 import { buildSearchText } from "./search";
+import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
+import type { ContentfulRichTextField } from "@/utils/interfaces";
 
 type ContentfulAsset = {
   url?: string | null;
@@ -40,7 +42,7 @@ type ContentfulPanel = {
   date?: string | null;
   macroTheme?: string | null;
   descriptionTitle?: string | null;
-  description?: string | null;
+  description?: ContentfulRichTextField | null;
 };
 
 type ContentfulDataStory = {
@@ -107,7 +109,9 @@ const buildPanelItems = (panels: ContentfulPanel[]): SearchIndexItem[] =>
     .filter((panel) => Boolean(panel.sys?.id && panel.title))
     .map((panel) => {
       const title = panel.descriptionTitle || panel.title || "";
-      const description = panel.description || "";
+      const description = panel.description?.json
+        ? documentToPlainTextString(panel.description.json)
+        : "";
       const themes = panel.macroTheme ? [panel.macroTheme] : [];
 
       return {
@@ -125,7 +129,7 @@ const buildPanelItems = (panels: ContentfulPanel[]): SearchIndexItem[] =>
           panel.title,
           panel.macroTheme,
           panel.descriptionTitle,
-          panel.description,
+          description,
         ]),
       };
     });

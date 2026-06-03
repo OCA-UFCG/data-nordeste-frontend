@@ -36,7 +36,9 @@ export const SEARCH_INDEX_QUERY = `
         date
         macroTheme
         descriptionTitle
-        description
+        description {
+          json
+        }
       }
     }
 
