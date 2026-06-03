@@ -6,6 +6,8 @@ import { DATA_PANEL_QUERY } from "@/utils/queries";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
+import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
+import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 
 interface IDataPanelContent {
   panelsCollection: { items: ReportData[] };
@@ -30,9 +32,13 @@ export async function generateMetadata({
     });
   }
 
+  const description = panel.description?.json
+    ? documentToPlainTextString(panel.description.json)
+    : panel.source;
+
   return buildMetadata({
     title: panel.title,
-    description: panel.description || panel.source,
+    description: description,
     path: `/data-panel/${id}`,
   });
 }
@@ -65,7 +71,7 @@ export default async function DataPanel({
         </div>
       </div>
 
-      {(panel.descriptionTitle || panel.description) && (
+      {(panel.descriptionTitle || panel.description?.json) && (
         <section className="w-full bg-[#EFEFEF] py-10">
           <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 flex flex-col gap-6">
             {panel.descriptionTitle && (
@@ -73,10 +79,10 @@ export default async function DataPanel({
                 {panel.descriptionTitle}
               </h2>
             )}
-            {panel.description && (
-              <p className="text-base leading-[150%] text-[#292829] whitespace-pre-line">
-                {panel.description}
-              </p>
+            {panel.description?.json && (
+              <div className="text-base leading-[150%] text-[#292829] whitespace-pre-line">
+                {documentToReactComponents(panel.description.json)}
+              </div>
             )}
           </div>
         </section>
