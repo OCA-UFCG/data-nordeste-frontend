@@ -38,8 +38,6 @@ export function MacroThemeBanner({
           <div className="absolute inset-0 bg-neutral-900" />
         )}
 
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,_#000000_0%,_rgba(0,0,0,0)_100%)]" />
-
         <div className="relative z-10 w-full">
           <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-0">
             <div className="flex min-h-[296px] items-end px-4 py-8 sm:px-6 lg:h-[296px] lg:min-h-[296px] lg:px-20 lg:py-12">
