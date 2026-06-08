@@ -34,7 +34,7 @@ export default async function Experience({
   if (!isValidArcGisId(id)) return notFound();
 
   return (
-    <HubTemplate>
+    <HubTemplate showFooter={false}>
       <ArcGisContainer source={buildExperienceSource(id)} />
     </HubTemplate>
   );

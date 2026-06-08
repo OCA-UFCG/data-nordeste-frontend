@@ -19,7 +19,7 @@ const ArcGisContainer = ({
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
   return (
-    <div className="flex flex-col w-full h-[calc(100vh-80px)] min-h-0 z-0 bg-white">
+    <div className="flex flex-col w-full h-[calc(100dvh-80px)] min-h-0 z-0 bg-white overflow-hidden">
       {(title || formattedDate) && (
         <div className="flex flex-col sm:flex-row justify-between items-center w-full px-4 py-4">
           <h2 className="text-left font-semibold text-3xl">{title}</h2>
@@ -31,13 +31,15 @@ const ArcGisContainer = ({
         </div>
       )}
 
-      <iframe
-        src={addArcGisEmbedQueryIfMissing(source)}
-        allowFullScreen
-        allow={allow}
-        title={title || "ArcGIS"}
-        className="w-full flex-1 min-h-0 border-0"
-      />
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <iframe
+          src={addArcGisEmbedQueryIfMissing(source)}
+          allowFullScreen
+          allow={allow}
+          title={title || "ArcGIS"}
+          className="block w-full h-full min-h-0 border-0"
+        />
+      </div>
     </div>
   );
 };

@@ -31,7 +31,7 @@ export default async function DataStory({
   if (!isValidArcGisId(id)) return notFound();
 
   return (
-    <HubTemplate>
+    <HubTemplate showFooter={false}>
       <ArcGisContainer source={buildStoryMapSource(id)} />
     </HubTemplate>
   );
