@@ -1,3 +1,4 @@
+import * as React from "react";
 import { IPublication } from "@/utils/interfaces";
 import { POST_TYPE_LABELS } from "@/features/posts/postTypes";
 import Link from "next/link";
@@ -5,20 +6,27 @@ import Image from "next/image";
 import { Icon } from "@/components/Icon/Icon";
 import { getArcGisInternalEmbedHref } from "@/features/embeds/arcgis";
 
-const ContentPost = ({ content }: { content: IPublication }) => {
+interface ContentPostProps {
+  content: IPublication;
+}
+
+const ContentPost = ({ content }: ContentPostProps) => {
   const { title, thumb, link, date, type } = content;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
   const embedHref = getArcGisInternalEmbedHref(link);
   const href = embedHref ?? link;
+  const isPdf = link.toLowerCase().includes(".pdf");
+  const isNewsletter = type === "newsletter";
   const openInNewTab = !embedHref;
 
   return (
     <Link
       href={href}
-      target={openInNewTab ? "_blank" : undefined}
+      target={openInNewTab && !isPdf && !isNewsletter ? "_blank" : undefined}
       rel={openInNewTab ? "noopener noreferrer" : undefined}
+      data-pdf={isPdf || isNewsletter ? "true" : undefined}
       className="group flex flex-col overflow-hidden rounded-md w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
     >
       <div className="w-full overflow-hidden">
