@@ -1,6 +1,7 @@
 import HeaderSection from "@/components/Header/Section/HeaderSection";
 import React, { ReactNode } from "react";
 import Footer from "@/components/Footer/Footer";
+import GlobalPdfViewer from "@/components/GlobalPdfViewer/GlobalPdfViewer";
 
 import "../app/globals.css";
 import { HEAD_QUERY } from "@/utils/queries";
@@ -30,6 +31,7 @@ const HubTemplate = async ({
         {children}
       </main>
       {showFooter && <Footer content={header.items} />}
+      <GlobalPdfViewer />
     </>
   );
 };

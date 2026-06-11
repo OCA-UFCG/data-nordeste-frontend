@@ -59,24 +59,15 @@ export const Posts = ({
   };
 
   const { currentPage, filter } = queryState;
-  const initialRequestKey = useRef(
-    JSON.stringify({
-      currentPage,
-      filter,
-      sorting,
-      rootFilter,
-    }),
-  );
+
+  const isInitialRender = useRef(true);
 
   useEffect(() => {
-    const requestKey = JSON.stringify({
-      currentPage,
-      filter,
-      sorting,
-      rootFilter,
-    });
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
 
-    if (requestKey === initialRequestKey.current) return;
+      return;
+    }
 
     setLoading(true);
 
