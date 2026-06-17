@@ -2,6 +2,7 @@ import { MacroTheme, SectionHeader } from "@/utils/interfaces";
 import { Icon } from "@/components/Icon/Icon";
 import { LinkButton } from "@/components/LinkButton/LinkButton";
 import CategoryCard from "../CategoryCard/CategoryCard";
+import { uniqueById } from "@/utils/functions";
 
 const DataSection = ({
   header,
@@ -15,16 +16,9 @@ const DataSection = ({
     subtitle: "",
   };
 
-  const filteredData = categories?.sort((a, b) => {
-    if (a.sys.id < b.sys.id) {
-      return -1;
-    }
-    if (a.sys.id > b.sys.id) {
-      return 1;
-    }
-
-    return 0;
-  });
+  const filteredData = uniqueById(categories ?? []).sort((a, b) =>
+    a.sys.id.localeCompare(b.sys.id),
+  );
 
   return (
     <section className="bg-grey-100 w-full" id={title}>
@@ -44,7 +38,7 @@ const DataSection = ({
           <p className="text-sm">{subtitle}</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredData?.map((category: MacroTheme) => (
+          {filteredData.map((category: MacroTheme) => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>

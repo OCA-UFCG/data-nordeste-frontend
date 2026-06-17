@@ -14,18 +14,28 @@ interface IDataPanelContent {
   pageHeadersCollection: { items: IPageHeader[] };
 }
 
+type DataPanelParams = { id?: string };
+type DataPanelSearchParams = { pageName?: string };
+
 export default async function DataPanel({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: { pageName?: string };
+  params: DataPanelParams | Promise<DataPanelParams>;
+  searchParams: DataPanelSearchParams | Promise<DataPanelSearchParams>;
 }) {
+  const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+
+  if (!id) {
+    notFound();
+  }
+
   const {
     panelsCollection: panels,
 
     // pageHeadersCollection: pageHeaders,
-  }: IDataPanelContent = await getContent(DATA_PANEL_QUERY, { id: params.id });
+  }: IDataPanelContent = await getContent(DATA_PANEL_QUERY, { id });
 
   if (!panels.items.length) {
     notFound();
@@ -36,7 +46,7 @@ export default async function DataPanel({
       <div className="flex justify-center h-full w-full items-center overflow-hidden">
         <PowerBIContainer
           panel={panels.items[0]}
-          pageName={searchParams.pageName}
+          pageName={resolvedSearchParams.pageName}
         />
       </div>
       {/* <AnchorSection

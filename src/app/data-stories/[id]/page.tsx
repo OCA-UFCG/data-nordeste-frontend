@@ -8,14 +8,20 @@ interface IDataStoryContent {
   dataStoriesCollection: { items: IDataStory[] };
 }
 
+type DataStoryParams = { id?: string };
+
 export default async function DataStory({
   params,
 }: {
-  params: { id: string };
+  params: DataStoryParams | Promise<DataStoryParams>;
 }) {
+  const { id } = await params;
+
+  if (!id) return notFound();
+
   const { dataStoriesCollection: story }: IDataStoryContent = await getContent(
     DATA_STORY_QUERY,
-    { id: params.id },
+    { id },
   );
 
   if (!story.items.length) return notFound();

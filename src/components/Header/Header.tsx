@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { Icon } from "../Icon/Icon";
 import { macroThemes } from "@/utils/constants";
+import { uniqueById } from "@/utils/functions";
 
 const Header = ({ content }: { content: ISection[] }) => {
   return (
@@ -35,19 +36,21 @@ const Header = ({ content }: { content: ISection[] }) => {
                         {item.name}
                       </NavigationMenuTrigger>
                       <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15">
-                        {item.childrenCollection.items.map((child) => (
-                          <NavigationMenuLink
-                            key={child.id}
-                            href={child.path}
-                            className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 rounded"
-                          >
-                            <Icon
-                              id={macroThemes[child.id] || "list"}
-                              size={14}
-                            />
-                            {child.name}
-                          </NavigationMenuLink>
-                        ))}
+                        {uniqueById(item.childrenCollection.items).map(
+                          (child) => (
+                            <NavigationMenuLink
+                              key={child.id}
+                              href={child.path}
+                              className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 rounded"
+                            >
+                              <Icon
+                                id={macroThemes[child.id] || "list"}
+                                size={14}
+                              />
+                              {child.name}
+                            </NavigationMenuLink>
+                          ),
+                        )}
                       </NavigationMenuContent>
                     </>
                   ) : (

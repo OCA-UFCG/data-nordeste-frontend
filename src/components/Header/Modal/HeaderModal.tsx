@@ -15,7 +15,7 @@ import { macroThemes } from "@/utils/constants";
 import { Icon } from "@/components/Icon/Icon";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { isHrefActive } from "@/utils/functions";
+import { isHrefActive, uniqueById } from "@/utils/functions";
 import { cn } from "@/lib/utils";
 
 const HeaderModal = ({ content }: { content: ISection[] }) => {
@@ -61,33 +61,35 @@ const HeaderModal = ({ content }: { content: ISection[] }) => {
                       {item.name}
                     </AccordionTrigger>
                     <AccordionContent className="py-2 px-2">
-                      {item.childrenCollection.items.map((child, i) => {
-                        const isActive = isHrefActive(
-                          pathname,
-                          category,
-                          child.path,
-                        );
+                      {uniqueById(item.childrenCollection.items).map(
+                        (child) => {
+                          const isActive = isHrefActive(
+                            pathname,
+                            category,
+                            child.path,
+                          );
 
-                        return (
-                          <Link
-                            key={i}
-                            href={child.path}
-                            onClick={() => setOpen(false)}
-                          >
-                            <div
-                              className={`flex items-center gap-2 py-[6px] px-2 h-[44px] hover:bg-green-neutro cursor-pointer ${isActive ? "text-green-900" : ""}`}
+                          return (
+                            <Link
+                              key={child.id}
+                              href={child.path}
+                              onClick={() => setOpen(false)}
                             >
-                              <Icon
-                                id={macroThemes[child.id] || "list"}
-                                size={14}
-                              />
-                              <span className="whitespace-nowrap">
-                                {child.name}
-                              </span>
-                            </div>
-                          </Link>
-                        );
-                      })}
+                              <div
+                                className={`flex items-center gap-2 py-[6px] px-2 h-[44px] hover:bg-green-neutro cursor-pointer ${isActive ? "text-green-900" : ""}`}
+                              >
+                                <Icon
+                                  id={macroThemes[child.id] || "list"}
+                                  size={14}
+                                />
+                                <span className="whitespace-nowrap">
+                                  {child.name}
+                                </span>
+                              </div>
+                            </Link>
+                          );
+                        },
+                      )}
                     </AccordionContent>
                   </>
                 ) : (

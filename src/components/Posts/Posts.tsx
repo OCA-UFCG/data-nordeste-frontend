@@ -40,6 +40,7 @@ export const Posts = ({
     params.get(`sort`) || sortingTypes["Mais recente"],
   );
   const [posts, setPosts] = useState<IPublication[]>([]);
+  const searchParams = params.toString();
   const filter = useMemo(
     () => ({
       type_in: params.get("type_in")?.split(",") || undefined,
@@ -51,29 +52,23 @@ export const Posts = ({
         ? new Date(params.get(`date_gte`) || "")
         : undefined,
     }),
-    [params],
+    [searchParams],
   );
 
   const currentPage = useMemo(() => {
     const paramPages = Number(params.get("page") || 1);
 
     return pages >= paramPages ? paramPages : 1;
-  }, [params, pages]);
+  }, [searchParams, pages]);
 
-  const parseForm = (currentForm: {
+  const buildFilters = (currentForm: {
     [key: string]: string | string[] | Date | undefined;
   }) => {
     let finalForm: { [key: string]: string | string[] } = {};
-    let newParams: { [key: string]: string } = {};
 
-    Object.entries(currentForm).map(
+    Object.entries(currentForm).forEach(
       ([key, value]: [string, string | string[] | Date | undefined]) => {
         if (value && key in exploreFilterMap) {
-          const formatedParam = exploreFilterMap[key].formatParam(value);
-          if (formatedParam[key]) {
-            newParams = { ...newParams, ...{ [key]: formatedParam[key] } };
-          }
-
           const formatedForm = exploreFilterMap[key].formatForm(value);
           if (formatedForm[key]) {
             finalForm = {
@@ -85,13 +80,32 @@ export const Posts = ({
       },
     );
 
-    router.push(
-      pathname +
-        "?" +
-        createQueryString({ ...newParams, page: currentPage.toString() }),
+    return finalForm;
+  };
+
+  const updateUrlFromForm = (currentForm: {
+    [key: string]: string | string[] | Date | undefined;
+  }) => {
+    let newParams: { [key: string]: string } = {};
+
+    Object.entries(currentForm).forEach(
+      ([key, value]: [string, string | string[] | Date | undefined]) => {
+        if (value && key in exploreFilterMap) {
+          const formatedParam = exploreFilterMap[key].formatParam(value);
+          if (formatedParam[key]) {
+            newParams = { ...newParams, [key]: formatedParam[key] };
+          }
+        }
+      },
     );
 
-    return finalForm;
+    const queryString = createQueryString({ ...newParams, page: "1" });
+    const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    const currentUrl = searchParams ? `${pathname}?${searchParams}` : pathname;
+
+    if (currentUrl !== nextUrl) {
+      router.push(nextUrl);
+    }
   };
 
   useEffect(() => {
@@ -108,7 +122,7 @@ export const Posts = ({
           skip: POSTS_PER_PAGE * (currentPage - 1),
           filter: {
             ...rootFilter,
-            ...parseForm(filter),
+            ...buildFilters(filter),
           },
         }),
       );
@@ -120,7 +134,7 @@ export const Posts = ({
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, rootFilter, sorting]);
+  }, [filter, currentPage, rootFilter, sorting]);
 
   return (
     <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
@@ -131,7 +145,7 @@ export const Posts = ({
             initSchema={filter}
             selectFields={categories}
             onReset={() => router.push(pathname)}
-            onSubmit={(newForm) => parseForm(newForm)}
+            onSubmit={(newForm) => updateUrlFromForm(newForm)}
           />
           <SortSelect defaultvalue={sorting} onChange={setSorting} />
         </div>

@@ -23,6 +23,18 @@ export const sortContentByDesiredOrder = <T extends { id: string }>(
   });
 };
 
+export const uniqueById = <T extends { id: string }>(
+  content: Array<T | null | undefined>,
+): T[] => {
+  return Array.from(
+    new Map(
+      content
+        .filter((item): item is T => Boolean(item?.id))
+        .map((item) => [item.id, item]),
+    ).values(),
+  );
+};
+
 export const createQueryString = (newParams: { [key: string]: string }) => {
   const searchParams = new URLSearchParams();
 

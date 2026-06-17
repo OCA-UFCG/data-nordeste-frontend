@@ -1,10 +1,10 @@
 import { Icon } from "@/components/Icon/Icon";
 import { channels } from "@/utils/constants";
-import { sortContentByDesiredOrder } from "@/utils/functions";
+import { sortContentByDesiredOrder, uniqueById } from "@/utils/functions";
 import { ISection } from "@/utils/interfaces";
 
 const Footer = ({ content }: { content: ISection[] }) => {
-  const mainPages = sortContentByDesiredOrder<ISection>(content, [
+  const mainPages = sortContentByDesiredOrder<ISection>(uniqueById(content), [
     "home",
     "about",
     "explore",
@@ -12,7 +12,7 @@ const Footer = ({ content }: { content: ISection[] }) => {
     "projects",
   ]).filter((item) => item.appears);
 
-  const macroThemes = content
+  const macroThemes = uniqueById(content)
     .filter((item) => !item.appears)
     .sort((a, b) => a.name.localeCompare(b.name));
 
