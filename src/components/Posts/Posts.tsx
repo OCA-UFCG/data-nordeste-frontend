@@ -42,9 +42,7 @@ export const Posts = ({
 
   const [loading, setLoading] = useState(false);
   const [pages, setPages] = useState(totalPages);
-  const [sorting, setSorting] = useState(
-    params.get(`sort`) || sortingTypes["Mais recente"],
-  );
+  const sorting = params.get("sort") || sortingTypes["Mais recente"];
   const [posts, setPosts] = useState<IPublication[]>(initialPosts);
   const queryState = useMemo(() => {
     const searchParams = new URLSearchParams(paramsKey);
@@ -53,30 +51,21 @@ export const Posts = ({
   }, [pages, paramsKey]);
 
   const syncUrlFromForm = (currentForm: PostsFilterForm) => {
-    router.replace(
-      pathname + "?" + buildPostsUrlQuery(currentForm, currentPage),
-    );
+    const base = buildPostsUrlQuery(currentForm, currentPage);
+    const searchParams = new URLSearchParams(base);
+    searchParams.set("sort", sorting);
+    router.replace(pathname + "?" + searchParams.toString());
   };
 
   const { currentPage, filter } = queryState;
-  const initialRequestKey = useRef(
-    JSON.stringify({
-      currentPage,
-      filter,
-      sorting,
-      rootFilter,
-    }),
-  );
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    const requestKey = JSON.stringify({
-      currentPage,
-      filter,
-      sorting,
-      rootFilter,
-    });
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
 
-    if (requestKey === initialRequestKey.current) return;
+      return;
+    }
 
     setLoading(true);
 
@@ -113,7 +102,14 @@ export const Posts = ({
             onReset={() => router.push(pathname)}
             onSubmit={(newForm) => syncUrlFromForm(newForm)}
           />
-          <SortSelect defaultValue={sorting} onChange={setSorting} />
+          <SortSelect
+            defaultValue={sorting}
+            onChange={(value) => {
+              const newParams = new URLSearchParams(paramsKey);
+              newParams.set("sort", value);
+              router.replace(pathname + "?" + newParams.toString());
+            }}
+          />
         </div>
       </div>
       <Suspense>

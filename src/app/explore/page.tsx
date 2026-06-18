@@ -1,5 +1,6 @@
 import PageHeader from "@/components/PageHeader/PageHeader";
 import { Posts } from "@/components/Posts/Posts";
+import { ExploreFilters } from "@/components/ExploreFilters/ExploreFilters";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
 import {
@@ -81,6 +82,8 @@ export default async function ExplorePage({
   return (
     <HubTemplate>
       <PageHeader content={pageHeaders.items[0]} />
+      <div className="pt-12" />
+      <ExploreFilters themes={themes.items} />
       <Suspense>
         <Posts
           filterGroups={[

@@ -61,6 +61,9 @@ export const EXPLORE_PAGE_QUERY = `
       items {
         title
         subtitle
+        banner {
+          url
+        }
       }
     }
 
@@ -78,6 +81,7 @@ export const EXPLORE_PAGE_QUERY = `
     themeCollection(preview: $preview) {
       items {
         name
+        color
         sys {
           id
         }
