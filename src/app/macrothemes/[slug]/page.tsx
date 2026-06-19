@@ -134,7 +134,6 @@ export default async function MacroThemePage({
         </section>
       )}
 
-      {/* BLOCO CORRIGIDO (sem a duplicação) */}
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 mt-12 pb-10 pt-0">
         {!!theme.articleTitle && (
           <h2 className="text-2xl font-semibold">{theme.articleTitle}</h2>
@@ -147,21 +146,23 @@ export default async function MacroThemePage({
         )}
       </div>
 
-      <MacroThemeTabs
-        dashboards={dashboards}
-        datastories={datastories}
-        publicacoes={publicacoes}
-        headers={{
-          dashboards: dashboardsHeader,
-          datastories: datastoriesHeader,
-          publications: publicationsHeader,
-        }}
-        urls={{
-          dashboardsHref,
-          datastoriesHref,
-          postsByThemeHref,
-        }}
-      />
+      <section className="w-full bg-[#F8F7F8]">
+        <MacroThemeTabs
+          dashboards={dashboards}
+          datastories={datastories}
+          publicacoes={publicacoes}
+          headers={{
+            dashboards: dashboardsHeader,
+            datastories: datastoriesHeader,
+            publications: publicationsHeader,
+          }}
+          urls={{
+            dashboardsHref,
+            datastoriesHref,
+            postsByThemeHref,
+          }}
+        />
+      </section>
     </HubTemplate>
   );
 }

@@ -1,43 +1,29 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { FilterForm } from "../PostsGrid/FilterForm";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PostsGrid } from "../PostsGrid/PostsGrid";
-import { IPublication, SectionHeader } from "@/utils/interfaces";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { IPublication } from "@/utils/interfaces";
+import { useSearchParams } from "next/navigation";
 import { sortingTypes } from "@/utils/constants";
-import { SortSelect } from "../PostsGrid/SortSelect";
 import { getContent } from "@/utils/contentful";
 import { PUBLICATION_QUERY } from "@/utils/queries";
 import {
   buildPostsContentfulFilter,
   buildPostsSkip,
   buildPostsTotalPages,
-  buildPostsUrlQuery,
   parsePostsQueryState,
-  PostsFilterForm,
 } from "@/features/posts/filters";
-import { FilterFormGroup } from "@/features/filters/form";
 
 export const Posts = ({
-  header,
-  categories,
-  filterGroups,
   totalPages,
   initialPosts,
   rootFilter = {},
 }: {
-  header: SectionHeader;
   totalPages: number;
   initialPosts: IPublication[];
   rootFilter?: { [key: string]: string | string[] };
-} & (
-  | { categories: FilterFormGroup; filterGroups?: never }
-  | { filterGroups: FilterFormGroup[]; categories?: never }
-)) => {
+}) => {
   const params = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
   const paramsKey = params.toString();
 
   const [loading, setLoading] = useState(false);
@@ -49,13 +35,6 @@ export const Posts = ({
 
     return parsePostsQueryState(searchParams, pages);
   }, [pages, paramsKey]);
-
-  const syncUrlFromForm = (currentForm: PostsFilterForm) => {
-    const base = buildPostsUrlQuery(currentForm, currentPage);
-    const searchParams = new URLSearchParams(base);
-    searchParams.set("sort", sorting);
-    router.replace(pathname + "?" + searchParams.toString());
-  };
 
   const { currentPage, filter } = queryState;
   const isFirstRender = useRef(true);
@@ -82,44 +61,24 @@ export const Posts = ({
         }),
       );
     }).then((value) => {
-      const { postCollection: posts } = value;
-      setPosts(posts.items);
-      setPages(buildPostsTotalPages(posts.total));
+      const { postCollection: fetched } = value;
+
+      setPosts(fetched.items);
+      setPages(buildPostsTotalPages(fetched.total));
       setLoading(false);
     });
   }, [currentPage, filter, rootFilter, sorting]);
 
   return (
-    <section className="flex flex-col items-center gap-4 box-border w-full max-w-[1440px] px-6 py-16 lg:px-20 border-box">
-      <div className="flex flex-col lg:flex-row justify-between lg:items-center w-full gap-4">
-        <h1 className="text-3xl font-semibold w-full">{header.title}</h1>
-        <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
-          <FilterForm
-            initSchema={filter}
-            {...(filterGroups
-              ? { filterGroups }
-              : { selectFields: categories })}
-            onReset={() => router.push(pathname)}
-            onSubmit={(newForm) => syncUrlFromForm(newForm)}
-          />
-          <SortSelect
-            defaultValue={sorting}
-            onChange={(value) => {
-              const newParams = new URLSearchParams(paramsKey);
-              newParams.set("sort", value);
-              router.replace(pathname + "?" + newParams.toString());
-            }}
-          />
-        </div>
-      </div>
-      <Suspense>
+    <section className="w-full bg-[#F8F7F8] py-9">
+      <div className="flex flex-col items-center gap-12 w-full max-w-[1440px] mx-auto px-20">
         <PostsGrid
-          pages={pages}
           currentPage={currentPage}
-          loading={loading}
+          pages={pages}
           posts={posts}
+          loading={loading}
         />
-      </Suspense>
+      </div>
     </section>
   );
 };
