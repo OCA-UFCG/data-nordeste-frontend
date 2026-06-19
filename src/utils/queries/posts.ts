@@ -88,6 +88,21 @@ export const EXPLORE_PAGE_QUERY = `
       }
     }
 
+    tabHeadersCollection: pageHeadersCollection(
+      where: { id_in: ["dataPanels", "dataNarrative", "publications"] }
+      limit: 3
+      preview: $preview
+    ) {
+      items {
+        id
+        title
+        subtitle
+        richSubtitle {
+          json
+        }
+      }
+    }
+
     postCollection(preview: $preview) {
       total
     }

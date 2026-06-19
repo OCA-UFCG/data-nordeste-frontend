@@ -15,8 +15,6 @@ import PreviewContent from "@/components/PreviewSection/PreviewContent";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
-
-// IMPORTAÇÃO ADICIONADA AQUI:
 import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
 
 interface IMacroThemePageContent {
