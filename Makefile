@@ -3,6 +3,8 @@ ifneq (,$(wildcard .env))
 endif
 
 PWD=$(shell pwd)
+HOST_UID=$(shell id -u)
+HOST_GID=$(shell id -g)
 NODE_IMAGE=node:20.12.2
 IMAGE_NAME=data-nordeste-frontend
 CONTAINER_PORT=3000
@@ -26,10 +28,10 @@ docker-build-dev:
 	docker build -t $(IMAGE_NAME) .
 
 docker-run-dev:
-	docker run -p 3000:$(CONTAINER_PORT) --name $(IMAGE_NAME) -v node_modules -v $(PWD):/app --user $(id -u):$(id -g) $(IMAGE_NAME)
+	docker run -p 3000:$(CONTAINER_PORT) --name $(IMAGE_NAME) -v /app/node_modules -v $(PWD):/app --user $(HOST_UID):$(HOST_GID) $(IMAGE_NAME)
 
 docker-run-dev-mac:
-	docker run -p 3000:$(CONTAINER_PORT) --name $(IMAGE_NAME) -v /app/node_modules -v $(PWD):/app -w /app --user $(id -u):$(id -g) $(IMAGE_NAME)
+	docker run -p 3000:$(CONTAINER_PORT) --name $(IMAGE_NAME) -v /app/node_modules -v $(PWD):/app -w /app --user $(HOST_UID):$(HOST_GID) $(IMAGE_NAME)
 
 docker-build-prod:
 	docker build \

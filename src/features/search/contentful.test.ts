@@ -49,7 +49,26 @@ describe("Contentful search index", () => {
             date: "2026-01-01",
             macroTheme: "Economia e Renda",
             descriptionTitle: "Painel PIB",
-            description: "Detalhes do painel",
+            description: {
+              json: {
+                nodeType: "document",
+                data: {},
+                content: [
+                  {
+                    nodeType: "paragraph",
+                    data: {},
+                    content: [
+                      {
+                        nodeType: "text",
+                        value: "Detalhes do painel",
+                        marks: [],
+                        data: {},
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
           },
         ],
       },
@@ -90,8 +109,9 @@ describe("Contentful search index", () => {
         expect.objectContaining({
           id: "panel:panel-1",
           href: "/data-panel/pib",
-          title: "Painel PIB",
+          title: "PIB",
           description: "Detalhes do painel",
+          thumb: "https://images.ctfassets.net/thumb.png",
         }),
         expect.objectContaining({
           id: "theme:theme-1",

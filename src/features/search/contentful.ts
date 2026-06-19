@@ -61,7 +61,10 @@ export const getSearchIndex = async (): Promise<SearchIndex> => {
   const data = await getContent<SearchIndexContent>(SEARCH_INDEX_QUERY);
   const items = [
     ...buildPostItems(data.postCollection?.items || []),
-    ...buildPanelItems(data.panelsCollection?.items || []),
+    ...buildPanelItems(
+      data.panelsCollection?.items || [],
+      data.postCollection?.items || [],
+    ),
     ...buildDataStoryItems(data.dataStoriesCollection?.items || []),
     ...buildThemeItems(data.themeCollection?.items || []),
   ];
@@ -104,14 +107,19 @@ const buildPostItems = (posts: ContentfulPost[]): SearchIndexItem[] =>
       };
     });
 
-const buildPanelItems = (panels: ContentfulPanel[]): SearchIndexItem[] =>
-  panels
+const buildPanelItems = (
+  panels: ContentfulPanel[],
+  posts: ContentfulPost[],
+): SearchIndexItem[] => {
+  const postsByPanelHref = buildPanelPostMap(posts);
+
+  return panels
     .filter((panel) => Boolean(panel.sys?.id && panel.title))
     .map((panel) => {
-      const title = panel.descriptionTitle || panel.title || "";
-      const description = panel.description?.json
-        ? documentToPlainTextString(panel.description.json)
-        : "";
+      const href = buildPanelHref(panel.title || "");
+      const matchingPost = postsByPanelHref.get(href);
+      const title = getPanelDisplayTitle(panel, matchingPost);
+      const description = getPanelDescription(panel);
       const themes = panel.macroTheme ? [panel.macroTheme] : [];
 
       return {
@@ -120,19 +128,45 @@ const buildPanelItems = (panels: ContentfulPanel[]): SearchIndexItem[] =>
         type: "data-panel-detail",
         title,
         description,
-        href: `/data-panel/${encodeURIComponent(panel.title || "")}`,
+        href,
         date: panel.date || null,
-        thumb: null,
+        thumb: matchingPost?.thumb?.url || null,
         themes,
         tags: [],
         text: buildSearchText([
-          panel.title,
+          title,
           panel.macroTheme,
           panel.descriptionTitle,
           description,
         ]),
       };
     });
+};
+
+const buildPanelPostMap = (posts: ContentfulPost[]) =>
+  new Map(
+    posts
+      .filter((post) => post.type === "data-panel" && post.link)
+      .map((post) => [buildPublicContentHref(post.link || ""), post]),
+  );
+
+const getPanelDisplayTitle = (
+  panel: ContentfulPanel,
+  matchingPost?: ContentfulPost,
+): string => {
+  const postTitle = stripPanelTitlePrefix(matchingPost?.title);
+
+  return postTitle || panel.descriptionTitle || panel.title || "";
+};
+
+const getPanelDescription = (panel: ContentfulPanel): string => {
+  if (!panel.description?.json) return "";
+
+  return documentToPlainTextString(panel.description.json);
+};
+
+const buildPanelHref = (title: string): string =>
+  `/data-panel/${encodeURIComponent(title)}`;
 
 const buildDataStoryItems = (
   dataStories: ContentfulDataStory[],
