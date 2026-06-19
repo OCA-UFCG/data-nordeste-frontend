@@ -31,6 +31,16 @@ describe("related panel helpers", () => {
     expect(results).toHaveLength(1);
     expect(results[0].title).not.toBe("Produto Interno Bruto");
   });
+
+  it("excludes the current panel by href when display titles differ", () => {
+    const results = getRelatedPanelItems(buildSearchItems(), {
+      title: "Painel Produto Interno Bruto",
+      href: "/data-panel/Produto%20Interno%20Bruto",
+      macroTheme: "Economia",
+    });
+
+    expect(results.map((item) => item.id)).toEqual(["panel:2", "panel:3"]);
+  });
 });
 
 const buildSearchItems = (): SearchIndexItem[] => [

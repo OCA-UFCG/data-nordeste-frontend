@@ -1,19 +1,14 @@
 "use client";
 
 import { SearchResultCard } from "@/components/SearchResultCard/SearchResultCard";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  DotButton,
-} from "@/components/ui/carousel";
 import type { SearchResult } from "@/features/search/types";
 
 type RelatedPanelsSectionProps = {
   items: SearchResult[];
 };
+
+const relatedPanelsGridClassName =
+  "grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4";
 
 export const RelatedPanelsSection = ({ items }: RelatedPanelsSectionProps) => {
   if (!items.length) return null;
@@ -24,37 +19,18 @@ export const RelatedPanelsSection = ({ items }: RelatedPanelsSectionProps) => {
         <h2 className="text-[30px] font-semibold leading-[36px] text-[#292829]">
           Conteúdo Relacionado
         </h2>
-        <RelatedPanelsCarousel items={items} />
+        <RelatedPanelsGrid items={items} />
       </div>
     </section>
   );
 };
 
-const RelatedPanelsCarousel = ({ items }: RelatedPanelsSectionProps) => (
-  <Carousel
-    opts={{ align: "start", loop: items.length > 1 }}
-    className="w-full"
-  >
-    <CarouselContent className="-ml-0">
-      {items.map((item) => (
-        <CarouselItem key={item.id} className={relatedPanelItemClassName}>
-          <SearchResultCard result={item} />
-        </CarouselItem>
-      ))}
-    </CarouselContent>
-    <RelatedPanelsMobileDots items={items} />
-    <CarouselPrevious className="hidden md:flex" />
-    <CarouselNext className="hidden md:flex" />
-  </Carousel>
-);
-
-const RelatedPanelsMobileDots = ({ items }: RelatedPanelsSectionProps) => (
-  <div className="flex w-full justify-center gap-2 md:hidden">
-    {items.map((item, index) => (
-      <DotButton key={item.id} tabIndex={index} />
+const RelatedPanelsGrid = ({ items }: RelatedPanelsSectionProps) => (
+  <div className={relatedPanelsGridClassName}>
+    {items.slice(0, 4).map((item) => (
+      <div key={item.id} className="h-full">
+        <SearchResultCard result={item} />
+      </div>
     ))}
   </div>
 );
-
-const relatedPanelItemClassName =
-  "basis-1/1 p-0 md:basis-1/2 md:p-2 lg:basis-1/3 xl:basis-1/4";

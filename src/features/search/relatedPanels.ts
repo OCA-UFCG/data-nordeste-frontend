@@ -22,6 +22,7 @@ type RelatedPanelOptions = {
 
 export type RelatedPanelReference = {
   title: string;
+  href?: string | null;
   macroTheme?: string | null;
   descriptionTitle?: string | null;
   descriptionText?: string | null;
@@ -56,6 +57,7 @@ const isRelatedPanelCandidate = (
   currentPanel: RelatedPanelReference,
 ): boolean => {
   if (item.type !== "data-panel-detail") return false;
+  if (currentPanel.href && item.href === currentPanel.href) return false;
 
   return (
     normalizeSearchText(item.title) !== normalizeSearchText(currentPanel.title)

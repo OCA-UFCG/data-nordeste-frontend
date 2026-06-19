@@ -66,6 +66,7 @@ export default async function DataPanel({
   const panel = panels.items[0];
   const relatedPanels = getRelatedPanelItems(searchIndex.items, {
     title: panel.title,
+    href: `/data-panel/${encodeURIComponent(id)}`,
     macroTheme: panel.macroTheme,
     descriptionTitle: panel.descriptionTitle,
     descriptionText: getPanelDescriptionText(panel),

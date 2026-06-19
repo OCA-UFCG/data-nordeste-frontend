@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  DotButton,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
+import type { ReactElement } from "react";
 import ContentPost from "@/components/ContentPost/ContentPost";
 import PreviewCard from "@/components/PreviewCard/PreviewCard";
 import { IPublication, IPreviewCard } from "@/utils/interfaces";
@@ -25,56 +17,32 @@ type PreviewCarouselProps = {
 
 type Props = PostCarouselProps | PreviewCarouselProps;
 
-export function CardCarousel({ variant, items }: Props) {
-  const sortedItems =
-    variant === "post"
-      ? [...items].sort(
-          (a, b) =>
-            new Date((b as IPublication).date).getTime() -
-            new Date((a as IPublication).date).getTime(),
-        )
-      : items;
+const cardGridClassName =
+  "grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4";
 
-  const itemClassName =
-    variant === "post"
-      ? "basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
-      : "basis-1/1 md:basis-1/2 lg:basis-1/4 p-1 md:p-2";
+function getSortedPosts(items: IPublication[]): IPublication[] {
+  return [...items].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+}
+
+export function CardCarousel({ variant, items }: Props): ReactElement {
+  const visibleItems =
+    variant === "post" ? getSortedPosts(items).slice(0, 4) : items.slice(0, 4);
 
   return (
     <div className="flex justify-center w-full">
-      <Carousel
-        opts={{
-          align: "start",
-          loop: true,
-        }}
-        plugins={[
-          Autoplay({
-            delay: 10000,
-          }),
-        ]}
-        className="flex flex-col gap-4 content-carousel w-full"
-      >
-        <CarouselContent className="-ml-0">
-          {sortedItems.map((item, i) => (
-            <CarouselItem key={i} className={itemClassName}>
-              {variant === "post" ? (
-                <ContentPost content={item as IPublication} />
-              ) : (
-                <PreviewCard content={item as IPreviewCard} />
-              )}
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-
-        <div className="flex md:hidden gap-2 w-full justify-center">
-          {sortedItems.map((_, i) => (
-            <DotButton tabIndex={i} key={i} />
-          ))}
-        </div>
-
-        <CarouselPrevious className="hidden md:flex" />
-        <CarouselNext className="hidden md:flex" />
-      </Carousel>
+      <div className={cardGridClassName}>
+        {visibleItems.map((item, i) => (
+          <div key={i} className="h-full">
+            {variant === "post" ? (
+              <ContentPost content={item as IPublication} />
+            ) : (
+              <PreviewCard content={item as IPreviewCard} />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
