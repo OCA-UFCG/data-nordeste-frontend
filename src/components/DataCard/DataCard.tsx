@@ -161,34 +161,42 @@ export const DataCard = ({
           </h3>
 
           <div className="flex flex-col gap-3 sm:hidden">
-            <div className="flex flex-wrap gap-2">
-              {files.slice(0, 3).map((file) => (
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                asChild
+                variant="secondary"
+                className="w-full border border-[#DCDBDC] bg-transparent"
+              >
+                <Link
+                  href={post.html}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Icon
+                    id="icon-external"
+                    size={16}
+                    className="text-[#038f39]"
+                  />
+                  Ver todos
+                </Link>
+              </Button>
+
+              {files.slice(0, 1).map((file) => (
                 <button
                   key={file.name}
                   type="button"
                   onClick={() => handleDownload(file.downloadUrl, file.name)}
-                  className="flex items-center gap-2 rounded-full bg-transparent px-3 py-1 text-[12px] font-medium text-[#018F39] transition-colors hover:bg-gray-100"
+                  className="flex min-w-0 items-center justify-center gap-2 rounded-md border border-[#DCDBDC] bg-transparent px-3 text-[12px] font-medium text-[#018F39] transition-colors hover:bg-gray-100"
                 >
                   <Icon
                     id="icon-download"
                     size={14}
-                    className="text-emerald-700"
+                    className="shrink-0 text-emerald-700"
                   />
-                  {file.name}
+                  <span className="truncate">{file.name}</span>
                 </button>
               ))}
             </div>
-
-            <Button
-              asChild
-              variant="secondary"
-              className="w-full border border-[#DCDBDC] bg-transparent"
-            >
-              <Link href={post.html} target="_blank" rel="noopener noreferrer">
-                <Icon id="icon-external" size={16} className="text-[#038f39]" />
-                Ver todos
-              </Link>
-            </Button>
 
             <Button
               variant="primary"
