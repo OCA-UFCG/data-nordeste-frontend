@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon/Icon";
 import { IMetadata, MacroTheme } from "@/utils/interfaces";
 import DOMPurify from "dompurify";
@@ -43,12 +43,23 @@ export const DataCard = ({
     await handleDownload(zipUrl, fileName);
   };
 
-  const sanitizedDescription = useMemo(() => {
-    if (!post.description) return "";
+  const [sanitizedDescription, setSanitizedDescription] = useState("");
 
-    return DOMPurify.sanitize(post.description, {
-      USE_PROFILES: { html: true },
-    });
+  useEffect(() => {
+    if (!post.description) {
+      setSanitizedDescription("");
+
+      return;
+    }
+
+    const purifier =
+      typeof DOMPurify.sanitize === "function" ? DOMPurify : DOMPurify(window);
+
+    setSanitizedDescription(
+      purifier.sanitize(post.description, {
+        USE_PROFILES: { html: true },
+      }),
+    );
   }, [post.description]);
 
   return (

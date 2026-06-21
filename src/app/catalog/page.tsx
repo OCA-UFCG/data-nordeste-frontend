@@ -12,12 +12,11 @@ import {
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { getZenodoCommunityRecords } from "@/lib/zenodo";
-import { RECORDS_PER_PAGE } from "@/utils/constants";
-import {
-  buildCatalogFilterValues,
-  buildCatalogSlugTitleMap,
-} from "@/features/catalog/filters";
+import { dataSortingTypes } from "@/utils/constants";
+import { buildCatalogSlugTitleMap } from "@/features/catalog/filters";
 import { applyCatalogFilterLabels } from "@/features/catalog/records";
+import { ExploreFilters } from "@/components/ExploreFilters/ExploreFilters";
+import { normalizeKey } from "@/utils/functions";
 
 export const metadata: Metadata = buildMetadata({
   title: "Catalogo de dados",
@@ -51,12 +50,7 @@ interface IFilterDataPage {
   };
 }
 
-export default async function CatalogPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const rawSearchParams = await searchParams;
+export default async function CatalogPage() {
   const data: IFilterDataPage = await getContent(FILTERS_QUERY);
 
   const header = data.pageHeadersCollection?.items?.[0];
@@ -72,37 +66,44 @@ export default async function CatalogPage({
   const themes = (data.themeCollection?.items || []).filter(
     (theme): theme is MacroTheme => Boolean(theme),
   );
-  const urlSearchParams = new URLSearchParams(
-    Object.entries(rawSearchParams).flatMap(([key, value]) =>
-      Array.isArray(value)
-        ? value.map((item) => [key, item])
-        : value
-          ? [[key, value]]
-          : [],
-    ),
-  );
-  const currentPage = Number(urlSearchParams.get("page") || 1);
-  const filtersFromUrl = buildCatalogFilterValues(urlSearchParams, filters);
   const slugToTitle = buildCatalogSlugTitleMap(filters);
-  const initialRecordsResult = await getZenodoCommunityRecords(
-    currentPage,
-    RECORDS_PER_PAGE,
-    filtersFromUrl,
+  const slugByNormalizedTitle = Object.fromEntries(
+    Object.entries(slugToTitle).map(([slug, title]) => [
+      normalizeKey(title),
+      slug,
+    ]),
   );
+  const categoryValues = Object.fromEntries(
+    themes.map((theme) => [
+      theme.sys.id,
+      slugByNormalizedTitle[normalizeKey(theme.name)] || theme.id,
+    ]),
+  );
+  const catalogRecords = await getZenodoCommunityRecords(1, 25);
   const initialRecords: IMetadata[] = applyCatalogFilterLabels(
-    initialRecordsResult.records,
+    catalogRecords.records,
     slugToTitle,
   );
 
   return (
     <HubTemplate>
       {header && <PageHeader content={header} />}
+      <div className="pt-12" />
+      <Suspense>
+        <ExploreFilters
+          themes={themes}
+          categoryValues={categoryValues}
+          clientSideNavigation
+          mobileCatalogLayout
+          sortingAsField
+          sortingOptions={dataSortingTypes}
+        />
+      </Suspense>
       <Suspense>
         <DataRecords
           filters={filters}
           themes={themes}
           initialRecords={initialRecords}
-          initialTotalPages={initialRecordsResult.totalPages}
         />
       </Suspense>
     </HubTemplate>

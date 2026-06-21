@@ -66,10 +66,31 @@ function ThemeFilterCard({
 
 interface ExploreFiltersProps {
   className?: string;
-  themes: Pick<MacroTheme, "name" | "color" | "sys">[];
+  themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
+  categoryValue?: "contentful-id" | "theme-id";
+  categoryValues?: Record<string, string>;
+  clientSideNavigation?: boolean;
+  mobileCatalogLayout?: boolean;
+  showClearFilters?: boolean;
+  showSorting?: boolean;
+  sortingAsField?: boolean;
+  sortingLabel?: string;
+  sortingOptions?: Record<string, string>;
 }
 
-export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
+export function ExploreFilters({
+  className,
+  themes,
+  categoryValue = "contentful-id",
+  categoryValues,
+  clientSideNavigation = false,
+  mobileCatalogLayout = false,
+  showClearFilters = true,
+  showSorting = true,
+  sortingAsField = false,
+  sortingLabel,
+  sortingOptions = sortingTypes,
+}: ExploreFiltersProps) {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -79,7 +100,7 @@ export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
     [params],
   );
 
-  const currentSort = params.get("sort") || sortingTypes["Mais recente"];
+  const currentSort = params.get("sort") || "";
 
   const updateUrl = useCallback(
     (updates: Record<string, string | null>) => {
@@ -91,9 +112,17 @@ export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
           newParams.set(key, value);
         }
       }
-      router.replace(pathname + "?" + newParams.toString());
+      const href = newParams.toString()
+        ? `${pathname}?${newParams.toString()}`
+        : pathname;
+
+      if (clientSideNavigation) {
+        window.history.replaceState(null, "", href);
+      } else {
+        router.replace(href);
+      }
     },
-    [params, pathname, router],
+    [clientSideNavigation, params, pathname, router],
   );
 
   const toggleCategory = useCallback(
@@ -111,54 +140,145 @@ export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
 
   return (
     <section className={cn("flex flex-col gap-4 w-full", className)}>
-      <div className="w-full max-w-[1440px] mx-auto px-20">
-        <div className="flex flex-row items-center gap-3 w-full">
-          <SearchBar variant="page" className="flex-1 max-w-none" />
+      <div className="w-full max-w-[1440px] mx-auto px-6 md:px-20">
+        <div
+          className={cn(
+            "flex items-center gap-3 w-full",
+            mobileCatalogLayout ? "flex-col lg:flex-row" : "flex-row",
+          )}
+        >
+          <SearchBar
+            variant="page"
+            className="flex-1 max-w-none"
+            placeholder={
+              mobileCatalogLayout ? "Digite sua pesquisa" : "Buscar conteúdo"
+            }
+          />
 
-          <Button
-            variant="secondary"
-            className="text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit"
-            onClick={() => router.replace(pathname)}
-          >
-            <span>Limpar filtros</span>
-            <Icon id="no-filter" size={16} />
-          </Button>
+          {mobileCatalogLayout && (
+            <Button className="flex w-full lg:hidden" type="button">
+              <Icon id="filter" size={14} />
+              Veja por temas
+            </Button>
+          )}
 
-          <Select
-            value={currentSort}
-            onValueChange={(value) => updateUrl({ sort: value })}
+          <div
+            className={cn(
+              mobileCatalogLayout
+                ? "grid w-full grid-cols-2 gap-3 lg:contents"
+                : "contents",
+            )}
           >
-            <SelectTrigger className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0">
-              <SelectValue placeholder="Mais recentes" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {Object.entries(sortingTypes).map(([label, value]) => (
-                  <SelectItem
-                    value={value}
-                    key={value}
-                    className="cursor-pointer"
+            {showClearFilters && (
+              <Button
+                variant="secondary"
+                className={cn(
+                  "text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit",
+                  mobileCatalogLayout && "w-full",
+                )}
+                onClick={() => {
+                  if (clientSideNavigation) {
+                    window.history.replaceState(null, "", pathname);
+                  } else {
+                    router.replace(pathname);
+                  }
+                }}
+              >
+                <span>Limpar filtros</span>
+                <Icon id="no-filter" size={16} />
+              </Button>
+            )}
+
+            {showSorting && (
+              <>
+                {sortingAsField && (
+                  <div className="flex min-h-10 w-full items-center rounded-md border border-grey-200 px-3 text-grey-600 shadow-sm lg:w-auto">
+                    <Select
+                      value={currentSort}
+                      onValueChange={(value) => updateUrl({ sort: value })}
+                    >
+                      <SelectTrigger className="w-full !h-auto min-w-[126px] justify-between border-0 bg-transparent !p-0 text-sm font-normal text-grey-600 shadow-none focus-visible:ring-0">
+                        <SelectValue placeholder="Ordenar por" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {Object.entries(sortingOptions).map(
+                            ([label, value]) => (
+                              <SelectItem
+                                value={value}
+                                key={value}
+                                className="cursor-pointer"
+                              >
+                                {label}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div
+                  className={cn(
+                    "items-center gap-1 text-xs font-medium text-[#292829]",
+                    sortingAsField
+                      ? "hidden"
+                      : mobileCatalogLayout
+                        ? "hidden md:flex"
+                        : "flex",
+                  )}
+                >
+                  {sortingLabel && <span>{sortingLabel}</span>}
+                  <Select
+                    value={currentSort}
+                    onValueChange={(value) => updateUrl({ sort: value })}
                   >
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+                    <SelectTrigger className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0">
+                      <SelectValue placeholder="Mais recente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {Object.entries(sortingOptions).map(
+                          ([label, value]) => (
+                            <SelectItem
+                              value={value}
+                              key={value}
+                              className="cursor-pointer"
+                            >
+                              {label}
+                            </SelectItem>
+                          ),
+                        )}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-x-6 gap-y-3 w-full mt-4">
+        <div
+          className={cn(
+            "flex flex-wrap gap-x-6 gap-y-3 w-full mt-4",
+            mobileCatalogLayout && "max-lg:hidden",
+          )}
+        >
           {themes.map((theme) => {
             const iconKey = normalizeKey(theme.name);
+            const themeValue =
+              categoryValues?.[theme.sys.id] ??
+              (categoryValue === "theme-id" ? theme.id : theme.sys.id);
 
             return (
               <ThemeFilterCard
-                key={theme.sys.id}
+                key={themeValue}
                 iconId={MACROTHEME_ICON_BY_ID[iconKey] || "list"}
                 color={theme.color || "#999999"}
                 name={theme.name}
-                checked={selectedCategories.includes(theme.sys.id)}
-                onCheckedChange={() => toggleCategory(theme.sys.id)}
+                checked={selectedCategories.includes(themeValue)}
+                onCheckedChange={() => toggleCategory(themeValue)}
               />
             );
           })}

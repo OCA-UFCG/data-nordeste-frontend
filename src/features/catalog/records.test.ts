@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyCatalogFilterLabels,
   buildCatalogTagViews,
+  filterCatalogRecords,
   formatCatalogPublicationDate,
 } from "./records";
 import { MacroTheme } from "@/utils/interfaces";
@@ -51,5 +52,42 @@ describe("catalog records", () => {
     );
 
     expect(records[0].tags).toEqual([{ slug: "saude", name: "Saúde" }]);
+  });
+
+  it("filters catalog records by their normalized theme tags", () => {
+    const records = [
+      {
+        id: "1",
+        title: "Imunização",
+        description: "",
+        publication_date: "2025-01-01",
+        version: "1",
+        tags: ["Saúde", "Excel"],
+        html: "",
+        license: "",
+        files: [],
+      },
+      {
+        id: "2",
+        title: "Educação",
+        description: "",
+        publication_date: "2025-01-01",
+        version: "1",
+        tags: ["Educação"],
+        html: "",
+        license: "",
+        files: [],
+      },
+    ];
+
+    expect(
+      filterCatalogRecords(
+        records,
+        { category: ["saude"] },
+        {
+          saude: "Saúde",
+        },
+      ).map((record) => record.title),
+    ).toEqual(["Imunização"]);
   });
 });
