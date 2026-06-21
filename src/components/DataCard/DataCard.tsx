@@ -108,7 +108,7 @@ export const DataCard = ({
           </div>
         </div>
 
-        <div className="flex flex-row justify-center gap-[16px] sm:justify-normal items-center">
+        <div className="hidden sm:flex flex-row justify-center gap-[16px] sm:justify-normal items-center">
           {files.length > 0 && (
             <div className="flex sm:hidden flex-row flex-wrap items-center justify-between gap-3 lg:flex-nowrap lg:justify-end  w-[150px] h-[40px]">
               {
@@ -156,9 +156,50 @@ export const DataCard = ({
 
       {files.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h3 className="hidden sm:block text-[12px] font-semibold text-gray-700">
+          <h3 className="text-[12px] font-semibold text-gray-700">
             Arquivos recentes
           </h3>
+
+          <div className="flex flex-col gap-3 sm:hidden">
+            <div className="flex flex-wrap gap-2">
+              {files.slice(0, 3).map((file) => (
+                <button
+                  key={file.name}
+                  type="button"
+                  onClick={() => handleDownload(file.downloadUrl, file.name)}
+                  className="flex items-center gap-2 rounded-full bg-transparent px-3 py-1 text-[12px] font-medium text-[#018F39] transition-colors hover:bg-gray-100"
+                >
+                  <Icon
+                    id="icon-download"
+                    size={14}
+                    className="text-emerald-700"
+                  />
+                  {file.name}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              asChild
+              variant="secondary"
+              className="w-full border border-[#DCDBDC] bg-transparent"
+            >
+              <Link href={post.html} target="_blank" rel="noopener noreferrer">
+                <Icon id="icon-external" size={16} className="text-[#038f39]" />
+                Ver todos
+              </Link>
+            </Button>
+
+            <Button
+              variant="primary"
+              onClick={handleDownloadZippedFiles}
+              className="w-full text-[14px] font-medium text-[#F8F7F8]"
+            >
+              <Icon id="icon-download" size={16} />
+              Baixar todos os Arquivos
+            </Button>
+          </div>
+
           <div className="flex gap-2 items-center h-auto justify-between">
             <div className="hidden sm:flex flex-wrap self-end">
               {files.slice(0, 3).map((file) => (
