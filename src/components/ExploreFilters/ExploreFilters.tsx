@@ -37,29 +37,33 @@ function ThemeFilterCard({
 }: ThemeFilterCardProps) {
   return (
     <div
-      className="flex flex-row items-center gap-2 px-2 h-8 sm:w-[302px] bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0"
+      className="flex items-center h-8 sm:w-[302px] bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg overflow-hidden cursor-pointer flex-shrink-0"
       onClick={() => onCheckedChange?.(!checked)}
     >
-      <Checkbox
-        checked={checked}
-        onCheckedChange={onCheckedChange}
-        className="w-4 h-4 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
-        onClick={(e) => e.stopPropagation()}
-      />
+      <div className="flex items-center justify-center h-full px-2 hover:bg-[#DDEADF] transition-colors">
+        <Checkbox
+          checked={checked}
+          onCheckedChange={onCheckedChange}
+          className="w-4 h-4 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
 
       <div className="w-px h-full bg-[#EFEFEF] flex-shrink-0" />
 
-      <Icon id={iconId} size={16} style={{ color }} />
+      <div className="flex items-center gap-2 flex-1 h-full px-2 hover:bg-[#DDEADF] transition-colors">
+        <Icon id={iconId} size={16} style={{ color }} />
 
-      <span className="flex-1 text-sm font-normal text-[#292829] truncate">
-        {name}
-      </span>
+        <span className="flex-1 text-sm font-normal text-[#292829] truncate">
+          {name}
+        </span>
 
-      <Icon
-        className="text-[#999999] flex-shrink-0 rotate-270"
-        id="expand"
-        size={12}
-      />
+        <Icon
+          className="text-[#999999] flex-shrink-0 rotate-270"
+          id="expand"
+          size={12}
+        />
+      </div>
     </div>
   );
 }

@@ -83,10 +83,16 @@ export const buildPostsUrlQuery = (
 export const buildPostsContentfulFilter = (
   currentForm: PostsFilterForm,
   rootFilter: { [key: string]: string | string[] },
-) => ({
-  ...rootFilter,
-  ...parsePostsFilters(currentForm).contentfulFilter,
-});
+) => {
+  const { contentfulFilter } = parsePostsFilters(currentForm);
+
+  return {
+    ...rootFilter,
+    ...Object.fromEntries(
+      Object.entries(contentfulFilter).filter(([, v]) => v !== undefined),
+    ),
+  };
+};
 
 export const buildPostsSkip = (currentPage: number) =>
   POSTS_PER_PAGE * (currentPage - 1);
