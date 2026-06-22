@@ -1,9 +1,29 @@
 import { Filters, FilterGroup } from "@/utils/interfaces";
 
+export type CatalogSearchParams = {
+  [key: string]: string | string[] | undefined;
+};
+
 export type CatalogFilterGroupFields = {
   title: string;
   type: string;
   fields: { [key: string]: string };
+};
+
+/**
+ * Converts route search params into the page and filters sent to Zenodo.
+ * @example buildCatalogRequest({ page: "2", category: "saude" }, groups)
+ */
+export const buildCatalogRequest = (
+  searchParams: CatalogSearchParams,
+  filters: FilterGroup[],
+): { currentPage: number; filterValues: Filters } => {
+  const urlSearchParams = createCatalogUrlSearchParams(searchParams);
+
+  return {
+    currentPage: Number(urlSearchParams.get("page") || 1),
+    filterValues: buildCatalogFilterValues(urlSearchParams, filters),
+  };
 };
 
 export const buildCatalogFilterValues = (
@@ -13,6 +33,7 @@ export const buildCatalogFilterValues = (
   const values: Filters = {
     date_gte: parseCatalogDate(params.get("date_gte")),
     date_lte: parseCatalogDate(params.get("date_lte")),
+    search: params.get("q")?.trim() || undefined,
     sort: params.get("sort") || undefined,
   };
 
@@ -61,6 +82,19 @@ export const buildCatalogSlugTitleMap = (filters: FilterGroup[]) => {
 
 const parseCatalogDate = (value: string | null): Date | undefined =>
   value ? new Date(value) : undefined;
+
+const createCatalogUrlSearchParams = (
+  searchParams: CatalogSearchParams,
+): URLSearchParams =>
+  new URLSearchParams(
+    Object.entries(searchParams).flatMap(([key, value]) =>
+      Array.isArray(value)
+        ? value.map((item) => [key, item])
+        : value
+          ? [[key, value]]
+          : [],
+    ),
+  );
 
 const parseCatalogList = (value: string | null): string[] =>
   value ? value.split(",").filter(Boolean) : [];
