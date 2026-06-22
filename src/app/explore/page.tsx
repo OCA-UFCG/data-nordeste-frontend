@@ -87,9 +87,9 @@ export default async function ExplorePage({
   return (
     <HubTemplate>
       <PageHeader content={pageHeaders.items[0]} />
-      <div className="pt-12" />
+      <div className="pt-6 sm:pt-12" />
       <ExploreFilters themes={themes.items} />
-      <br></br>
+      <div className="h-4 sm:h-6" />
       <section className="w-full bg-[#F8F7F8]">
         <Suspense>
           <MacroThemeTabs

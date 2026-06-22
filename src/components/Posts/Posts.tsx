@@ -71,7 +71,7 @@ export const Posts = ({
 
   return (
     <section className="w-full bg-[#F8F7F8] py-9">
-      <div className="flex flex-col items-center gap-12 w-full max-w-[1440px] mx-auto px-20">
+      <div className="flex flex-col items-center gap-12 w-full max-w-[1440px] mx-auto px-4 sm:px-20">
         <PostsGrid
           currentPage={currentPage}
           pages={pages}
