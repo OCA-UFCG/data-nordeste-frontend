@@ -29,13 +29,21 @@ describe("buildZenodoRecordsQuery", () => {
     expect(query.get("sort")).toBeNull();
   });
 
-  it("combines catalog text and category filters", () => {
+  it("searches the full catalog when a category is also present", () => {
     const query = buildZenodoRecordsQuery(1, 6, {
       category: ["saude"],
       search: "mortalidade infantil",
     });
 
-    expect(query.get("q")).toBe('"mortalidade infantil" AND ("saude")');
+    expect(query.get("q")).toBe("mortalidade* AND infantil*");
+  });
+
+  it("uses prefix matching while the catalog term is incomplete", () => {
+    const query = buildZenodoRecordsQuery(1, 6, {
+      search: "sanea",
+    });
+
+    expect(query.get("q")).toBe("sanea*");
   });
 });
 

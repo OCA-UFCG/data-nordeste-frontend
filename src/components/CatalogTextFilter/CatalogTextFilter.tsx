@@ -2,7 +2,7 @@
 
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 
 const CATALOG_FILTER_DELAY_MS = 300;
 
@@ -28,16 +28,32 @@ export function CatalogTextFilter() {
     [],
   );
 
-  const updateCatalogQuery = (query: string) => {
+  const updateCatalogQuery = (query: string, refreshCurrentQuery = false) => {
     const nextParams = new URLSearchParams(params.toString());
     const normalizedQuery = query.trim();
 
-    if (normalizedQuery) nextParams.set("q", normalizedQuery);
-    else nextParams.delete("q");
+    if (normalizedQuery) {
+      nextParams.set("q", normalizedQuery);
+      nextParams.delete("category");
+    } else {
+      nextParams.delete("q");
+    }
     nextParams.delete("page");
 
     const suffix = nextParams.toString();
-    router.replace(suffix ? `${pathname}?${suffix}` : pathname);
+    const nextHref = suffix ? `${pathname}?${suffix}` : pathname;
+    const currentSuffix = params.toString();
+    const currentHref = currentSuffix
+      ? `${pathname}?${currentSuffix}`
+      : pathname;
+
+    if (refreshCurrentQuery && nextHref === currentHref) {
+      router.refresh();
+
+      return;
+    }
+
+    router.replace(nextHref);
   };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -51,8 +67,19 @@ export function CatalogTextFilter() {
     );
   };
 
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (pendingUpdate.current) clearTimeout(pendingUpdate.current);
+
+    updateCatalogQuery(value, true);
+  };
+
   return (
-    <div className="w-full flex-1 rounded-lg bg-[#F8F7F8] px-3 transition-colors focus-within:bg-[#F2F1F2]">
+    <form
+      className="w-full flex-1 rounded-lg bg-[#F8F7F8] px-3 transition-colors focus-within:bg-[#F2F1F2]"
+      onSubmit={handleSubmit}
+      role="search"
+    >
       <label className="sr-only" htmlFor="catalog-text-filter">
         Filtrar dados do catálogo
       </label>
@@ -68,6 +95,6 @@ export function CatalogTextFilter() {
           value={value}
         />
       </div>
-    </div>
+    </form>
   );
 }

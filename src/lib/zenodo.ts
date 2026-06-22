@@ -140,21 +140,33 @@ const buildFinalQuery = (
   dateCondition: string,
   searchCondition: string,
   otherConditions: string[],
-): string =>
-  [
+): string => {
+  // INTENTIONAL: Text search scans the whole catalog. Theme filters must not
+  // hide a matching dataset merely because a category was selected earlier.
+  if (searchCondition) {
+    return [dateCondition, searchCondition].filter(Boolean).join(" AND ");
+  }
+
+  return [
     dateCondition,
-    searchCondition,
     otherConditions.length ? `(${otherConditions.join(" OR ")})` : "",
   ]
     .filter(Boolean)
     .join(" AND ");
+};
 
 const buildSearchCondition = (search: string | undefined): string => {
   const normalizedSearch = search?.trim();
   if (!normalizedSearch) return "";
 
-  return `"${normalizedSearch.replaceAll('"', '\\"')}"`;
+  return normalizedSearch
+    .split(/\s+/)
+    .map((term) => `${escapeZenodoSearchTerm(term)}*`)
+    .join(" AND ");
 };
+
+const escapeZenodoSearchTerm = (term: string): string =>
+  term.replace(/([+\-=&|><!(){}[\]^"~?:\\/])/g, "\\$1");
 
 const buildArrayQuery = (items: string[]): string | null => {
   if (!items.length) return null;
