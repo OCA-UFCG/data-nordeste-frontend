@@ -9,7 +9,7 @@ import { MACROTHEME_ICON_BY_ID } from "@/features/macrothemes/constants";
 import { sortingTypes } from "@/utils/constants";
 import { normalizeKey } from "@/utils/functions";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -37,7 +37,7 @@ function ThemeFilterCard({
 }: ThemeFilterCardProps) {
   return (
     <div
-      className="flex flex-row items-center gap-2 px-2 h-8 w-[302px] bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0"
+      className="flex h-8 w-full cursor-pointer flex-row items-center gap-2 rounded-lg border border-[#EFEFEF] bg-[#F8F7F8] px-2 transition-colors hover:bg-[#F0EFEF] sm:w-[302px] sm:flex-shrink-0"
       onClick={() => onCheckedChange?.(!checked)}
     >
       <Checkbox
@@ -94,6 +94,8 @@ export function ExploreFilters({
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const mobileThemesId = useId();
+  const [mobileThemesOpen, setMobileThemesOpen] = useState(false);
 
   const selectedCategories = useMemo(
     () => params.get("category")?.split(",").filter(Boolean) ?? [],
@@ -156,7 +158,13 @@ export function ExploreFilters({
           />
 
           {mobileCatalogLayout && (
-            <Button className="flex w-full lg:hidden" type="button">
+            <Button
+              aria-controls={mobileThemesId}
+              aria-expanded={mobileThemesOpen}
+              className="flex w-full lg:hidden"
+              type="button"
+              onClick={() => setMobileThemesOpen((open) => !open)}
+            >
               <Icon id="filter" size={14} />
               Veja por temas
             </Button>
@@ -260,9 +268,10 @@ export function ExploreFilters({
         </div>
 
         <div
+          id={mobileThemesId}
           className={cn(
             "flex flex-wrap gap-x-6 gap-y-3 w-full mt-4",
-            mobileCatalogLayout && "max-lg:hidden",
+            mobileCatalogLayout && !mobileThemesOpen && "max-lg:hidden",
           )}
         >
           {themes.map((theme) => {
