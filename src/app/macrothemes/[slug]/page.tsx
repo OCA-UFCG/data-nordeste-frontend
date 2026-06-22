@@ -11,14 +11,11 @@ import { notFound } from "next/navigation";
 import { getContent } from "@/utils/contentful";
 import { MACROTHEME_PAGE_QUERY } from "@/utils/queries";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
-import { LinkButton } from "@/components/LinkButton/LinkButton";
-import { Icon } from "@/components/Icon/Icon";
-import { CardCarousel } from "@/components/CardCarousel/CardCarousel";
 import PreviewContent from "@/components/PreviewSection/PreviewContent";
-import { InfoTooltip } from "@/components/InfoTooltip/InfoTooltip";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
+import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
 
 interface IMacroThemePageContent {
   themeCollection: { items: MacroTheme[] };
@@ -84,8 +81,10 @@ export default async function MacroThemePage({
   }: IMacroThemePageContent = await getContent(MACROTHEME_PAGE_QUERY, {
     slug: normalizedSlug,
   });
+
   const theme = themeCollection.items?.[0];
   if (!theme) notFound();
+
   const postsByThemeHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=newsletter,additional-content&page=1`;
   const dashboardsHref = `/explore?category=${encodeURIComponent(theme.sys.id)}&page=1`;
   const datastoriesHref = `/posts?category=${encodeURIComponent(theme.sys.id)}&type_in=data-story&page=1`;
@@ -113,26 +112,6 @@ export default async function MacroThemePage({
   const publicationsHeader = pageHeadersById.get(
     SECTION_HEADER_IDS.publications,
   );
-
-  const renderTooltipContent = (header?: IPageHeader) => {
-    if (header?.richSubtitle?.json) {
-      return (
-        <div className="text-[16px] leading-6 text-[#292829] [&_a]:font-medium [&_a]:text-[#077432] [&_a]:underline-offset-2 [&_a:hover]:underline [&_p]:mb-6 [&_p:last-child]:mb-0">
-          {documentToReactComponents(header.richSubtitle.json)}
-        </div>
-      );
-    }
-
-    if (header?.subtitle) {
-      return (
-        <p className="text-[16px] leading-6 text-[#292829]">
-          {header.subtitle}
-        </p>
-      );
-    }
-
-    return null;
-  };
 
   return (
     <HubTemplate>
@@ -165,98 +144,23 @@ export default async function MacroThemePage({
         )}
       </div>
 
-      {!!dashboards.length && (
-        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
-          <section className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-semibold">
-                  {dashboardsHeader?.title || "Painel de Dados"}
-                </h2>
-                {dashboardsHeader && (
-                  <InfoTooltip
-                    label={`Saiba mais sobre ${dashboardsHeader.title}`}
-                    title={dashboardsHeader.subtitle || "Saiba mais"}
-                    content={renderTooltipContent(dashboardsHeader)}
-                  />
-                )}
-              </div>
-
-              <LinkButton
-                href={dashboardsHref}
-                variant="secondary"
-                className="w-fit"
-              >
-                <p>Ver Todos</p>
-                <Icon className="rotate-270 size-2" id="expand" />
-              </LinkButton>
-            </div>
-            <CardCarousel items={dashboards} variant="post" />
-          </section>
-        </div>
-      )}
-
-      {!!datastories.length && (
-        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
-          <section className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-semibold">
-                  {datastoriesHeader?.title || "Narrativa de Dados"}
-                </h2>
-                {datastoriesHeader && (
-                  <InfoTooltip
-                    label={`Saiba mais sobre ${datastoriesHeader.title}`}
-                    title={datastoriesHeader.subtitle || "Saiba mais"}
-                    content={renderTooltipContent(datastoriesHeader)}
-                  />
-                )}
-              </div>
-
-              <LinkButton
-                href={datastoriesHref}
-                variant="secondary"
-                className="w-fit"
-              >
-                <p>Ver Todos</p>
-                <Icon className="rotate-270 size-2" id="expand" />
-              </LinkButton>
-            </div>
-            <CardCarousel items={datastories} variant="post" />
-          </section>
-        </div>
-      )}
-
-      {!!publicacoes.length && (
-        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-10 space-y-12">
-          <section className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-semibold">
-                  {publicationsHeader?.title || "Publicações"}
-                </h2>
-                {publicationsHeader && (
-                  <InfoTooltip
-                    label={`Saiba mais sobre ${publicationsHeader.title}`}
-                    title={publicationsHeader.subtitle || "Saiba mais"}
-                    content={renderTooltipContent(publicationsHeader)}
-                  />
-                )}
-              </div>
-
-              <LinkButton
-                href={postsByThemeHref}
-                variant="secondary"
-                className="w-fit"
-              >
-                <p>Ver Todos</p>
-                <Icon className="rotate-270 size-2" id="expand" />
-              </LinkButton>
-            </div>
-            <CardCarousel items={publicacoes} variant="post" />
-          </section>
-        </div>
-      )}
+      <section className="w-full bg-[#F8F7F8]">
+        <MacroThemeTabs
+          dashboards={dashboards}
+          datastories={datastories}
+          publicacoes={publicacoes}
+          headers={{
+            dashboards: dashboardsHeader,
+            datastories: datastoriesHeader,
+            publications: publicationsHeader,
+          }}
+          urls={{
+            dashboardsHref,
+            datastoriesHref,
+            postsByThemeHref,
+          }}
+        />
+      </section>
     </HubTemplate>
   );
 }

@@ -2,19 +2,11 @@ import PageHeader from "@/components/PageHeader/PageHeader";
 import { Posts } from "@/components/Posts/Posts";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
-import {
-  IPageHeader,
-  IPublication,
-  MacroTheme,
-  SectionHeader,
-} from "@/utils/interfaces";
+import { IPageHeader, IPublication } from "@/utils/interfaces";
 import { POST_PAGE_QUERY, PUBLICATION_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import {
-  buildPostTypeFields,
-  POSTS_ROUTE_POST_TYPES,
-} from "@/features/posts/postTypes";
+import { POSTS_ROUTE_POST_TYPES } from "@/features/posts/postTypes";
 import { buildMetadata } from "@/config/seo";
 import {
   buildPostsContentfulFilter,
@@ -32,8 +24,6 @@ export const metadata: Metadata = buildMetadata({
 
 interface IPostsContent {
   pageHeadersCollection: { items: IPageHeader[] };
-  sectionHeadCollection: { items: SectionHeader[] };
-  themeCollection: { items: MacroTheme[] };
 }
 
 interface IInitialPostsContent {
@@ -62,14 +52,11 @@ export default async function PostsPage({
     urlSearchParams,
     Number.MAX_SAFE_INTEGER,
   );
-  const {
-    sectionHeadCollection: sectionHead,
-    pageHeadersCollection: pageHeaders,
-    themeCollection: themes,
-  }: IPostsContent = await getContent(POST_PAGE_QUERY, {
-    header_id: "posts",
-    head_id: "posts-content",
-  });
+  const { pageHeadersCollection: pageHeaders }: IPostsContent =
+    await getContent(POST_PAGE_QUERY, {
+      header_id: "posts",
+      head_id: "posts-content",
+    });
   const { postCollection: initialPosts }: IInitialPostsContent =
     await getContent(PUBLICATION_QUERY, {
       order: initialQueryState.sorting,
@@ -83,24 +70,9 @@ export default async function PostsPage({
       <PageHeader content={pageHeaders.items[0]} />
       <Suspense>
         <Posts
-          header={sectionHead.items[0]}
           rootFilter={rootFilter}
           totalPages={totalPages || 1}
           initialPosts={initialPosts.items}
-          filterGroups={[
-            {
-              title: "Tipo de publicação",
-              type: "type_in",
-              fields: buildPostTypeFields(POSTS_ROUTE_POST_TYPES),
-            },
-            {
-              title: "Categorias dos painéis",
-              type: "category",
-              fields: Object.fromEntries(
-                themes.items.map((theme) => [theme.sys.id, theme.name]),
-              ),
-            },
-          ]}
         />
       </Suspense>
     </HubTemplate>

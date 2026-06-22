@@ -152,6 +152,9 @@ export interface IPageHeader {
   title: string;
   subtitle?: string;
   richSubtitle?: ContentfulRichTextField;
+  banner?: {
+    url: string;
+  };
 }
 
 export interface ITab {
