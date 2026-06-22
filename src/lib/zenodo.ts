@@ -5,6 +5,7 @@ export type ZenodoFilters = {
   [key: string]: string[] | Date | string | undefined;
   date_gte?: Date;
   date_lte?: Date;
+  search?: string;
   sort?: string;
 };
 
@@ -92,17 +93,13 @@ export const buildZenodoRecordsQuery = (
 
   if (filters.sort) query.append("sort", filters.sort);
 
-  const { dateCondition, otherConditions } = buildConditions(filters);
-
-  let finalQuery = "";
-
-  if (dateCondition && otherConditions.length) {
-    finalQuery = `${dateCondition} AND (${otherConditions.join(" OR ")})`;
-  } else if (dateCondition) {
-    finalQuery = dateCondition;
-  } else if (otherConditions.length) {
-    finalQuery = otherConditions.join(" OR ");
-  }
+  const { dateCondition, searchCondition, otherConditions } =
+    buildConditions(filters);
+  const finalQuery = buildFinalQuery(
+    dateCondition,
+    searchCondition,
+    otherConditions,
+  );
 
   if (finalQuery) query.append("q", finalQuery);
 
@@ -118,6 +115,7 @@ export const buildZenodoArchiveFileName = (title: string): string =>
 const buildConditions = (filters: ZenodoFilters) => {
   let dateCondition = "";
   const otherConditions: string[] = [];
+  const searchCondition = buildSearchCondition(filters.search);
 
   const gte = filters.date_gte ? formatDate(filters.date_gte) : "*";
   const lte = filters.date_lte ? formatDate(filters.date_lte) : "*";
@@ -127,7 +125,7 @@ const buildConditions = (filters: ZenodoFilters) => {
   }
 
   Object.entries(filters).forEach(([key, value]) => {
-    if (!value || key.startsWith("date_")) return;
+    if (!value || key.startsWith("date_") || key === "search") return;
 
     if (Array.isArray(value) && value.length) {
       const arrQuery = buildArrayQuery(value);
@@ -135,7 +133,27 @@ const buildConditions = (filters: ZenodoFilters) => {
     }
   });
 
-  return { dateCondition, otherConditions };
+  return { dateCondition, searchCondition, otherConditions };
+};
+
+const buildFinalQuery = (
+  dateCondition: string,
+  searchCondition: string,
+  otherConditions: string[],
+): string =>
+  [
+    dateCondition,
+    searchCondition,
+    otherConditions.length ? `(${otherConditions.join(" OR ")})` : "",
+  ]
+    .filter(Boolean)
+    .join(" AND ");
+
+const buildSearchCondition = (search: string | undefined): string => {
+  const normalizedSearch = search?.trim();
+  if (!normalizedSearch) return "";
+
+  return `"${normalizedSearch.replaceAll('"', '\\"')}"`;
 };
 
 const buildArrayQuery = (items: string[]): string | null => {

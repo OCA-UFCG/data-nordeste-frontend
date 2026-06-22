@@ -28,6 +28,15 @@ describe("buildZenodoRecordsQuery", () => {
     expect(query.get("q")).toBeNull();
     expect(query.get("sort")).toBeNull();
   });
+
+  it("combines catalog text and category filters", () => {
+    const query = buildZenodoRecordsQuery(1, 6, {
+      category: ["saude"],
+      search: "mortalidade infantil",
+    });
+
+    expect(query.get("q")).toBe('"mortalidade infantil" AND ("saude")');
+  });
 });
 
 describe("parseZenodoRecords", () => {

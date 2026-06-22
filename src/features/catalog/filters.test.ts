@@ -28,6 +28,7 @@ describe("catalog filters", () => {
         category: ["saude"],
         date_gte: undefined,
         date_lte: undefined,
+        search: undefined,
         sort: "mostrecent",
       },
     });
@@ -42,8 +43,17 @@ describe("catalog filters", () => {
       category: ["saude", "educacao"],
       date_gte: new Date("2024-01-01"),
       date_lte: undefined,
+      search: undefined,
       sort: "mostrecent",
     });
+  });
+
+  it("maps catalog text to the Zenodo search filter", () => {
+    const params = new URLSearchParams("q=domicilios");
+
+    expect(buildCatalogFilterValues(params, filterGroups).search).toBe(
+      "domicilios",
+    );
   });
 
   it("serializes catalog filters without changing public param names", () => {

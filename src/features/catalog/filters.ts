@@ -33,6 +33,7 @@ export const buildCatalogFilterValues = (
   const values: Filters = {
     date_gte: parseCatalogDate(params.get("date_gte")),
     date_lte: parseCatalogDate(params.get("date_lte")),
+    search: params.get("q")?.trim() || undefined,
     sort: params.get("sort") || undefined,
   };
 

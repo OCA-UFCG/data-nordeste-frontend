@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Icon } from "../Icon/Icon";
 import { Checkbox } from "../ui/checkbox";
 import { SearchBar } from "../SearchBar/SearchBar";
+import { CatalogTextFilter } from "../CatalogTextFilter/CatalogTextFilter";
 import { Button } from "../ui/button";
 import { MACROTHEME_ICON_BY_ID } from "@/features/macrothemes/constants";
 import { sortingTypes } from "@/utils/constants";
@@ -149,13 +150,15 @@ export function ExploreFilters({
             mobileCatalogLayout ? "flex-col lg:flex-row" : "flex-row",
           )}
         >
-          <SearchBar
-            variant="page"
-            className="flex-1 max-w-none"
-            placeholder={
-              mobileCatalogLayout ? "Digite sua pesquisa" : "Buscar conteúdo"
-            }
-          />
+          {mobileCatalogLayout ? (
+            <CatalogTextFilter />
+          ) : (
+            <SearchBar
+              variant="page"
+              className="flex-1 max-w-none"
+              placeholder="Buscar conteúdo"
+            />
+          )}
 
           {mobileCatalogLayout && (
             <Button
