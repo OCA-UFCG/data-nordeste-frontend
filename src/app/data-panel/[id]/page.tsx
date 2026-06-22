@@ -1,4 +1,5 @@
 import PowerBIContainer from "@/components/PowerBIContainer/PowerBiContainer";
+import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedPanelsSection";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
 import { ReportData } from "@/utils/interfaces";
@@ -8,6 +9,8 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
+import { getSearchIndex } from "@/features/search/contentful";
+import { getRelatedPanelItems } from "@/features/search/relatedPanels";
 
 interface IDataPanelContent {
   panelsCollection: { items: ReportData[] };
@@ -19,7 +22,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const { panelsCollection: panels }: IDataPanelContent = await getContent(
+  const { panelsCollection: panels } = await getContent<IDataPanelContent>(
     DATA_PANEL_QUERY,
     { id },
   );
@@ -32,9 +35,7 @@ export async function generateMetadata({
     });
   }
 
-  const description = panel.description?.json
-    ? documentToPlainTextString(panel.description.json)
-    : panel.source;
+  const description = getPanelDescriptionText(panel) || panel.source;
 
   return buildMetadata({
     title: panel.title,
@@ -52,16 +53,24 @@ export default async function DataPanel({
 }) {
   const [{ id }, { pageName }] = await Promise.all([params, searchParams]);
 
-  const { panelsCollection: panels }: IDataPanelContent = await getContent(
-    DATA_PANEL_QUERY,
-    { id },
-  );
+  const [content, searchIndex] = await Promise.all([
+    getContent<IDataPanelContent>(DATA_PANEL_QUERY, { id }),
+    getSearchIndex(),
+  ]);
+  const panels = content.panelsCollection;
 
   if (!panels.items.length) {
     notFound();
   }
 
   const panel = panels.items[0];
+  const relatedPanels = getRelatedPanelItems(searchIndex.items, {
+    title: panel.title,
+    href: `/data-panel/${encodeURIComponent(id)}`,
+    macroTheme: panel.macroTheme,
+    descriptionTitle: panel.descriptionTitle,
+    descriptionText: getPanelDescriptionText(panel),
+  });
 
   return (
     <HubTemplate>
@@ -87,6 +96,14 @@ export default async function DataPanel({
           </div>
         </section>
       )}
+
+      <RelatedPanelsSection items={relatedPanels} />
     </HubTemplate>
   );
 }
+
+const getPanelDescriptionText = (panel: ReportData): string => {
+  if (!panel.description?.json) return "";
+
+  return documentToPlainTextString(panel.description.json);
+};
