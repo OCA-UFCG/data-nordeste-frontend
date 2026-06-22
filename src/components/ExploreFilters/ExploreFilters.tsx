@@ -171,6 +171,19 @@ export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
 
       {/* --- Mobile layout (hidden on desktop) --- */}
       <div className="flex flex-col gap-3 px-4 sm:hidden">
+        <div className="flex flex-row items-start gap-3 p-4 bg-white border border-[#35B2DB] rounded-lg">
+          <Icon id="info-alert" size={20} className="shrink-0 mt-0.5" />
+          <div className="flex flex-col gap-1">
+            <span className="text-base font-medium leading-5 text-[#1995C1]">
+              Atenção
+            </span>
+            <p className=" font-normal leading-6 text-[#1995C1]">
+              Para uma melhor visualização dos painéis recomendamos sua
+              visualização num computador
+            </p>
+          </div>
+        </div>
+
         <SearchBar variant="page" className="w-full" />
 
         <Button
