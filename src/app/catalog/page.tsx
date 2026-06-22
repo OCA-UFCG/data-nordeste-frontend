@@ -12,8 +12,11 @@ import {
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { getZenodoCommunityRecords } from "@/lib/zenodo";
-import { dataSortingTypes } from "@/utils/constants";
-import { buildCatalogSlugTitleMap } from "@/features/catalog/filters";
+import { dataSortingTypes, RECORDS_PER_PAGE } from "@/utils/constants";
+import {
+  buildCatalogRequest,
+  buildCatalogSlugTitleMap,
+} from "@/features/catalog/filters";
 import { applyCatalogFilterLabels } from "@/features/catalog/records";
 import { ExploreFilters } from "@/components/ExploreFilters/ExploreFilters";
 import { normalizeKey } from "@/utils/functions";
@@ -50,7 +53,14 @@ interface IFilterDataPage {
   };
 }
 
-export default async function CatalogPage() {
+export default async function CatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    [key: string]: string | string[] | undefined;
+  }>;
+}) {
+  const rawSearchParams = await searchParams;
   const data: IFilterDataPage = await getContent(FILTERS_QUERY);
 
   const header = data.pageHeadersCollection?.items?.[0];
@@ -79,7 +89,15 @@ export default async function CatalogPage() {
       slugByNormalizedTitle[normalizeKey(theme.name)] || theme.id,
     ]),
   );
-  const catalogRecords = await getZenodoCommunityRecords(1, 25);
+  const { currentPage, filterValues } = buildCatalogRequest(
+    rawSearchParams,
+    filters,
+  );
+  const catalogRecords = await getZenodoCommunityRecords(
+    currentPage,
+    RECORDS_PER_PAGE,
+    filterValues,
+  );
   const initialRecords: IMetadata[] = applyCatalogFilterLabels(
     catalogRecords.records,
     slugToTitle,
@@ -93,7 +111,6 @@ export default async function CatalogPage() {
         <ExploreFilters
           themes={themes}
           categoryValues={categoryValues}
-          clientSideNavigation
           mobileCatalogLayout
           sortingAsField
           sortingOptions={dataSortingTypes}
@@ -101,9 +118,10 @@ export default async function CatalogPage() {
       </Suspense>
       <Suspense>
         <DataRecords
-          filters={filters}
           themes={themes}
           initialRecords={initialRecords}
+          currentPage={catalogRecords.currentPage}
+          totalPages={catalogRecords.totalPages}
         />
       </Suspense>
     </HubTemplate>
