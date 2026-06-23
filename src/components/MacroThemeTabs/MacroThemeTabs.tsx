@@ -145,7 +145,7 @@ export function MacroThemeTabs({
 
   const tabs: { key: TabType; label: string }[] = [
     { key: "paineis", label: "Painéis" },
-    { key: "datastories", label: "Datastories" },
+    { key: "datastories", label: "Narrativas" },
     { key: "boletins", label: "Boletins" },
   ];
 
@@ -154,7 +154,7 @@ export function MacroThemeTabs({
       <div className="w-full bg-white border-b border-[#BEBBBD]">
         <div
           role="tablist"
-          className="flex flex-row items-stretch gap-4 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-0 overflow-x-auto scrollbar-hide"
+          className="flex flex-row items-stretch gap-4 max-w-[1440px] mx-auto lg:px-20 py-0 overflow-x-auto scrollbar-hide"
           style={{ height: "60px" }}
         >
           {tabs.map(({ key, label }) => (
@@ -163,10 +163,10 @@ export function MacroThemeTabs({
               role="tab"
               aria-selected={activeTab === key}
               onClick={() => handleTabClick(key)}
-              style={{ padding: "0 12px" }}
-              className={`h-full whitespace-nowrap flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] ${
+              style={{ padding: "16px 12px" }}
+              className={`h-full flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] ${
                 activeTab === key
-                  ? "border-[#018F39] text-[#018F39] drop-shadow-sm"
+                  ? "border-[#018F39] text-[#018F39]"
                   : "border-transparent text-[#7E797B] hover:text-[#292829] hover:border-gray-300"
               }`}
             >

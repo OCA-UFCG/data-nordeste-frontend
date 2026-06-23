@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import type { MacroTheme } from "@/utils/interfaces";
+import { XIcon } from "lucide-react";
 
 interface ThemeFilterCardProps {
   iconId: string;
@@ -38,7 +39,7 @@ function ThemeFilterCard({
 }: ThemeFilterCardProps) {
   return (
     <div
-      className="flex flex-row h-8 sm:w-[302px] bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0 overflow-hidden"
+      className="flex flex-row h-8 sm:w-[302px] bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0"
       onClick={() => onCheckedChange?.(!checked)}
     >
       <div className="flex items-center justify-center h-full w-8 rounded-l-lg hover:bg-[#DDEADF] transition-colors">
@@ -83,6 +84,107 @@ interface ExploreFiltersProps {
   sortingOptions?: Record<string, string>;
 }
 
+function SeeThemesModal({
+  themes,
+  selectedCategories,
+  onToggleCategory,
+  onClose,
+  onApply,
+}: {
+  themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
+  selectedCategories: string[];
+  onToggleCategory: (themeId: string) => void;
+  onClose: () => void;
+  onApply: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-lg w-full max-w-[393px] max-h-[80vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col gap-6 p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[24px] font-semibold leading-[36px] tracking-[-0.0075em] text-[#292829]">
+              Veja por temas
+            </h2>
+            <button
+              onClick={onClose}
+              className="flex items-center justify-center w-11 h-11 rounded-md hover:bg-grey-100 transition-colors"
+              aria-label="Fechar"
+            >
+              <XIcon className="w-5 h-5 text-[#077432]" />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-2 overflow-y-auto flex-1">
+            {themes.map((theme) => {
+              const iconKey = normalizeKey(theme.name);
+              const isChecked = selectedCategories.includes(theme.sys.id);
+
+              return (
+                <div
+                  key={theme.sys.id}
+                  className="flex flex-row h-8 bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0"
+                  onClick={() => onToggleCategory(theme.sys.id)}
+                >
+                  <div className="flex items-center justify-center h-full w-8 rounded-l-lg hover:bg-[#DDEADF] transition-colors">
+                    <Checkbox
+                      checked={isChecked}
+                      onCheckedChange={() => onToggleCategory(theme.sys.id)}
+                      className="w-4 h-4 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+
+                  <div className="w-px h-full bg-[#EFEFEF]" />
+
+                  <div className="flex items-center gap-2 flex-1 h-full px-2 rounded-r-lg hover:bg-[#DDEADF] transition-colors">
+                    <Icon
+                      id={MACROTHEME_ICON_BY_ID[iconKey] || "list"}
+                      size={16}
+                      style={{ color: theme.color || "#999999" }}
+                    />
+
+                    <span className="flex-1 text-sm font-normal text-[#292829] truncate">
+                      {theme.name}
+                    </span>
+
+                    <Icon
+                      className="text-[#999999] flex-shrink-0 rotate-270"
+                      id="expand"
+                      size={12}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-row gap-3">
+            <Button
+              variant="secondary"
+              className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md text-[#E5333F] hover:bg-grey-100"
+              onClick={onClose}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="flex-1 h-10 bg-[#018F39] hover:bg-[#018F39]/90 text-[#F8F7F8] rounded-md"
+              onClick={onApply}
+            >
+              Aplicar
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ExploreFilters({
   className,
   themes,
@@ -101,7 +203,8 @@ export function ExploreFilters({
   const pathname = usePathname();
   const mobileThemesId = useId();
   const [mobileThemesOpen, setMobileThemesOpen] = useState(false);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [seeThemesModalOpen, setSeeThemesModalOpen] = useState(false);
+  const [pendingCategories, setPendingCategories] = useState<string[]>([]);
 
   const selectedCategories = useMemo(
     () => params.get("category")?.split(",").filter(Boolean) ?? [],
@@ -109,6 +212,32 @@ export function ExploreFilters({
   );
 
   const currentSort = params.get("sort") || sortingTypes["Mais recente"];
+
+  const openSeeThemesModal = () => {
+    setPendingCategories(selectedCategories);
+    setSeeThemesModalOpen(true);
+  };
+
+  const closeSeeThemesModal = () => {
+    setSeeThemesModalOpen(false);
+  };
+
+  const applySeeThemesModal = () => {
+    updateUrl({
+      category:
+        pendingCategories.length > 0 ? pendingCategories.join(",") : null,
+      page: "1",
+    });
+    setSeeThemesModalOpen(false);
+  };
+
+  const togglePendingCategory = (themeId: string) => {
+    setPendingCategories((prev) =>
+      prev.includes(themeId)
+        ? prev.filter((id) => id !== themeId)
+        : [...prev, themeId],
+    );
+  };
 
   const updateUrl = useCallback(
     (updates: Record<string, string | null>) => {
@@ -326,10 +455,10 @@ export function ExploreFilters({
 
         <Button
           className="bg-[#018F39] hover:bg-[#018F39]/90 text-[#F8F7F8] h-10 rounded-md w-full"
-          onClick={() => setMobileFiltersOpen((prev) => !prev)}
+          onClick={openSeeThemesModal}
         >
           <Icon id="filter" size={16} className="text-[#F8F7F8]" />
-          <span>Filtrar</span>
+          <span>Veja por temas</span>
         </Button>
 
         <div className="flex flex-row items-center gap-3">
@@ -365,26 +494,17 @@ export function ExploreFilters({
             </SelectContent>
           </Select>
         </div>
-
-        {mobileFiltersOpen && (
-          <div className="flex flex-col gap-2">
-            {themes.map((theme) => {
-              const iconKey = normalizeKey(theme.name);
-
-              return (
-                <ThemeFilterCard
-                  key={theme.sys.id}
-                  iconId={MACROTHEME_ICON_BY_ID[iconKey] || "list"}
-                  color={theme.color || "#999999"}
-                  name={theme.name}
-                  checked={selectedCategories.includes(theme.sys.id)}
-                  onCheckedChange={() => toggleCategory(theme.sys.id)}
-                />
-              );
-            })}
-          </div>
-        )}
       </div>
+
+      {seeThemesModalOpen && (
+        <SeeThemesModal
+          themes={themes}
+          selectedCategories={pendingCategories}
+          onToggleCategory={togglePendingCategory}
+          onClose={closeSeeThemesModal}
+          onApply={applySeeThemesModal}
+        />
+      )}
     </section>
   );
 }
