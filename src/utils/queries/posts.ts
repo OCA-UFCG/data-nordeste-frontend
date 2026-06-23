@@ -40,7 +40,6 @@ export const PUBLICATION_QUERY = `
     postCollection(limit: ${POSTS_PER_PAGE}, order: $order, where: $filter, skip: $skip, preview: $preview) {
       total
       items {
-        sys { id }
         title
         link
         thumb {
