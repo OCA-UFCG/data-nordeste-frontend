@@ -19,7 +19,7 @@ const ContentPost = ({ content }: { content: IPublication }) => {
       href={href}
       target={openInNewTab ? "_blank" : undefined}
       rel={openInNewTab ? "noopener noreferrer" : undefined}
-      className="group flex flex-col overflow-hidden rounded-md w-full bg-grey-100 hover:bg-grey-200 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
+      className="group flex flex-col overflow-hidden rounded-md w-full bg-white hover:bg-grey-100 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
     >
       <div className="w-full overflow-hidden">
         <Image
@@ -30,6 +30,7 @@ const ContentPost = ({ content }: { content: IPublication }) => {
           className="w-full aspect-7/4 block object-cover object-top transition-transform group-hover:scale-102 duration-300"
         />
       </div>
+
       <div className="flex flex-col grow-1 justify-between">
         <div className="flex flex-row justify-between items-center bg-gray-200 px-5 py-1">
           <p className="font-semibold text-xs">{POST_TYPE_LABELS[type]}</p>
