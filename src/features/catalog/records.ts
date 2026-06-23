@@ -1,5 +1,5 @@
 import { normalizeKey } from "@/utils/functions";
-import { IMetadata, MacroTheme, Tag } from "@/utils/interfaces";
+import { Filters, IMetadata, MacroTheme, Tag } from "@/utils/interfaces";
 
 export type CatalogTagView = {
   key: string;
@@ -54,6 +54,59 @@ export const applyCatalogFilterLabels = (
     ...record,
     tags: formatCatalogRecordTags(record.tags, slugTitleMap),
   }));
+
+export const filterCatalogRecords = (
+  records: IMetadata[],
+  filters: Filters,
+  slugTitleMap: { [slug: string]: string },
+): IMetadata[] => {
+  const categories = normalizeSelectedCategories(
+    filters.category,
+    slugTitleMap,
+  );
+  const matchingRecords = categories.length
+    ? records.filter((record) => hasAnyCategory(record, categories))
+    : records;
+
+  return filters.sort === "mostrecent"
+    ? sortByMostRecent(matchingRecords)
+    : matchingRecords;
+};
+
+const normalizeSelectedCategories = (
+  categories: string[] | undefined,
+  slugTitleMap: Record<string, string>,
+): string[] =>
+  (categories ?? []).map((category) =>
+    normalizeKey(slugTitleMap[category] ?? category),
+  );
+
+const hasAnyCategory = (
+  record: IMetadata,
+  selectedCategories: string[],
+): boolean => {
+  const recordCategories = new Set(
+    (record.tags ?? []).map((tag) => normalizeKey(getTagName(tag))),
+  );
+
+  return selectedCategories.some((category) => recordCategories.has(category));
+};
+
+const getTagName = (tag: Tag): string =>
+  typeof tag === "string" ? tag : tag.name || tag.slug || "";
+
+const sortByMostRecent = (records: IMetadata[]): IMetadata[] =>
+  [...records].sort(
+    (first, second) =>
+      getTimestamp(second.publication_date) -
+      getTimestamp(first.publication_date),
+  );
+
+const getTimestamp = (date: string): number => {
+  const timestamp = Date.parse(date);
+
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
 
 const buildThemeCandidateKeys = (theme: MacroTheme): string[] => {
   const candidates = new Set<string>();

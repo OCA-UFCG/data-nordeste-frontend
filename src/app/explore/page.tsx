@@ -2,13 +2,13 @@ import PageHeader from "@/components/PageHeader/PageHeader";
 import { Posts } from "@/components/Posts/Posts";
 import { ExploreFilters } from "@/components/ExploreFilters/ExploreFilters";
 import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
+import type { TabType } from "@/components/MacroThemeTabs/MacroThemeTabs";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
 import { IPageHeader, IPublication, MacroTheme } from "@/utils/interfaces";
 import { EXPLORE_PAGE_QUERY, PUBLICATION_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { EXPLORE_ROUTE_POST_TYPES } from "@/features/posts/postTypes";
 import { buildMetadata } from "@/config/seo";
 import {
   buildPostsContentfulFilter,
@@ -24,6 +24,28 @@ export const metadata: Metadata = buildMetadata({
   path: "/explore",
 });
 
+const TYPE_IN_BY_TAB: Record<TabType, string> = {
+  paineis: "data-panel",
+  datastories: "data-story",
+  boletins: "newsletter,additional-content",
+};
+
+const TAB_HEADERS_IDS: Record<string, string> = {
+  dataPanels: "dashboards",
+  dataNarrative: "datastories",
+  publications: "publications",
+};
+
+function deriveTabFromUrl(urlParams: URLSearchParams): TabType {
+  const rawTypeIn = urlParams.get("type_in") ?? "";
+
+  if (rawTypeIn === "data-panel") return "paineis";
+  if (rawTypeIn === "data-story") return "datastories";
+  if (rawTypeIn.includes(",")) return "boletins";
+
+  return "paineis";
+}
+
 interface IPostsContent {
   pageHeadersCollection: { items: IPageHeader[] };
   tabHeadersCollection: { items: IPageHeader[] };
@@ -33,12 +55,6 @@ interface IPostsContent {
 interface IInitialPostsContent {
   postCollection: { total: number; items: IPublication[] };
 }
-
-const TAB_HEADERS_IDS: Record<string, string> = {
-  dataPanels: "dashboards",
-  dataNarrative: "datastories",
-  publications: "publications",
-};
 
 export default async function ExplorePage({
   searchParams,
@@ -55,9 +71,12 @@ export default async function ExplorePage({
           : [],
     ),
   );
-  const rootFilter = {
-    type_in: EXPLORE_ROUTE_POST_TYPES,
-  };
+
+  const activeTab = deriveTabFromUrl(urlSearchParams);
+  const typeInValue = TYPE_IN_BY_TAB[activeTab];
+
+  const rootFilter = { type_in: typeInValue };
+
   const initialQueryState = parsePostsQueryState(
     urlSearchParams,
     Number.MAX_SAFE_INTEGER,
@@ -87,9 +106,9 @@ export default async function ExplorePage({
   return (
     <HubTemplate>
       <PageHeader content={pageHeaders.items[0]} />
-      <div className="pt-12" />
+      <div className="pt-6 sm:pt-12" />
       <ExploreFilters themes={themes.items} />
-      <br></br>
+      <div className="h-4 sm:h-6" />
       <section className="w-full bg-[#F8F7F8]">
         <Suspense>
           <MacroThemeTabs
@@ -109,6 +128,7 @@ export default async function ExplorePage({
             tabsOnly
             showHeaderInTabsOnly
             showViewAll={false}
+            activeTab={activeTab}
           />
         </Suspense>
         <Suspense>
