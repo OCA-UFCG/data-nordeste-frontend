@@ -26,7 +26,7 @@ export async function generateMetadata({
     BOLETIM_DETAIL_QUERY,
     { id },
   );
-  const boletim = postCollection.items[0];
+  const boletim = postCollection?.items?.[0];
 
   if (!boletim) {
     return buildMetadata({ title: "Boletim", path: `/boletim/${id}` });
@@ -51,7 +51,7 @@ export default async function BoletimPage({
     BOLETIM_DETAIL_QUERY,
     { id },
   );
-  const boletim = postCollection.items[0];
+  const boletim = postCollection?.items?.[0];
 
   if (!boletim) notFound();
 

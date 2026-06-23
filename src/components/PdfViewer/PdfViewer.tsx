@@ -272,7 +272,15 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const renderTaskRef = useRef<ReturnType<PDFPageProxy["render"]> | null>(null);
 
+  // PERF: Lazy render — the canvas is only drawn when the page enters the
+  // pre-load window. Once true, this never reverts to false so that scrolling
+  // back does not trigger a re-render and the canvas stays in memory.
+  const [shouldRender, setShouldRender] = useState(false);
+
   useEffect(() => {
+    // Guard: skip the entire render pipeline until the page is near the viewport.
+    if (!shouldRender) return;
+
     let cancelled = false;
 
     const renderPage = async () => {
@@ -336,12 +344,30 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
         renderTaskRef.current.cancel();
       }
     };
-  }, [pdfDoc, pageNumber, scale]);
+  }, [pdfDoc, pageNumber, scale, shouldRender]);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const observer = new IntersectionObserver(
+    // PERF: Pre-load observer — starts rendering when the page enters a 500px
+    // window around the viewport, so the canvas is ready before the user
+    // scrolls to it. Using a separate observer from the visibility one below
+    // keeps the two concerns independent.
+    const preloadObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setShouldRender(true);
+
+          // Once triggered, no need to keep watching this page.
+          preloadObserver.disconnect();
+        }
+      },
+      { rootMargin: "500px" },
+    );
+
+    // Visibility observer — fires when the page is actually on screen (≥50%
+    // visible) to update the page indicator in the toolbar/overlay.
+    const visibilityObserver = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
           onVisible(pageNumber);
@@ -350,9 +376,13 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
       { threshold: 0.5 },
     );
 
-    observer.observe(containerRef.current);
+    preloadObserver.observe(containerRef.current);
+    visibilityObserver.observe(containerRef.current);
 
-    return () => observer.disconnect();
+    return () => {
+      preloadObserver.disconnect();
+      visibilityObserver.disconnect();
+    };
   }, [pageNumber, onVisible]);
 
   return (
@@ -361,7 +391,14 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
       ref={containerRef}
       style={{ width: "100%" }}
     >
-      <canvas ref={canvasRef} className="pdf-viewer-canvas" />
+      {shouldRender ? (
+        <canvas ref={canvasRef} className="pdf-viewer-canvas" />
+      ) : (
+        // Placeholder preserves the approximate page height so the scroll
+        // position doesn't jump when the canvas mounts. A4 ratio (1:1.414)
+        // covers the vast majority of PDF documents.
+        <div className="pdf-viewer-placeholder" aria-hidden="true" />
+      )}
     </div>
   );
 };

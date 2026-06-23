@@ -25,7 +25,8 @@ const ArcGisContainer = ({
           <h2 className="text-left font-semibold text-3xl">{title}</h2>
           {formattedDate && (
             <span className="font-medium text-base mt-2 sm:mt-0">
-              Publicado em: {formattedDate}
+              <span className="hidden sm:inline">Publicado em: </span>
+              {formattedDate}
             </span>
           )}
         </div>

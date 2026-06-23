@@ -197,6 +197,33 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* PERF: Placeholder for pages that haven't entered the pre-load window yet.
+   Uses A4 aspect ratio (1:1.414) so the scroll container has the correct height
+   before the canvas mounts, preventing layout shifts. The shimmer signals that
+   content is loading rather than showing a blank void. */
+.pdf-viewer-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1.414;
+  background: linear-gradient(
+    90deg,
+    #3a3c3f 25%,
+    #4a4c4f 50%,
+    #3a3c3f 75%
+  );
+  background-size: 200% 100%;
+  animation: pdf-shimmer 1.8s ease-in-out infinite;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes pdf-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .pdf-viewer-pages-column {
   display: flex;
   flex-direction: column;
