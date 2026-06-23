@@ -34,6 +34,8 @@ type SearchBarProps = {
   onNavigate?: () => void;
   placeholder?: string;
   variant?: "header" | "mobile" | "page";
+  hideViewAll?: boolean;
+  filterItems?: (item: SearchIndexItem) => boolean;
 };
 
 export const SearchBar = ({
@@ -43,6 +45,8 @@ export const SearchBar = ({
   onNavigate,
   placeholder = "Buscar conteúdo",
   variant = "header",
+  hideViewAll = false,
+  filterItems,
 }: SearchBarProps) => {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
@@ -68,13 +72,12 @@ export const SearchBar = ({
 
   const normalizedQuery = normalizeSearchText(query);
   const canSearch = normalizedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
-  const suggestions = useMemo(
-    () =>
-      items && canSearch
-        ? searchItems(items, query, { limit: DEFAULT_SEARCH_LIMIT })
-        : [],
-    [canSearch, items, query],
-  );
+  const suggestions = useMemo(() => {
+    if (!items || !canSearch) return [];
+    const filteredItems = filterItems ? items.filter(filterItems) : items;
+
+    return searchItems(filteredItems, query, { limit: DEFAULT_SEARCH_LIMIT });
+  }, [canSearch, items, query, filterItems]);
 
   const loadIndex = useCallback(async () => {
     if (items) {
@@ -104,7 +107,7 @@ export const SearchBar = ({
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!canSearch) return;
+    if (!query.trim()) return;
 
     setOpen(false);
     onNavigate?.();
@@ -180,7 +183,7 @@ export const SearchBar = ({
           <button
             aria-label="Buscar"
             className="flex size-4 items-center justify-center text-[#292829] transition hover:text-green-900 disabled:cursor-not-allowed disabled:opacity-40"
-            disabled={!canSearch}
+            disabled={!query.trim()}
             type="submit"
           >
             <Search className="size-4" aria-hidden="true" />
@@ -219,7 +222,9 @@ export const SearchBar = ({
                       className="flex flex-col gap-1 px-4 py-3 text-left transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
                       href={item.href}
                       key={item.id}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => {
+                        setQuery(item.title);
                         setOpen(false);
                         onNavigate?.();
                       }}
@@ -244,17 +249,20 @@ export const SearchBar = ({
                 </div>
               )}
 
-              <Link
-                className="flex items-center justify-between border-t border-grey-200 px-4 py-3 text-sm font-semibold text-green-900 transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
-                href={`/search?q=${encodeURIComponent(query.trim())}`}
-                onClick={() => {
-                  setOpen(false);
-                  onNavigate?.();
-                }}
-              >
-                Ver todos os resultados
-                <Search className="size-4" aria-hidden="true" />
-              </Link>
+              {!hideViewAll && (
+                <Link
+                  className="flex items-center justify-between border-t border-grey-200 px-4 py-3 text-sm font-semibold text-green-900 transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
+                  href={`/search?q=${encodeURIComponent(query.trim())}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setOpen(false);
+                    onNavigate?.();
+                  }}
+                >
+                  Ver todos os resultados
+                  <Search className="size-4" aria-hidden="true" />
+                </Link>
+              )}
             </>
           )}
         </div>

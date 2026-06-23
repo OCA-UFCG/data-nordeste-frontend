@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import type { MacroTheme } from "@/utils/interfaces";
+import type { SearchIndexItem } from "@/features/search/types";
 
 interface ThemeFilterCardProps {
   iconId: string;
@@ -109,6 +110,32 @@ export function ExploreFilters({
   );
 
   const currentSort = params.get("sort") || sortingTypes["Mais recente"];
+  const selectedThemeNames = useMemo(() => {
+    return themes
+      .filter((theme) => {
+        const themeValue =
+          categoryValues?.[theme.sys.id] ??
+          (categoryValue === "theme-id" ? theme.id : theme.sys.id);
+
+        return selectedCategories.includes(themeValue);
+      })
+      .map((t) => t.name);
+  }, [themes, selectedCategories, categoryValues, categoryValue]);
+
+  const handleFilterItems = useCallback(
+    (item: SearchIndexItem) => {
+      const isPanel = ["data-panel", "data-panel-detail"].includes(item.type);
+
+      if (!isPanel) return false;
+
+      if (selectedThemeNames.length === 0) return true;
+
+      return item.themes.some((themeName) =>
+        selectedThemeNames.includes(themeName),
+      );
+    },
+    [selectedThemeNames],
+  );
 
   const updateUrl = useCallback(
     (updates: Record<string, string | null>) => {
@@ -164,6 +191,8 @@ export function ExploreFilters({
                 variant="page"
                 className="flex-1 max-w-none"
                 placeholder="Buscar conteúdo"
+                hideViewAll={true}
+                filterItems={handleFilterItems}
               />
             )}
 
@@ -322,7 +351,12 @@ export function ExploreFilters({
           </div>
         </div>
 
-        <SearchBar variant="page" className="w-full" />
+        <SearchBar
+          variant="page"
+          className="w-full"
+          hideViewAll={true}
+          filterItems={handleFilterItems}
+        />
 
         <Button
           className="bg-[#018F39] hover:bg-[#018F39]/90 text-[#F8F7F8] h-10 rounded-md w-full"
