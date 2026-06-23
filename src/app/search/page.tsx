@@ -21,18 +21,35 @@ export const metadata: Metadata = buildMetadata({
 const SEARCH_PAGE_LIMIT = 100;
 
 type SearchPageProps = {
-  searchParams: Promise<{ q?: string | string[] }>;
+  searchParams: Promise<{
+    q?: string | string[];
+    type?: string | string[];
+    themes?: string | string[];
+  }>;
 };
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const { q } = await searchParams;
+  const { q, type, themes } = await searchParams;
   const query = Array.isArray(q) ? q[0] || "" : q || "";
   const normalizedQuery = normalizeSearchText(query);
   const canSearch = normalizedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
   const index = canSearch ? await getSearchIndex() : null;
-  const results = index
+  let results = index
     ? searchItems(index.items, query, { limit: SEARCH_PAGE_LIMIT })
     : [];
+
+  if (type === "panels") {
+    results = results.filter((r) =>
+      ["data-panel", "data-panel-detail"].includes(r.type),
+    );
+  }
+
+  const selectedThemes = typeof themes === "string" ? themes.split(",") : [];
+  if (selectedThemes.length > 0) {
+    results = results.filter((r) =>
+      r.themes?.some((t) => selectedThemes.includes(t)),
+    );
+  }
   const groups = groupResults(results);
 
   return (

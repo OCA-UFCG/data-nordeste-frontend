@@ -36,6 +36,7 @@ type SearchBarProps = {
   variant?: "header" | "mobile" | "page";
   hideViewAll?: boolean;
   filterItems?: (item: SearchIndexItem) => boolean;
+  onSubmit?: (query: string) => void;
 };
 
 export const SearchBar = ({
@@ -47,6 +48,7 @@ export const SearchBar = ({
   variant = "header",
   hideViewAll = false,
   filterItems,
+  onSubmit,
 }: SearchBarProps) => {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
@@ -111,7 +113,11 @@ export const SearchBar = ({
 
     setOpen(false);
     onNavigate?.();
-    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    if (onSubmit) {
+      onSubmit(query.trim());
+    } else {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
   };
 
   const handleQueryChange = (value: string) => {

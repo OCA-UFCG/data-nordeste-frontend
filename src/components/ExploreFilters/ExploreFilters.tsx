@@ -137,6 +137,19 @@ export function ExploreFilters({
     [selectedThemeNames],
   );
 
+  const handleSearchSubmit = useCallback(
+    (query: string) => {
+      const themeParams =
+        selectedThemeNames.length > 0
+          ? `&themes=${encodeURIComponent(selectedThemeNames.join(","))}`
+          : "";
+      router.push(
+        `/search?q=${encodeURIComponent(query)}&type=panels${themeParams}`,
+      );
+    },
+    [router, selectedThemeNames],
+  );
+
   const updateUrl = useCallback(
     (updates: Record<string, string | null>) => {
       const newParams = new URLSearchParams(params.toString());
@@ -193,6 +206,7 @@ export function ExploreFilters({
                 placeholder="Buscar conteúdo"
                 hideViewAll={true}
                 filterItems={handleFilterItems}
+                onSubmit={handleSearchSubmit}
               />
             )}
 
@@ -356,6 +370,7 @@ export function ExploreFilters({
           className="w-full"
           hideViewAll={true}
           filterItems={handleFilterItems}
+          onSubmit={handleSearchSubmit}
         />
 
         <Button
