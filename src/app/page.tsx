@@ -9,7 +9,6 @@ import {
   Project,
   SectionHeader,
 } from "@/utils/interfaces";
-import { AboutSection } from "@/components/AboutSection/AboutSection";
 import { RecentSection } from "@/components/RecentSection/RecentSection";
 import PreviewSection from "@/components/PreviewSection/PreviewSection";
 import MainBanner from "@/components/BannerCarousel/BannerCarousel";
@@ -21,6 +20,7 @@ import { findHomeSection } from "@/features/home/content";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { HomeScrollButton } from "@/components/HomeScrollButton/HomeScrollButton";
+import CatalogSection from "@/components/CatalogSection/CatalogSection";
 
 export const metadata: Metadata = buildMetadata({
   description:
@@ -56,20 +56,19 @@ export default async function Home() {
         header={findHomeSection(sectionHead.items, "preview")}
         cards={previewCards.items}
       />
-      <RecentSection
-        content={posts.items}
-        header={findHomeSection(sectionHead.items, "new")}
-      />
       <DataSection
         header={findHomeSection(sectionHead.items, "panels")}
         categories={theme.items}
       />
-      <AboutSection header={findHomeSection(sectionHead.items, "about")} />
-      {/* <CatalogSection
+      <RecentSection
+        content={posts.items}
+        header={findHomeSection(sectionHead.items, "new")}
+      />
+      <CatalogSection
         header={sectionHead.items.find(
           (section: SectionHeader) => section.id === "catalog",
         )}
-      /> */}
+      />
 
       <ProjectSection
         header={findHomeSection(sectionHead.items, "projects")}
