@@ -154,8 +154,8 @@ export function MacroThemeTabs({
       <div className="w-full bg-white border-b border-[#BEBBBD]">
         <div
           role="tablist"
-          className="flex flex-row items-start gap-4 max-w-[1440px] mx-auto overflow-x-auto scrollbar-hide"
-          style={{ padding: "8px 80px 0px", height: "60px" }}
+          className="flex flex-row items-stretch gap-4 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-0 overflow-x-auto scrollbar-hide"
+          style={{ height: "60px" }}
         >
           {tabs.map(({ key, label }) => (
             <button
@@ -163,8 +163,8 @@ export function MacroThemeTabs({
               role="tab"
               aria-selected={activeTab === key}
               onClick={() => handleTabClick(key)}
-              style={{ padding: "16px 12px", height: "52px" }}
-              className={`whitespace-nowrap flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] ${
+              style={{ padding: "0 12px" }}
+              className={`h-full whitespace-nowrap flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] ${
                 activeTab === key
                   ? "border-[#018F39] text-[#018F39] drop-shadow-sm"
                   : "border-transparent text-[#7E797B] hover:text-[#292829] hover:border-gray-300"
@@ -177,7 +177,7 @@ export function MacroThemeTabs({
       </div>
 
       {tabsOnly && showHeaderInTabsOnly && (
-        <div className="w-full max-w-[1440px] mx-auto px-20 pt-8 pb-0">
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-20 pt-8 pb-0">
           {activeTab === "paineis" &&
             renderHeader(headers.dashboards, "Painel de Dados")}
           {activeTab === "datastories" &&
