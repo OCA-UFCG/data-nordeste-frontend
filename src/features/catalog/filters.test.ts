@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCatalogFilterGroups,
+  buildCatalogRequest,
   buildCatalogFilterValues,
   buildCatalogUrlParams,
 } from "./filters";
@@ -15,6 +16,24 @@ const filterGroups: FilterGroup[] = [
 ];
 
 describe("catalog filters", () => {
+  it("builds the server-backed Zenodo request from route params", () => {
+    expect(
+      buildCatalogRequest(
+        { page: "6", category: "saude", sort: "mostrecent" },
+        filterGroups,
+      ),
+    ).toEqual({
+      currentPage: 6,
+      filterValues: {
+        category: ["saude"],
+        date_gte: undefined,
+        date_lte: undefined,
+        search: undefined,
+        sort: "mostrecent",
+      },
+    });
+  });
+
   it("parses public URL params into catalog filters", () => {
     const params = new URLSearchParams(
       "category=saude,educacao&sort=mostrecent&date_gte=2024-01-01",
@@ -24,8 +43,17 @@ describe("catalog filters", () => {
       category: ["saude", "educacao"],
       date_gte: new Date("2024-01-01"),
       date_lte: undefined,
+      search: undefined,
       sort: "mostrecent",
     });
+  });
+
+  it("maps catalog text to the Zenodo search filter", () => {
+    const params = new URLSearchParams("q=domicilios");
+
+    expect(buildCatalogFilterValues(params, filterGroups).search).toBe(
+      "domicilios",
+    );
   });
 
   it("serializes catalog filters without changing public param names", () => {

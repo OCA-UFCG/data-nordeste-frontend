@@ -32,6 +32,7 @@ type SearchBarProps = {
   className?: string;
   initialQuery?: string;
   onNavigate?: () => void;
+  placeholder?: string;
   variant?: "header" | "mobile" | "page";
 };
 
@@ -40,6 +41,7 @@ export const SearchBar = ({
   className,
   initialQuery = "",
   onNavigate,
+  placeholder = "Buscar conteúdo",
   variant = "header",
 }: SearchBarProps) => {
   const router = useRouter();
@@ -171,7 +173,7 @@ export const SearchBar = ({
               setOpen(true);
               void loadIndex();
             }}
-            placeholder="Buscar conteúdo"
+            placeholder={placeholder}
             type="search"
             value={query}
           />

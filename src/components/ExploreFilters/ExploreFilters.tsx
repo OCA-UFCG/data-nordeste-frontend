@@ -4,12 +4,13 @@ import { cn } from "@/lib/utils";
 import { Icon } from "../Icon/Icon";
 import { Checkbox } from "../ui/checkbox";
 import { SearchBar } from "../SearchBar/SearchBar";
+import { CatalogTextFilter } from "../CatalogTextFilter/CatalogTextFilter";
 import { Button } from "../ui/button";
 import { MACROTHEME_ICON_BY_ID } from "@/features/macrothemes/constants";
 import { sortingTypes } from "@/utils/constants";
 import { normalizeKey } from "@/utils/functions";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -37,10 +38,10 @@ function ThemeFilterCard({
 }: ThemeFilterCardProps) {
   return (
     <div
-      className="flex items-center h-8 sm:w-[302px] bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg overflow-hidden cursor-pointer flex-shrink-0"
+      className="flex flex-row h-8 sm:w-[302px] bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0 overflow-hidden"
       onClick={() => onCheckedChange?.(!checked)}
     >
-      <div className="flex items-center justify-center h-full px-2 hover:bg-[#DDEADF] transition-colors">
+      <div className="flex items-center justify-center h-full w-8 rounded-l-lg hover:bg-[#DDEADF] transition-colors">
         <Checkbox
           checked={checked}
           onCheckedChange={onCheckedChange}
@@ -49,9 +50,9 @@ function ThemeFilterCard({
         />
       </div>
 
-      <div className="w-px h-full bg-[#EFEFEF] flex-shrink-0" />
+      <div className="w-px h-full bg-[#EFEFEF]" />
 
-      <div className="flex items-center gap-2 flex-1 h-full px-2 hover:bg-[#DDEADF] transition-colors">
+      <div className="flex items-center gap-2 flex-1 h-full px-2 rounded-r-lg hover:bg-[#DDEADF] transition-colors">
         <Icon id={iconId} size={16} style={{ color }} />
 
         <span className="flex-1 text-sm font-normal text-[#292829] truncate">
@@ -70,13 +71,36 @@ function ThemeFilterCard({
 
 interface ExploreFiltersProps {
   className?: string;
-  themes: Pick<MacroTheme, "name" | "color" | "sys">[];
+  themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
+  categoryValue?: "contentful-id" | "theme-id";
+  categoryValues?: Record<string, string>;
+  clientSideNavigation?: boolean;
+  mobileCatalogLayout?: boolean;
+  showClearFilters?: boolean;
+  showSorting?: boolean;
+  sortingAsField?: boolean;
+  sortingLabel?: string;
+  sortingOptions?: Record<string, string>;
 }
 
-export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
+export function ExploreFilters({
+  className,
+  themes,
+  categoryValue = "contentful-id",
+  categoryValues,
+  clientSideNavigation = false,
+  mobileCatalogLayout = false,
+  showClearFilters = true,
+  showSorting = true,
+  sortingAsField = false,
+  sortingLabel,
+  sortingOptions = sortingTypes,
+}: ExploreFiltersProps) {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const mobileThemesId = useId();
+  const [mobileThemesOpen, setMobileThemesOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const selectedCategories = useMemo(
@@ -96,9 +120,17 @@ export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
           newParams.set(key, value);
         }
       }
-      router.replace(pathname + "?" + newParams.toString());
+      const href = newParams.toString()
+        ? `${pathname}?${newParams.toString()}`
+        : pathname;
+
+      if (clientSideNavigation) {
+        window.history.replaceState(null, "", href);
+      } else {
+        router.replace(href);
+      }
     },
-    [params, pathname, router],
+    [clientSideNavigation, params, pathname, router],
   );
 
   const toggleCategory = useCallback(
@@ -118,54 +150,156 @@ export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
     <section className={cn("flex flex-col w-full", className)}>
       {/* --- Desktop layout (hidden on mobile) --- */}
       <div className="hidden sm:block">
-        <div className="w-full max-w-[1440px] mx-auto px-20">
-          <div className="flex flex-row items-center gap-3 w-full">
-            <SearchBar variant="page" className="flex-1 max-w-none" />
+        <div className="w-full max-w-[1440px] mx-auto px-6 md:px-20">
+          <div
+            className={cn(
+              "flex items-center gap-3 w-full",
+              mobileCatalogLayout ? "flex-col lg:flex-row" : "flex-row",
+            )}
+          >
+            {mobileCatalogLayout ? (
+              <CatalogTextFilter />
+            ) : (
+              <SearchBar
+                variant="page"
+                className="flex-1 max-w-none"
+                placeholder="Buscar conteúdo"
+              />
+            )}
 
-            <Button
-              variant="secondary"
-              className="text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit"
-              onClick={() => router.replace(pathname)}
-            >
-              <span>Limpar filtros</span>
-              <Icon id="no-filter" size={16} />
-            </Button>
+            {mobileCatalogLayout && (
+              <Button
+                aria-controls={mobileThemesId}
+                aria-expanded={mobileThemesOpen}
+                className="flex w-full lg:hidden"
+                type="button"
+                onClick={() => setMobileThemesOpen((open) => !open)}
+              >
+                <Icon id="filter" size={14} />
+                Veja por temas
+              </Button>
+            )}
 
-            <Select
-              value={currentSort}
-              onValueChange={(value) => updateUrl({ sort: value })}
+            <div
+              className={cn(
+                mobileCatalogLayout
+                  ? "grid w-full grid-cols-2 gap-3 lg:contents"
+                  : "contents",
+              )}
             >
-              <SelectTrigger className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0">
-                <SelectValue placeholder="Mais recentes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {Object.entries(sortingTypes).map(([label, value]) => (
-                    <SelectItem
-                      value={value}
-                      key={value}
-                      className="cursor-pointer"
+              {showClearFilters && (
+                <Button
+                  variant="secondary"
+                  className={cn(
+                    "text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit",
+                    mobileCatalogLayout && "w-full",
+                  )}
+                  onClick={() => {
+                    if (clientSideNavigation) {
+                      window.history.replaceState(null, "", pathname);
+                    } else {
+                      router.replace(pathname);
+                    }
+                  }}
+                >
+                  <span>Limpar filtros</span>
+                  <Icon id="no-filter" size={16} />
+                </Button>
+              )}
+
+              {showSorting && (
+                <>
+                  {sortingAsField && (
+                    <div className="flex min-h-10 w-full items-center rounded-md border border-grey-200 px-3 text-grey-600 shadow-sm lg:w-auto">
+                      <Select
+                        value={currentSort}
+                        onValueChange={(value) => updateUrl({ sort: value })}
+                      >
+                        <SelectTrigger className="w-full !h-auto min-w-[126px] justify-between border-0 bg-transparent !p-0 text-sm font-normal text-grey-600 shadow-none focus-visible:ring-0">
+                          <SelectValue placeholder="Ordenar por" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {Object.entries(sortingOptions).map(
+                              ([label, value]) => (
+                                <SelectItem
+                                  value={value}
+                                  key={value}
+                                  className="cursor-pointer"
+                                >
+                                  {label}
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div
+                    className={cn(
+                      "items-center gap-1 text-xs font-medium text-[#292829]",
+                      sortingAsField
+                        ? "hidden"
+                        : mobileCatalogLayout
+                          ? "hidden md:flex"
+                          : "flex",
+                    )}
+                  >
+                    {sortingLabel && <span>{sortingLabel}</span>}
+                    <Select
+                      value={currentSort}
+                      onValueChange={(value) => updateUrl({ sort: value })}
                     >
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+                      <SelectTrigger className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0">
+                        <SelectValue placeholder="Mais recente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {Object.entries(sortingOptions).map(
+                            ([label, value]) => (
+                              <SelectItem
+                                value={value}
+                                key={value}
+                                className="cursor-pointer"
+                              >
+                                {label}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-x-6 gap-y-3 w-full mt-4">
+          <div
+            id={mobileThemesId}
+            className={cn(
+              "flex flex-wrap gap-x-4 gap-y-2 w-full mt-4",
+              mobileCatalogLayout && !mobileThemesOpen && "max-lg:hidden",
+            )}
+          >
             {themes.map((theme) => {
               const iconKey = normalizeKey(theme.name);
+              const themeValue =
+                categoryValues?.[theme.sys.id] ??
+                (categoryValue === "theme-id"
+                  ? (theme as MacroTheme & { id: string }).id
+                  : theme.sys.id);
 
               return (
                 <ThemeFilterCard
-                  key={theme.sys.id}
+                  key={themeValue}
                   iconId={MACROTHEME_ICON_BY_ID[iconKey] || "list"}
                   color={theme.color || "#999999"}
                   name={theme.name}
-                  checked={selectedCategories.includes(theme.sys.id)}
-                  onCheckedChange={() => toggleCategory(theme.sys.id)}
+                  checked={selectedCategories.includes(themeValue)}
+                  onCheckedChange={() => toggleCategory(themeValue)}
                 />
               );
             })}
@@ -181,9 +315,9 @@ export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
             <span className="text-base font-medium leading-5 text-[#1995C1]">
               Atenção
             </span>
-            <p className=" font-normal leading-6 text-[#1995C1]">
+            <p className="text-sm font-normal leading-6 text-[#1995C1]">
               Para uma melhor visualização dos painéis recomendamos sua
-              visualização num computador
+              visualização num computador.
             </p>
           </div>
         </div>
@@ -195,7 +329,7 @@ export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
           onClick={() => setMobileFiltersOpen((prev) => !prev)}
         >
           <Icon id="filter" size={16} className="text-[#F8F7F8]" />
-          <span>Veja por temas</span>
+          <span>Filtrar</span>
         </Button>
 
         <div className="flex flex-row items-center gap-3">
@@ -213,7 +347,7 @@ export function ExploreFilters({ className, themes }: ExploreFiltersProps) {
             onValueChange={(value) => updateUrl({ sort: value })}
           >
             <SelectTrigger className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md !px-4 text-xs font-medium text-[#292829] shadow-none focus-visible:ring-0">
-              <span className="text-xs font-medium text-[#292829]"></span>
+              <span className="text-xs font-medium text-[#292829]" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
