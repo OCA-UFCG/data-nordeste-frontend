@@ -6,13 +6,11 @@ import { Icon } from "@/components/Icon/Icon";
 import { getArcGisInternalEmbedHref } from "@/features/embeds/arcgis";
 
 const ContentPost = ({ content }: { content: IPublication }) => {
-  const { title, thumb, link, date, type } = content;
+  const { title, thumb, link, date, type, sys } = content;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
-  const embedHref = getArcGisInternalEmbedHref(link);
-  const href = embedHref ?? link;
-  const openInNewTab = !embedHref;
+  const { href, openInNewTab } = resolvePostHref({ type, link, sys });
 
   return (
     <Link
@@ -51,6 +49,28 @@ const ContentPost = ({ content }: { content: IPublication }) => {
       </div>
     </Link>
   );
+};
+
+// INTENTIONAL: newsletters with a sys.id route to the local /boletim/ PDF
+// viewer page. All other post types preserve the previous routing behavior
+// (ArcGIS embed detection, or external link fallback).
+const resolvePostHref = ({
+  type,
+  link,
+  sys,
+}: Pick<IPublication, "type" | "link" | "sys">): {
+  href: string;
+  openInNewTab: boolean;
+} => {
+  if (type === "newsletter" && sys?.id) {
+    return { href: `/boletim/${sys.id}`, openInNewTab: false };
+  }
+
+  const embedHref = getArcGisInternalEmbedHref(link);
+
+  return embedHref
+    ? { href: embedHref, openInNewTab: false }
+    : { href: link, openInNewTab: true };
 };
 
 export default ContentPost;
