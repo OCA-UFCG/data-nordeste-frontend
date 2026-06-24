@@ -29,7 +29,9 @@ describe("ExploreFilters", () => {
       />,
     );
 
-    const trigger = screen.getByRole("button", { name: "Veja por temas" });
+    const [trigger] = screen
+      .getAllByRole("button", { name: "Veja por temas" })
+      .filter((btn) => btn.hasAttribute("aria-controls"));
     const themeList = document.getElementById(
       trigger.getAttribute("aria-controls") ?? "",
     );
