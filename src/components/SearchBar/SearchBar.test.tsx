@@ -29,6 +29,19 @@ const index = {
       tags: ["PIB"],
       text: "pib produto interno bruto economia e renda",
     },
+    {
+      id: "post:2",
+      source: "post",
+      type: "newsletter",
+      title: "PIB Saneamento",
+      description: "Indicadores de água",
+      href: "/posts/pib-saneamento",
+      date: "2026-01-02",
+      thumb: null,
+      themes: ["Saneamento"],
+      tags: ["PIB"],
+      text: "pib indicadores de agua saneamento",
+    },
   ],
 } satisfies SearchIndex;
 
@@ -102,6 +115,39 @@ describe("SearchBar", () => {
     expect(
       screen.getByRole("searchbox", { name: "Buscar conteúdo" }),
     ).toHaveValue("agua");
+  });
+
+  it("keeps suggestions when scoped and updates the host page query", async () => {
+    const onQueryChangeDebounced = vi.fn();
+    const onSearchSubmit = vi.fn();
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json(index)),
+    );
+
+    render(
+      <SearchBar
+        scopedThemeNames={["Saneamento"]}
+        scopedTypes={["newsletter"]}
+        searchHrefBuilder={(query) => `/explore?category=theme-a&q=${query}`}
+        onQueryChangeDebounced={onQueryChangeDebounced}
+        onSearchSubmit={onSearchSubmit}
+      />,
+    );
+
+    const input = screen.getByRole("searchbox", { name: "Buscar conteúdo" });
+    fireEvent.change(input, { target: { value: "pib" } });
+
+    await screen.findByText("PIB Saneamento");
+    expect(screen.queryByText("Produto interno bruto")).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(onQueryChangeDebounced).toHaveBeenCalledWith("pib");
+    });
+
+    fireEvent.submit(screen.getByRole("search"));
+    expect(onSearchSubmit).toHaveBeenCalledWith("pib");
   });
 
   it("reuses the loaded index across remounts", async () => {

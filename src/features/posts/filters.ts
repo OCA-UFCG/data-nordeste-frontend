@@ -13,7 +13,16 @@ type ContentfulCategoryFilter = {
   };
 };
 
-type PostsContentfulFilterValue = string | string[] | ContentfulCategoryFilter;
+type PostsTextSearchFilter = {
+  description_contains?: string;
+  title_contains?: string;
+};
+
+type PostsContentfulFilterValue =
+  | string
+  | string[]
+  | ContentfulCategoryFilter
+  | PostsTextSearchFilter[];
 
 export type ParsedPostsFilters = {
   contentfulFilter: { [key: string]: PostsContentfulFilterValue };
@@ -67,6 +76,7 @@ export const parsePostsQueryState = (
       category: parsePostsListParam(params.get("category")) ?? [],
       date_lte: parsePostsDateParam(params.get("date_lte")),
       date_gte: parsePostsDateParam(params.get("date_gte")),
+      q: params.get("q")?.trim() || undefined,
     },
   };
 };
@@ -85,9 +95,11 @@ export const buildPostsContentfulFilter = (
   rootFilter: { [key: string]: string | string[] },
 ) => {
   const { contentfulFilter } = parsePostsFilters(currentForm);
+  const textFilter = buildPostsTextFilter(currentForm.q);
 
   return {
     ...rootFilter,
+    ...textFilter,
     ...Object.fromEntries(
       Object.entries(contentfulFilter).filter(([, v]) => v !== undefined),
     ),
@@ -105,3 +117,19 @@ const parsePostsListParam = (value: string | null): string[] | undefined =>
 
 const parsePostsDateParam = (value: string | null): Date | undefined =>
   Date.parse(value || "") ? new Date(value || "") : undefined;
+
+const buildPostsTextFilter = (
+  query: PostsFilterForm[string],
+): { OR?: PostsTextSearchFilter[] } => {
+  if (typeof query !== "string") return {};
+
+  const normalizedQuery = query.trim();
+  if (!normalizedQuery) return {};
+
+  return {
+    OR: [
+      { title_contains: normalizedQuery },
+      { description_contains: normalizedQuery },
+    ],
+  };
+};

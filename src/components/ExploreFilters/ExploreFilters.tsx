@@ -24,9 +24,12 @@ import {
   SelectValue,
 } from "../ui/select";
 import type { MacroTheme } from "@/utils/interfaces";
+import type { SearchItemType } from "@/features/search/types";
 import { XIcon } from "lucide-react";
 
 import Link from "next/link";
+
+type ExploreTheme = Pick<MacroTheme, "id" | "name" | "color" | "sys">;
 
 interface ThemeFilterCardProps {
   iconId: string;
@@ -96,7 +99,7 @@ function ThemeFilterCard({
 
 interface ExploreFiltersProps {
   className?: string;
-  themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
+  themes: ExploreTheme[];
   categoryValue?: "contentful-id" | "theme-id";
   categoryValues?: Record<string, string>;
   clientSideNavigation?: boolean;
@@ -116,7 +119,7 @@ function SeeThemesModal({
   onClose,
   onApply,
 }: {
-  themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
+  themes: ExploreTheme[];
   selectedCategories: string[];
   onToggleCategory: (themeId: string) => void;
   onSelectAll: () => void;
@@ -244,6 +247,20 @@ export function ExploreFilters({
     () => params.get("category")?.split(",").filter(Boolean) ?? [],
     [params],
   );
+  const selectedThemeNames = useMemo(
+    () =>
+      getSelectedThemeNames(
+        themes,
+        selectedCategories,
+        categoryValue,
+        categoryValues,
+      ),
+    [categoryValue, categoryValues, selectedCategories, themes],
+  );
+  const scopedTypes = useMemo(
+    () => getExploreSearchTypes(params.get("type_in")),
+    [params],
+  );
 
   const currentSort = params.get("sort") || sortingTypes["Mais recente"];
 
@@ -312,6 +329,34 @@ export function ExploreFilters({
     },
     [selectedCategories, updateUrl],
   );
+  const buildExploreSearchHref = useCallback(
+    (query: string) => {
+      const nextParams = new URLSearchParams(params.toString());
+      const normalizedQuery = query.trim();
+
+      if (normalizedQuery) {
+        nextParams.set("q", normalizedQuery);
+      } else {
+        nextParams.delete("q");
+      }
+      nextParams.delete("page");
+
+      return buildPathWithParams(pathname, nextParams);
+    },
+    [params, pathname],
+  );
+  const updateExploreQuery = useCallback(
+    (query: string) => {
+      const href = buildExploreSearchHref(query);
+
+      if (clientSideNavigation) {
+        window.history.replaceState(null, "", href);
+      } else {
+        router.replace(href);
+      }
+    },
+    [buildExploreSearchHref, clientSideNavigation, router],
+  );
 
   return (
     <section className={cn("flex flex-col w-full", className)}>
@@ -330,7 +375,13 @@ export function ExploreFilters({
               <SearchBar
                 variant="page"
                 className="flex-1 max-w-none"
+                initialQuery={params.get("q") ?? ""}
                 placeholder="Buscar conteúdo"
+                scopedThemeNames={selectedThemeNames}
+                scopedTypes={scopedTypes}
+                searchHrefBuilder={buildExploreSearchHref}
+                onQueryChangeDebounced={updateExploreQuery}
+                onSearchSubmit={updateExploreQuery}
               />
             )}
 
@@ -515,7 +566,16 @@ export function ExploreFilters({
           </div>
         </div>
 
-        <SearchBar variant="page" className="w-full" />
+        <SearchBar
+          variant="page"
+          className="w-full"
+          initialQuery={params.get("q") ?? ""}
+          scopedThemeNames={selectedThemeNames}
+          scopedTypes={scopedTypes}
+          searchHrefBuilder={buildExploreSearchHref}
+          onQueryChangeDebounced={updateExploreQuery}
+          onSearchSubmit={updateExploreQuery}
+        />
 
         <Button
           className="bg-[#018F39] hover:bg-[#018F39]/90 text-[#F8F7F8] h-10 rounded-md w-full"
@@ -573,3 +633,50 @@ export function ExploreFilters({
     </section>
   );
 }
+
+const getThemeValue = (
+  theme: ExploreTheme,
+  categoryValue: ExploreFiltersProps["categoryValue"],
+  categoryValues?: ExploreFiltersProps["categoryValues"],
+): string =>
+  categoryValues?.[theme.sys.id] ??
+  (categoryValue === "theme-id" ? theme.id : theme.sys.id);
+
+const getSelectedThemeNames = (
+  themes: ExploreTheme[],
+  selectedCategories: string[],
+  categoryValue: ExploreFiltersProps["categoryValue"],
+  categoryValues?: ExploreFiltersProps["categoryValues"],
+): string[] => {
+  if (!selectedCategories.length) return [];
+
+  return themes
+    .filter((theme) =>
+      selectedCategories.includes(
+        getThemeValue(theme, categoryValue, categoryValues),
+      ),
+    )
+    .map((theme) => theme.name);
+};
+
+const getExploreSearchTypes = (rawTypeIn: string | null): SearchItemType[] => {
+  const typeValues = rawTypeIn?.split(",").filter(Boolean) ?? ["data-panel"];
+
+  return typeValues.flatMap((type): SearchItemType[] => {
+    if (type === "data-panel") return ["data-panel", "data-panel-detail"];
+    if (type === "data-story") return ["data-story", "data-story-detail"];
+    if (type === "newsletter") return ["newsletter"];
+    if (type === "additional-content") return ["additional-content"];
+
+    return [];
+  });
+};
+
+const buildPathWithParams = (
+  pathname: string,
+  params: URLSearchParams,
+): string => {
+  const suffix = params.toString();
+
+  return suffix ? `${pathname}?${suffix}` : pathname;
+};

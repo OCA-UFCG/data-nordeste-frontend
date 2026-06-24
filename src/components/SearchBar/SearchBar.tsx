@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   FocusEvent,
   FormEvent,
+  MutableRefObject,
   useCallback,
   useEffect,
   useId,
@@ -25,14 +26,21 @@ import {
   getCachedSearchIndexItems,
   loadSearchIndexItems,
 } from "@/features/search/clientIndex";
-import type { SearchIndexItem } from "@/features/search/types";
+import type { SearchIndexItem, SearchItemType } from "@/features/search/types";
+
+const SEARCH_UPDATE_DELAY_MS = 300;
 
 type SearchBarProps = {
   autoFocus?: boolean;
   className?: string;
   initialQuery?: string;
+  onQueryChangeDebounced?: (query: string) => void;
+  onSearchSubmit?: (query: string) => void;
   onNavigate?: () => void;
   placeholder?: string;
+  scopedThemeNames?: string[];
+  scopedTypes?: SearchItemType[];
+  searchHrefBuilder?: (query: string) => string;
   variant?: "header" | "mobile" | "page";
 };
 
@@ -40,8 +48,13 @@ export const SearchBar = ({
   autoFocus,
   className,
   initialQuery = "",
+  onQueryChangeDebounced,
+  onSearchSubmit,
   onNavigate,
   placeholder = "Buscar conteúdo",
+  scopedThemeNames = [],
+  scopedTypes = [],
+  searchHrefBuilder = buildGlobalSearchHref,
   variant = "header",
 }: SearchBarProps) => {
   const router = useRouter();
@@ -52,6 +65,7 @@ export const SearchBar = ({
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const isMountedRef = useRef(true);
+  const pendingUpdateRef = useRef<ReturnType<typeof setTimeout>>();
   const inputId = useId();
 
   useEffect(() => {
@@ -63,6 +77,7 @@ export const SearchBar = ({
 
     return () => {
       isMountedRef.current = false;
+      clearPendingSearchUpdate(pendingUpdateRef);
     };
   }, []);
 
@@ -71,10 +86,15 @@ export const SearchBar = ({
   const suggestions = useMemo(
     () =>
       items && canSearch
-        ? searchItems(items, query, { limit: DEFAULT_SEARCH_LIMIT })
+        ? searchItems(items, query, {
+            limit: DEFAULT_SEARCH_LIMIT,
+            themeNames: scopedThemeNames,
+            types: scopedTypes,
+          })
         : [],
-    [canSearch, items, query],
+    [canSearch, items, query, scopedThemeNames, scopedTypes],
   );
+  const searchHref = searchHrefBuilder(query);
 
   const loadIndex = useCallback(async () => {
     if (items) {
@@ -108,12 +128,19 @@ export const SearchBar = ({
 
     setOpen(false);
     onNavigate?.();
-    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    clearPendingSearchUpdate(pendingUpdateRef);
+    if (onSearchSubmit) {
+      onSearchSubmit(query);
+
+      return;
+    }
+    router.push(searchHref);
   };
 
   const handleQueryChange = (value: string) => {
     setQuery(value);
     setOpen(true);
+    scheduleQueryUpdate(value, onQueryChangeDebounced, pendingUpdateRef);
 
     if (normalizeSearchText(value).length >= MIN_SEARCH_QUERY_LENGTH) {
       void loadIndex();
@@ -246,7 +273,7 @@ export const SearchBar = ({
 
               <Link
                 className="flex items-center justify-between border-t border-grey-200 px-4 py-3 text-sm font-semibold text-green-900 transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
-                href={`/search?q=${encodeURIComponent(query.trim())}`}
+                href={searchHref}
                 onClick={() => {
                   setOpen(false);
                   onNavigate?.();
@@ -262,3 +289,29 @@ export const SearchBar = ({
     </form>
   );
 };
+
+const scheduleQueryUpdate = (
+  query: string,
+  onQueryChangeDebounced: SearchBarProps["onQueryChangeDebounced"],
+  pendingUpdateRef: MutableRefObject<ReturnType<typeof setTimeout> | undefined>,
+) => {
+  if (!onQueryChangeDebounced) return;
+  clearPendingSearchUpdate(pendingUpdateRef);
+
+  pendingUpdateRef.current = setTimeout(
+    () => onQueryChangeDebounced(query),
+    SEARCH_UPDATE_DELAY_MS,
+  );
+};
+
+const clearPendingSearchUpdate = (
+  pendingUpdateRef: MutableRefObject<ReturnType<typeof setTimeout> | undefined>,
+) => {
+  if (!pendingUpdateRef.current) return;
+
+  clearTimeout(pendingUpdateRef.current);
+  pendingUpdateRef.current = undefined;
+};
+
+const buildGlobalSearchHref = (query: string): string =>
+  `/search?q=${encodeURIComponent(query.trim())}`;

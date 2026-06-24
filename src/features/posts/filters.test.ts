@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePostsFilters } from "./filters";
+import { buildPostsContentfulFilter, parsePostsFilters } from "./filters";
 
 describe("posts filters", () => {
   it("builds Contentful filters and URL params without navigating", () => {
@@ -23,6 +23,26 @@ describe("posts filters", () => {
         },
       },
       date_gte: "2024-01-01T00:00:00.000Z",
+    });
+  });
+
+  it("combines text search with selected filters for Contentful", () => {
+    const filter = buildPostsContentfulFilter(
+      {
+        category: ["theme-a"],
+        q: " pib ",
+      },
+      { type_in: "data-panel" },
+    );
+
+    expect(filter).toEqual({
+      type_in: "data-panel",
+      category: {
+        sys: {
+          id_in: ["theme-a"],
+        },
+      },
+      OR: [{ title_contains: "pib" }, { description_contains: "pib" }],
     });
   });
 });

@@ -1,10 +1,12 @@
-import type { SearchIndexItem, SearchResult } from "./types";
+import type { SearchIndexItem, SearchItemType, SearchResult } from "./types";
 
 export const MIN_SEARCH_QUERY_LENGTH = 2;
 export const DEFAULT_SEARCH_LIMIT = 8;
 
 type SearchItemsOptions = {
   limit?: number;
+  themeNames?: string[];
+  types?: SearchItemType[];
 };
 
 export const normalizeSearchText = (value?: string | null): string =>
@@ -22,14 +24,19 @@ export const buildSearchText = (parts: Array<string | null | undefined>) =>
 export const searchItems = (
   items: SearchIndexItem[],
   query: string,
-  { limit = DEFAULT_SEARCH_LIMIT }: SearchItemsOptions = {},
+  {
+    limit = DEFAULT_SEARCH_LIMIT,
+    themeNames = [],
+    types = [],
+  }: SearchItemsOptions = {},
 ): SearchResult[] => {
   const normalizedQuery = normalizeSearchText(query);
 
   if (normalizedQuery.length < MIN_SEARCH_QUERY_LENGTH) return [];
 
   const tokens = normalizedQuery.split(" ").filter(Boolean);
-  const scored = items
+  const scopedItems = scopeSearchItems(items, themeNames, types);
+  const scored = scopedItems
     .map((item) => scoreSearchItem(item, normalizedQuery, tokens))
     .filter((item): item is SearchResult => Boolean(item));
 
@@ -106,6 +113,37 @@ const searchItemTextParts = (item: SearchIndexItem) => [
   ...item.themes,
   ...item.tags,
 ];
+
+const scopeSearchItems = (
+  items: SearchIndexItem[],
+  themeNames: string[],
+  types: SearchItemType[],
+): SearchIndexItem[] => {
+  const normalizedThemes = themeNames.map(normalizeSearchText).filter(Boolean);
+  const allowedTypes = new Set(types);
+
+  return items.filter(
+    (item) =>
+      itemMatchesTypes(item, allowedTypes) &&
+      itemMatchesThemes(item, normalizedThemes),
+  );
+};
+
+const itemMatchesTypes = (
+  item: SearchIndexItem,
+  allowedTypes: Set<SearchItemType>,
+): boolean => !allowedTypes.size || allowedTypes.has(item.type);
+
+const itemMatchesThemes = (
+  item: SearchIndexItem,
+  themeNames: string[],
+): boolean => {
+  if (!themeNames.length) return true;
+
+  const itemThemes = item.themes.map(normalizeSearchText);
+
+  return itemThemes.some((theme) => themeNames.includes(theme));
+};
 
 const dedupeSearchResults = (results: SearchResult[]) => {
   const byHref = new Map<string, SearchResult>();

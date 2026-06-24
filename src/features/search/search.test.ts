@@ -75,6 +75,38 @@ describe("search helpers", () => {
     expect(results[0].id).toBe("post:1");
   });
 
+  it("scopes search results by selected themes and content types", () => {
+    const items: SearchIndexItem[] = [
+      {
+        ...baseItem,
+        id: "post:1",
+        source: "post",
+        type: "data-panel",
+        title: "PIB",
+        href: "/data-panel/pib",
+        themes: ["Economia e Renda"],
+        text: "pib economia e renda",
+      },
+      {
+        ...baseItem,
+        id: "post:2",
+        source: "post",
+        type: "newsletter",
+        title: "PIB Saneamento",
+        href: "/posts/pib-saneamento",
+        themes: ["Saneamento"],
+        text: "pib saneamento",
+      },
+    ];
+
+    const results = searchItems(items, "pib", {
+      themeNames: ["Saneamento"],
+      types: ["newsletter"],
+    });
+
+    expect(results.map((item) => item.href)).toEqual(["/posts/pib-saneamento"]);
+  });
+
   it("labels and groups result types", () => {
     expect(getSearchTypeLabel({ type: "data-story" })).toBe("Datastory");
     expect(getSearchTypeLabel({ type: "theme" })).toBe("Macrotema");
