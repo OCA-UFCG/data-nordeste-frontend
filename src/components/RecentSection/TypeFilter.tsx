@@ -1,18 +1,21 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
+  RECENT_NEWSLETTER_POST_TYPES,
   RECENT_PANEL_POST_TYPES,
-  RECENT_PUBLICATION_POST_TYPES,
   RECENT_SECTION_POST_TYPES,
+  RECENT_STORY_POST_TYPES,
   PostType,
 } from "@/features/posts/postTypes";
 
+export type RecentFilterKey = "all" | "panels" | "stories" | "newsletters";
+
 export const FILTERS: {
-  [key: string]: {
+  [key in RecentFilterKey]: {
     filter: PostType[];
     text: string;
     href: string;
-    key: "all" | "panels" | "posts";
+    key: RecentFilterKey;
   };
 } = {
   all: {
@@ -23,22 +26,28 @@ export const FILTERS: {
   },
   panels: {
     filter: RECENT_PANEL_POST_TYPES,
-    text: "Painéis de dados",
+    text: "Painéis",
     href: "/explore?page=1",
     key: "panels",
   },
-  posts: {
-    filter: RECENT_PUBLICATION_POST_TYPES,
-    text: "Publicações",
-    href: "/posts?page=1",
-    key: "posts",
+  stories: {
+    filter: RECENT_STORY_POST_TYPES,
+    text: "Narrativas",
+    href: "/posts?type_in=data-story&page=1",
+    key: "stories",
+  },
+  newsletters: {
+    filter: RECENT_NEWSLETTER_POST_TYPES,
+    text: "Boletins",
+    href: "/posts?type_in=newsletter&page=1",
+    key: "newsletters",
   },
 };
 
 export const TypeFilter = ({
   onChange,
 }: {
-  onChange: (value: "all" | "panels" | "posts") => void;
+  onChange: (value: RecentFilterKey) => void;
 }) => {
   return (
     <RadioGroup
