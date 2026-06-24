@@ -111,13 +111,14 @@ export function MacroThemeTabs({
     header: IPageHeader | undefined,
     defaultTitle: string,
     href: string,
-    emptyMessage: string,
   ) => {
+    if (items.length === 0) return null;
+
     return (
       <section className="animate-in fade-in duration-300 flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4">
           {renderHeader(header, defaultTitle)}
-          {showViewAll && items.length > 0 && (
+          {showViewAll && (
             <LinkButton
               href={href}
               variant="secondary"
@@ -128,17 +129,11 @@ export function MacroThemeTabs({
             </LinkButton>
           )}
         </div>
-        {items.length > 0 ? (
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {items.map((post, i) => (
-              <ContentPost content={post} key={i} />
-            ))}
-          </div>
-        ) : (
-          <div className="p-8 border-2 border-dashed border-gray-200 rounded-lg text-center text-gray-500">
-            <p>{emptyMessage}</p>
-          </div>
-        )}
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {items.map((post, i) => (
+            <ContentPost content={post} key={i} />
+          ))}
+        </div>
       </section>
     );
   };
@@ -149,6 +144,27 @@ export function MacroThemeTabs({
     { key: "boletins", label: "Boletins" },
   ];
 
+  // Tabs are hidden when their content array is empty. On the explore page
+  // (tabsOnly=true) the arrays are populated from count queries just to
+  // control visibility — actual content is rendered by the Posts component.
+  const availableTabs = tabs.filter((tab) => {
+    if (tab.key === "paineis") {
+      return dashboards.length > 0;
+    }
+    if (tab.key === "datastories") {
+      return datastories.length > 0;
+    }
+    if (tab.key === "boletins") {
+      return publicacoes.length > 0;
+    }
+
+    return false;
+  });
+
+  if (availableTabs.length === 0) {
+    return null;
+  }
+
   return (
     <div className="w-full">
       <div className="w-full bg-white border-b border-[#BEBBBD]">
@@ -157,7 +173,7 @@ export function MacroThemeTabs({
           className="flex flex-row items-stretch gap-4 max-w-[1440px] mx-auto lg:px-20 py-0 overflow-x-auto scrollbar-hide"
           style={{ height: "60px" }}
         >
-          {tabs.map(({ key, label }) => (
+          {availableTabs.map(({ key, label }) => (
             <button
               key={key}
               role="tab"
@@ -199,7 +215,6 @@ export function MacroThemeTabs({
               headers.dashboards,
               "Painel de Dados",
               urls.dashboardsHref,
-              "Ainda não há painéis publicados para este macrotema.",
             )}
           {activeTab === "datastories" &&
             renderTabSection(
@@ -207,7 +222,6 @@ export function MacroThemeTabs({
               headers.datastories,
               "Narrativa de Dados",
               urls.datastoriesHref,
-              "Ainda não há datastories publicados para este macrotema.",
             )}
           {activeTab === "boletins" &&
             renderTabSection(
@@ -215,7 +229,6 @@ export function MacroThemeTabs({
               headers.publications,
               "Publicações",
               urls.postsByThemeHref,
-              "Ainda não há boletins/publicações para este macrotema.",
             )}
         </div>
       )}

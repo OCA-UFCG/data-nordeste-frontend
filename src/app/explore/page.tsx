@@ -56,6 +56,10 @@ interface IInitialPostsContent {
   postCollection: { total: number; items: IPublication[] };
 }
 
+interface IPostsCount {
+  postCollection: { total: number };
+}
+
 export default async function ExplorePage({
   searchParams,
 }: {
@@ -89,6 +93,34 @@ export default async function ExplorePage({
     header_id: "panels",
     head_id: "interactive-panels",
   });
+
+  const [dashboardsPosts, datastoriesPosts, boletinsPosts] = await Promise.all([
+    getContent<IPostsCount>(PUBLICATION_QUERY, {
+      order: initialQueryState.sorting,
+      skip: 0,
+      limit: 1,
+      filter: buildPostsContentfulFilter(initialQueryState.filter, {
+        type_in: "data-panel",
+      }),
+    }),
+    getContent<IPostsCount>(PUBLICATION_QUERY, {
+      order: initialQueryState.sorting,
+      skip: 0,
+      limit: 1,
+      filter: buildPostsContentfulFilter(initialQueryState.filter, {
+        type_in: "data-story",
+      }),
+    }),
+    getContent<IPostsCount>(PUBLICATION_QUERY, {
+      order: initialQueryState.sorting,
+      skip: 0,
+      limit: 1,
+      filter: buildPostsContentfulFilter(initialQueryState.filter, {
+        type_in: ["newsletter", "additional-content"],
+      }),
+    }),
+  ]);
+
   const { postCollection: initialPosts }: IInitialPostsContent =
     await getContent(PUBLICATION_QUERY, {
       order: initialQueryState.sorting,
@@ -167,9 +199,21 @@ export default async function ExplorePage({
       <section className="w-full bg-[#F8F7F8]">
         <Suspense>
           <MacroThemeTabs
-            dashboards={[]}
-            datastories={[]}
-            publicacoes={[]}
+            dashboards={
+              dashboardsPosts.postCollection.total > 0
+                ? Array(dashboardsPosts.postCollection.total).fill(undefined)
+                : []
+            }
+            datastories={
+              datastoriesPosts.postCollection.total > 0
+                ? Array(datastoriesPosts.postCollection.total).fill(undefined)
+                : []
+            }
+            publicacoes={
+              boletinsPosts.postCollection.total > 0
+                ? Array(boletinsPosts.postCollection.total).fill(undefined)
+                : []
+            }
             headers={{
               dashboards: tabHeadersById.get("dashboards"),
               datastories: tabHeadersById.get("datastories"),
