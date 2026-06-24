@@ -11,14 +11,14 @@ export const MACROTHEME_ICON_BY_ID: { [key: string]: string } = {
 };
 
 export const THEMES_NAVIGATION_ORDER = [
-  "saude",
-  "educacao",
-  "desenvolvimento_social",
-  "economia_e_renda",
   "demografia",
+  "educacao",
+  "economia_e_renda",
+  "desenvolvimento_social",
+  "saude",
   "infraestrutura_e_saneamento",
-  "meio_ambiente",
   "seguranca_hidrica",
+  "meio_ambiente",
   "instrumentos_sudene",
 ];
 

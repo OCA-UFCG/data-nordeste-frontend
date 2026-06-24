@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/navigation-menu";
 import Link from "next/link";
 import { Icon } from "../Icon/Icon";
-import { macroThemes } from "@/utils/constants";
+import { macroThemes, THEMES_NAVIGATION_ORDER } from "@/utils/constants";
+import { sortContentByDesiredOrder } from "@/utils/functions";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 
 const Header = ({ content }: { content: ISection[] }) => {
@@ -38,7 +39,16 @@ const Header = ({ content }: { content: ISection[] }) => {
                         {item.name}
                       </NavigationMenuTrigger>
                       <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15">
-                        {item.childrenCollection.items.map((child) => (
+                        <NavigationMenuLink
+                          href="/explore"
+                          className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 rounded"
+                        >
+                          Ver todos
+                        </NavigationMenuLink>
+                        {sortContentByDesiredOrder(
+                          item.childrenCollection.items,
+                          THEMES_NAVIGATION_ORDER,
+                        ).map((child) => (
                           <NavigationMenuLink
                             key={child.id}
                             href={child.path}
