@@ -1,5 +1,5 @@
 import { Icon } from "@/components/Icon/Icon";
-import { channels } from "@/utils/constants";
+import { channels, THEMES_NAVIGATION_ORDER } from "@/utils/constants";
 import { sortContentByDesiredOrder } from "@/utils/functions";
 import { ISection } from "@/utils/interfaces";
 
@@ -12,9 +12,12 @@ const Footer = ({ content }: { content: ISection[] }) => {
     "projects",
   ]).filter((item) => item.appears);
 
-  const macroThemes = content
-    .filter((item) => !item.appears && item.path?.startsWith("/macrothemes/"))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const macroThemes = sortContentByDesiredOrder(
+    content.filter(
+      (item) => !item.appears && item.path?.startsWith("/macrothemes/"),
+    ),
+    THEMES_NAVIGATION_ORDER,
+  );
 
   const splitColumns = <T,>(array: T[], itemsPerColumn: number) => {
     const columns = [];

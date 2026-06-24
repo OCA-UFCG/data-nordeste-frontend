@@ -3,7 +3,7 @@
 import { IPublication, SectionHeader } from "@/utils/interfaces";
 import { LinkButton } from "../LinkButton/LinkButton";
 import { Icon } from "../Icon/Icon";
-import { FILTERS, TypeFilter } from "./TypeFilter";
+import { FILTERS, RecentFilterKey, TypeFilter } from "./TypeFilter";
 import { useCallback, useState } from "react";
 import { POSTS_PER_PAGE } from "@/utils/constants";
 import { getContent } from "@/utils/contentful";
@@ -18,11 +18,11 @@ export const RecentSection = ({
   content: IPublication[];
 }) => {
   const [posts, setPosts] = useState(content);
-  const [selectedType, setSelectedType] = useState<"all" | "panels" | "posts">(
+  const [selectedType, setSelectedType] = useState<RecentFilterKey>(
     FILTERS.all.key,
   );
 
-  const fetchPosts = useCallback(async (types: "all" | "panels" | "posts") => {
+  const fetchPosts = useCallback(async (types: RecentFilterKey) => {
     setSelectedType(types);
 
     const { postCollection: filteredPosts } = await getContent<{
@@ -55,8 +55,8 @@ export const RecentSectionView = ({
 }: {
   header?: SectionHeader;
   posts: IPublication[];
-  selectedType: "all" | "panels" | "posts";
-  onTypeChange: (value: "all" | "panels" | "posts") => void;
+  selectedType: RecentFilterKey;
+  onTypeChange: (value: RecentFilterKey) => void;
 }) => {
   const { id, title, subtitle } = header || {
     title: "",
@@ -81,7 +81,7 @@ export const RecentSectionView = ({
             <LinkButton
               href={FILTERS[selectedType].href}
               variant="secondary"
-              className="w-fit hidden md:flex"
+              className="w-fit hidden md:flex fill-green"
               disabled={selectedType === FILTERS.all.key}
             >
               <p>Ver Todos</p>

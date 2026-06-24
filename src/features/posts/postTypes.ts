@@ -31,14 +31,19 @@ export const RECENT_SECTION_POST_TYPES: PostType[] = [
   "data-panel",
   "newsletter",
   "additional-content",
+  "data-story",
 ];
 
 export const RECENT_PANEL_POST_TYPES: PostType[] = ["data-panel"];
+
+export const RECENT_NEWSLETTER_POST_TYPES: PostType[] = ["newsletter"];
 
 export const RECENT_PUBLICATION_POST_TYPES: PostType[] = [
   "newsletter",
   "additional-content",
 ];
+
+export const RECENT_STORY_POST_TYPES: PostType[] = ["data-story"];
 
 export const buildPostTypeFields = (types: PostType[]) =>
   Object.fromEntries(types.map((type) => [type, POST_TYPE_LABELS[type]]));

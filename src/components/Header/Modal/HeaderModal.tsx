@@ -11,11 +11,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { macroThemes } from "@/utils/constants";
+import { macroThemes, THEMES_NAVIGATION_ORDER } from "@/utils/constants";
 import { Icon } from "@/components/Icon/Icon";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { isHrefActive } from "@/utils/functions";
+import { isHrefActive, sortContentByDesiredOrder } from "@/utils/functions";
 import { cn } from "@/lib/utils";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 
@@ -65,7 +65,10 @@ const HeaderModal = ({ content }: { content: ISection[] }) => {
                       {item.name}
                     </AccordionTrigger>
                     <AccordionContent className="py-2 px-2">
-                      {item.childrenCollection.items.map((child, i) => {
+                      {sortContentByDesiredOrder(
+                        item.childrenCollection.items,
+                        THEMES_NAVIGATION_ORDER,
+                      ).map((child, i) => {
                         const isActive = isHrefActive(
                           pathname,
                           category,
