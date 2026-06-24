@@ -5,7 +5,7 @@ import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 import { RelatedBoletinsSection } from "@/components/RelatedBoletinsSection/RelatedBoletinsSection";
 import type { BoletimDetail, RelatedBoletim } from "@/features/boletim/types";
 
-type BoletimContentProps = {
+type BoletimContentProps = { 
   boletim: BoletimDetail;
   pdfFileName: string;
   relatedBoletins: RelatedBoletim[];
