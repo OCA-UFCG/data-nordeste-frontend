@@ -17,14 +17,10 @@ export async function GET(request: Request) {
       });
     }
 
-    const arrayBuffer = await response.arrayBuffer();
-
-    return new NextResponse(arrayBuffer, {
+    return new NextResponse(response.body, {
       headers: {
         "Content-Type":
           response.headers.get("Content-Type") || "application/pdf",
-
-        // Libera o CORS para o seu frontend
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET",
         "Cache-Control": "public, max-age=3600",

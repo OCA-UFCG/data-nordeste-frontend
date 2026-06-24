@@ -19,10 +19,7 @@ export const BoletimContent = ({
   const dateObj = boletim.date ? new Date(boletim.date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
-  const isDev = process.env.NODE_ENV === "development";
-  const finalPdfUrl = isDev
-    ? `/api/pdf-proxy?url=${encodeURIComponent(boletim.link)}`
-    : boletim.link;
+  const finalPdfUrl = `/api/pdf-proxy?url=${encodeURIComponent(boletim.link)}`;
 
   const category = boletim.categoryCollection?.items?.[0];
   const categoryId = category?.sys?.id;
@@ -36,7 +33,7 @@ export const BoletimContent = ({
             title={boletim.title}
             description={boletim.description}
             formattedDate={formattedDate}
-            pdfUrl={boletim.link}
+            pdfUrl={finalPdfUrl}
             pdfFileName={pdfFileName}
           />
           <div className="mt-6 -mx-4 sm:mx-0">
