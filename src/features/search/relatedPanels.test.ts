@@ -11,14 +11,18 @@ const baseItem = {
 } satisfies Partial<SearchIndexItem>;
 
 describe("related panel helpers", () => {
-  it("returns related panels by theme and text score", () => {
+  it("favors related content in different themes", () => {
     const results = getRelatedPanelItems(buildSearchItems(), {
       title: "Produto Interno Bruto",
       macroTheme: "Economia",
       descriptionTitle: "PIB municipal",
     });
 
-    expect(results.map((item) => item.id)).toEqual(["panel:2", "panel:3"]);
+    expect(results.map((item) => item.id)).toEqual([
+      "post:story",
+      "post:newsletter",
+      "panel:2",
+    ]);
   });
 
   it("excludes the current panel and respects limit", () => {
@@ -37,9 +41,24 @@ describe("related panel helpers", () => {
       title: "Painel Produto Interno Bruto",
       href: "/data-panel/Produto%20Interno%20Bruto",
       macroTheme: "Economia",
+      descriptionTitle: "PIB municipal",
     });
 
-    expect(results.map((item) => item.id)).toEqual(["panel:2", "panel:3"]);
+    expect(results.map((item) => item.id)).toEqual([
+      "post:story",
+      "post:newsletter",
+      "panel:2",
+    ]);
+  });
+
+  it("does not recommend unrelated content from different themes", () => {
+    const results = getRelatedPanelItems(buildSearchItems(), {
+      title: "Produto Interno Bruto",
+      macroTheme: "Economia",
+      descriptionTitle: "PIB municipal",
+    });
+
+    expect(results.map((item) => item.id)).not.toContain("post:unrelated");
   });
 });
 
@@ -77,11 +96,34 @@ const buildSearchItems = (): SearchIndexItem[] => [
   },
   {
     ...baseItem,
-    id: "post:1",
+    id: "post:newsletter",
     source: "post",
     type: "newsletter",
-    title: "Boletim economia",
+    title: "Boletim sobre PIB municipal",
     href: "/posts/boletim-economia",
-    text: "economia pib",
+    themes: ["Mercado de Trabalho"],
+    tags: ["PIB"],
+    text: "boletim mercado trabalho pib municipal",
+  },
+  {
+    ...baseItem,
+    id: "post:story",
+    source: "post",
+    type: "data-story",
+    title: "Datastory do PIB municipal",
+    href: "/data-stories/story-id",
+    themes: ["Território"],
+    tags: ["PIB"],
+    text: "datastory territorio produto pib municipal renda",
+  },
+  {
+    ...baseItem,
+    id: "post:unrelated",
+    source: "post",
+    type: "newsletter",
+    title: "Boletim climático",
+    href: "/posts/boletim-climatico",
+    themes: ["Meio Ambiente"],
+    text: "clima chuva semiárido",
   },
 ];
