@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lato } from "next/font/google";
+import { Inter } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import {
   buildMetadata,
@@ -11,8 +11,8 @@ import {
 import "./globals.css";
 
 const NEXT_PUBLIC_GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
-const lato = Lato({
-  weight: ["400", "700", "900"],
+const inter = Inter({
+  weight: ["400", "500", "600", "700", "800", "900"],
   subsets: ["latin"],
   style: ["normal", "italic"],
 });
@@ -64,7 +64,7 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <link rel="icon" href="/favicon.ico" sizes="any" />
-      <body className={lato.className}>{children}</body>
+      <body className={inter.className}>{children}</body>
 
       <GoogleAnalytics gaId={NEXT_PUBLIC_GA_ID} />
     </html>
