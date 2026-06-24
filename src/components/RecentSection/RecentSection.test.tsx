@@ -41,6 +41,28 @@ const panelPosts = [
   },
 ] satisfies IPublication[];
 
+const storyPosts = [
+  {
+    title: "Narrativa atualizada",
+    link: "/data-stories/historia",
+    thumb: { url: "/story.png" },
+    type: "data-story",
+    date: "2024-03-01",
+    description: "",
+  },
+] satisfies IPublication[];
+
+const newsletterPosts = [
+  {
+    title: "Boletim atualizado",
+    link: "/posts/boletim",
+    thumb: { url: "/newsletter.png" },
+    type: "newsletter",
+    date: "2024-04-01",
+    description: "",
+  },
+] satisfies IPublication[];
+
 describe("RecentSection", () => {
   it("fetches filtered posts and updates the all-posts link when type changes", async () => {
     vi.mocked(getContent).mockResolvedValue({
@@ -56,7 +78,7 @@ describe("RecentSection", () => {
 
     expect(screen.getByText("Publicação inicial")).toBeInTheDocument();
 
-    await userEvent.click(screen.getByLabelText("Painéis de dados"));
+    await userEvent.click(screen.getByLabelText("Painéis"));
 
     await waitFor(() => {
       expect(screen.getByText("Painel atualizado")).toBeInTheDocument();
@@ -71,5 +93,63 @@ describe("RecentSection", () => {
     expect(
       screen.getAllByRole("link", { name: /Ver Todos/i })[0],
     ).toHaveAttribute("href", "/explore?page=1");
+  });
+
+  it("fetches only narratives when the narratives filter is selected", async () => {
+    vi.mocked(getContent).mockResolvedValue({
+      postCollection: { items: storyPosts },
+    });
+
+    render(
+      <RecentSection
+        header={{ id: "new", title: "Recentes", subtitle: "Últimos itens" }}
+        content={initialPosts}
+      />,
+    );
+
+    await userEvent.click(screen.getByLabelText("Narrativas"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Narrativa atualizada")).toBeInTheDocument();
+    });
+    expect(getContent).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        limit: 12,
+        filter: { type_in: ["data-story"] },
+      }),
+    );
+    expect(
+      screen.getAllByRole("link", { name: /Ver Todos/i })[0],
+    ).toHaveAttribute("href", "/posts?type_in=data-story&page=1");
+  });
+
+  it("fetches only newsletters when the newsletters filter is selected", async () => {
+    vi.mocked(getContent).mockResolvedValue({
+      postCollection: { items: newsletterPosts },
+    });
+
+    render(
+      <RecentSection
+        header={{ id: "new", title: "Recentes", subtitle: "Últimos itens" }}
+        content={initialPosts}
+      />,
+    );
+
+    await userEvent.click(screen.getByLabelText("Boletins"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Boletim atualizado")).toBeInTheDocument();
+    });
+    expect(getContent).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        limit: 12,
+        filter: { type_in: ["newsletter"] },
+      }),
+    );
+    expect(
+      screen.getAllByRole("link", { name: /Ver Todos/i })[0],
+    ).toHaveAttribute("href", "/posts?type_in=newsletter&page=1");
   });
 });
