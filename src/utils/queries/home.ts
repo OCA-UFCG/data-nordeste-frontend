@@ -58,12 +58,14 @@ export const MAIN_PAGE_QUERY = `
 
     postCollection(limit: 8, preview: $preview) {
       items {
+        sys { id }
         title
         thumb {
           url
         }
         link
         date
+        type
       }
     }
 
@@ -121,12 +123,14 @@ export const POSTS_QUERY = `
   query ($limit: Int!, $filter: PostFilter, $preview: Boolean) {
     postCollection(limit: $limit, where: $filter, preview: $preview) {
       items {
+        sys { id }
         title
         thumb {
           url
         }
         link
         date
+        type
       }
     }
   }

@@ -70,6 +70,7 @@ export interface ISectionHeader {
 }
 
 export interface IPublication {
+  sys?: { id: string };
   title: string;
   link: string;
   thumb: {
