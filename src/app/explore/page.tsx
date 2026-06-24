@@ -174,19 +174,19 @@ export default async function ExplorePage({
       sm:items-end sm:px-6 sm:pb-6 sm:pt-0
       lg:px-20 lg:pb-12"
         >
-          <div className="flex flex-col gap-4 lg:gap-2 w-full max-w-[1280px]">
-            <h1 className="text-[30px] lg:text-[48px] font-extrabold leading-[36px] lg:leading-[48px] tracking-[-0.0075em] text-[#F8F7F8]">
+          <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-[1280px]">
+            <h1 className="text-[30px] sm:text-[48px] font-extrabold leading-[36px] sm:leading-[48px] tracking-[-0.0075em] sm:tracking-[-0.012em] text-[#F8F7F8]">
               {pageHeaders.items[0]?.title}
             </h1>
 
             {pageHeaders.items[0]?.richSubtitle ? (
-              <div className="text-[14px] font-normal leading-[21px] text-[#F8F7F8] [&_p]:m-0">
+              <div className="text-[14px] sm:text-[16px] font-normal sm:font-medium leading-[21px] sm:leading-6 text-[#F8F7F8] [&_p]:m-0">
                 {documentToReactComponents(
                   pageHeaders.items[0].richSubtitle.json,
                 )}
               </div>
             ) : pageHeaders.items[0]?.subtitle ? (
-              <p className="text-[14px] font-normal leading-[21px] text-[#F8F7F8]">
+              <p className="text-[14px] sm:text-[16px] font-normal sm:font-medium leading-[21px] sm:leading-6 text-[#F8F7F8]">
                 {pageHeaders.items[0].subtitle}
               </p>
             ) : null}

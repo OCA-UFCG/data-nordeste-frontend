@@ -22,10 +22,13 @@ import {
 import type { MacroTheme } from "@/utils/interfaces";
 import { XIcon } from "lucide-react";
 
+import Link from "next/link";
+
 interface ThemeFilterCardProps {
   iconId: string;
   color: string;
   name: string;
+  href?: string;
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
 }
@@ -34,6 +37,7 @@ function ThemeFilterCard({
   iconId,
   color,
   name,
+  href,
   checked,
   onCheckedChange,
 }: ThemeFilterCardProps) {
@@ -53,19 +57,35 @@ function ThemeFilterCard({
 
       <div className="w-px h-full bg-[#EFEFEF]" />
 
-      <div className="flex items-center gap-2 flex-1 h-full px-2 rounded-r-lg hover:bg-[#DDEADF] transition-colors">
-        <Icon id={iconId} size={16} style={{ color }} />
-
-        <span className="flex-1 text-sm font-normal text-[#292829] truncate">
-          {name}
-        </span>
-
-        <Icon
-          className="text-[#999999] flex-shrink-0 rotate-270"
-          id="expand"
-          size={12}
-        />
-      </div>
+      {href ? (
+        <Link
+          href={href}
+          className="flex items-center gap-2 flex-1 h-full px-2 rounded-r-lg hover:bg-[#DDEADF] transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Icon id={iconId} size={16} style={{ color }} />
+          <span className="flex-1 text-sm font-normal text-[#292829] truncate">
+            {name}
+          </span>
+          <Icon
+            className="text-[#999999] flex-shrink-0 rotate-270"
+            id="expand"
+            size={12}
+          />
+        </Link>
+      ) : (
+        <div className="flex items-center gap-2 flex-1 h-full px-2 rounded-r-lg hover:bg-[#DDEADF] transition-colors">
+          <Icon id={iconId} size={16} style={{ color }} />
+          <span className="flex-1 text-sm font-normal text-[#292829] truncate">
+            {name}
+          </span>
+          <Icon
+            className="text-[#999999] flex-shrink-0 rotate-270"
+            id="expand"
+            size={12}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -427,6 +447,7 @@ export function ExploreFilters({
                   iconId={MACROTHEME_ICON_BY_ID[iconKey] || "list"}
                   color={theme.color || "#999999"}
                   name={theme.name}
+                  href={`/macrothemes/${theme.id.replace(/_/g, "-")}`}
                   checked={selectedCategories.includes(themeValue)}
                   onCheckedChange={() => toggleCategory(themeValue)}
                 />
