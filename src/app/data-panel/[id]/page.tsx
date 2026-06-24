@@ -74,6 +74,7 @@ export default async function DataPanel({
     descriptionTitle: panel.descriptionTitle,
     descriptionText: getPanelDescriptionText(panel),
   });
+  const catalogHref = getCatalogHref(panel.macroTheme);
 
   return (
     <HubTemplate>
@@ -81,6 +82,7 @@ export default async function DataPanel({
         <div className="flex justify-center w-full items-center overflow-hidden">
           <PowerBIContainer panel={panel} pageName={pageName} />
         </div>
+        {catalogHref && <CatalogLink href={catalogHref} />}
       </div>
 
       <PanelDescriptionSection panel={panel} />
@@ -125,6 +127,24 @@ const MacroThemeLink = ({ href }: { href: string }) => (
     <Icon className="size-2 rotate-270" id="expand" size={9} />
   </Link>
 );
+
+const CatalogLink = ({ href }: { href: string }) => (
+  <Link
+    className="mt-4 inline-flex h-10 w-full items-center justify-center gap-3 rounded-md bg-green-800 px-5 text-sm font-medium leading-6 text-white transition hover:bg-green-900"
+    href={href}
+  >
+    Acessar o catálogo de dados
+    <Icon className="size-4" id="database" size={16} />
+  </Link>
+);
+
+const getCatalogHref = (macroTheme: string): string | null => {
+  const slug = MACROTHEME_ROUTE_BY_NAME[
+    macroTheme as keyof typeof MACROTHEME_ROUTE_BY_NAME
+  ];
+
+  return slug ? `/catalog?category=${slug}` : null;
+};
 
 const getMacroThemeHref = (macroTheme: string): string | null => {
   const slug = MACROTHEME_ROUTE_BY_NAME[
