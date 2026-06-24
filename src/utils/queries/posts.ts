@@ -82,6 +82,7 @@ export const EXPLORE_PAGE_QUERY = `
     themeCollection(preview: $preview) {
       items {
         name
+        id
         color
         sys {
           id

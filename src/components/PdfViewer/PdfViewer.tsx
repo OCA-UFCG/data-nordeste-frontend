@@ -394,10 +394,12 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
       {shouldRender ? (
         <canvas ref={canvasRef} className="pdf-viewer-canvas" />
       ) : (
-        // Placeholder preserves the approximate page height so the scroll
-        // position doesn't jump when the canvas mounts. A4 ratio (1:1.414)
-        // covers the vast majority of PDF documents.
-        <div className="pdf-viewer-placeholder" aria-hidden="true" />
+        <>
+          {/* Placeholder preserves the approximate page height so the scroll
+	          position doesn't jump when the canvas mounts. A4 ratio (1:1.414)
+	          covers the vast majority of PDF documents. */}
+          <div className="pdf-viewer-placeholder" aria-hidden="true" />
+        </>
       )}
     </div>
   );

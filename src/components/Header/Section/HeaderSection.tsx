@@ -17,7 +17,7 @@ const HeaderSection = ({ content }: { content: ISection[] }) => {
   ]);
 
   return (
-    <div className="sticky top-0 left-0 z-2 bg-white">
+    <div className="sticky top-0 left-0 z-50 bg-white">
       <div className="xl:hidden w-full h-[80px] flex border-b-2 justify-between px-4 py-[18px]">
         <Suspense>
           <HeaderModal content={orderedContent} />

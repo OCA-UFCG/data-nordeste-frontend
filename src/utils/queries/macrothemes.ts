@@ -50,7 +50,6 @@ export const MACROTHEME_PAGE_QUERY = `
       preview: $preview
     ) {
       items {
-        sys { id }
         title
         link
         type
@@ -68,7 +67,6 @@ export const MACROTHEME_PAGE_QUERY = `
       preview: $preview
     ) {
       items {
-        sys { id }
         title
         link
         type
@@ -86,7 +84,6 @@ export const MACROTHEME_PAGE_QUERY = `
       preview: $preview
     ) {
       items {
-        sys { id }
         title
         link
         type
@@ -104,7 +101,6 @@ export const MACROTHEME_PAGE_QUERY = `
       preview: $preview
     ) {
       items {
-        sys { id }
         title
         link
         type

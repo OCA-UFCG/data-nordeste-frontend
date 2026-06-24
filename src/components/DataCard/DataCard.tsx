@@ -98,10 +98,7 @@ export const DataCard = ({
           )}
 
           <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600">
-            <span>
-              <span className="hidden sm:inline">Publicado em: </span>
-              {formattedDate}
-            </span>
+            <span>Publicado em: {formattedDate}</span>
             <Link
               href={`/catalog/${post.id}`}
               className="font-semibold text-[#018F39] hover:underline"
