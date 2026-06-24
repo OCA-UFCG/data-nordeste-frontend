@@ -169,4 +169,27 @@ export const exploreFilterMap: { [key: string]: ExploreFilterFormatter } = {
       };
     },
   },
+  q: {
+    name: "title_contains",
+    formatForm: (params: FilterFormValue) => {
+      const q =
+        typeof params === "string"
+          ? params
+          : Array.isArray(params)
+            ? params[0]
+            : "";
+
+      return q ? { title_contains: q } : { title_contains: undefined };
+    },
+    formatParam: (params: FilterFormValue) => {
+      const q =
+        typeof params === "string"
+          ? params
+          : Array.isArray(params)
+            ? params[0]
+            : "";
+
+      return { q: q || null };
+    },
+  },
 };

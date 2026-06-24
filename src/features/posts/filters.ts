@@ -41,12 +41,14 @@ export const parsePostsFilters = (
     }
 
     const formattedForm = exploreFilterMap[key].formatForm(value);
-    if (formattedForm[key]) {
-      contentfulFilter = {
-        ...contentfulFilter,
-        [key]: formattedForm[key],
-      };
-    }
+    Object.entries(formattedForm).forEach(([fKey, fValue]) => {
+      if (fValue !== undefined) {
+        contentfulFilter = {
+          ...contentfulFilter,
+          [fKey]: fValue,
+        };
+      }
+    });
   });
 
   return { contentfulFilter, urlParams };
@@ -67,6 +69,7 @@ export const parsePostsQueryState = (
       category: parsePostsListParam(params.get("category")) ?? [],
       date_lte: parsePostsDateParam(params.get("date_lte")),
       date_gte: parsePostsDateParam(params.get("date_gte")),
+      q: params.get("q") || undefined,
     },
   };
 };

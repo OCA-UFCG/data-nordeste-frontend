@@ -261,10 +261,6 @@ export function ExploreFilters({
 
   const handleFilterItems = useCallback(
     (item: SearchIndexItem) => {
-      const isPanel = ["data-panel", "data-panel-detail"].includes(item.type);
-
-      if (!isPanel) return false;
-
       if (selectedThemeNames.length === 0) return true;
 
       return item.themes.some((themeName) =>
@@ -272,19 +268,6 @@ export function ExploreFilters({
       );
     },
     [selectedThemeNames],
-  );
-
-  const handleSearchSubmit = useCallback(
-    (query: string) => {
-      const themeParams =
-        selectedThemeNames.length > 0
-          ? `&themes=${encodeURIComponent(selectedThemeNames.join(","))}`
-          : "";
-      router.push(
-        `/search?q=${encodeURIComponent(query)}&type=panels${themeParams}`,
-      );
-    },
-    [router, selectedThemeNames],
   );
 
   const openSeeThemesModal = () => {
@@ -373,7 +356,8 @@ export function ExploreFilters({
                 placeholder="Buscar conteúdo"
                 hideViewAll={true}
                 filterItems={handleFilterItems}
-                onSubmit={handleSearchSubmit}
+                onSubmit={(q) => updateUrl({ q: q || null, page: "1" })}
+                onQueryChange={(q) => updateUrl({ q: q || null, page: "1" })}
               />
             )}
 
@@ -563,7 +547,8 @@ export function ExploreFilters({
           className="w-full"
           hideViewAll={true}
           filterItems={handleFilterItems}
-          onSubmit={handleSearchSubmit}
+          onSubmit={(q) => updateUrl({ q: q || null, page: "1" })}
+          onQueryChange={(q) => updateUrl({ q: q || null, page: "1" })}
         />
 
         <Button

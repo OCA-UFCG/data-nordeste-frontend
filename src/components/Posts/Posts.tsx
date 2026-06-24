@@ -77,6 +77,7 @@ export const Posts = ({
           pages={pages}
           posts={posts}
           loading={loading}
+          searchQuery={filter.q as string}
         />
       </div>
     </section>

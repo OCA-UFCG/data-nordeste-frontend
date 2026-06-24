@@ -37,6 +37,7 @@ type SearchBarProps = {
   hideViewAll?: boolean;
   filterItems?: (item: SearchIndexItem) => boolean;
   onSubmit?: (query: string) => void;
+  onQueryChange?: (query: string) => void;
 };
 
 export const SearchBar = ({
@@ -49,6 +50,7 @@ export const SearchBar = ({
   hideViewAll = false,
   filterItems,
   onSubmit,
+  onQueryChange,
 }: SearchBarProps) => {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
@@ -58,6 +60,7 @@ export const SearchBar = ({
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const isMountedRef = useRef(true);
+  const pendingUpdate = useRef<ReturnType<typeof setTimeout>>();
   const inputId = useId();
 
   useEffect(() => {
@@ -69,6 +72,7 @@ export const SearchBar = ({
 
     return () => {
       isMountedRef.current = false;
+      if (pendingUpdate.current) clearTimeout(pendingUpdate.current);
     };
   }, []);
 
@@ -109,13 +113,14 @@ export const SearchBar = ({
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!query.trim()) return;
+    if (pendingUpdate.current) clearTimeout(pendingUpdate.current);
 
     setOpen(false);
     onNavigate?.();
     if (onSubmit) {
       onSubmit(query.trim());
     } else {
+      if (!query.trim()) return;
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   };
@@ -126,6 +131,13 @@ export const SearchBar = ({
 
     if (normalizeSearchText(value).length >= MIN_SEARCH_QUERY_LENGTH) {
       void loadIndex();
+    }
+
+    if (onQueryChange) {
+      if (pendingUpdate.current) clearTimeout(pendingUpdate.current);
+      pendingUpdate.current = setTimeout(() => {
+        onQueryChange(value.trim());
+      }, 300);
     }
   };
 

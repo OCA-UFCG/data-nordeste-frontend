@@ -11,11 +11,13 @@ export const PostsGrid = ({
   pages,
   posts = [],
   loading,
+  searchQuery,
 }: {
   currentPage: number;
   loading: boolean;
   pages: number;
   posts: IPublication[];
+  searchQuery?: string;
 }) => (
   <div className="grow-1 flex flex-col items-center gap-8 w-full max-w-[1440px]">
     <div
@@ -33,7 +35,11 @@ export const PostsGrid = ({
       ) : (
         <div className="grow-1 flex flex-col gap-4 justify-center items-center w-full py-12 bg-gray-50 rounded-lg">
           <Icon id="no-mail" size={48} />
-          <span>Nenhum post encontrado</span>
+          <span>
+            {searchQuery
+              ? `Nenhum resultado para "${searchQuery}"`
+              : "Nenhum post encontrado"}
+          </span>
         </div>
       )}
     </div>
