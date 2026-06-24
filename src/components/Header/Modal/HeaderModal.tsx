@@ -65,11 +65,6 @@ const HeaderModal = ({ content }: { content: ISection[] }) => {
                       {item.name}
                     </AccordionTrigger>
                     <AccordionContent className="py-2 px-2">
-                      <Link href="/explore" onClick={() => setOpen(false)}>
-                        <div className="flex items-center gap-2 py-[6px] px-2 h-[44px] hover:bg-green-neutro cursor-pointer">
-                          <span className="whitespace-nowrap">Ver todos</span>
-                        </div>
-                      </Link>
                       {sortContentByDesiredOrder(
                         item.childrenCollection.items,
                         THEMES_NAVIGATION_ORDER,

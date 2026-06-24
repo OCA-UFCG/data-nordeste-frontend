@@ -39,12 +39,6 @@ const Header = ({ content }: { content: ISection[] }) => {
                         {item.name}
                       </NavigationMenuTrigger>
                       <NavigationMenuContent className="bg-white shadow-md p-2 rounded-md w-auto flex flex-col mt-15">
-                        <NavigationMenuLink
-                          href="/explore"
-                          className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 rounded"
-                        >
-                          Ver todos
-                        </NavigationMenuLink>
                         {sortContentByDesiredOrder(
                           item.childrenCollection.items,
                           THEMES_NAVIGATION_ORDER,

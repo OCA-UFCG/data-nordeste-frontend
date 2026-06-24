@@ -11,6 +11,7 @@ export const MACROTHEME_ICON_BY_ID: { [key: string]: string } = {
 };
 
 export const THEMES_NAVIGATION_ORDER = [
+  "ver_todos",
   "demografia",
   "educacao",
   "economia_e_renda",
