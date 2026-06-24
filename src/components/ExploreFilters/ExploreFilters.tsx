@@ -112,12 +112,14 @@ function SeeThemesModal({
   themes,
   selectedCategories,
   onToggleCategory,
+  onSelectAll,
   onClose,
   onApply,
 }: {
   themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
   selectedCategories: string[];
   onToggleCategory: (themeId: string) => void;
+  onSelectAll: () => void;
   onClose: () => void;
   onApply: () => void;
 }) {
@@ -190,13 +192,7 @@ function SeeThemesModal({
             )}
             <button
               className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm"
-              onClick={() => {
-                themes.forEach((t) => {
-                  if (!selectedCategories.includes(t.sys.id)) {
-                    onToggleCategory(t.sys.id);
-                  }
-                });
-              }}
+              onClick={onSelectAll}
             >
               Selecionar todos
             </button>
@@ -275,6 +271,10 @@ export function ExploreFilters({
         ? prev.filter((id) => id !== themeId)
         : [...prev, themeId],
     );
+  };
+
+  const selectAllPending = () => {
+    setPendingCategories(themes.map((t) => t.sys.id));
   };
 
   const updateUrl = useCallback(
@@ -476,16 +476,22 @@ export function ExploreFilters({
             <button
               className="flex items-center justify-center w-[145px] h-8 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm"
               onClick={() => {
-                themes.forEach((t) => {
-                  const themeValue =
-                    categoryValues?.[t.sys.id] ??
-                    (categoryValue === "theme-id"
-                      ? (t as MacroTheme & { id: string }).id
-                      : t.sys.id);
-                  if (!selectedCategories.includes(themeValue)) {
-                    toggleCategory(themeValue);
-                  }
-                });
+                const missing = themes
+                  .map(
+                    (t) =>
+                      categoryValues?.[t.sys.id] ??
+                      (categoryValue === "theme-id"
+                        ? (t as MacroTheme & { id: string }).id
+                        : t.sys.id),
+                  )
+                  .filter((v) => !selectedCategories.includes(v));
+
+                if (missing.length > 0) {
+                  updateUrl({
+                    category: [...selectedCategories, ...missing].join(","),
+                    page: "1",
+                  });
+                }
               }}
             >
               Selecionar todos
@@ -559,6 +565,7 @@ export function ExploreFilters({
           themes={themes}
           selectedCategories={pendingCategories}
           onToggleCategory={togglePendingCategory}
+          onSelectAll={selectAllPending}
           onClose={closeSeeThemesModal}
           onApply={applySeeThemesModal}
         />
