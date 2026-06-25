@@ -123,7 +123,7 @@ export const SearchBar = ({
       onSubmit(query.trim());
     } else {
       if (!query.trim()) return;
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      router.push(buildExploreSearchHref(query));
     }
   };
 
@@ -276,7 +276,7 @@ export const SearchBar = ({
               {!hideViewAll && (
                 <Link
                   className="flex items-center justify-between border-t border-grey-200 px-4 py-3 text-sm font-semibold text-green-900 transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
-                  href={`/search?q=${encodeURIComponent(query.trim())}`}
+                  href={buildExploreSearchHref(query)}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     setOpen(false);
@@ -293,4 +293,10 @@ export const SearchBar = ({
       )}
     </form>
   );
+};
+
+const buildExploreSearchHref = (query: string): string => {
+  const searchParams = new URLSearchParams({ q: query.trim(), page: "1" });
+
+  return `/explore?${searchParams.toString()}`;
 };
