@@ -34,6 +34,11 @@ type SearchBarProps = {
   onNavigate?: () => void;
   placeholder?: string;
   variant?: "header" | "mobile" | "page";
+  hideViewAll?: boolean;
+  filterItems?: (item: SearchIndexItem) => boolean;
+  onSubmit?: (query: string) => void;
+  onQueryChange?: (query: string) => void;
+  hideSuggestions?: boolean;
 };
 
 export const SearchBar = ({
@@ -43,6 +48,11 @@ export const SearchBar = ({
   onNavigate,
   placeholder = "Buscar conteúdo",
   variant = "header",
+  hideViewAll = false,
+  filterItems,
+  onSubmit,
+  onQueryChange,
+  hideSuggestions = false,
 }: SearchBarProps) => {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
@@ -52,6 +62,7 @@ export const SearchBar = ({
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const isMountedRef = useRef(true);
+  const pendingUpdate = useRef<ReturnType<typeof setTimeout>>();
   const inputId = useId();
 
   useEffect(() => {
@@ -63,18 +74,18 @@ export const SearchBar = ({
 
     return () => {
       isMountedRef.current = false;
+      if (pendingUpdate.current) clearTimeout(pendingUpdate.current);
     };
   }, []);
 
   const normalizedQuery = normalizeSearchText(query);
   const canSearch = normalizedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
-  const suggestions = useMemo(
-    () =>
-      items && canSearch
-        ? searchItems(items, query, { limit: DEFAULT_SEARCH_LIMIT })
-        : [],
-    [canSearch, items, query],
-  );
+  const suggestions = useMemo(() => {
+    if (!items || !canSearch) return [];
+    const filteredItems = filterItems ? items.filter(filterItems) : items;
+
+    return searchItems(filteredItems, query, { limit: DEFAULT_SEARCH_LIMIT });
+  }, [canSearch, items, query, filterItems]);
 
   const loadIndex = useCallback(async () => {
     if (items) {
@@ -104,23 +115,39 @@ export const SearchBar = ({
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!canSearch) return;
+    if (pendingUpdate.current) clearTimeout(pendingUpdate.current);
 
     setOpen(false);
     onNavigate?.();
-    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    if (onSubmit) {
+      onSubmit(query.trim());
+    } else {
+      if (!query.trim()) return;
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
   };
 
   const handleQueryChange = (value: string) => {
     setQuery(value);
     setOpen(true);
 
-    if (normalizeSearchText(value).length >= MIN_SEARCH_QUERY_LENGTH) {
+    if (
+      !hideSuggestions &&
+      normalizeSearchText(value).length >= MIN_SEARCH_QUERY_LENGTH
+    ) {
       void loadIndex();
+    }
+
+    if (onQueryChange) {
+      if (pendingUpdate.current) clearTimeout(pendingUpdate.current);
+      pendingUpdate.current = setTimeout(() => {
+        onQueryChange(value.trim());
+      }, 300);
     }
   };
 
-  const showPanel = open && (canSearch || status === "loading");
+  const showPanel =
+    !hideSuggestions && open && (canSearch || status === "loading");
 
   const handleBlur = (event: FocusEvent<HTMLFormElement>) => {
     const nextFocused = event.relatedTarget;
@@ -171,7 +198,7 @@ export const SearchBar = ({
             onChange={(event) => handleQueryChange(event.target.value)}
             onFocus={() => {
               setOpen(true);
-              void loadIndex();
+              if (!hideSuggestions) void loadIndex();
             }}
             placeholder={placeholder}
             type="search"
@@ -180,7 +207,7 @@ export const SearchBar = ({
           <button
             aria-label="Buscar"
             className="flex size-4 items-center justify-center text-[#292829] transition hover:text-green-900 disabled:cursor-not-allowed disabled:opacity-40"
-            disabled={!canSearch}
+            disabled={!query.trim()}
             type="submit"
           >
             <Search className="size-4" aria-hidden="true" />
@@ -219,7 +246,9 @@ export const SearchBar = ({
                       className="flex flex-col gap-1 px-4 py-3 text-left transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
                       href={item.href}
                       key={item.id}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => {
+                        setQuery(item.title);
                         setOpen(false);
                         onNavigate?.();
                       }}
@@ -244,17 +273,20 @@ export const SearchBar = ({
                 </div>
               )}
 
-              <Link
-                className="flex items-center justify-between border-t border-grey-200 px-4 py-3 text-sm font-semibold text-green-900 transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
-                href={`/search?q=${encodeURIComponent(query.trim())}`}
-                onClick={() => {
-                  setOpen(false);
-                  onNavigate?.();
-                }}
-              >
-                Ver todos os resultados
-                <Search className="size-4" aria-hidden="true" />
-              </Link>
+              {!hideViewAll && (
+                <Link
+                  className="flex items-center justify-between border-t border-grey-200 px-4 py-3 text-sm font-semibold text-green-900 transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
+                  href={`/search?q=${encodeURIComponent(query.trim())}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setOpen(false);
+                    onNavigate?.();
+                  }}
+                >
+                  Ver todos os resultados
+                  <Search className="size-4" aria-hidden="true" />
+                </Link>
+              )}
             </>
           )}
         </div>
