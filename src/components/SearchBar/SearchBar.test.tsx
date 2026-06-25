@@ -40,7 +40,7 @@ describe("SearchBar", () => {
     push.mockReset();
   });
 
-  it("loads the public index, shows suggestions, and submits to /search", async () => {
+  it("loads the public index, shows suggestions, and submits to explore", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => Response.json(index)),
@@ -59,7 +59,7 @@ describe("SearchBar", () => {
     await userEvent.keyboard("{Enter}");
 
     await waitFor(() => {
-      expect(push).toHaveBeenCalledWith("/search?q=pib");
+      expect(push).toHaveBeenCalledWith("/explore?q=pib&page=1");
     });
   });
 
@@ -173,6 +173,7 @@ describe("SearchBar", () => {
     });
     const panel = allResultsLink.closest("div");
 
+    expect(allResultsLink).toHaveAttribute("href", "/explore?q=pib&page=1");
     expect(panel).toHaveClass("relative", "mt-3");
     expect(panel).not.toHaveClass("absolute", "top-full", "z-50");
   });

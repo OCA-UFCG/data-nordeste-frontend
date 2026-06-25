@@ -98,7 +98,7 @@ const buildPostItems = (posts: ContentfulPost[]): SearchIndexItem[] =>
         type: post.type || "additional-content",
         title,
         description: post.description || "",
-        href: buildPublicContentHref(post.link || ""),
+        href: buildPostHref(post),
         date: post.date || null,
         thumb: post.thumb?.url || null,
         themes,
@@ -211,6 +211,12 @@ const buildThemeItems = (themes: ContentfulTheme[]): SearchIndexItem[] =>
 
 const stripPanelTitlePrefix = (title?: string | null) =>
   (title || "").replace(/^Acessar\s+painel:\s*/i, "").trim();
+
+const buildPostHref = (post: ContentfulPost): string => {
+  if (post.type === "newsletter") return `/boletim/${post.sys.id}`;
+
+  return buildPublicContentHref(post.link || "");
+};
 
 const buildPublicContentHref = (link: string): string => {
   try {

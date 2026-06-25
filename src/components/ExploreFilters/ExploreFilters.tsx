@@ -245,6 +245,7 @@ export function ExploreFilters({
     () => params.get("category")?.split(",").filter(Boolean) ?? [],
     [params],
   );
+  const searchQuery = params.get("q") ?? "";
 
   const currentSort = params.get("sort") || sortingTypes["Mais recente"];
   const selectedThemeNames = useMemo(() => {
@@ -353,6 +354,7 @@ export function ExploreFilters({
               <SearchBar
                 variant="page"
                 className="flex-1 max-w-none"
+                initialQuery={searchQuery}
                 placeholder="Buscar conteúdo"
                 hideViewAll={true}
                 hideSuggestions={true}
@@ -546,6 +548,7 @@ export function ExploreFilters({
         <SearchBar
           variant="page"
           className="w-full"
+          initialQuery={searchQuery}
           hideViewAll={true}
           hideSuggestions={true}
           filterItems={handleFilterItems}
