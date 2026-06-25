@@ -38,6 +38,7 @@ type SearchBarProps = {
   filterItems?: (item: SearchIndexItem) => boolean;
   onSubmit?: (query: string) => void;
   onQueryChange?: (query: string) => void;
+  hideSuggestions?: boolean;
 };
 
 export const SearchBar = ({
@@ -51,6 +52,7 @@ export const SearchBar = ({
   filterItems,
   onSubmit,
   onQueryChange,
+  hideSuggestions = false,
 }: SearchBarProps) => {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
@@ -129,7 +131,10 @@ export const SearchBar = ({
     setQuery(value);
     setOpen(true);
 
-    if (normalizeSearchText(value).length >= MIN_SEARCH_QUERY_LENGTH) {
+    if (
+      !hideSuggestions &&
+      normalizeSearchText(value).length >= MIN_SEARCH_QUERY_LENGTH
+    ) {
       void loadIndex();
     }
 
@@ -141,7 +146,8 @@ export const SearchBar = ({
     }
   };
 
-  const showPanel = open && (canSearch || status === "loading");
+  const showPanel =
+    !hideSuggestions && open && (canSearch || status === "loading");
 
   const handleBlur = (event: FocusEvent<HTMLFormElement>) => {
     const nextFocused = event.relatedTarget;
@@ -192,7 +198,7 @@ export const SearchBar = ({
             onChange={(event) => handleQueryChange(event.target.value)}
             onFocus={() => {
               setOpen(true);
-              void loadIndex();
+              if (!hideSuggestions) void loadIndex();
             }}
             placeholder={placeholder}
             type="search"

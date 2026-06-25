@@ -355,6 +355,7 @@ export function ExploreFilters({
                 className="flex-1 max-w-none"
                 placeholder="Buscar conteúdo"
                 hideViewAll={true}
+                hideSuggestions={true}
                 filterItems={handleFilterItems}
                 onSubmit={(q) => updateUrl({ q: q || null, page: "1" })}
                 onQueryChange={(q) => updateUrl({ q: q || null, page: "1" })}
@@ -546,6 +547,7 @@ export function ExploreFilters({
           variant="page"
           className="w-full"
           hideViewAll={true}
+          hideSuggestions={true}
           filterItems={handleFilterItems}
           onSubmit={(q) => updateUrl({ q: q || null, page: "1" })}
           onQueryChange={(q) => updateUrl({ q: q || null, page: "1" })}
