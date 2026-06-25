@@ -32,7 +32,7 @@ const DataSection = ({
 
   return (
     <section className="bg-grey-100 w-full" id={title}>
-      <div className="max-w-[1440px] px-4 lg:px-20 py-10 mx-auto my-0 lg:my-8 content-center flex flex-col gap-6 box-border">
+      <div className="max-w-[1440px] px-5 lg:px-20 py-9 lg:py-12 mx-auto my-0 content-center flex flex-col gap-6 box-border">
         <div className="flex flex-col gap-3">
           <div className="flex justify-between w-full">
             <h2 className="text-3xl font-semibold">{title}</h2>
@@ -45,9 +45,9 @@ const DataSection = ({
               <Icon className="rotate-270 size-2" id="expand" />
             </LinkButton>
           </div>
-          <p className="text-sm">{subtitle}</p>
+          <p className="text-sm text-grey-600">{subtitle}</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {filteredData.map((category: MacroTheme) => (
             <CategoryCard key={category.id} category={category} />
           ))}
