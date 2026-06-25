@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import type { MacroTheme } from "@/utils/interfaces";
+import type { SearchIndexItem } from "@/features/search/types";
 import { XIcon } from "lucide-react";
 
 import Link from "next/link";
@@ -244,12 +245,35 @@ export function ExploreFilters({
     () => params.get("category")?.split(",").filter(Boolean) ?? [],
     [params],
   );
+  const searchQuery = params.get("q") ?? "";
 
   const sortOptions = Object.entries(sortingOptions);
   const requestedSort = params.get("sort") ?? "";
   const currentSort = sortOptions.some(([, value]) => value === requestedSort)
     ? requestedSort
     : undefined;
+  const selectedThemeNames = useMemo(() => {
+    return themes
+      .filter((theme) => {
+        const themeValue =
+          categoryValues?.[theme.sys.id] ??
+          (categoryValue === "theme-id" ? theme.id : theme.sys.id);
+
+        return selectedCategories.includes(themeValue);
+      })
+      .map((t) => t.name);
+  }, [themes, selectedCategories, categoryValues, categoryValue]);
+
+  const handleFilterItems = useCallback(
+    (item: SearchIndexItem) => {
+      if (selectedThemeNames.length === 0) return true;
+
+      return item.themes.some((themeName) =>
+        selectedThemeNames.includes(themeName),
+      );
+    },
+    [selectedThemeNames],
+  );
 
   const openSeeThemesModal = () => {
     setPendingCategories(selectedCategories);
@@ -334,7 +358,13 @@ export function ExploreFilters({
               <SearchBar
                 variant="page"
                 className="flex-1 max-w-none"
+                initialQuery={searchQuery}
                 placeholder="Buscar conteúdo"
+                hideViewAll={true}
+                hideSuggestions={true}
+                filterItems={handleFilterItems}
+                onSubmit={(q) => updateUrl({ q: q || null, page: "1" })}
+                onQueryChange={(q) => updateUrl({ q: q || null, page: "1" })}
               />
             )}
 
@@ -515,7 +545,16 @@ export function ExploreFilters({
           </div>
         </div>
 
-        <SearchBar variant="page" className="w-full" />
+        <SearchBar
+          variant="page"
+          className="w-full"
+          initialQuery={searchQuery}
+          hideViewAll={true}
+          hideSuggestions={true}
+          filterItems={handleFilterItems}
+          onSubmit={(q) => updateUrl({ q: q || null, page: "1" })}
+          onQueryChange={(q) => updateUrl({ q: q || null, page: "1" })}
+        />
 
         <Button
           className="bg-[#018F39] hover:bg-[#018F39]/90 text-[#F8F7F8] h-10 rounded-md w-full"

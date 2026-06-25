@@ -1,13 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { dataSortingTypes } from "@/utils/constants";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ExploreFilters } from "./ExploreFilters";
+
+const searchParams = vi.hoisted(() => ({
+  value: new URLSearchParams(),
+}));
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/catalog",
   useRouter: () => ({ replace: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => searchParams.value,
 }));
 
 const themes = [
@@ -20,6 +24,10 @@ const themes = [
 ];
 
 describe("ExploreFilters", () => {
+  afterEach(() => {
+    searchParams.value = new URLSearchParams();
+  });
+
   it("reveals theme filters from the mobile button", async () => {
     render(
       <ExploreFilters
@@ -58,5 +66,15 @@ describe("ExploreFilters", () => {
     );
 
     expect(screen.getAllByText("Ordenar por").length).toBeGreaterThan(0);
+  });
+
+  it("fills search fields from the q URL parameter", () => {
+    searchParams.value = new URLSearchParams("q=pib");
+
+    render(<ExploreFilters themes={themes} />);
+
+    screen
+      .getAllByRole("searchbox", { name: "Buscar conteúdo" })
+      .forEach((input) => expect(input).toHaveValue("pib"));
   });
 });
