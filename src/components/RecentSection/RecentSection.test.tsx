@@ -64,6 +64,19 @@ const newsletterPosts = [
 ] satisfies IPublication[];
 
 describe("RecentSection", () => {
+  it("links all recent items to the explore page before a type is selected", () => {
+    render(
+      <RecentSection
+        header={{ id: "new", title: "Recentes", subtitle: "Últimos itens" }}
+        content={initialPosts}
+      />,
+    );
+
+    expect(
+      screen.getAllByRole("link", { name: /Ver Todos/i })[0],
+    ).toHaveAttribute("href", "/explore?page=1");
+  });
+
   it("fetches filtered posts and updates the all-posts link when type changes", async () => {
     vi.mocked(getContent).mockResolvedValue({
       postCollection: { items: panelPosts },
