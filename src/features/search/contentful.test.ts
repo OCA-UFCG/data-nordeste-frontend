@@ -39,6 +39,15 @@ describe("Contentful search index", () => {
             link: "https://storymaps.arcgis.com/stories/21bae45539be473f8666d857c481d443",
             categoryCollection: { items: [] },
           },
+          {
+            sys: { id: "newsletter-post" },
+            title: "Boletim econômico",
+            type: "newsletter",
+            date: "2025-02-01",
+            description: "PDF do boletim",
+            link: "https://downloads.ctfassets.net/boletim.pdf",
+            categoryCollection: { items: [] },
+          },
         ],
       },
       panelsCollection: {
@@ -105,6 +114,10 @@ describe("Contentful search index", () => {
         expect.objectContaining({
           id: "post:story-post",
           href: "/data-stories/21bae45539be473f8666d857c481d443",
+        }),
+        expect.objectContaining({
+          id: "post:newsletter-post",
+          href: "/boletim/newsletter-post",
         }),
         expect.objectContaining({
           id: "panel:panel-1",
