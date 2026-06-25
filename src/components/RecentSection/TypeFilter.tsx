@@ -21,7 +21,7 @@ export const FILTERS: {
   all: {
     filter: RECENT_SECTION_POST_TYPES,
     text: "Todos",
-    href: "/",
+    href: "/explore?page=1",
     key: "all",
   },
   panels: {

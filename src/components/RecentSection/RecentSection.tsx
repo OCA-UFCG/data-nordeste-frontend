@@ -82,7 +82,6 @@ export const RecentSectionView = ({
               href={FILTERS[selectedType].href}
               variant="secondary"
               className="w-fit hidden md:flex fill-green"
-              disabled={selectedType === FILTERS.all.key}
             >
               <p>Ver Todos</p>
               <Icon className="rotate-270 size-2" id="expand" />
@@ -98,7 +97,6 @@ export const RecentSectionView = ({
         href={FILTERS[selectedType].href}
         variant="secondary"
         className="lg:hidden"
-        disabled={selectedType === FILTERS.all.key}
       >
         <p>Ver Todos</p>
         <Icon className="rotate-270 size-2" id="expand" />
