@@ -3,14 +3,14 @@ import { channels, THEMES_NAVIGATION_ORDER } from "@/utils/constants";
 import { sortContentByDesiredOrder } from "@/utils/functions";
 import { ISection } from "@/utils/interfaces";
 
+const FOOTER_LINK_IDS = ["home", "explore", "catalog", "connections", "about"];
+const FOOTER_LINK_ID_SET = new Set(FOOTER_LINK_IDS);
+
 const Footer = ({ content }: { content: ISection[] }) => {
-  const mainPages = sortContentByDesiredOrder<ISection>(content, [
-    "home",
-    "about",
-    "explore",
-    "posts",
-    "projects",
-  ]).filter((item) => item.appears);
+  const mainPages = sortContentByDesiredOrder<ISection>(
+    content.filter((item) => item.appears && FOOTER_LINK_ID_SET.has(item.id)),
+    FOOTER_LINK_IDS,
+  );
 
   const macroThemes = sortContentByDesiredOrder(
     content.filter(
