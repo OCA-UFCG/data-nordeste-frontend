@@ -66,30 +66,30 @@ export const RecentSectionView = ({
 
   return (
     <section
-      className="w-full max-w-[1440px] px-4 lg:px-20 pt-8 lg:pt-0 pb-8 ontent-center flex flex-col gap-6 box-border"
+      className="w-full max-w-[1440px] px-6 lg:px-20 pt-12 lg:pt-[48px] pb-12 lg:pb-[48px] content-center flex flex-col gap-6 box-border"
       id={id}
     >
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col md:flex-row gap-4 justify-between w-full">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-3xl font-semibold">{title}</h2>
-            <p className="flex md:hidden text-sm">{subtitle}</p>
-          </div>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row gap-6 justify-between w-full items-center">
+          <h2 className="text-[30px] font-semibold leading-[36px] text-[#292829]">
+            {title}
+          </h2>
 
-          <div className="flex gap-6">
+          <div className="flex gap-6 items-center">
             <TypeFilter onChange={onTypeChange} />
             <LinkButton
               href={FILTERS[selectedType].href}
               variant="secondary"
-              className="w-fit hidden md:flex fill-green"
+              className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432] hover:bg-grey-100"
               disabled={selectedType === FILTERS.all.key}
             >
-              <p>Ver Todos</p>
-              <Icon className="rotate-270 size-2" id="expand" />
+              <span className="text-sm font-medium">Ver Todos</span>
+              <Icon className="rotate-270" id="expand" size={16} />
             </LinkButton>
           </div>
         </div>
-        <p className="hidden md:block text-sm">{subtitle}</p>
+        <p className="hidden md:block text-sm text-grey-600">{subtitle}</p>
+        <p className="flex md:hidden text-sm text-grey-600">{subtitle}</p>
       </div>
 
       <CardCarousel items={posts} variant="post" />
@@ -97,11 +97,11 @@ export const RecentSectionView = ({
       <LinkButton
         href={FILTERS[selectedType].href}
         variant="secondary"
-        className="lg:hidden"
+        className="md:hidden items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432]"
         disabled={selectedType === FILTERS.all.key}
       >
-        <p>Ver Todos</p>
-        <Icon className="rotate-270 size-2" id="expand" />
+        <span className="text-sm font-medium">Ver Todos</span>
+        <Icon className="rotate-270" id="expand" size={16} />
       </LinkButton>
     </section>
   );

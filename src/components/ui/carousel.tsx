@@ -217,8 +217,8 @@ function CarouselPrevious({
     >
       <Icon
         id="arrow"
-        size={10}
-        className="cursor-pointer size-3 rotate-[-135deg]"
+        size={8}
+        className="cursor-pointer size-2 rotate-[-135deg]"
       />
       <span className="sr-only">Previous slide</span>
     </Button>
@@ -249,7 +249,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <Icon id="arrow" size={10} className="size-3 rotate-45" />
+      <Icon id="arrow" size={8} className="size-2 rotate-45" />
       <span className="sr-only">Next slide</span>
     </Button>
   );

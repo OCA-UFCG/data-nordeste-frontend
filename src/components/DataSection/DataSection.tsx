@@ -33,7 +33,7 @@ const DataSection = ({
   return (
     <section className="bg-grey-100 w-full" id={title}>
       <div className="max-w-[1440px] px-5 lg:px-20 py-9 lg:py-12 mx-auto my-0 content-center flex flex-col gap-6 box-border">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-6">
           <div className="flex justify-between w-full">
             <h2 className="text-3xl font-semibold">{title}</h2>
             <LinkButton

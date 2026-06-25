@@ -52,18 +52,20 @@ export const TypeFilter = ({
   return (
     <RadioGroup
       defaultValue={FILTERS.all.key}
-      className="w-full flex gap-4 "
+      className="w-full flex gap-6"
       onValueChange={onChange}
     >
       {Object.entries(FILTERS).map(([key, { text }]) => {
         return (
-          <div className="flex items-center space-x-2" key={key}>
+          <div className="flex items-center gap-2" key={key}>
             <RadioGroupItem
               value={key}
               id={key}
               className="border-green-900 hover:border-green-900 focus-visible:border-green-900 data-[state=checked]:border-green-800"
             />
-            <Label htmlFor={key}>{text}</Label>
+            <Label htmlFor={key} className="font-normal">
+              {text}
+            </Label>
           </div>
         );
       })}
