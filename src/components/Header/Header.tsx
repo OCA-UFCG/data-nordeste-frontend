@@ -24,8 +24,8 @@ const Header = ({ content }: { content: ISection[] }) => {
 
         <SearchBar className="flex-1" variant="header" />
 
-        <NavigationMenu>
-          <NavigationMenuList className="flex items-center">
+        <NavigationMenu className="flex-none">
+          <NavigationMenuList className="flex items-center gap-6 h-10">
             {content
               .filter((item) => item.appears)
               .map((item, idx) => (
@@ -33,7 +33,9 @@ const Header = ({ content }: { content: ISection[] }) => {
                   {item.childrenCollection?.items.length ? (
                     <>
                       <NavigationMenuTrigger
-                        className={"text-md cursor-pointer"}
+                        className={
+                          "h-10 text-md cursor-pointer whitespace-nowrap"
+                        }
                         itemID={item.id}
                       >
                         {item.name}
@@ -60,7 +62,7 @@ const Header = ({ content }: { content: ISection[] }) => {
                   ) : (
                     <NavigationMenuLink
                       href={item.path}
-                      className="px-4 py-2 text-md"
+                      className="h-10 px-4 py-2 text-md whitespace-nowrap"
                     >
                       {item.name}
                     </NavigationMenuLink>
