@@ -105,7 +105,7 @@ interface ExploreFiltersProps {
   showSorting?: boolean;
   sortingAsField?: boolean;
   sortingLabel?: string;
-  sortingOptions?: Record<string, string>;
+  sortingOptions?: { [label: string]: string };
 }
 
 function SeeThemesModal({
@@ -245,7 +245,11 @@ export function ExploreFilters({
     [params],
   );
 
-  const currentSort = params.get("sort") || sortingTypes["Mais recente"];
+  const sortOptions = Object.entries(sortingOptions);
+  const requestedSort = params.get("sort") ?? "";
+  const currentSort = sortOptions.some(([, value]) => value === requestedSort)
+    ? requestedSort
+    : undefined;
 
   const openSeeThemesModal = () => {
     setPendingCategories(selectedCategories);
@@ -377,27 +381,25 @@ export function ExploreFilters({
               {showSorting && (
                 <>
                   {sortingAsField && (
-                    <div className="flex min-h-10 w-full items-center rounded-md border border-grey-200 px-3 text-grey-600 shadow-sm lg:w-auto">
+                    <div className="flex min-h-10 w-full items-center rounded-md border border-grey-200 bg-grey-100 px-3 text-grey-600 shadow-sm transition-colors hover:bg-grey-200 lg:w-auto">
                       <Select
                         value={currentSort}
                         onValueChange={(value) => updateUrl({ sort: value })}
                       >
-                        <SelectTrigger className="w-full !h-auto min-w-[126px] justify-between border-0 bg-transparent !p-0 text-sm font-normal text-grey-600 shadow-none focus-visible:ring-0">
+                        <SelectTrigger className="w-full !h-auto min-w-[126px] justify-between border-0 !bg-transparent !p-0 text-sm font-normal text-grey-600 shadow-none focus-visible:ring-0 data-[state=open]:!bg-transparent">
                           <SelectValue placeholder="Ordenar por" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            {Object.entries(sortingOptions).map(
-                              ([label, value]) => (
-                                <SelectItem
-                                  value={value}
-                                  key={value}
-                                  className="cursor-pointer"
-                                >
-                                  {label}
-                                </SelectItem>
-                              ),
-                            )}
+                            {sortOptions.map(([label, value]) => (
+                              <SelectItem
+                                value={value}
+                                key={value}
+                                className="cursor-pointer"
+                              >
+                                {label}
+                              </SelectItem>
+                            ))}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -420,21 +422,19 @@ export function ExploreFilters({
                       onValueChange={(value) => updateUrl({ sort: value })}
                     >
                       <SelectTrigger className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0">
-                        <SelectValue placeholder="Mais recente" />
+                        <SelectValue placeholder="Ordenar por" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {Object.entries(sortingOptions).map(
-                            ([label, value]) => (
-                              <SelectItem
-                                value={value}
-                                key={value}
-                                className="cursor-pointer"
-                              >
-                                {label}
-                              </SelectItem>
-                            ),
-                          )}
+                          {sortOptions.map(([label, value]) => (
+                            <SelectItem
+                              value={value}
+                              key={value}
+                              className="cursor-pointer"
+                            >
+                              {label}
+                            </SelectItem>
+                          ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -539,13 +539,13 @@ export function ExploreFilters({
             value={currentSort}
             onValueChange={(value) => updateUrl({ sort: value })}
           >
-            <SelectTrigger className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md !px-4 text-xs font-medium text-[#292829] shadow-none focus-visible:ring-0">
+            <SelectTrigger className="flex-1 h-10 border border-[#EFEFEF] !bg-grey-100 !px-4 text-xs font-medium text-[#292829] shadow-none hover:!bg-grey-200 focus-visible:ring-0 data-[state=open]:!bg-grey-200">
               <span className="text-xs font-medium text-[#292829]" />
-              <SelectValue />
+              <SelectValue placeholder="Ordenar por" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {Object.entries(sortingTypes).map(([label, value]) => (
+                {sortOptions.map(([label, value]) => (
                   <SelectItem
                     value={value}
                     key={value}
