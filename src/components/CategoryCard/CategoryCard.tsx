@@ -3,6 +3,50 @@ import { Icon } from "@/components/Icon/Icon";
 import { MACROTHEME_ICON_BY_ID } from "@/features/macrothemes/constants";
 import Link from "next/link";
 
+type CategoryIconVisual = {
+  className: string;
+  height: number;
+  width: number;
+};
+
+const DEFAULT_CATEGORY_ICON_VISUAL: CategoryIconVisual = {
+  className: "text-white",
+  height: 20,
+  width: 20,
+};
+
+const CATEGORY_ICON_VISUAL_BY_ID: { [key: string]: CategoryIconVisual } = {
+  drop: { className: "text-white", height: 22, width: 18 },
+  instruments: { className: "text-white", height: 18, width: 18 },
+};
+
+const getCategoryIconVisual = (iconId: string): CategoryIconVisual =>
+  CATEGORY_ICON_VISUAL_BY_ID[iconId] ?? DEFAULT_CATEGORY_ICON_VISUAL;
+
+const CategoryThemeIcon = ({
+  color,
+  iconId,
+}: {
+  color: string;
+  iconId: string;
+}) => {
+  const iconVisual = getCategoryIconVisual(iconId);
+
+  return (
+    <div
+      className="flex h-[40px] min-w-[40px] shrink-0 items-center justify-center rounded-sm"
+      style={{ backgroundColor: color }}
+    >
+      <Icon
+        className={iconVisual.className}
+        height={iconVisual.height}
+        id={iconId}
+        width={iconVisual.width}
+      />
+    </div>
+  );
+};
+
 const CategoryCard = ({ category }: { category: MacroTheme }) => {
   if (!category?.id) {
     return null;
@@ -14,28 +58,21 @@ const CategoryCard = ({ category }: { category: MacroTheme }) => {
   return (
     <Link
       href={`/macrothemes/${normalizedId}`}
-      className="flex items-center justify-center md:justify-start w-[160.5px] h-[88px] md:w-[302px] md:h-[68px] px-2 md:px-4 py-2 md:py-3 bg-white border border-[#EFEFEF] rounded-lg shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.1),0px_1px_3px_rgba(0,0,0,0.1)] hover:border-[#D4D4D8] transition-colors duration-300"
+      className="flex w-full items-center justify-between gap-4 rounded-lg border border-[#E4E4E7] bg-white px-6 py-4 transition-colors hover:bg-[#F8F8F8]"
     >
-      <div className="flex items-center justify-between w-full gap-4">
-        <div className="flex items-center gap-4 flex-1 min-w-0">
-          <div
-            className="flex items-center justify-center w-10 h-10 p-2 rounded"
-            style={{ backgroundColor: category.color }}
-          >
-            <Icon className="text-white" id={iconId} size={24} />
-          </div>
+      <div className="flex min-w-0 flex-1 items-center gap-4">
+        <CategoryThemeIcon color={category.color} iconId={iconId} />
 
-          <span className="text-sm md:text-[16px] md:leading-6 font-normal md:font-medium text-[#292829] text-center md:text-left break-words">
-            {category.name}
-          </span>
-        </div>
-
-        <Icon
-          className="hidden md:block rotate-270 text-[#292829] shrink-0"
-          id="expand"
-          size={8}
-        />
+        <span className="text-sm font-normal text-[#292829] break-words md:text-[16px] md:leading-6">
+          {category.name}
+        </span>
       </div>
+
+      <Icon
+        className="hidden shrink-0 rotate-270 text-[#292829] md:block"
+        id="expand"
+        size={8}
+      />
     </Link>
   );
 };

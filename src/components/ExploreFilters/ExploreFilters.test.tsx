@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { dataSortingTypes } from "@/utils/constants";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ExploreFilters } from "./ExploreFilters";
 
@@ -52,6 +53,19 @@ describe("ExploreFilters", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(themeList).not.toHaveClass("max-lg:hidden");
     expect(screen.getByText("Economia e Renda")).toBeInTheDocument();
+  });
+
+  it("shows the sorting placeholder before a catalog sort is selected", () => {
+    render(
+      <ExploreFilters
+        themes={themes}
+        mobileCatalogLayout
+        sortingAsField
+        sortingOptions={dataSortingTypes}
+      />,
+    );
+
+    expect(screen.getAllByText("Ordenar por").length).toBeGreaterThan(0);
   });
 
   it("fills search fields from the q URL parameter", () => {
