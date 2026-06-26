@@ -66,7 +66,7 @@ export const RecentSectionView = ({
 
   return (
     <section
-      className="w-full max-w-[1440px] px-4 lg:px-20 pt-8 lg:pt-0 pb-8 ontent-center flex flex-col gap-6 box-border"
+      className="flex w-full max-w-[1440px] flex-col gap-6 box-border px-4 py-8 lg:px-20 lg:py-12"
       id={id}
     >
       <div className="flex flex-col gap-3">

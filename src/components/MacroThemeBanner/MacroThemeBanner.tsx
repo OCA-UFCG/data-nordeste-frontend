@@ -11,6 +11,56 @@ type Props = {
   priorityImage?: boolean;
 };
 
+type MacroThemeIconVisual = {
+  className: string;
+};
+
+const DEFAULT_MACRO_THEME_ICON_VISUAL: MacroThemeIconVisual = {
+  className:
+    "h-24 w-24 filter brightness-0 invert opacity-100 sm:h-32 sm:w-32 lg:h-32 lg:w-32",
+};
+
+const MACRO_THEME_ICON_VISUAL_BY_ID: { [key: string]: MacroThemeIconVisual } = {
+  drop: {
+    className:
+      "h-24 w-[77px] filter brightness-0 invert opacity-100 sm:h-[142px] sm:w-[114px] lg:h-[142px] lg:w-[114px]",
+  },
+  instruments: {
+    className:
+      "h-24 w-24 filter brightness-0 invert opacity-100 sm:h-[118px] sm:w-[118px] lg:h-[118px] lg:w-[118px]",
+  },
+};
+
+const getMacroThemeIconVisual = (iconId: string): MacroThemeIconVisual =>
+  MACRO_THEME_ICON_VISUAL_BY_ID[iconId] ?? DEFAULT_MACRO_THEME_ICON_VISUAL;
+
+const MACRO_THEME_TEXT_OFFSET_BY_ID: { [key: string]: string } = {
+  drop: "md:translate-y-4",
+  instruments: "md:translate-y-4",
+};
+
+const getMacroThemeTextOffset = (iconId: string): string =>
+  MACRO_THEME_TEXT_OFFSET_BY_ID[iconId] ?? "";
+
+const MacroThemeIconBox = ({
+  color,
+  iconId,
+}: {
+  color: string;
+  iconId: string;
+}) => {
+  const iconVisual = getMacroThemeIconVisual(iconId);
+
+  return (
+    <div
+      className="flex h-32 w-32 shrink-0 items-center justify-center rounded-[8px] p-2 sm:h-40 sm:w-40 lg:h-[200px] lg:w-[200px]"
+      style={{ backgroundColor: color }}
+    >
+      <Icon className={iconVisual.className} id={iconId} />
+    </div>
+  );
+};
+
 export function MacroThemeBanner({
   content,
   className = "",
@@ -18,6 +68,7 @@ export function MacroThemeBanner({
 }: Props) {
   const title = content.name;
   const iconId = macroThemes[content.id] || "list";
+  const textOffset = getMacroThemeTextOffset(iconId);
 
   const derivedTags = content.tags || [];
   const backgroundUrl = content.banner?.url ?? "";
@@ -41,20 +92,15 @@ export function MacroThemeBanner({
         <div className="relative z-10 w-full">
           <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-0">
             <div className="flex min-h-[296px] items-end px-4 py-8 sm:px-6 lg:h-[296px] lg:min-h-[296px] lg:px-20 lg:py-12">
-              <div className="flex w-full flex-col items-center gap-6 md:flex-row md:items-start lg:gap-9">
-                <div
-                  className="flex h-32 w-32 shrink-0 items-center justify-center rounded-[8px] p-2 sm:h-40 sm:w-40 lg:h-[200px] lg:w-[200px]"
-                  style={{ backgroundColor: content.color }}
-                >
-                  <Icon
-                    id={iconId}
-                    width={168}
-                    height={117}
-                    className="h-40 lg:h-32 w-40 lg:w-32 filter brightness-0 invert opacity-100"
-                  />
-                </div>
+              <div className="flex w-full flex-col items-center gap-6 md:flex-row md:items-center lg:gap-9">
+                <MacroThemeIconBox color={content.color} iconId={iconId} />
 
-                <div className="flex w-full max-w-[1044px] flex-col gap-4 sm:gap-5 lg:min-h-[200px] lg:justify-start">
+                <div
+                  className={cn(
+                    "flex w-full max-w-[1044px] flex-col justify-center gap-4 sm:gap-5 lg:min-h-[200px]",
+                    textOffset,
+                  )}
+                >
                   <div className="flex flex-col gap-2 text-center md:text-left">
                     <h1 className="text-white text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl md:text-4xl lg:text-[48px] lg:leading-[48px] lg:tracking-[-0.012em]">
                       {title}
