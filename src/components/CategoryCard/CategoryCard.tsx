@@ -58,12 +58,22 @@ const CategoryCard = ({ category }: { category: MacroTheme }) => {
   return (
     <Link
       href={`/macrothemes/${normalizedId}`}
-      className="flex w-full items-center justify-between gap-4 rounded-lg border border-[#E4E4E7] bg-white px-6 py-4 transition-colors hover:bg-[#F8F8F8]"
+      className="
+        flex min-h-[80px] w-full min-w-0 flex-col items-center justify-center gap-2 rounded-lg border border-[#E4E4E7] bg-white px-3 py-3 text-center transition-colors hover:bg-[#F8F8F8]
+        md:min-h-0
+        md:h-auto
+        md:flex-row
+        md:justify-between
+        md:gap-4
+        md:px-6
+        md:py-4
+        md:text-left
+      "
     >
-      <div className="flex min-w-0 flex-1 items-center gap-4">
+      <div className="flex w-full min-w-0 flex-col items-center gap-2 md:flex-row md:gap-4">
         <CategoryThemeIcon color={category.color} iconId={iconId} />
 
-        <span className="text-sm font-normal text-[#292829] break-words md:text-[16px] md:leading-6">
+        <span className="w-full text-center text-sm font-normal leading-5 text-[#292829] md:w-auto md:text-left md:text-[16px] md:leading-6">
           {category.name}
         </span>
       </div>

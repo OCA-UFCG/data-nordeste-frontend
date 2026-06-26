@@ -32,7 +32,7 @@ const DataSection = ({
 
   return (
     <section className="bg-grey-100 w-full" id={title}>
-      <div className="max-w-[1440px] px-5 lg:px-20 py-9 lg:py-12 mx-auto my-0 content-center flex flex-col gap-6 box-border">
+      <div className="max-w-[1440px] mx-auto my-0 flex flex-col gap-6 px-4 pt-6 pb-9 lg:px-20 lg:pt-8 lg:pb-12">
         <div className="flex flex-col gap-6">
           <div className="flex justify-between w-full">
             <h2 className="text-3xl font-semibold">{title}</h2>
@@ -47,11 +47,13 @@ const DataSection = ({
           </div>
           <p className="text-sm text-grey-600">{subtitle}</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
           {filteredData.map((category: MacroTheme) => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>
+
         <LinkButton
           href="/explore?page=1"
           variant="secondary"
