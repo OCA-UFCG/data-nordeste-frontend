@@ -38,10 +38,10 @@ export function CardCarousel({ variant, items }: Props) {
   const itemClassName =
     variant === "post"
       ? "basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
-      : "basis-1/1 md:basis-1/2 lg:basis-1/4 p-1 md:p-2";
+      : "basis-auto md:basis-1/2 lg:basis-1/4 p-1 md:p-2";
 
   return (
-    <div className="flex justify-center">
+    <div className="w-full min-w-0 lg:flex lg:justify-center">
       <Carousel
         opts={{
           align: "start",
@@ -52,9 +52,9 @@ export function CardCarousel({ variant, items }: Props) {
             delay: 10000,
           }),
         ]}
-        className="flex flex-col gap-4 content-carousel"
+        className="flex flex-col gap-4 content-carousel w-full"
       >
-        <CarouselContent className="-ml-0">
+        <CarouselContent className="-ml-1 md:-ml-2">
           {sortedItems.slice(0, 8).map((item, i) => (
             <CarouselItem key={i} className={itemClassName}>
               {variant === "post" ? (

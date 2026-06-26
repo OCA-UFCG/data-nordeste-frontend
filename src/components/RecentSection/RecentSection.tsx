@@ -75,7 +75,7 @@ export const RecentSectionView = ({
             {title}
           </h2>
 
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-6 items-center justify-start">
             <TypeFilter onChange={onTypeChange} />
             <LinkButton
               href={FILTERS[selectedType].href}

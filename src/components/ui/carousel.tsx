@@ -262,7 +262,7 @@ function DotButton({
   tabIndex,
   ...props
 }: ComponentProps<typeof Button>) {
-  const { scrollTo, canScrollNext, currentItem } = useCarousel();
+  const { scrollTo, currentItem } = useCarousel();
 
   return (
     <Button
@@ -270,11 +270,11 @@ function DotButton({
       variant={variant}
       size={size}
       className={cn(
-        "rounded-full w-3 h-3 cursor-pointer hover:bg-grey-300",
+        "rounded-full w-3 h-3 cursor-pointer hover:bg-grey-300 disabled:cursor-not-allowed",
         currentItem == tabIndex ? "bg-green-800" : "bg-grey-200",
         className,
       )}
-      disabled={!canScrollNext}
+      disabled={false}
       onClick={() => scrollTo(tabIndex || 0)}
       {...props}
     />
