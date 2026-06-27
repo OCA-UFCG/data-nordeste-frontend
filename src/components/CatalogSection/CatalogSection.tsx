@@ -26,7 +26,7 @@ const CatalogSection = ({ header }: { header?: SectionHeader }) => {
               <Button
                 asChild
                 variant="primary"
-                className="h-10 min-w-[304px] rounded-md px-4 py-2 text-sm font-medium"
+                className="h-10 w-full lg:w-auto lg:min-w-[304px] rounded-md px-4 py-2 text-sm font-medium"
               >
                 <Link href="/catalog">Acessar catálogo</Link>
               </Button>
