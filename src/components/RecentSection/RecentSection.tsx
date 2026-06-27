@@ -70,7 +70,7 @@ export const RecentSectionView = ({
       id={id}
     >
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col md:flex-row gap-6 justify-between w-full items-center">
+        <div className="flex flex-col md:flex-row gap-6 justify-between w-full items-start md:items-center">
           <h2 className="text-[30px] font-semibold leading-[36px] text-[#292829]">
             {title}
           </h2>
