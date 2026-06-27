@@ -134,22 +134,24 @@ const CatalogLink = ({ href }: { href: string }) => (
     href={href}
   >
     Acessar o catálogo de dados
-    <Icon className="size-4" id="database" size={16} />
+    <Icon className="size-4" id="database-search" size={16} />
   </Link>
 );
 
 const getCatalogHref = (macroTheme: string): string | null => {
-  const slug = MACROTHEME_ROUTE_BY_NAME[
-    macroTheme as keyof typeof MACROTHEME_ROUTE_BY_NAME
-  ];
+  const slug =
+    MACROTHEME_ROUTE_BY_NAME[
+      macroTheme as keyof typeof MACROTHEME_ROUTE_BY_NAME
+    ];
 
   return slug ? `/catalog?category=${slug}` : null;
 };
 
 const getMacroThemeHref = (macroTheme: string): string | null => {
-  const slug = MACROTHEME_ROUTE_BY_NAME[
-    macroTheme as keyof typeof MACROTHEME_ROUTE_BY_NAME
-  ];
+  const slug =
+    MACROTHEME_ROUTE_BY_NAME[
+      macroTheme as keyof typeof MACROTHEME_ROUTE_BY_NAME
+    ];
 
   return slug ? `/macrothemes/${slug}` : null;
 };

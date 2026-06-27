@@ -21,6 +21,10 @@ const DEFAULT_MACRO_THEME_ICON_VISUAL: MacroThemeIconVisual = {
 };
 
 const MACRO_THEME_ICON_VISUAL_BY_ID: { [key: string]: MacroThemeIconVisual } = {
+  money: {
+    className:
+      "h-24 w-[59px] filter brightness-0 invert opacity-100 sm:h-[142px] sm:w-[87px] lg:h-[142px] lg:w-[87px]",
+  },
   drop: {
     className:
       "h-24 w-[77px] filter brightness-0 invert opacity-100 sm:h-[142px] sm:w-[114px] lg:h-[142px] lg:w-[114px]",
@@ -35,6 +39,7 @@ const getMacroThemeIconVisual = (iconId: string): MacroThemeIconVisual =>
   MACRO_THEME_ICON_VISUAL_BY_ID[iconId] ?? DEFAULT_MACRO_THEME_ICON_VISUAL;
 
 const MACRO_THEME_TEXT_OFFSET_BY_ID: { [key: string]: string } = {
+  money: "md:translate-y-4",
   drop: "md:translate-y-4",
   instruments: "md:translate-y-4",
 };
