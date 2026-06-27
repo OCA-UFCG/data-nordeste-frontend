@@ -84,10 +84,11 @@ export const RecentSectionView = ({
               disabled={selectedType === FILTERS.all.key}
             >
               <span className="text-sm font-medium">Ver Todos</span>
-              <Icon className="rotate-270" id="expand" size={16} />
+              <Icon id="expand" className="rotate-270 size-2" />
             </LinkButton>
           </div>
         </div>
+
         <p className="hidden md:block text-sm text-grey-600">{subtitle}</p>
         <p className="flex md:hidden text-sm text-grey-600">{subtitle}</p>
       </div>
@@ -97,11 +98,11 @@ export const RecentSectionView = ({
       <LinkButton
         href={FILTERS[selectedType].href}
         variant="secondary"
-        className="md:hidden items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432]"
+        className="md:hidden items-center gap-2 border border-[#EFEFEF] bg-white px-4 py-2 text-[#077432]"
         disabled={selectedType === FILTERS.all.key}
       >
         <span className="text-sm font-medium">Ver Todos</span>
-        <Icon className="rotate-270" id="expand" size={16} />
+        <Icon id="expand" className="rotate-270 size-2" />
       </LinkButton>
     </section>
   );

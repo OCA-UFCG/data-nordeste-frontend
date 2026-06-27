@@ -57,7 +57,7 @@ const DataSection = ({
         <LinkButton
           href="/explore?page=1"
           variant="secondary"
-          className="md:hidden bg-grey-100 border-grey-300"
+          className="md:hidden border-grey-300 bg-white"
         >
           <p>Ver Todos</p>
           <Icon className="rotate-270 size-2" id="expand" />
