@@ -37,8 +37,11 @@ export function CardCarousel({ variant, items }: Props) {
 
   const itemClassName =
     variant === "post"
-      ? "basis-1/1 md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-0 md:p-2"
+      ? "basis-full p-0 md:basis-[298px] md:shrink-0 md:grow-0 md:p-3"
       : "basis-auto md:basis-1/2 lg:basis-1/4 p-1 md:p-2";
+
+  const contentClassName =
+    variant === "post" ? "-ml-1 md:-ml-3" : "-ml-1 md:-ml-2";
 
   return (
     <div className="w-full min-w-0 lg:flex lg:justify-center">
@@ -54,7 +57,7 @@ export function CardCarousel({ variant, items }: Props) {
         ]}
         className="flex flex-col gap-4 content-carousel w-full"
       >
-        <CarouselContent className="-ml-1 md:-ml-2">
+        <CarouselContent className={contentClassName}>
           {sortedItems.slice(0, 8).map((item, i) => (
             <CarouselItem key={i} className={itemClassName}>
               {variant === "post" ? (
