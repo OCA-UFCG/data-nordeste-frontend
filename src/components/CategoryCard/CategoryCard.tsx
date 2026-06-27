@@ -34,7 +34,7 @@ const CategoryThemeIcon = ({
 
   return (
     <div
-      className="flex h-[40px] min-w-[40px] shrink-0 items-center justify-center rounded-sm"
+      className="flex h-[40px] min-w-[40px] shrink-0 items-center justify-center rounded-[4px]"
       style={{ backgroundColor: color }}
     >
       <Icon
@@ -60,20 +60,23 @@ const CategoryCard = ({ category }: { category: MacroTheme }) => {
       href={`/macrothemes/${normalizedId}`}
       className="
         flex min-h-[80px] w-full min-w-0 flex-col items-center justify-center gap-2 rounded-lg border border-[#E4E4E7] bg-white px-3 py-3 text-center transition-colors hover:bg-[#F8F8F8]
+        md:h-[68px]
         md:min-h-0
-        md:h-auto
         md:flex-row
+        md:items-center
         md:justify-between
-        md:gap-4
-        md:px-6
-        md:py-4
+        md:rounded-[8px]
+        md:border-[#EFEFEF]
+        md:px-4
+        md:py-3
         md:text-left
+        md:shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.1),0px_1px_3px_rgba(0,0,0,0.1)]
       "
     >
-      <div className="flex w-full min-w-0 flex-col items-center gap-2 md:flex-row md:gap-4">
+      <div className="flex w-full min-w-0 flex-col items-center gap-2 md:flex-row md:items-center md:gap-4">
         <CategoryThemeIcon color={category.color} iconId={iconId} />
 
-        <span className="w-full text-center text-sm font-normal leading-5 text-[#292829] md:w-auto md:text-left md:text-[16px] md:leading-6">
+        <span className="w-full text-center text-sm font-normal leading-5 text-[#292829] md:w-auto md:text-left md:text-[18px] md:font-semibold md:leading-7">
           {category.name}
         </span>
       </div>
@@ -81,7 +84,8 @@ const CategoryCard = ({ category }: { category: MacroTheme }) => {
       <Icon
         className="hidden shrink-0 rotate-270 text-[#292829] md:block"
         id="expand"
-        size={8}
+        width={8}
+        height={8}
       />
     </Link>
   );
