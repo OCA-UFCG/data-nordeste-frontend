@@ -5,6 +5,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Icon } from "../Icon/Icon";
 import { PaginationBar } from "../PaginationBar/PaginationBar";
 import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 export const PostsGrid = ({
   currentPage,
@@ -12,21 +13,37 @@ export const PostsGrid = ({
   posts = [],
   loading,
   searchQuery,
+  preservePostsWhileLoading = false,
+  clientSidePagination = false,
 }: {
   currentPage: number;
   loading: boolean;
   pages: number;
   posts: IPublication[];
   searchQuery?: string;
+  preservePostsWhileLoading?: boolean;
+  clientSidePagination?: boolean;
 }) => (
-  <div className="grow-1 flex flex-col items-center gap-8 w-full max-w-[1440px]">
+  <div
+    aria-busy={loading}
+    className="relative grow-1 flex flex-col items-center gap-8 w-full max-w-[1440px]"
+  >
+    {loading && preservePostsWhileLoading && (
+      <div className="absolute inset-x-0 top-2 z-10 flex justify-center pointer-events-none">
+        <span className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm text-grey-600 shadow-sm">
+          <Loader2 aria-hidden className="size-4 animate-spin" />
+          Atualizando resultados
+        </span>
+      </div>
+    )}
     <div
       className={cn(
         !loading && posts.length == 0 ? "flex" : "grid",
         "grow-1 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full justify-center gap-6",
+        loading && preservePostsWhileLoading && "opacity-55 transition-opacity",
       )}
     >
-      {loading ? (
+      {loading && !preservePostsWhileLoading ? (
         [...Array(POSTS_PER_PAGE)].map((_, i) => (
           <Skeleton className="w-full h-[250px] rounded-lg" key={i} />
         ))
@@ -47,6 +64,7 @@ export const PostsGrid = ({
       currentPage={currentPage}
       totalPages={pages}
       loading={loading}
+      clientSideNavigation={clientSidePagination}
     />
   </div>
 );

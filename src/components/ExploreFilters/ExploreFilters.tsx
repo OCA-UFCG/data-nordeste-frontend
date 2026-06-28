@@ -28,6 +28,7 @@ import type { SearchIndexItem } from "@/features/search/types";
 import { XIcon } from "lucide-react";
 
 import Link from "next/link";
+import { useExploreNavigation } from "@/features/explore/navigation";
 
 interface ThemeFilterCardProps {
   iconId: string;
@@ -192,7 +193,7 @@ function SeeThemesModal({
               },
             )}
             <button
-              className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm"
+              className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#DDEADF]"
               onClick={onSelectAll}
             >
               Selecionar todos
@@ -240,6 +241,7 @@ export function ExploreFilters({
   const [mobileThemesOpen, setMobileThemesOpen] = useState(false);
   const [seeThemesModalOpen, setSeeThemesModalOpen] = useState(false);
   const [pendingCategories, setPendingCategories] = useState<string[]>([]);
+  const { replaceQuery } = useExploreNavigation();
 
   const selectedCategories = useMemo(
     () => params.get("category")?.split(",").filter(Boolean) ?? [],
@@ -302,7 +304,13 @@ export function ExploreFilters({
   };
 
   const selectAllPending = () => {
-    setPendingCategories(themes.map((t) => t.sys.id));
+    setPendingCategories((currentCategories) => {
+      const allThemesSelected =
+        themes.length > 0 &&
+        themes.every((theme) => currentCategories.includes(theme.sys.id));
+
+      return allThemesSelected ? [] : themes.map((theme) => theme.sys.id);
+    });
   };
 
   const updateUrl = useCallback(
@@ -320,12 +328,12 @@ export function ExploreFilters({
         : pathname;
 
       if (clientSideNavigation) {
-        window.history.replaceState(null, "", href);
+        replaceQuery(updates);
       } else {
         router.replace(href);
       }
     },
-    [clientSideNavigation, params, pathname, router],
+    [clientSideNavigation, params, pathname, replaceQuery, router],
   );
 
   const toggleCategory = useCallback(
@@ -340,6 +348,22 @@ export function ExploreFilters({
     },
     [selectedCategories, updateUrl],
   );
+
+  const themeValues = themes.map(
+    (theme) =>
+      categoryValues?.[theme.sys.id] ??
+      (categoryValue === "theme-id" ? theme.id : theme.sys.id),
+  );
+  const allThemesSelected =
+    themeValues.length > 0 &&
+    themeValues.every((themeValue) => selectedCategories.includes(themeValue));
+
+  const toggleAllCategories = () => {
+    updateUrl({
+      category: allThemesSelected ? null : themeValues.join(","),
+      page: "1",
+    });
+  };
 
   return (
     <section className={cn("flex flex-col w-full", className)}>
@@ -397,7 +421,11 @@ export function ExploreFilters({
                   )}
                   onClick={() => {
                     if (clientSideNavigation) {
-                      window.history.replaceState(null, "", pathname);
+                      replaceQuery(
+                        Object.fromEntries(
+                          Array.from(params.keys()).map((key) => [key, null]),
+                        ),
+                      );
                     } else {
                       router.replace(pathname);
                     }
@@ -504,25 +532,8 @@ export function ExploreFilters({
               },
             )}
             <button
-              className="flex items-center justify-center w-[145px] h-8 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm"
-              onClick={() => {
-                const missing = themes
-                  .map(
-                    (t) =>
-                      categoryValues?.[t.sys.id] ??
-                      (categoryValue === "theme-id"
-                        ? (t as MacroTheme & { id: string }).id
-                        : t.sys.id),
-                  )
-                  .filter((v) => !selectedCategories.includes(v));
-
-                if (missing.length > 0) {
-                  updateUrl({
-                    category: [...selectedCategories, ...missing].join(","),
-                    page: "1",
-                  });
-                }
-              }}
+              className="flex items-center justify-center w-[145px] h-8 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#DDEADF]"
+              onClick={toggleAllCategories}
             >
               Selecionar todos
             </button>
@@ -568,7 +579,17 @@ export function ExploreFilters({
           <Button
             variant="secondary"
             className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md text-[#E5333F] hover:bg-grey-100"
-            onClick={() => router.replace(pathname)}
+            onClick={() => {
+              if (clientSideNavigation) {
+                replaceQuery(
+                  Object.fromEntries(
+                    Array.from(params.keys()).map((key) => [key, null]),
+                  ),
+                );
+              } else {
+                router.replace(pathname);
+              }
+            }}
           >
             <span>Limpar filtros</span>
             <Icon id="no-filter" size={16} />

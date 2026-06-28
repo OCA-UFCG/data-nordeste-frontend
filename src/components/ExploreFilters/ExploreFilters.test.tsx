@@ -7,10 +7,11 @@ import { ExploreFilters } from "./ExploreFilters";
 const searchParams = vi.hoisted(() => ({
   value: new URLSearchParams(),
 }));
+const replaceRoute = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/catalog",
-  useRouter: () => ({ replace: vi.fn() }),
+  useRouter: () => ({ replace: replaceRoute }),
   useSearchParams: () => searchParams.value,
 }));
 
@@ -26,6 +27,7 @@ const themes = [
 describe("ExploreFilters", () => {
   afterEach(() => {
     searchParams.value = new URLSearchParams();
+    replaceRoute.mockClear();
   });
 
   it("reveals theme filters from the mobile button", async () => {
@@ -76,5 +78,31 @@ describe("ExploreFilters", () => {
     screen
       .getAllByRole("searchbox", { name: "Buscar conteúdo" })
       .forEach((input) => expect(input).toHaveValue("pib"));
+  });
+
+  it("clears every category when all themes are selected", async () => {
+    searchParams.value = new URLSearchParams(
+      "category=contentful-economia&page=2",
+    );
+    render(<ExploreFilters themes={themes} />);
+
+    const selectAllButton = screen.getAllByRole("button", {
+      name: "Selecionar todos",
+    })[0];
+
+    expect(selectAllButton).toHaveClass("hover:bg-[#DDEADF]");
+    await userEvent.click(selectAllButton);
+
+    expect(replaceRoute).toHaveBeenCalledWith("/catalog?page=1");
+  });
+
+  it("updates explore filters locally without invoking the Next router", async () => {
+    window.history.replaceState(null, "", "/catalog");
+    render(<ExploreFilters themes={themes} clientSideNavigation />);
+
+    await userEvent.click(screen.getAllByRole("checkbox")[0]);
+
+    expect(replaceRoute).not.toHaveBeenCalled();
+    expect(window.location.search).toBe("?category=contentful-economia&page=1");
   });
 });

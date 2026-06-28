@@ -1,21 +1,14 @@
-import { Posts } from "@/components/Posts/Posts";
 import { ExploreFilters } from "@/components/ExploreFilters/ExploreFilters";
-import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
-import type { TabType } from "@/components/MacroThemeTabs/MacroThemeTabs";
+import { ExploreResults } from "@/components/ExploreResults/ExploreResults";
 import HubTemplate from "@/templates/HubTemplate";
 import { getContent } from "@/utils/contentful";
-import { IPageHeader, IPublication, MacroTheme } from "@/utils/interfaces";
-import { EXPLORE_PAGE_QUERY, PUBLICATION_QUERY } from "@/utils/queries";
+import { IPageHeader, MacroTheme } from "@/utils/interfaces";
+import { EXPLORE_PAGE_QUERY } from "@/utils/queries";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
-import {
-  buildPostsContentfulFilter,
-  buildPostsSkip,
-  buildPostsTotalPages,
-  parsePostsQueryState,
-} from "@/features/posts/filters";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
+import { fetchExploreResults } from "@/features/explore/results";
 
 export const metadata: Metadata = buildMetadata({
   title: "Explorar",
@@ -24,40 +17,16 @@ export const metadata: Metadata = buildMetadata({
   path: "/explore",
 });
 
-const TYPE_IN_BY_TAB: Record<TabType, string> = {
-  paineis: "data-panel",
-  datastories: "data-story",
-  boletins: "newsletter,additional-content",
-};
-
 const TAB_HEADERS_IDS: Record<string, string> = {
   dataPanels: "dashboards",
   dataNarrative: "datastories",
   publications: "publications",
 };
 
-function deriveTabFromUrl(urlParams: URLSearchParams): TabType {
-  const rawTypeIn = urlParams.get("type_in") ?? "";
-
-  if (rawTypeIn === "data-panel") return "paineis";
-  if (rawTypeIn === "data-story") return "datastories";
-  if (rawTypeIn.includes(",")) return "boletins";
-
-  return "paineis";
-}
-
 interface IPostsContent {
   pageHeadersCollection: { items: IPageHeader[] };
   tabHeadersCollection: { items: IPageHeader[] };
   themeCollection: { items: MacroTheme[] };
-}
-
-interface IInitialPostsContent {
-  postCollection: { total: number; items: IPublication[] };
-}
-
-interface IPostsCount {
-  postCollection: { total: number };
 }
 
 export default async function ExplorePage({
@@ -76,58 +45,17 @@ export default async function ExplorePage({
     ),
   );
 
-  const activeTab = deriveTabFromUrl(urlSearchParams);
-  const typeInValue = TYPE_IN_BY_TAB[activeTab];
-
-  const rootFilter = { type_in: typeInValue };
-
-  const initialQueryState = parsePostsQueryState(
-    urlSearchParams,
-    Number.MAX_SAFE_INTEGER,
-  );
+  const [pageContent, initialResults] = await Promise.all([
+    getContent<IPostsContent>(EXPLORE_PAGE_QUERY, {
+      header_id: "panels",
+    }),
+    fetchExploreResults(urlSearchParams),
+  ]);
   const {
     pageHeadersCollection: pageHeaders,
     tabHeadersCollection: tabHeaders,
     themeCollection: themes,
-  }: IPostsContent = await getContent(EXPLORE_PAGE_QUERY, {
-    header_id: "panels",
-    head_id: "interactive-panels",
-  });
-
-  const [dashboardsPosts, datastoriesPosts, boletinsPosts] = await Promise.all([
-    getContent<IPostsCount>(PUBLICATION_QUERY, {
-      order: initialQueryState.sorting,
-      skip: 0,
-      limit: 1,
-      filter: buildPostsContentfulFilter(initialQueryState.filter, {
-        type_in: "data-panel",
-      }),
-    }),
-    getContent<IPostsCount>(PUBLICATION_QUERY, {
-      order: initialQueryState.sorting,
-      skip: 0,
-      limit: 1,
-      filter: buildPostsContentfulFilter(initialQueryState.filter, {
-        type_in: "data-story",
-      }),
-    }),
-    getContent<IPostsCount>(PUBLICATION_QUERY, {
-      order: initialQueryState.sorting,
-      skip: 0,
-      limit: 1,
-      filter: buildPostsContentfulFilter(initialQueryState.filter, {
-        type_in: ["newsletter", "additional-content"],
-      }),
-    }),
-  ]);
-
-  const { postCollection: initialPosts }: IInitialPostsContent =
-    await getContent(PUBLICATION_QUERY, {
-      order: initialQueryState.sorting,
-      skip: buildPostsSkip(initialQueryState.currentPage),
-      filter: buildPostsContentfulFilter(initialQueryState.filter, rootFilter),
-    });
-  const totalPages = buildPostsTotalPages(initialPosts.total);
+  } = pageContent;
 
   const tabHeadersById = new Map(
     tabHeaders.items
@@ -194,47 +122,17 @@ export default async function ExplorePage({
         </div>
       </section>
       <div className="pt-4 sm:pt-6" />
-      <ExploreFilters themes={themes.items} />
+      <ExploreFilters themes={themes.items} clientSideNavigation />
       <div className="h-4 sm:h-6" />
       <section className="w-full bg-[#F8F7F8]">
         <Suspense>
-          <MacroThemeTabs
-            dashboards={
-              dashboardsPosts.postCollection.total > 0
-                ? Array(dashboardsPosts.postCollection.total).fill(undefined)
-                : []
-            }
-            datastories={
-              datastoriesPosts.postCollection.total > 0
-                ? Array(datastoriesPosts.postCollection.total).fill(undefined)
-                : []
-            }
-            publicacoes={
-              boletinsPosts.postCollection.total > 0
-                ? Array(boletinsPosts.postCollection.total).fill(undefined)
-                : []
-            }
+          <ExploreResults
             headers={{
               dashboards: tabHeadersById.get("dashboards"),
               datastories: tabHeadersById.get("datastories"),
               publications: tabHeadersById.get("publications"),
             }}
-            urls={{
-              dashboardsHref: "",
-              datastoriesHref: "",
-              postsByThemeHref: "",
-            }}
-            tabsOnly
-            showHeaderInTabsOnly
-            showViewAll={false}
-            activeTab={activeTab}
-          />
-        </Suspense>
-        <Suspense>
-          <Posts
-            rootFilter={rootFilter}
-            totalPages={totalPages || 1}
-            initialPosts={initialPosts.items}
+            initialResults={initialResults}
           />
         </Suspense>
       </section>
