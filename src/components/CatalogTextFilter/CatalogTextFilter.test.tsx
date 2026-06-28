@@ -32,7 +32,7 @@ describe("CatalogTextFilter", () => {
     expect(replace).not.toHaveBeenCalled();
     vi.advanceTimersByTime(300);
 
-    expect(replace).toHaveBeenCalledWith("/catalog?q=lixo");
+    expect(replace).toHaveBeenCalledWith("/catalog?q=lixo", { scroll: false });
   });
 
   it("applies an incomplete word immediately when Enter is pressed", () => {
@@ -46,7 +46,9 @@ describe("CatalogTextFilter", () => {
     fireEvent.submit(screen.getByRole("search"));
 
     expect(replace).toHaveBeenCalledOnce();
-    expect(replace).toHaveBeenCalledWith("/catalog?q=sanea");
+    expect(replace).toHaveBeenCalledWith("/catalog?q=sanea", {
+      scroll: false,
+    });
 
     vi.advanceTimersByTime(300);
     expect(replace).toHaveBeenCalledOnce();

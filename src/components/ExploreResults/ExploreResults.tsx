@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import type { IPageHeader } from "@/utils/interfaces";
 import {
@@ -9,7 +9,7 @@ import {
   type ExploreTab,
 } from "@/features/explore/contract";
 import { useExploreNavigation } from "@/features/explore/navigation";
-import { useExploreResults } from "@/features/explore/useExploreResults";
+import { useLocalExploreIndex } from "@/features/explore/useLocalExploreIndex";
 import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
 import { PostsGrid } from "@/components/PostsGrid/PostsGrid";
 
@@ -24,21 +24,6 @@ const TYPE_BY_TAB: Record<ExploreTab, string> = {
   datastories: "data-story",
   boletins: "newsletter,additional-content",
 };
-
-function firstAvailableTab(results: ExploreResultsState): ExploreTab | null {
-  if (results.tabTotals.dashboards > 0) return "paineis";
-  if (results.tabTotals.datastories > 0) return "datastories";
-  if (results.tabTotals.publications > 0) return "boletins";
-
-  return null;
-}
-
-function activeTabTotal(results: ExploreResultsState, tab: ExploreTab): number {
-  if (tab === "paineis") return results.tabTotals.dashboards;
-  if (tab === "datastories") return results.tabTotals.datastories;
-
-  return results.tabTotals.publications;
-}
 
 function ResultsTabs({
   activeTab,
@@ -119,27 +104,24 @@ export function ExploreResults({
 }) {
   const params = useSearchParams();
   const { replaceQuery } = useExploreNavigation();
-  const activeTab = resolveExploreTab(params.get("type_in"));
-  const handleResult = useCallback(
-    (next: ExploreResultsState, tab: ExploreTab) => {
-      const availableTab = firstAvailableTab(next);
-      if (
-        activeTabTotal(next, tab) === 0 &&
-        availableTab &&
-        availableTab !== tab
-      ) {
-        replaceQuery({ type_in: TYPE_BY_TAB[availableTab], page: "1" });
-      }
-    },
-    [replaceQuery],
-  );
-  const state = useExploreResults(
-    initialResults,
-    params.toString(),
-    activeTab,
-    handleResult,
-  );
-  const currentPage = Math.max(1, Number(params.get("page")) || 1);
+  const paramsKey = params.toString();
+  const requestedTab = resolveExploreTab(params.get("type_in"));
+  const state = useLocalExploreIndex(initialResults, paramsKey);
+  const activeTab = state.activeTab ?? requestedTab;
+  const requestedPage = Math.max(1, Number(params.get("page")) || 1);
+  const currentPage = state.currentPage ?? requestedPage;
+
+  useEffect(() => {
+    if (!state.activeTab || state.activeTab === requestedTab) return;
+
+    replaceQuery({ type_in: TYPE_BY_TAB[state.activeTab], page: "1" });
+  }, [replaceQuery, requestedTab, state.activeTab]);
+
+  useEffect(() => {
+    if (!state.currentPage || state.currentPage === requestedPage) return;
+
+    replaceQuery({ page: state.currentPage.toString() });
+  }, [replaceQuery, requestedPage, state.currentPage]);
 
   return (
     <>
@@ -151,7 +133,7 @@ export function ExploreResults({
       <ResultsGrid
         currentPage={currentPage}
         error={state.error}
-        loading={state.loading}
+        loading={false}
         onRetry={state.retry}
         results={state.results}
         searchQuery={params.get("q") ?? undefined}

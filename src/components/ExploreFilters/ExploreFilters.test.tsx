@@ -93,7 +93,9 @@ describe("ExploreFilters", () => {
     expect(selectAllButton).toHaveClass("hover:bg-[#DDEADF]");
     await userEvent.click(selectAllButton);
 
-    expect(replaceRoute).toHaveBeenCalledWith("/catalog?page=1");
+    expect(replaceRoute).toHaveBeenCalledWith("/catalog?page=1", {
+      scroll: false,
+    });
   });
 
   it("updates explore filters locally without invoking the Next router", async () => {

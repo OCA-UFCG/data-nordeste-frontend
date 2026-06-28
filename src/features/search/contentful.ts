@@ -70,7 +70,7 @@ export const getSearchIndex = async (): Promise<SearchIndex> => {
   ];
 
   return {
-    version: 1,
+    version: 2,
     generatedAt: new Date().toISOString(),
     items,
   };
@@ -104,6 +104,11 @@ const buildPostItems = (posts: ContentfulPost[]): SearchIndexItem[] =>
         themes,
         tags,
         text: buildSearchText([title, post.description, ...themes, ...tags]),
+        explorePost: {
+          contentfulId: post.sys.id,
+          link: post.link || "",
+          themeIds: categories.map((category) => category.sys.id),
+        },
       };
     });
 
@@ -139,6 +144,7 @@ const buildPanelItems = (
           panel.descriptionTitle,
           description,
         ]),
+        explorePost: null,
       };
     });
 };
@@ -185,6 +191,7 @@ const buildDataStoryItems = (
       themes: [],
       tags: [],
       text: buildSearchText([story.id]),
+      explorePost: null,
     }));
 
 const buildThemeItems = (themes: ContentfulTheme[]): SearchIndexItem[] =>
@@ -206,6 +213,7 @@ const buildThemeItems = (themes: ContentfulTheme[]): SearchIndexItem[] =>
         themes: [title],
         tags,
         text: buildSearchText([title, theme.id, theme.articleTitle, ...tags]),
+        explorePost: null,
       };
     });
 

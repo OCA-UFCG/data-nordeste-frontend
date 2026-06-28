@@ -13,6 +13,7 @@ const baseItem = {
   thumb: null,
   tags: [],
   themes: [],
+  explorePost: null,
 } satisfies Partial<SearchIndexItem>;
 
 describe("search helpers", () => {

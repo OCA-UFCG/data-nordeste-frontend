@@ -6,6 +6,7 @@ import { Icon } from "../Icon/Icon";
 import { PaginationBar } from "../PaginationBar/PaginationBar";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { exploreCardTransitionName } from "@/features/explore/viewTransition";
 
 export const PostsGrid = ({
   currentPage,
@@ -48,7 +49,19 @@ export const PostsGrid = ({
           <Skeleton className="w-full h-[250px] rounded-lg" key={i} />
         ))
       ) : posts.length > 0 ? (
-        posts.map((post, i) => <ContentPost content={post} key={i} />)
+        posts.map((post) => {
+          const postId = post.sys?.id ?? `${post.type}-${post.link}`;
+
+          return (
+            <div
+              className="h-full"
+              key={postId}
+              style={{ viewTransitionName: exploreCardTransitionName(postId) }}
+            >
+              <ContentPost content={post} />
+            </div>
+          );
+        })
       ) : (
         <div className="grow-1 flex flex-col gap-4 justify-center items-center w-full py-12 bg-gray-50 rounded-lg">
           <Icon id="no-mail" size={48} />

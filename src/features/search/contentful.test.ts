@@ -100,7 +100,7 @@ describe("Contentful search index", () => {
 
     const index = await getSearchIndex();
 
-    expect(index.version).toBe(1);
+    expect(index.version).toBe(2);
     expect(index.items).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -110,6 +110,11 @@ describe("Contentful search index", () => {
           text: expect.stringContaining("produto interno bruto"),
           themes: ["Economia e Renda"],
           tags: ["PIB", "Emprego"],
+          explorePost: {
+            contentfulId: "post-1",
+            link: "/data-panel/pib",
+            themeIds: ["theme-1"],
+          },
         }),
         expect.objectContaining({
           id: "post:story-post",

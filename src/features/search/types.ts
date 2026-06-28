@@ -21,6 +21,11 @@ export type SearchIndexItem = {
   themes: string[];
   tags: string[];
   text: string;
+  explorePost?: {
+    contentfulId: string;
+    link: string;
+    themeIds: string[];
+  } | null;
 };
 
 export type SearchIndex = {

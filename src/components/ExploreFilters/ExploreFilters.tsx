@@ -330,7 +330,7 @@ export function ExploreFilters({
       if (clientSideNavigation) {
         replaceQuery(updates);
       } else {
-        router.replace(href);
+        router.replace(href, { scroll: false });
       }
     },
     [clientSideNavigation, params, pathname, replaceQuery, router],
@@ -427,7 +427,7 @@ export function ExploreFilters({
                         ),
                       );
                     } else {
-                      router.replace(pathname);
+                      router.replace(pathname, { scroll: false });
                     }
                   }}
                 >
@@ -587,7 +587,7 @@ export function ExploreFilters({
                   ),
                 );
               } else {
-                router.replace(pathname);
+                router.replace(pathname, { scroll: false });
               }
             }}
           >

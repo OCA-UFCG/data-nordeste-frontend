@@ -31,7 +31,7 @@ describe("/search-index.json route", () => {
     expect(response.headers.get("Cache-Control")).toContain("s-maxage");
     expect(body).toEqual(
       expect.objectContaining({
-        version: 1,
+        version: 2,
         items: [
           expect.objectContaining({
             id: "post:post-1",
