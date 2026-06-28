@@ -32,32 +32,38 @@ export const FeedbackSurvey = ({
   }, []);
 
   return (
-    <section className="w-full max-w-[1440px] my-12 p-6 px-4 lg:px-20">
-      <div className="bg-white rounded-lg shadow-md w-full ">
-        <div
-          className="bg-gray-100 hover:bg-gray-200 transition duration-300 p-6 flex justify-between items-center cursor-pointer"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <h2 className="text-xl font-semibold text-gray-800">
-            {header?.title}
-          </h2>
-          <Icon
-            className={`h-4 w-4 text-gray-600 transition-transform duration-300 ease-out ${isOpen ? "rotate-180" : ""}`}
-            id="expand"
-          />
-        </div>
+    <section className="w-full bg-[#F8F7F8] py-12 lg:px-20">
+      <div className="mx-auto w-full max-w-[1440px]">
+        <div className="w-full rounded-lg border-2 border-[#EFEFEF] bg-white">
+          <div
+            className="flex cursor-pointer items-center justify-between gap-[18px] rounded-lg bg-[#EFEFEF] p-6 transition-colors duration-300 hover:bg-[#E8E8E8]"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <h2 className="text-2xl font-semibold leading-9 tracking-[-0.0075em] text-[#292829]">
+              {header?.title}
+            </h2>
 
-        <div
-          className={`
-        transition-all duration-500 ease-out overflow-hidden 
-        ${isOpen ? "max-h-[1000px] opacity-100 p-6" : "max-h-0 opacity-0"}
-      `}
-        >
-          {submitted ? (
-            <SurveySubmitted header={submitHeader} />
-          ) : (
-            <Survey header={header} content={content} onSubmit={onSubmit} />
-          )}
+            <Icon
+              id="expand"
+              width={12}
+              height={12}
+              className={`shrink-0 text-[#292829] transition-transform duration-300 ${
+                isOpen ? "rotate-180" : ""
+              }`}
+            />
+          </div>
+
+          <div
+            className={`overflow-hidden transition-all duration-500 ease-out ${
+              isOpen ? "max-h-[1000px] p-6 opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            {submitted ? (
+              <SurveySubmitted header={submitHeader} />
+            ) : (
+              <Survey header={header} content={content} onSubmit={onSubmit} />
+            )}
+          </div>
         </div>
       </div>
     </section>
