@@ -81,7 +81,6 @@ export const RecentSectionView = ({
               href={FILTERS[selectedType].href}
               variant="secondary"
               className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432] hover:bg-grey-100"
-              disabled={selectedType === FILTERS.all.key}
             >
               <span className="text-sm font-medium">Ver Todos</span>
               <Icon className="rotate-270" id="expand" size={16} />
@@ -98,7 +97,6 @@ export const RecentSectionView = ({
         href={FILTERS[selectedType].href}
         variant="secondary"
         className="md:hidden items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432]"
-        disabled={selectedType === FILTERS.all.key}
       >
         <span className="text-sm font-medium">Ver Todos</span>
         <Icon className="rotate-270" id="expand" size={16} />
