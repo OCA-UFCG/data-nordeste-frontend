@@ -12,8 +12,8 @@ const PreviewSection = ({
     <section className="w-full bg-white">
       <div className="w-full max-w-[1440px] mx-auto px-3 lg:px-20">
         <div
-          className="flex flex-col w-full bg-white gap-3 box-border py-5 px-3 lg:px-6 py-10 
-                     justify-center items-center shadow-md rounded-lg 
+          className="flex flex-col w-full bg-white box-border py-6 px-6 lg:px-6 lg:py-9
+                     items-center shadow-md rounded-lg gap-6
                      -translate-y-4 lg:-translate-y-12"
         >
           <PreviewContent header={header} cards={cards} />

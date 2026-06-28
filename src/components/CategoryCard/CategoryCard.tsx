@@ -1,6 +1,6 @@
 import { MacroTheme } from "@/utils/interfaces";
 import { Icon } from "@/components/Icon/Icon";
-import { macroThemes } from "@/utils/constants";
+import { MACROTHEME_ICON_BY_ID } from "@/features/macrothemes/constants";
 import Link from "next/link";
 
 type CategoryIconVisual = {
@@ -34,7 +34,7 @@ const CategoryThemeIcon = ({
 
   return (
     <div
-      className="flex h-[40px] min-w-[40px] shrink-0 items-center justify-center rounded-sm"
+      className="flex h-[40px] min-w-[40px] shrink-0 items-center justify-center rounded-[4px]"
       style={{ backgroundColor: color }}
     >
       <Icon
@@ -53,21 +53,40 @@ const CategoryCard = ({ category }: { category: MacroTheme }) => {
   }
 
   const normalizedId = category.id.replace(/_/g, "-");
-  const iconId = macroThemes[category.id] || "list";
+  const iconId = MACROTHEME_ICON_BY_ID[category.id] || "list";
 
   return (
     <Link
       href={`/macrothemes/${normalizedId}`}
-      className="flex min-h-[116px] items-center justify-between rounded-sm border border-grey-200 bg-white p-4 shadow-sm transition duration-300 hover:border-grey-300 hover:bg-grey-200 md:min-h-[74px]"
-      key={category.id}
+      className="
+        flex min-h-[80px] w-full min-w-0 flex-col items-center justify-center gap-2 rounded-lg border border-[#E4E4E7] bg-white px-3 py-3 text-center transition-colors hover:bg-[#F8F8F8]
+        md:h-[68px]
+        md:min-h-0
+        md:flex-row
+        md:items-center
+        md:justify-between
+        md:rounded-[8px]
+        md:border-[#EFEFEF]
+        md:px-4
+        md:py-3
+        md:text-left
+        md:shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.1),0px_1px_3px_rgba(0,0,0,0.1)]
+      "
     >
-      <div className="flex h-full w-full flex-col items-center justify-center gap-4 md:w-fit md:flex-row">
+      <div className="flex w-full min-w-0 flex-col items-center gap-2 md:flex-row md:items-center md:gap-4">
         <CategoryThemeIcon color={category.color} iconId={iconId} />
-        <span className="flex min-h-[40px] items-center text-center text-base font-semibold leading-tight md:max-w-[90%] md:text-start">
+
+        <span className="w-full text-center text-sm font-normal leading-5 text-[#292829] md:w-auto md:text-left md:text-[18px] md:font-semibold md:leading-7">
           {category.name}
         </span>
       </div>
-      <Icon className="hidden md:flex rotate-270" id="expand" size={9} />
+
+      <Icon
+        className="hidden shrink-0 rotate-270 text-[#292829] md:block"
+        id="expand"
+        width={8}
+        height={8}
+      />
     </Link>
   );
 };

@@ -8,7 +8,12 @@ import {
   PostType,
 } from "@/features/posts/postTypes";
 
-export type RecentFilterKey = "all" | "panels" | "stories" | "newsletters";
+export type RecentFilterKey =
+  | "all"
+  | "panels"
+  | "stories"
+  | "newsletters"
+  | "publications";
 
 export const FILTERS: {
   [key in RecentFilterKey]: {
@@ -42,6 +47,12 @@ export const FILTERS: {
     href: "/posts?type_in=newsletter&page=1",
     key: "newsletters",
   },
+  publications: {
+    filter: [...RECENT_STORY_POST_TYPES, ...RECENT_NEWSLETTER_POST_TYPES],
+    text: "Publicações",
+    href: "/posts?page=1",
+    key: "publications",
+  },
 };
 
 export const TypeFilter = ({
@@ -50,23 +61,44 @@ export const TypeFilter = ({
   onChange: (value: RecentFilterKey) => void;
 }) => {
   return (
-    <RadioGroup
-      defaultValue={FILTERS.all.key}
-      className="w-full flex gap-4 "
-      onValueChange={onChange}
-    >
-      {Object.entries(FILTERS).map(([key, { text }]) => {
-        return (
-          <div className="flex items-center space-x-2" key={key}>
+    <>
+      <RadioGroup
+        defaultValue={FILTERS.all.key}
+        className="hidden w-full gap-6 md:flex"
+        onValueChange={onChange}
+      >
+        {(["all", "panels", "stories", "newsletters"] as const).map((key) => (
+          <div className="flex items-center gap-2" key={key}>
             <RadioGroupItem
               value={key}
-              id={key}
+              id={`desktop-${key}`}
               className="border-green-900 hover:border-green-900 focus-visible:border-green-900 data-[state=checked]:border-green-800"
             />
-            <Label htmlFor={key}>{text}</Label>
+            <Label htmlFor={`desktop-${key}`} className="font-normal">
+              {FILTERS[key].text}
+            </Label>
           </div>
-        );
-      })}
-    </RadioGroup>
+        ))}
+      </RadioGroup>
+
+      <RadioGroup
+        defaultValue={FILTERS.all.key}
+        className="flex w-full justify-start gap-6 md:hidden"
+        onValueChange={onChange}
+      >
+        {(["all", "panels", "publications"] as const).map((key) => (
+          <div className="flex items-center gap-2" key={key}>
+            <RadioGroupItem
+              value={key}
+              id={`mobile-${key}`}
+              className="border-green-900 hover:border-green-900 focus-visible:border-green-900 data-[state=checked]:border-green-800"
+            />
+            <Label htmlFor={`mobile-${key}`} className="font-normal">
+              {FILTERS[key].text}
+            </Label>
+          </div>
+        ))}
+      </RadioGroup>
+    </>
   );
 };
