@@ -11,18 +11,27 @@ import {
 import { Skeleton } from "../ui/skeleton";
 import { usePaginationRange } from "@/utils/functions";
 import { useSearchParams } from "next/navigation";
+import { useExploreNavigation } from "@/features/explore/navigation";
 
 export const PaginationBar = ({
   currentPage,
   totalPages,
   loading,
+  clientSideNavigation = false,
 }: {
   currentPage: number;
   totalPages: number;
   loading: boolean;
+  clientSideNavigation?: boolean;
 }) => {
   const pagesRange = usePaginationRange(currentPage, totalPages);
   const searchParams = useSearchParams();
+  const { pushQuery } = useExploreNavigation();
+
+  const navigateToPage = (page: number) => {
+    if (!clientSideNavigation) return;
+    pushQuery({ page: page.toString() });
+  };
 
   const buildPageHref = (page: number) => {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -38,6 +47,11 @@ export const PaginationBar = ({
           <PaginationPrevious
             disabled={totalPages === 0 || currentPage <= 1}
             href={buildPageHref(currentPage - 1)}
+            onClick={(event) => {
+              if (!clientSideNavigation) return;
+              event.preventDefault();
+              navigateToPage(currentPage - 1);
+            }}
           />
         </PaginationItem>
 
@@ -49,6 +63,11 @@ export const PaginationBar = ({
               <PaginationLink
                 isActive={i === currentPage}
                 href={buildPageHref(i)}
+                onClick={(event) => {
+                  if (!clientSideNavigation) return;
+                  event.preventDefault();
+                  navigateToPage(i);
+                }}
               >
                 {i}
               </PaginationLink>
@@ -60,6 +79,11 @@ export const PaginationBar = ({
           <PaginationNext
             disabled={totalPages === 0 || currentPage >= totalPages}
             href={buildPageHref(currentPage + 1)}
+            onClick={(event) => {
+              if (!clientSideNavigation) return;
+              event.preventDefault();
+              navigateToPage(currentPage + 1);
+            }}
           />
         </PaginationItem>
       </PaginationContent>

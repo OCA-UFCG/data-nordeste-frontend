@@ -7,6 +7,8 @@ import ContentPost from "../ContentPost/ContentPost";
 import { LinkButton } from "@/components/LinkButton/LinkButton";
 import { Icon } from "@/components/Icon/Icon";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
+import { useExploreNavigation } from "@/features/explore/navigation";
+import type { ExploreTabTotals } from "@/features/explore/contract";
 
 type MacroThemeTabsProps = {
   dashboards: IPublication[];
@@ -27,6 +29,8 @@ type MacroThemeTabsProps = {
   showHeaderInTabsOnly?: boolean;
   activeTab?: TabType;
   onTabChange?: (tab: TabType) => void;
+  tabTotals?: ExploreTabTotals;
+  clientSideNavigation?: boolean;
 };
 
 export type TabType = "paineis" | "datastories" | "boletins";
@@ -42,10 +46,13 @@ export function MacroThemeTabs({
   showHeaderInTabsOnly = false,
   activeTab: controlledActiveTab,
   onTabChange,
+  tabTotals,
+  clientSideNavigation = false,
 }: MacroThemeTabsProps) {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { pushQuery } = useExploreNavigation();
 
   const rawTypeIn = params.get("type_in") ?? "";
 
@@ -71,10 +78,14 @@ export function MacroThemeTabs({
         datastories: "data-story",
         boletins: "newsletter,additional-content",
       };
-      const newParams = new URLSearchParams(params.toString());
-      newParams.set("type_in", typeInMap[tab]);
-      newParams.delete("page");
-      router.replace(pathname + "?" + newParams.toString());
+      if (clientSideNavigation) {
+        pushQuery({ type_in: typeInMap[tab], page: null });
+      } else {
+        const newParams = new URLSearchParams(params.toString());
+        newParams.set("type_in", typeInMap[tab]);
+        newParams.delete("page");
+        router.replace(pathname + "?" + newParams.toString());
+      }
     } else if (onTabChange) {
       onTabChange(tab);
     } else {
@@ -149,13 +160,13 @@ export function MacroThemeTabs({
   // control visibility — actual content is rendered by the Posts component.
   const availableTabs = tabs.filter((tab) => {
     if (tab.key === "paineis") {
-      return dashboards.length > 0;
+      return tabTotals ? tabTotals.dashboards > 0 : dashboards.length > 0;
     }
     if (tab.key === "datastories") {
-      return datastories.length > 0;
+      return tabTotals ? tabTotals.datastories > 0 : datastories.length > 0;
     }
     if (tab.key === "boletins") {
-      return publicacoes.length > 0;
+      return tabTotals ? tabTotals.publications > 0 : publicacoes.length > 0;
     }
 
     return false;
