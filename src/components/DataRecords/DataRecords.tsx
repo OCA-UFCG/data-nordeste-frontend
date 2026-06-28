@@ -13,7 +13,7 @@ export const DataRecords = ({
   totalPages: number;
 }) => {
   return (
-    <section className="flex flex-col items-center w-full max-w-[1440px] mx-auto px-6 sm:px-10 md:px-10 lg:px-20 py-4">
+    <section className="flex flex-col items-center w-full max-w-[1440px] mx-auto px-6 pt-10 pb-4 sm:px-10 md:px-10 lg:px-20">
       <DataList
         posts={initialRecords}
         pages={totalPages}
