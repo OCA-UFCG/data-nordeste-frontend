@@ -550,8 +550,8 @@ export function ExploreFilters({
               Atenção
             </span>
             <p className="text-sm font-normal leading-6 text-[#1995C1]">
-              Para uma melhor visualização dos painéis recomendamos sua
-              visualização num computador.
+              Para uma melhor experiência, recomendamos visualizar os painéis em
+              um computador.
             </p>
           </div>
         </div>
