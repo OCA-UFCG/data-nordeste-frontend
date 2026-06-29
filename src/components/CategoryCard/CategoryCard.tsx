@@ -34,7 +34,7 @@ const CategoryThemeIcon = ({
 
   return (
     <div
-      className="flex h-[40px] min-w-[40px] shrink-0 items-center justify-center rounded-[4px]"
+      className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[4px] p-2"
       style={{ backgroundColor: color }}
     >
       <Icon
@@ -76,7 +76,7 @@ const CategoryCard = ({ category }: { category: MacroTheme }) => {
       <div className="flex w-full min-w-0 flex-col items-center gap-2 md:flex-row md:items-center md:gap-4">
         <CategoryThemeIcon color={category.color} iconId={iconId} />
 
-        <span className="w-full text-center text-sm font-normal leading-5 text-[#292829] md:w-auto md:text-left md:text-[18px] md:font-semibold md:leading-7">
+        <span className="w-full flex-grow text-center text-sm font-light leading-5 text-[#292829] md:w-auto md:text-left md:text-[18px] md:font-medium md:leading-7">
           {category.name}
         </span>
       </div>
