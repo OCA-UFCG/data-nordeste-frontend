@@ -12,14 +12,9 @@ export interface ThemeFilterCardProps {
 export interface ExploreFiltersProps {
   className?: string;
   themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
-  categoryValue?: "contentful-id" | "theme-id";
   categoryValues?: Record<string, string>;
   clientSideNavigation?: boolean;
   mobileCatalogLayout?: boolean;
-  showClearFilters?: boolean;
-  showSorting?: boolean;
-  sortingAsField?: boolean;
-  sortingLabel?: string;
   sortingOptions?: { [label: string]: string };
 }
 

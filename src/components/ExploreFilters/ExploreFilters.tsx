@@ -20,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import type { MacroTheme } from "@/utils/interfaces";
 import type { SearchIndexItem } from "@/features/search/types";
 import { useExploreNavigation } from "@/features/explore/navigation";
 
@@ -33,14 +32,9 @@ import { SearchBar } from "../SearchBar/SearchBar";
 export function ExploreFilters({
   className,
   themes,
-  categoryValue = "contentful-id",
   categoryValues,
   clientSideNavigation = false,
   mobileCatalogLayout = false,
-  showClearFilters = true,
-  showSorting = true,
-  sortingAsField = false,
-  sortingLabel,
   sortingOptions = sortingTypes,
 }: ExploreFiltersProps) {
   const params = useSearchParams();
@@ -66,14 +60,12 @@ export function ExploreFilters({
   const selectedThemeNames = useMemo(() => {
     return themes
       .filter((theme) => {
-        const themeValue =
-          categoryValues?.[theme.sys.id] ??
-          (categoryValue === "theme-id" ? theme.id : theme.sys.id);
+        const themeValue = categoryValues?.[theme.sys.id] ?? theme.sys.id;
 
         return selectedCategories.includes(themeValue);
       })
       .map((t) => t.name);
-  }, [themes, selectedCategories, categoryValues, categoryValue]);
+  }, [themes, selectedCategories, categoryValues]);
 
   const handleFilterItems = useCallback(
     (item: SearchIndexItem) => {
@@ -159,9 +151,7 @@ export function ExploreFilters({
   );
 
   const themeValues = themes.map(
-    (theme) =>
-      categoryValues?.[theme.sys.id] ??
-      (categoryValue === "theme-id" ? theme.id : theme.sys.id),
+    (theme) => categoryValues?.[theme.sys.id] ?? theme.sys.id,
   );
   const allThemesSelected =
     themeValues.length > 0 &&
@@ -221,93 +211,56 @@ export function ExploreFilters({
                   : "contents",
               )}
             >
-              {showClearFilters && (
-                <Button
-                  variant="secondary"
-                  className={cn(
-                    "text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit",
-                    mobileCatalogLayout && "w-full",
-                  )}
-                  onClick={() => {
-                    if (clientSideNavigation) {
-                      replaceQuery(
-                        Object.fromEntries(
-                          Array.from(params.keys()).map((key) => [key, null]),
-                        ),
-                      );
-                    } else {
-                      router.replace(pathname, { scroll: false });
-                    }
-                  }}
+              <Button
+                variant="secondary"
+                className={cn(
+                  "text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit",
+                  mobileCatalogLayout && "w-full",
+                )}
+                onClick={() => {
+                  if (clientSideNavigation) {
+                    replaceQuery(
+                      Object.fromEntries(
+                        Array.from(params.keys()).map((key) => [key, null]),
+                      ),
+                    );
+                  } else {
+                    router.replace(pathname, { scroll: false });
+                  }
+                }}
+              >
+                <span>Limpar filtros</span>
+                <Icon id="no-filter" size={16} />
+              </Button>
+
+              <div
+                className={cn(
+                  "items-center gap-1 text-xs font-medium text-[#292829]",
+                  mobileCatalogLayout ? "hidden md:flex" : "flex",
+                )}
+              >
+                <Select
+                  value={currentSort}
+                  onValueChange={(value) => updateUrl({ sort: value })}
                 >
-                  <span>Limpar filtros</span>
-                  <Icon id="no-filter" size={16} />
-                </Button>
-              )}
-
-              {showSorting && (
-                <>
-                  {sortingAsField && (
-                    <div className="flex min-h-10 w-full items-center rounded-md border border-grey-200 bg-grey-100 px-3 text-grey-600 shadow-sm transition-colors hover:bg-grey-200 lg:w-auto">
-                      <Select
-                        value={currentSort}
-                        onValueChange={(value) => updateUrl({ sort: value })}
-                      >
-                        <SelectTrigger className="w-full !h-auto min-w-[126px] justify-between border-0 !bg-transparent !p-0 text-sm font-normal text-grey-600 shadow-none focus-visible:ring-0 data-[state=open]:!bg-transparent">
-                          <SelectValue placeholder="Ordenar por" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {sortOptions.map(([label, value]) => (
-                              <SelectItem
-                                value={value}
-                                key={value}
-                                className="cursor-pointer"
-                              >
-                                {label}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  <div
-                    className={cn(
-                      "items-center gap-1 text-xs font-medium text-[#292829]",
-                      sortingAsField
-                        ? "hidden"
-                        : mobileCatalogLayout
-                          ? "hidden md:flex"
-                          : "flex",
-                    )}
-                  >
-                    {sortingLabel && <span>{sortingLabel}</span>}
-                    <Select
-                      value={currentSort}
-                      onValueChange={(value) => updateUrl({ sort: value })}
-                    >
-                      <SelectTrigger className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0">
-                        <SelectValue placeholder="Ordenar por" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {sortOptions.map(([label, value]) => (
-                            <SelectItem
-                              value={value}
-                              key={value}
-                              className="cursor-pointer"
-                            >
-                              {label}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
+                  <SelectTrigger className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0">
+                    <SelectValue placeholder="Mais recentes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {sortOptions.map(([label, value]) => (
+                        <SelectItem
+                          value={value}
+                          key={value}
+                          className="cursor-pointer"
+                        >
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -322,10 +275,7 @@ export function ExploreFilters({
               (theme) => {
                 const iconKey = normalizeKey(theme.name);
                 const themeValue =
-                  categoryValues?.[theme.sys.id] ??
-                  (categoryValue === "theme-id"
-                    ? (theme as MacroTheme & { id: string }).id
-                    : theme.sys.id);
+                  categoryValues?.[theme.sys.id] ?? theme.sys.id;
 
                 return (
                   <ThemeFilterCard
