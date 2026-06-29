@@ -42,7 +42,7 @@ const DataSection = ({
               className="w-fit bg-grey-100 border-grey-300 hidden md:flex"
             >
               <p>Ver Todos</p>
-              <Icon className="rotate-270 size-2" id="expand" />
+              <Icon className="size-2" id="expand" />
             </LinkButton>
           </div>
           <p className="text-sm text-grey-600">{subtitle}</p>
@@ -60,7 +60,7 @@ const DataSection = ({
           className="md:hidden border-grey-300 bg-white"
         >
           <p>Ver Todos</p>
-          <Icon className="rotate-270 size-2" id="expand" />
+          <Icon className="size-2" id="expand" />
         </LinkButton>
       </div>
     </section>

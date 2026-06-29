@@ -84,7 +84,7 @@ function SeeThemesModal({
               },
             )}
             <button
-              className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#DDEADF]"
+              className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#D6E9DB]"
               onClick={onSelectAll}
             >
               Selecionar todos

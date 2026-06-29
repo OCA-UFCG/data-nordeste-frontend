@@ -291,7 +291,7 @@ export function ExploreFilters({
               },
             )}
             <button
-              className="flex items-center justify-center w-[145px] h-12 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#DDEADF]"
+              className="flex items-center justify-center w-[145px] h-12 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#D6E9DB]"
               onClick={toggleAllCategories}
             >
               Selecionar todos

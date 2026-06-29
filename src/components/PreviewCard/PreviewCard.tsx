@@ -36,7 +36,7 @@ const PreviewCard = ({ content }: { content: IPreviewCard }) => {
             <h3 className="text-sm font-medium">{title}</h3>
             <p className="text-xs text-grey-600">{subtitle}</p>
           </div>
-          <Icon className="hidden md:flex rotate-270" id="expand" size={9} />
+          <Icon className="hidden md:flex" id="expand-black" size={9} />
         </div>
         <div className="flex flex-col justify-center px-4 py-3 flex-1">
           <p

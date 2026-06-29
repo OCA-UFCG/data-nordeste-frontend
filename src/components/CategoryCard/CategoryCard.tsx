@@ -82,8 +82,8 @@ const CategoryCard = ({ category }: { category: MacroTheme }) => {
       </div>
 
       <Icon
-        className="hidden shrink-0 rotate-270 text-[#292829] md:block"
-        id="expand"
+        className="hidden shrink-0 md:block"
+        id="expand-black"
         width={8}
         height={8}
       />
