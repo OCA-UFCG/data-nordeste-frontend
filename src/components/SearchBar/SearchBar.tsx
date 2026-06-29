@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 import { Loader2, Search } from "lucide-react";
+import { Icon } from "@/components/Icon/Icon";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_SEARCH_LIMIT,
@@ -46,7 +47,7 @@ export const SearchBar = ({
   className,
   initialQuery = "",
   onNavigate,
-  placeholder = "Buscar conteúdo",
+  placeholder = "Digite sua pesquisa",
   variant = "header",
   hideViewAll = false,
   filterItems,
@@ -166,53 +167,40 @@ export const SearchBar = ({
     <form
       role="search"
       className={cn(
-        "relative w-full",
+        "relative",
         variant === "header" && "max-w-[407px]",
-        variant === "page" && "max-w-3xl",
+        variant === "page" && "w-full max-w-[961px]",
         className,
       )}
       onBlur={handleBlur}
       onSubmit={submitSearch}
     >
       <label className="sr-only" htmlFor={inputId}>
-        Buscar conteúdo
+        Digite sua pesquisa
       </label>
       <div
         className={cn(
-          "rounded-lg bg-[#F8F7F8] px-2 transition-colors focus-within:bg-[#F2F1F2]",
-          variant === "page" && "px-3",
+          "flex items-center justify-end h-10 w-full gap-2 rounded-lg bg-[#EFEFEF] px-3 py-[6px] transition-colors focus-within:bg-[#E8E7E8]",
+          variant === "page" && "h-10",
         )}
       >
-        <div
-          className={cn(
-            "flex h-[47px] items-center gap-2 px-2 py-1.5",
-            variant === "page" && "h-[51px]",
-          )}
-        >
-          <Search className="size-4 text-[#292829]" aria-hidden="true" />
-          <input
-            autoComplete="off"
-            autoFocus={autoFocus}
-            className="min-w-0 flex-1 bg-transparent text-sm font-normal leading-5 text-[#292829] outline-none placeholder:text-[#292829]"
-            id={inputId}
-            onChange={(event) => handleQueryChange(event.target.value)}
-            onFocus={() => {
-              setOpen(true);
-              if (!hideSuggestions) void loadIndex();
-            }}
-            placeholder={placeholder}
-            type="search"
-            value={query}
-          />
-          <button
-            aria-label="Buscar"
-            className="flex size-4 items-center justify-center text-[#292829] transition hover:text-green-900 disabled:cursor-not-allowed disabled:opacity-40"
-            disabled={!query.trim()}
-            type="submit"
-          >
-            <Search className="size-4" aria-hidden="true" />
-          </button>
-        </div>
+        <input
+          autoComplete="off"
+          autoFocus={autoFocus}
+          className="min-w-0 flex-1 bg-transparent px-1 text-sm font-normal leading-5 text-[#292829] outline-none placeholder:text-[#292829] placeholder:font-normal placeholder:text-sm placeholder:leading-5"
+          id={inputId}
+          onChange={(event) => handleQueryChange(event.target.value)}
+          onFocus={() => {
+            setOpen(true);
+            if (!hideSuggestions) void loadIndex();
+          }}
+          placeholder={placeholder}
+          type="search"
+          value={query}
+        />
+        <span className="w-3 h-3 flex items-center justify-center shrink-0">
+          <Icon id="search-icon" width={12} height={12} aria-hidden="true" />
+        </span>
       </div>
 
       {showPanel && (

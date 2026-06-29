@@ -192,7 +192,7 @@ export function ExploreFilters({
                 variant="page"
                 className="flex-1 max-w-none"
                 initialQuery={searchQuery}
-                placeholder="Buscar conteúdo"
+                placeholder="Digite sua pesquisa"
                 hideViewAll={true}
                 hideSuggestions={true}
                 filterItems={handleFilterItems}
