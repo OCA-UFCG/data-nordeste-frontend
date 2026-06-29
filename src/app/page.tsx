@@ -69,7 +69,6 @@ export default async function Home() {
           (section: SectionHeader) => section.id === "catalog",
         )}
       />
-
       <ProjectSection
         header={findHomeSection(sectionHead.items, "projects")}
         projects={partners.items}
