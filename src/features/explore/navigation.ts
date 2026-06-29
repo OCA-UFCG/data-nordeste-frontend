@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { runExploreTransition } from "./viewTransition";
 
 type ExploreQueryUpdates = { [key: string]: string | null };
 
@@ -26,13 +27,17 @@ export function useExploreNavigation() {
 
   const replaceQuery = useCallback(
     (updates: ExploreQueryUpdates) => {
-      window.history.replaceState(null, "", createHref(updates));
+      runExploreTransition(() => {
+        window.history.replaceState(null, "", createHref(updates));
+      });
     },
     [createHref],
   );
   const pushQuery = useCallback(
     (updates: ExploreQueryUpdates) => {
-      window.history.pushState(null, "", createHref(updates));
+      runExploreTransition(() => {
+        window.history.pushState(null, "", createHref(updates));
+      });
     },
     [createHref],
   );

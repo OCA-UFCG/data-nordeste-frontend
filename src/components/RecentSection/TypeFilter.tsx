@@ -60,45 +60,35 @@ export const TypeFilter = ({
 }: {
   onChange: (value: RecentFilterKey) => void;
 }) => {
-  return (
-    <>
-      <RadioGroup
-        defaultValue={FILTERS.all.key}
-        className="hidden w-full gap-6 md:flex"
-        onValueChange={onChange}
-      >
-        {(["all", "panels", "stories", "newsletters"] as const).map((key) => (
-          <div className="flex items-center gap-2" key={key}>
-            <RadioGroupItem
-              value={key}
-              id={`desktop-${key}`}
-              className="border-green-900 hover:border-green-900 focus-visible:border-green-900 data-[state=checked]:border-green-800"
-            />
-            <Label htmlFor={`desktop-${key}`} className="font-normal">
-              {FILTERS[key].text}
-            </Label>
-          </div>
-        ))}
-      </RadioGroup>
+  const filterVisibility = {
+    all: "flex",
+    panels: "flex",
+    stories: "hidden md:flex",
+    newsletters: "hidden md:flex",
+    publications: "flex md:hidden",
+  } satisfies Record<RecentFilterKey, string>;
 
-      <RadioGroup
-        defaultValue={FILTERS.all.key}
-        className="flex w-full justify-start gap-6 md:hidden"
-        onValueChange={onChange}
-      >
-        {(["all", "panels", "publications"] as const).map((key) => (
-          <div className="flex items-center gap-2" key={key}>
-            <RadioGroupItem
-              value={key}
-              id={`mobile-${key}`}
-              className="border-green-900 hover:border-green-900 focus-visible:border-green-900 data-[state=checked]:border-green-800"
-            />
-            <Label htmlFor={`mobile-${key}`} className="font-normal">
-              {FILTERS[key].text}
-            </Label>
-          </div>
-        ))}
-      </RadioGroup>
-    </>
+  return (
+    <RadioGroup
+      defaultValue={FILTERS.all.key}
+      className="flex w-full justify-start gap-6"
+      onValueChange={onChange}
+    >
+      {(Object.keys(FILTERS) as RecentFilterKey[]).map((key) => (
+        <div
+          className={`${filterVisibility[key]} items-center gap-2`}
+          key={key}
+        >
+          <RadioGroupItem
+            value={key}
+            id={`recent-${key}`}
+            className="border-green-900 hover:border-green-900 focus-visible:border-green-900 data-[state=checked]:border-green-800"
+          />
+          <Label htmlFor={`recent-${key}`} className="font-normal">
+            {FILTERS[key].text}
+          </Label>
+        </div>
+      ))}
+    </RadioGroup>
   );
 };

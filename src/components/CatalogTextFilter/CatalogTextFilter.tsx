@@ -53,7 +53,9 @@ export function CatalogTextFilter() {
       return;
     }
 
-    router.replace(nextHref);
+    // INTENTIONAL: Catalog filters trigger a Server Component refresh for
+    // Zenodo data, but the filter bar must remain in the user's viewport.
+    router.replace(nextHref, { scroll: false });
   };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {

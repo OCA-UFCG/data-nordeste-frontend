@@ -46,6 +46,9 @@ interface IFilterDataPage {
       title: string;
       subtitle?: string;
       richSubtitle?: ContentfulRichTextField;
+      banner?: {
+        url: string;
+      };
     }[];
   };
   themeCollection?: {

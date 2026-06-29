@@ -26,6 +26,9 @@ export const FILTERS_QUERY = `
         richSubtitle {
           json
         }
+        banner {
+          url
+        }
       }
     }
 

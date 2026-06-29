@@ -330,7 +330,7 @@ export function ExploreFilters({
       if (clientSideNavigation) {
         replaceQuery(updates);
       } else {
-        router.replace(href);
+        router.replace(href, { scroll: false });
       }
     },
     [clientSideNavigation, params, pathname, replaceQuery, router],
@@ -427,7 +427,7 @@ export function ExploreFilters({
                         ),
                       );
                     } else {
-                      router.replace(pathname);
+                      router.replace(pathname, { scroll: false });
                     }
                   }}
                 >
@@ -550,8 +550,8 @@ export function ExploreFilters({
               Atenção
             </span>
             <p className="text-sm font-normal leading-6 text-[#1995C1]">
-              Para uma melhor visualização dos painéis recomendamos sua
-              visualização num computador.
+              Para uma melhor experiência, recomendamos visualizar os painéis em
+              um computador.
             </p>
           </div>
         </div>
@@ -587,7 +587,7 @@ export function ExploreFilters({
                   ),
                 );
               } else {
-                router.replace(pathname);
+                router.replace(pathname, { scroll: false });
               }
             }}
           >
