@@ -18,13 +18,8 @@ export const RecentSection = ({
   content: IPublication[];
 }) => {
   const [posts, setPosts] = useState(content);
-  const [selectedType, setSelectedType] = useState<RecentFilterKey>(
-    FILTERS.all.key,
-  );
 
   const fetchPosts = useCallback(async (types: RecentFilterKey) => {
-    setSelectedType(types);
-
     const { postCollection: filteredPosts } = await getContent<{
       postCollection: { items: IPublication[] };
     }>(POSTS_QUERY, {
@@ -41,7 +36,6 @@ export const RecentSection = ({
     <RecentSectionView
       header={header}
       posts={posts}
-      selectedType={selectedType}
       onTypeChange={fetchPosts}
     />
   );
@@ -50,12 +44,10 @@ export const RecentSection = ({
 export const RecentSectionView = ({
   header,
   posts,
-  selectedType,
   onTypeChange,
 }: {
   header?: SectionHeader;
   posts: IPublication[];
-  selectedType: RecentFilterKey;
   onTypeChange: (value: RecentFilterKey) => void;
 }) => {
   const { id, title, subtitle } = header || {
@@ -78,7 +70,7 @@ export const RecentSectionView = ({
           <div className="flex gap-6 items-center justify-start">
             <TypeFilter onChange={onTypeChange} />
             <LinkButton
-              href={FILTERS[selectedType].href}
+              href="/explore?page=1"
               variant="secondary"
               className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432] hover:bg-grey-100"
             >
@@ -95,7 +87,7 @@ export const RecentSectionView = ({
       <CardCarousel items={posts} variant="post" />
 
       <LinkButton
-        href={FILTERS[selectedType].href}
+        href="/explore?page=1"
         variant="secondary"
         className="md:hidden items-center gap-2 border border-[#EFEFEF] bg-white px-4 py-2 text-[#077432]"
       >
