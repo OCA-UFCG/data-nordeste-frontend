@@ -1,11 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Icon } from "../Icon/Icon";
-import { Checkbox } from "../ui/checkbox";
-import { SearchBar } from "../SearchBar/SearchBar";
-import { CatalogTextFilter } from "../CatalogTextFilter/CatalogTextFilter";
-import { Button } from "../ui/button";
+import { Icon } from "@/components/Icon/Icon";
+import { Button } from "@/components/ui/button";
 import {
   MACROTHEME_ICON_BY_ID,
   THEMES_NAVIGATION_ORDER,
@@ -25,201 +22,13 @@ import {
 } from "../ui/select";
 import type { MacroTheme } from "@/utils/interfaces";
 import type { SearchIndexItem } from "@/features/search/types";
-import { XIcon } from "lucide-react";
-
-import Link from "next/link";
 import { useExploreNavigation } from "@/features/explore/navigation";
 
-interface ThemeFilterCardProps {
-  iconId: string;
-  color: string;
-  name: string;
-  href?: string;
-  checked?: boolean;
-  onCheckedChange?: (checked: boolean) => void;
-}
-
-function ThemeFilterCard({
-  iconId,
-  color,
-  name,
-  href,
-  checked,
-  onCheckedChange,
-}: ThemeFilterCardProps) {
-  return (
-    <div
-      className="flex flex-row h-8 sm:w-[302px] bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0"
-      onClick={() => onCheckedChange?.(!checked)}
-    >
-      <div className="flex items-center justify-center h-full w-8 rounded-l-lg hover:bg-[#DDEADF] transition-colors">
-        <Checkbox
-          checked={checked}
-          onCheckedChange={onCheckedChange}
-          className="w-4 h-4 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
-
-      <div className="w-px h-full bg-[#EFEFEF]" />
-
-      {href ? (
-        <Link
-          href={href}
-          className="flex items-center gap-2 flex-1 h-full px-2 rounded-r-lg hover:bg-[#DDEADF] transition-colors"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Icon id={iconId} size={16} style={{ color }} />
-          <span className="flex-1 text-sm font-normal text-[#292829] truncate">
-            {name}
-          </span>
-          <Icon
-            className="text-[#999999] flex-shrink-0 rotate-270"
-            id="expand"
-            size={12}
-          />
-        </Link>
-      ) : (
-        <div className="flex items-center gap-2 flex-1 h-full px-2 rounded-r-lg hover:bg-[#DDEADF] transition-colors">
-          <Icon id={iconId} size={16} style={{ color }} />
-          <span className="flex-1 text-sm font-normal text-[#292829] truncate">
-            {name}
-          </span>
-          <Icon
-            className="text-[#999999] flex-shrink-0 rotate-270"
-            id="expand"
-            size={12}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface ExploreFiltersProps {
-  className?: string;
-  themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
-  categoryValue?: "contentful-id" | "theme-id";
-  categoryValues?: Record<string, string>;
-  clientSideNavigation?: boolean;
-  mobileCatalogLayout?: boolean;
-  showClearFilters?: boolean;
-  showSorting?: boolean;
-  sortingAsField?: boolean;
-  sortingLabel?: string;
-  sortingOptions?: { [label: string]: string };
-}
-
-function SeeThemesModal({
-  themes,
-  selectedCategories,
-  onToggleCategory,
-  onSelectAll,
-  onClose,
-  onApply,
-}: {
-  themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
-  selectedCategories: string[];
-  onToggleCategory: (themeId: string) => void;
-  onSelectAll: () => void;
-  onClose: () => void;
-  onApply: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg shadow-lg w-full max-w-[393px] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex flex-col gap-6 p-6 flex-1 overflow-hidden">
-          <div className="flex items-center justify-between flex-shrink-0">
-            <h2 className="text-[24px] font-semibold leading-[36px] tracking-[-0.0075em] text-[#292829]">
-              Veja por temas
-            </h2>
-            <button
-              onClick={onClose}
-              className="flex items-center justify-center w-11 h-11 rounded-md hover:bg-grey-100 transition-colors"
-              aria-label="Fechar"
-            >
-              <XIcon className="w-5 h-5 text-[#077432]" />
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-4 overflow-y-auto flex-1">
-            {sortContentByDesiredOrder(themes, THEMES_NAVIGATION_ORDER).map(
-              (theme) => {
-                const iconKey = normalizeKey(theme.name);
-                const isChecked = selectedCategories.includes(theme.sys.id);
-
-                return (
-                  <div
-                    key={theme.sys.id}
-                    className="flex flex-row h-10 bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0"
-                    onClick={() => onToggleCategory(theme.sys.id)}
-                  >
-                    <div className="flex items-center justify-center h-full w-10 rounded-l-lg hover:bg-[#DDEADF] transition-colors">
-                      <Checkbox
-                        checked={isChecked}
-                        onCheckedChange={() => onToggleCategory(theme.sys.id)}
-                        className="w-5 h-5 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-
-                    <div className="w-px h-full bg-[#EFEFEF]" />
-
-                    <div className="flex items-center gap-2 flex-1 h-full px-3 rounded-r-lg hover:bg-[#DDEADF] transition-colors">
-                      <Icon
-                        id={MACROTHEME_ICON_BY_ID[iconKey] || "list"}
-                        size={16}
-                        style={{ color: theme.color || "#999999" }}
-                      />
-
-                      <span className="flex-1 text-base font-normal text-[#292829] truncate">
-                        {theme.name}
-                      </span>
-
-                      <Icon
-                        className="text-[#999999] flex-shrink-0 rotate-270"
-                        id="expand"
-                        size={12}
-                      />
-                    </div>
-                  </div>
-                );
-              },
-            )}
-            <button
-              className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#DDEADF]"
-              onClick={onSelectAll}
-            >
-              Selecionar todos
-            </button>
-          </div>
-
-          <div className="flex flex-row gap-3 flex-shrink-0">
-            <Button
-              variant="secondary"
-              className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md text-[#E5333F] hover:bg-grey-100"
-              onClick={onClose}
-            >
-              Voltar
-            </Button>
-            <Button
-              className="flex-1 h-10 bg-[#018F39] hover:bg-[#018F39]/90 text-[#F8F7F8] rounded-md"
-              onClick={onApply}
-            >
-              Aplicar
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import ThemeFilterCard from "./ThemeFilterCard";
+import SeeThemesModal from "./SeeThemesModal";
+import type { ExploreFiltersProps } from "./types";
+import { CatalogTextFilter } from "../CatalogTextFilter/CatalogTextFilter";
+import { SearchBar } from "../SearchBar/SearchBar";
 
 export function ExploreFilters({
   className,
@@ -532,7 +341,7 @@ export function ExploreFilters({
               },
             )}
             <button
-              className="flex items-center justify-center w-[145px] h-8 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#DDEADF]"
+              className="flex items-center justify-center w-[145px] h-12 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#DDEADF]"
               onClick={toggleAllCategories}
             >
               Selecionar todos
