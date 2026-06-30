@@ -32,8 +32,8 @@ export const FeedbackSurvey = ({
   }, []);
 
   return (
-    <section className="w-full bg-[#F8F7F8] py-12 lg:px-20">
-      <div className="mx-auto w-full max-w-[1440px]">
+    <section className="w-full bg-[#F8F7F8] py-12">
+      <div className="mx-auto w-full max-w-[1440px] px-4 lg:px-20">
         <div className="w-full rounded-lg border-2 border-[#EFEFEF] bg-white">
           <div
             className="flex cursor-pointer items-center justify-between gap-[18px] rounded-lg bg-[#EFEFEF] p-6 transition-colors duration-300 hover:bg-[#E8E8E8]"
