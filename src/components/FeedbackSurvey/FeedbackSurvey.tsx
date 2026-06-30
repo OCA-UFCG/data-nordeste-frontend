@@ -44,11 +44,11 @@ export const FeedbackSurvey = ({
             </h2>
 
             <Icon
-              id="expand"
+              id="expand-black"
               width={12}
               height={12}
               className={`shrink-0 text-[#292829] transition-transform duration-300 ${
-                isOpen ? "rotate-180" : ""
+                isOpen ? "rotate-270" : "rotate-90"
               }`}
             />
           </div>
