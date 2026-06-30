@@ -74,7 +74,7 @@ export const RecentSectionView = ({
               variant="secondary"
               className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432] hover:bg-grey-100"
             >
-              <span className="text-sm font-medium">Ver Todos</span>
+              <span className="text-sm font-medium">Ver todos</span>
               <Icon id="expand" className="size-2" />
             </LinkButton>
           </div>
@@ -91,7 +91,7 @@ export const RecentSectionView = ({
         variant="secondary"
         className="md:hidden items-center gap-2 border border-[#EFEFEF] bg-white px-4 py-2 text-[#077432]"
       >
-        <span className="text-sm font-medium">Ver Todos</span>
+        <span className="text-sm font-medium">Ver todos</span>
         <Icon id="expand" className="size-2" />
       </LinkButton>
     </section>

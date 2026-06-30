@@ -39,9 +39,9 @@ const DataSection = ({
             <LinkButton
               href="/explore"
               variant="secondary"
-              className="w-fit bg-grey-100 border-grey-300 hidden md:flex"
+              className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432] hover:bg-grey-100"
             >
-              <p>Ver Todos</p>
+              <span className="text-sm font-medium">Ver todos</span>
               <Icon className="size-2" id="expand" />
             </LinkButton>
           </div>
@@ -57,9 +57,9 @@ const DataSection = ({
         <LinkButton
           href="/explore?page=1"
           variant="secondary"
-          className="md:hidden border-grey-300 bg-white"
+          className="md:hidden items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432]"
         >
-          <p>Ver Todos</p>
+          <span className="text-sm font-medium">Ver todos</span>
           <Icon className="size-2" id="expand" />
         </LinkButton>
       </div>
