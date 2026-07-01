@@ -22,6 +22,8 @@ import { buildMetadata } from "@/config/seo";
 import { HomeScrollButton } from "@/components/HomeScrollButton/HomeScrollButton";
 import CatalogSection from "@/components/CatalogSection/CatalogSection";
 
+const BANNER_LIMIT = process.env.NEXT_PUBLIC_APP_ENV === "beta" ? 4 : 6;
+
 export const metadata: Metadata = buildMetadata({
   description:
     "Consulte dados, indicadores, paineis interativos, datastories e publicacoes sobre desenvolvimento regional no Nordeste brasileiro.",
@@ -51,7 +53,7 @@ export default async function Home() {
 
   return (
     <HubTemplate>
-      <MainBanner content={mainBanner.items} />
+      <MainBanner content={mainBanner.items.slice(0, BANNER_LIMIT)} />
       <PreviewSection
         header={findHomeSection(sectionHead.items, "preview")}
         cards={previewCards.items}
