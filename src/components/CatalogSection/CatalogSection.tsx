@@ -28,7 +28,7 @@ const CatalogSection = ({ header }: { header?: SectionHeader }) => {
                 variant="primary"
                 className="h-10 w-full lg:w-auto lg:min-w-[304px] rounded-md px-4 py-2 text-sm font-medium"
               >
-                <Link href="/catalog">Acessar catálogo</Link>
+                <Link href="/catalog">Acessar</Link>
               </Button>
             </div>
           </div>
