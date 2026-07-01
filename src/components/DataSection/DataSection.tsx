@@ -45,7 +45,9 @@ const DataSection = ({
               <Icon className="size-2" id="expand" />
             </LinkButton>
           </div>
-          <p className="text-sm text-grey-600">{subtitle}</p>
+          <p className="text-base font-medium leading-6 text-[#292829]">
+            {subtitle}
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">

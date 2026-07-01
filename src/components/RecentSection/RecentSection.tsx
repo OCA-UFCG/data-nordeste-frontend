@@ -80,8 +80,12 @@ export const RecentSectionView = ({
           </div>
         </div>
 
-        <p className="hidden md:block text-sm text-grey-600">{subtitle}</p>
-        <p className="flex md:hidden text-sm text-grey-600">{subtitle}</p>
+        <p className="hidden md:block text-base font-medium leading-6 text-[#292829]">
+          {subtitle}
+        </p>
+        <p className="flex md:hidden text-base font-medium leading-6 text-[#292829]">
+          {subtitle}
+        </p>
       </div>
 
       <CardCarousel items={posts} variant="post" />
