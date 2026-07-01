@@ -47,7 +47,11 @@ const Header = ({ content }: { content: ISection[] }) => {
                         ).map((child) => (
                           <NavigationMenuLink
                             key={child.id}
-                            href={child.path}
+                            href={
+                              child.id === "ver_todos"
+                                ? "/explore"
+                                : `/macrothemes/${child.id.replace(/_/g, "-")}`
+                            }
                             className="flex flex-row items-center py-[6px] px-3 w-full whitespace-nowrap gap-2 rounded"
                           >
                             <Icon

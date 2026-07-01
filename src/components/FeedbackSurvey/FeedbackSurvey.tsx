@@ -32,8 +32,8 @@ export const FeedbackSurvey = ({
   }, []);
 
   return (
-    <section className="w-full bg-[#F8F7F8] py-12 lg:px-20">
-      <div className="mx-auto w-full max-w-[1440px]">
+    <section className="w-full bg-[#F8F7F8] py-12">
+      <div className="mx-auto w-full max-w-[1440px] px-4 lg:px-20">
         <div className="w-full rounded-lg border-2 border-[#EFEFEF] bg-white">
           <div
             className="flex cursor-pointer items-center justify-between gap-[18px] rounded-lg bg-[#EFEFEF] p-6 transition-colors duration-300 hover:bg-[#E8E8E8]"
@@ -44,11 +44,11 @@ export const FeedbackSurvey = ({
             </h2>
 
             <Icon
-              id="expand"
+              id="expand-black"
               width={12}
               height={12}
               className={`shrink-0 text-[#292829] transition-transform duration-300 ${
-                isOpen ? "rotate-180" : ""
+                isOpen ? "rotate-270" : "rotate-90"
               }`}
             />
           </div>

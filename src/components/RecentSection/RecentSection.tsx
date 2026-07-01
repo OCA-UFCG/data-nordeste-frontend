@@ -18,13 +18,8 @@ export const RecentSection = ({
   content: IPublication[];
 }) => {
   const [posts, setPosts] = useState(content);
-  const [selectedType, setSelectedType] = useState<RecentFilterKey>(
-    FILTERS.all.key,
-  );
 
   const fetchPosts = useCallback(async (types: RecentFilterKey) => {
-    setSelectedType(types);
-
     const { postCollection: filteredPosts } = await getContent<{
       postCollection: { items: IPublication[] };
     }>(POSTS_QUERY, {
@@ -41,7 +36,6 @@ export const RecentSection = ({
     <RecentSectionView
       header={header}
       posts={posts}
-      selectedType={selectedType}
       onTypeChange={fetchPosts}
     />
   );
@@ -50,12 +44,10 @@ export const RecentSection = ({
 export const RecentSectionView = ({
   header,
   posts,
-  selectedType,
   onTypeChange,
 }: {
   header?: SectionHeader;
   posts: IPublication[];
-  selectedType: RecentFilterKey;
   onTypeChange: (value: RecentFilterKey) => void;
 }) => {
   const { id, title, subtitle } = header || {
@@ -66,11 +58,11 @@ export const RecentSectionView = ({
 
   return (
     <section
-      className="w-full max-w-[1440px] px-6 lg:px-20 pt-12 lg:pt-[48px] pb-12 lg:pb-[48px] content-center flex flex-col gap-6 box-border"
+      className="w-full bg-white max-w-[1440px] px-6 lg:px-20 py-12 content-center flex flex-col gap-6 box-border"
       id={id}
     >
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col md:flex-row gap-6 justify-between w-full items-center">
+        <div className="flex flex-col md:flex-row gap-6 justify-between w-full items-start md:items-center">
           <h2 className="text-[30px] font-semibold leading-[36px] text-[#292829]">
             {title}
           </h2>
@@ -78,15 +70,16 @@ export const RecentSectionView = ({
           <div className="flex gap-6 items-center justify-start">
             <TypeFilter onChange={onTypeChange} />
             <LinkButton
-              href={FILTERS[selectedType].href}
+              href="/explore?page=1"
               variant="secondary"
               className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432] hover:bg-grey-100"
             >
-              <span className="text-sm font-medium">Ver Todos</span>
-              <Icon className="rotate-270" id="expand" size={16} />
+              <span className="text-sm font-medium">Ver todos</span>
+              <Icon id="expand" className="size-2" />
             </LinkButton>
           </div>
         </div>
+
         <p className="hidden md:block text-sm text-grey-600">{subtitle}</p>
         <p className="flex md:hidden text-sm text-grey-600">{subtitle}</p>
       </div>
@@ -94,12 +87,12 @@ export const RecentSectionView = ({
       <CardCarousel items={posts} variant="post" />
 
       <LinkButton
-        href={FILTERS[selectedType].href}
+        href="/explore?page=1"
         variant="secondary"
-        className="md:hidden items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432]"
+        className="md:hidden items-center gap-2 border border-[#EFEFEF] bg-white px-4 py-2 text-[#077432]"
       >
-        <span className="text-sm font-medium">Ver Todos</span>
-        <Icon className="rotate-270" id="expand" size={16} />
+        <span className="text-sm font-medium">Ver todos</span>
+        <Icon id="expand" className="size-2" />
       </LinkButton>
     </section>
   );

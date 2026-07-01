@@ -17,7 +17,7 @@ const ContentPost = ({ content }: { content: IPublication }) => {
       href={href}
       target={openInNewTab ? "_blank" : undefined}
       rel={openInNewTab ? "noopener noreferrer" : undefined}
-      className="group flex flex-col overflow-hidden rounded-md w-full bg-white hover:bg-grey-100 border border-grey-200 hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
+      className="group flex flex-col overflow-hidden rounded-lg w-full bg-white hover:bg-grey-100 border border-[#EFEFEF] hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
     >
       <div className="w-full overflow-hidden">
         <Image
@@ -30,14 +30,18 @@ const ContentPost = ({ content }: { content: IPublication }) => {
       </div>
 
       <div className="flex flex-col grow-1 justify-between">
-        <div className="flex flex-row justify-between items-center bg-gray-200 px-5 py-1">
-          <p className="font-semibold text-xs">{POST_TYPE_LABELS[type]}</p>
-          <p className="text-grey-600 text-xs">{formattedDate}</p>
+        <div className="flex flex-row justify-between items-center bg-[#DCDBDC] px-4 py-1">
+          <p className="font-semibold text-xs text-[#0F172A] leading-4">
+            {POST_TYPE_LABELS[type]}
+          </p>
+          <p className="text-[#595557] text-[10px] leading-3">
+            {formattedDate}
+          </p>
         </div>
 
-        <div className="py-4 px-5 flex gap-3 justify-between h-full items-center box-border">
+        <div className="py-3 px-4 flex gap-4 justify-between h-full items-center box-border bg-[#F8F7F8]">
           <span className="sr-only">{title}</span>
-          <p className="line-clamp-2 text-sm font-medium text-wrap">
+          <p className="line-clamp-2 text-sm font-medium leading-5 tracking-[-0.03em] text-[#292829]">
             {type === "data-panel" ? "Acessar Painel" : title}
           </p>
           <Icon

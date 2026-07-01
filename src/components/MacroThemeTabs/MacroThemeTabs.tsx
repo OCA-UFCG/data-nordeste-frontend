@@ -133,10 +133,10 @@ export function MacroThemeTabs({
             <LinkButton
               href={href}
               variant="secondary"
-              className="w-fit shrink-0"
+              className="w-fit shrink-0 items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432] hover:bg-grey-100"
             >
-              <p>Ver Todos</p>
-              <Icon className="rotate-270 size-2" id="expand" />
+              <span className="text-sm font-medium">Ver todos</span>
+              <Icon className="size-2" id="expand" />
             </LinkButton>
           )}
         </div>

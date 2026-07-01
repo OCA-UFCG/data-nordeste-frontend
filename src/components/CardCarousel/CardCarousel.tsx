@@ -37,11 +37,18 @@ export function CardCarousel({ variant, items }: Props) {
 
   const itemClassName =
     variant === "post"
-      ? "basis-full p-0 md:basis-[298px] md:shrink-0 md:grow-0 md:p-3"
+      ? "basis-[274px] shrink-0 grow-0 pl-0 md:basis-[298px] md:p-3 md:shrink-0 md:grow-0"
       : "basis-auto md:basis-1/2 lg:basis-1/4 p-1 md:p-2";
 
   const contentClassName =
-    variant === "post" ? "-ml-1 md:-ml-3" : "-ml-1 md:-ml-2";
+    variant === "post"
+      ? "ml-0 pl-6 md:ml-[-3px] md:pl-0 gap-6 md:gap-0"
+      : "-ml-1 md:-ml-2";
+
+  const contentWrapperClassName =
+    variant === "post" ? "overflow-visible md:overflow-hidden" : "";
+
+  const isPost = variant === "post";
 
   return (
     <div className="w-full min-w-0 lg:flex lg:justify-center">
@@ -57,10 +64,13 @@ export function CardCarousel({ variant, items }: Props) {
         ]}
         className="flex flex-col gap-4 content-carousel w-full"
       >
-        <CarouselContent className={contentClassName}>
+        <CarouselContent
+          className={contentClassName}
+          wrapperClassName={contentWrapperClassName}
+        >
           {sortedItems.slice(0, 8).map((item, i) => (
             <CarouselItem key={i} className={itemClassName}>
-              {variant === "post" ? (
+              {isPost ? (
                 <ContentPost content={item as IPublication} />
               ) : (
                 <PreviewCard content={item as IPreviewCard} />
@@ -69,7 +79,7 @@ export function CardCarousel({ variant, items }: Props) {
           ))}
         </CarouselContent>
 
-        <div className="flex md:hidden gap-2 w-full justify-center">
+        <div className="flex gap-2 w-full justify-center">
           {sortedItems.slice(0, 8).map((_, i) => (
             <DotButton tabIndex={i} key={i} />
           ))}

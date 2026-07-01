@@ -114,8 +114,6 @@ export default async function CatalogPage({
         <ExploreFilters
           themes={themes}
           categoryValues={categoryValues}
-          mobileCatalogLayout
-          sortingAsField
           sortingOptions={dataSortingTypes}
         />
       </Suspense>

@@ -1,11 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Icon } from "../Icon/Icon";
-import { Checkbox } from "../ui/checkbox";
-import { SearchBar } from "../SearchBar/SearchBar";
-import { CatalogTextFilter } from "../CatalogTextFilter/CatalogTextFilter";
-import { Button } from "../ui/button";
+import { Icon } from "@/components/Icon/Icon";
+import { Button } from "@/components/ui/button";
 import {
   MACROTHEME_ICON_BY_ID,
   THEMES_NAVIGATION_ORDER,
@@ -23,215 +20,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import type { MacroTheme } from "@/utils/interfaces";
 import type { SearchIndexItem } from "@/features/search/types";
-import { XIcon } from "lucide-react";
-
-import Link from "next/link";
 import { useExploreNavigation } from "@/features/explore/navigation";
 
-interface ThemeFilterCardProps {
-  iconId: string;
-  color: string;
-  name: string;
-  href?: string;
-  checked?: boolean;
-  onCheckedChange?: (checked: boolean) => void;
-}
-
-function ThemeFilterCard({
-  iconId,
-  color,
-  name,
-  href,
-  checked,
-  onCheckedChange,
-}: ThemeFilterCardProps) {
-  return (
-    <div
-      className="flex flex-row h-8 sm:w-[302px] bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0"
-      onClick={() => onCheckedChange?.(!checked)}
-    >
-      <div className="flex items-center justify-center h-full w-8 rounded-l-lg hover:bg-[#DDEADF] transition-colors">
-        <Checkbox
-          checked={checked}
-          onCheckedChange={onCheckedChange}
-          className="w-4 h-4 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
-          onClick={(e) => e.stopPropagation()}
-        />
-      </div>
-
-      <div className="w-px h-full bg-[#EFEFEF]" />
-
-      {href ? (
-        <Link
-          href={href}
-          className="flex items-center gap-2 flex-1 h-full px-2 rounded-r-lg hover:bg-[#DDEADF] transition-colors"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Icon id={iconId} size={16} style={{ color }} />
-          <span className="flex-1 text-sm font-normal text-[#292829] truncate">
-            {name}
-          </span>
-          <Icon
-            className="text-[#999999] flex-shrink-0 rotate-270"
-            id="expand"
-            size={12}
-          />
-        </Link>
-      ) : (
-        <div className="flex items-center gap-2 flex-1 h-full px-2 rounded-r-lg hover:bg-[#DDEADF] transition-colors">
-          <Icon id={iconId} size={16} style={{ color }} />
-          <span className="flex-1 text-sm font-normal text-[#292829] truncate">
-            {name}
-          </span>
-          <Icon
-            className="text-[#999999] flex-shrink-0 rotate-270"
-            id="expand"
-            size={12}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface ExploreFiltersProps {
-  className?: string;
-  themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
-  categoryValue?: "contentful-id" | "theme-id";
-  categoryValues?: Record<string, string>;
-  clientSideNavigation?: boolean;
-  mobileCatalogLayout?: boolean;
-  showClearFilters?: boolean;
-  showSorting?: boolean;
-  sortingAsField?: boolean;
-  sortingLabel?: string;
-  sortingOptions?: { [label: string]: string };
-}
-
-function SeeThemesModal({
-  themes,
-  selectedCategories,
-  onToggleCategory,
-  onSelectAll,
-  onClose,
-  onApply,
-}: {
-  themes: Pick<MacroTheme, "id" | "name" | "color" | "sys">[];
-  selectedCategories: string[];
-  onToggleCategory: (themeId: string) => void;
-  onSelectAll: () => void;
-  onClose: () => void;
-  onApply: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg shadow-lg w-full max-w-[393px] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex flex-col gap-6 p-6 flex-1 overflow-hidden">
-          <div className="flex items-center justify-between flex-shrink-0">
-            <h2 className="text-[24px] font-semibold leading-[36px] tracking-[-0.0075em] text-[#292829]">
-              Veja por temas
-            </h2>
-            <button
-              onClick={onClose}
-              className="flex items-center justify-center w-11 h-11 rounded-md hover:bg-grey-100 transition-colors"
-              aria-label="Fechar"
-            >
-              <XIcon className="w-5 h-5 text-[#077432]" />
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-4 overflow-y-auto flex-1">
-            {sortContentByDesiredOrder(themes, THEMES_NAVIGATION_ORDER).map(
-              (theme) => {
-                const iconKey = normalizeKey(theme.name);
-                const isChecked = selectedCategories.includes(theme.sys.id);
-
-                return (
-                  <div
-                    key={theme.sys.id}
-                    className="flex flex-row h-10 bg-[#F8F7F8] border border-[#EFEFEF] rounded-lg cursor-pointer hover:bg-[#F0EFEF] transition-colors flex-shrink-0"
-                    onClick={() => onToggleCategory(theme.sys.id)}
-                  >
-                    <div className="flex items-center justify-center h-full w-10 rounded-l-lg hover:bg-[#DDEADF] transition-colors">
-                      <Checkbox
-                        checked={isChecked}
-                        onCheckedChange={() => onToggleCategory(theme.sys.id)}
-                        className="w-5 h-5 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-
-                    <div className="w-px h-full bg-[#EFEFEF]" />
-
-                    <div className="flex items-center gap-2 flex-1 h-full px-3 rounded-r-lg hover:bg-[#DDEADF] transition-colors">
-                      <Icon
-                        id={MACROTHEME_ICON_BY_ID[iconKey] || "list"}
-                        size={16}
-                        style={{ color: theme.color || "#999999" }}
-                      />
-
-                      <span className="flex-1 text-base font-normal text-[#292829] truncate">
-                        {theme.name}
-                      </span>
-
-                      <Icon
-                        className="text-[#999999] flex-shrink-0 rotate-270"
-                        id="expand"
-                        size={12}
-                      />
-                    </div>
-                  </div>
-                );
-              },
-            )}
-            <button
-              className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#DDEADF]"
-              onClick={onSelectAll}
-            >
-              Selecionar todos
-            </button>
-          </div>
-
-          <div className="flex flex-row gap-3 flex-shrink-0">
-            <Button
-              variant="secondary"
-              className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md text-[#E5333F] hover:bg-grey-100"
-              onClick={onClose}
-            >
-              Voltar
-            </Button>
-            <Button
-              className="flex-1 h-10 bg-[#018F39] hover:bg-[#018F39]/90 text-[#F8F7F8] rounded-md"
-              onClick={onApply}
-            >
-              Aplicar
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import ThemeFilterCard from "./ThemeFilterCard";
+import SeeThemesModal from "./SeeThemesModal";
+import type { ExploreFiltersProps } from "./types";
+import { CatalogTextFilter } from "../CatalogTextFilter/CatalogTextFilter";
+import { SearchBar } from "../SearchBar/SearchBar";
 
 export function ExploreFilters({
   className,
   themes,
-  categoryValue = "contentful-id",
   categoryValues,
   clientSideNavigation = false,
   mobileCatalogLayout = false,
-  showClearFilters = true,
-  showSorting = true,
-  sortingAsField = false,
-  sortingLabel,
   sortingOptions = sortingTypes,
 }: ExploreFiltersProps) {
   const params = useSearchParams();
@@ -257,14 +60,12 @@ export function ExploreFilters({
   const selectedThemeNames = useMemo(() => {
     return themes
       .filter((theme) => {
-        const themeValue =
-          categoryValues?.[theme.sys.id] ??
-          (categoryValue === "theme-id" ? theme.id : theme.sys.id);
+        const themeValue = categoryValues?.[theme.sys.id] ?? theme.sys.id;
 
         return selectedCategories.includes(themeValue);
       })
       .map((t) => t.name);
-  }, [themes, selectedCategories, categoryValues, categoryValue]);
+  }, [themes, selectedCategories, categoryValues]);
 
   const handleFilterItems = useCallback(
     (item: SearchIndexItem) => {
@@ -350,9 +151,7 @@ export function ExploreFilters({
   );
 
   const themeValues = themes.map(
-    (theme) =>
-      categoryValues?.[theme.sys.id] ??
-      (categoryValue === "theme-id" ? theme.id : theme.sys.id),
+    (theme) => categoryValues?.[theme.sys.id] ?? theme.sys.id,
   );
   const allThemesSelected =
     themeValues.length > 0 &&
@@ -383,7 +182,7 @@ export function ExploreFilters({
                 variant="page"
                 className="flex-1 max-w-none"
                 initialQuery={searchQuery}
-                placeholder="Buscar conteúdo"
+                placeholder="Digite sua pesquisa"
                 hideViewAll={true}
                 hideSuggestions={true}
                 filterItems={handleFilterItems}
@@ -412,93 +211,56 @@ export function ExploreFilters({
                   : "contents",
               )}
             >
-              {showClearFilters && (
-                <Button
-                  variant="secondary"
-                  className={cn(
-                    "text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit",
-                    mobileCatalogLayout && "w-full",
-                  )}
-                  onClick={() => {
-                    if (clientSideNavigation) {
-                      replaceQuery(
-                        Object.fromEntries(
-                          Array.from(params.keys()).map((key) => [key, null]),
-                        ),
-                      );
-                    } else {
-                      router.replace(pathname, { scroll: false });
-                    }
-                  }}
+              <Button
+                variant="secondary"
+                className={cn(
+                  "text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit",
+                  mobileCatalogLayout && "w-full",
+                )}
+                onClick={() => {
+                  if (clientSideNavigation) {
+                    replaceQuery(
+                      Object.fromEntries(
+                        Array.from(params.keys()).map((key) => [key, null]),
+                      ),
+                    );
+                  } else {
+                    router.replace(pathname, { scroll: false });
+                  }
+                }}
+              >
+                <span>Limpar filtros</span>
+                <Icon id="no-filter" size={16} />
+              </Button>
+
+              <div
+                className={cn(
+                  "items-center gap-1 text-xs font-medium text-[#292829]",
+                  mobileCatalogLayout ? "hidden md:flex" : "flex",
+                )}
+              >
+                <Select
+                  value={currentSort}
+                  onValueChange={(value) => updateUrl({ sort: value })}
                 >
-                  <span>Limpar filtros</span>
-                  <Icon id="no-filter" size={16} />
-                </Button>
-              )}
-
-              {showSorting && (
-                <>
-                  {sortingAsField && (
-                    <div className="flex min-h-10 w-full items-center rounded-md border border-grey-200 bg-grey-100 px-3 text-grey-600 shadow-sm transition-colors hover:bg-grey-200 lg:w-auto">
-                      <Select
-                        value={currentSort}
-                        onValueChange={(value) => updateUrl({ sort: value })}
-                      >
-                        <SelectTrigger className="w-full !h-auto min-w-[126px] justify-between border-0 !bg-transparent !p-0 text-sm font-normal text-grey-600 shadow-none focus-visible:ring-0 data-[state=open]:!bg-transparent">
-                          <SelectValue placeholder="Ordenar por" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {sortOptions.map(([label, value]) => (
-                              <SelectItem
-                                value={value}
-                                key={value}
-                                className="cursor-pointer"
-                              >
-                                {label}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  <div
-                    className={cn(
-                      "items-center gap-1 text-xs font-medium text-[#292829]",
-                      sortingAsField
-                        ? "hidden"
-                        : mobileCatalogLayout
-                          ? "hidden md:flex"
-                          : "flex",
-                    )}
-                  >
-                    {sortingLabel && <span>{sortingLabel}</span>}
-                    <Select
-                      value={currentSort}
-                      onValueChange={(value) => updateUrl({ sort: value })}
-                    >
-                      <SelectTrigger className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0">
-                        <SelectValue placeholder="Ordenar por" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {sortOptions.map(([label, value]) => (
-                            <SelectItem
-                              value={value}
-                              key={value}
-                              className="cursor-pointer"
-                            >
-                              {label}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
+                  <SelectTrigger className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0">
+                    <SelectValue placeholder="Mais recentes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {sortOptions.map(([label, value]) => (
+                        <SelectItem
+                          value={value}
+                          key={value}
+                          className="cursor-pointer"
+                        >
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -513,10 +275,7 @@ export function ExploreFilters({
               (theme) => {
                 const iconKey = normalizeKey(theme.name);
                 const themeValue =
-                  categoryValues?.[theme.sys.id] ??
-                  (categoryValue === "theme-id"
-                    ? (theme as MacroTheme & { id: string }).id
-                    : theme.sys.id);
+                  categoryValues?.[theme.sys.id] ?? theme.sys.id;
 
                 return (
                   <ThemeFilterCard
@@ -532,7 +291,7 @@ export function ExploreFilters({
               },
             )}
             <button
-              className="flex items-center justify-center w-[145px] h-8 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#DDEADF]"
+              className="flex items-center justify-center w-[145px] h-12 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#D6E9DB]"
               onClick={toggleAllCategories}
             >
               Selecionar todos

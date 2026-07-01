@@ -31,18 +31,18 @@ const DataSection = ({
   });
 
   return (
-    <section className="bg-grey-100 w-full" id={title}>
-      <div className="max-w-[1440px] mx-auto my-0 flex flex-col gap-6 px-4 pt-6 pb-9 lg:px-20 lg:pt-8 lg:pb-12">
+    <section className="bg-grey-100 w-full py-12" id={title}>
+      <div className="max-w-[1440px] mx-auto my-0 flex flex-col gap-6 px-4 lg:px-20">
         <div className="flex flex-col gap-6">
           <div className="flex justify-between w-full">
             <h2 className="text-3xl font-semibold">{title}</h2>
             <LinkButton
               href="/explore"
               variant="secondary"
-              className="w-fit bg-grey-100 border-grey-300 hidden md:flex"
+              className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432] hover:bg-grey-100"
             >
-              <p>Ver Todos</p>
-              <Icon className="rotate-270 size-2" id="expand" />
+              <span className="text-sm font-medium">Ver todos</span>
+              <Icon className="size-2" id="expand" />
             </LinkButton>
           </div>
           <p className="text-sm text-grey-600">{subtitle}</p>
@@ -57,10 +57,10 @@ const DataSection = ({
         <LinkButton
           href="/explore?page=1"
           variant="secondary"
-          className="md:hidden bg-grey-100 border-grey-300"
+          className="md:hidden items-center gap-2 px-4 py-2 bg-white border border-[#EFEFEF] rounded-md text-[#077432]"
         >
-          <p>Ver Todos</p>
-          <Icon className="rotate-270 size-2" id="expand" />
+          <span className="text-sm font-medium">Ver todos</span>
+          <Icon className="size-2" id="expand" />
         </LinkButton>
       </div>
     </section>

@@ -134,7 +134,7 @@ describe("RecentSection", () => {
     );
     expect(
       screen.getAllByRole("link", { name: /Ver Todos/i })[0],
-    ).toHaveAttribute("href", "/posts?type_in=data-story&page=1");
+    ).toHaveAttribute("href", "/explore?page=1");
   });
 
   it("fetches only newsletters when the newsletters filter is selected", async () => {
@@ -163,6 +163,6 @@ describe("RecentSection", () => {
     );
     expect(
       screen.getAllByRole("link", { name: /Ver Todos/i })[0],
-    ).toHaveAttribute("href", "/posts?type_in=newsletter&page=1");
+    ).toHaveAttribute("href", "/explore?page=1");
   });
 });
