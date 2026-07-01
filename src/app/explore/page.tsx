@@ -108,13 +108,13 @@ export default async function ExplorePage({
             </h1>
 
             {pageHeaders.items[0]?.richSubtitle ? (
-              <div className="text-[14px] sm:text-[16px] font-normal sm:font-medium leading-[21px] sm:leading-6 text-[#F8F7F8] [&_p]:m-0">
+              <div className="text-[14px] sm:text-[18px] font-normal sm:font-medium leading-[21px] sm:leading-6 text-[#F8F7F8] [&_p]:m-0">
                 {documentToReactComponents(
                   pageHeaders.items[0].richSubtitle.json,
                 )}
               </div>
             ) : pageHeaders.items[0]?.subtitle ? (
-              <p className="text-[14px] sm:text-[16px] font-normal sm:font-medium leading-[21px] sm:leading-6 text-[#F8F7F8]">
+              <p className="text-[14px] sm:text-[18px] font-normal sm:font-medium leading-[21px] sm:leading-6 text-[#F8F7F8]">
                 {pageHeaders.items[0].subtitle}
               </p>
             ) : null}

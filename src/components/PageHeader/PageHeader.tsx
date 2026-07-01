@@ -21,11 +21,11 @@ const PageHeader = ({ content }: { content: IPageHeader }) => {
             <h1 className="font-extrabold text-3xl lg:text-5xl">{title}</h1>
 
             {richSubtitle ? (
-              <div className="text-[16px]">
+              <div className="text-[18px]">
                 {documentToReactComponents(richSubtitle.json)}
               </div>
             ) : (
-              subtitle && <h2 className="text-[16px]">{subtitle}</h2>
+              subtitle && <h2 className="text-[18px]">{subtitle}</h2>
             )}
           </div>
         </div>

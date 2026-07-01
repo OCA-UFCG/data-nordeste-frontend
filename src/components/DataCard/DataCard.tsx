@@ -108,7 +108,7 @@ export const DataCard = ({
           </div>
         </div>
 
-        <div className="hidden sm:flex flex-row justify-center gap-[16px] sm:justify-normal items-center">
+        <div className="hidden sm:flex flex-row justify-center gap-[18px] sm:justify-normal items-center">
           {files.length > 0 && (
             <div className="flex sm:hidden flex-row flex-wrap items-center justify-between gap-3 lg:flex-nowrap lg:justify-end  w-[150px] h-[40px]">
               {

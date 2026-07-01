@@ -104,11 +104,11 @@ export function MacroThemeTabs({
       {header && (
         <>
           {header.richSubtitle?.json ? (
-            <div className="text-[16px] font-normal leading-6 text-[#292829] [&_a]:font-medium [&_a]:text-[#077432] [&_a]:underline-offset-2 [&_a:hover]:underline [&_p]:mb-0 [&_p]:mt-0">
+            <div className="text-[18px] font-normal leading-6 text-[#292829] [&_a]:font-medium [&_a]:text-[#077432] [&_a]:underline-offset-2 [&_a:hover]:underline [&_p]:mb-0 [&_p]:mt-0">
               {documentToReactComponents(header.richSubtitle.json)}
             </div>
           ) : header.subtitle ? (
-            <p className="text-[16px] font-normal leading-6 text-[#292829]">
+            <p className="text-[18px] font-normal leading-6 text-[#292829]">
               {header.subtitle}
             </p>
           ) : null}
@@ -190,8 +190,10 @@ export function MacroThemeTabs({
               role="tab"
               aria-selected={activeTab === key}
               onClick={() => handleTabClick(key)}
-              style={{ padding: "16px 12px" }}
+              
+              style={{ padding: "18px 12px" }}
               className={`h-full flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] cursor-pointer ${
+
                 activeTab === key
                   ? "border-[#018F39] text-[#018F39]"
                   : "border-transparent text-[#7E797B] hover:text-[#292829] hover:border-gray-300"

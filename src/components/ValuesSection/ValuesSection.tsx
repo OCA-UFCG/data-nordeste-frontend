@@ -21,7 +21,7 @@ const ValuesSection = ({ content }: { content: IValues[] }) => {
               height={248}
             />
           )}
-          <div className="prose max-w-none lg:flex-1 [&>p]:text-[16px] [&>p]:font-normal [&>p]:leading-[24px] [&>p]:text-[#292829] [&_*]:text-[#292829]">
+          <div className="prose max-w-none lg:flex-1 [&>p]:text-[18px] [&>p]:font-normal [&>p]:leading-[24px] [&>p]:text-[#292829] [&_*]:text-[#292829]">
             {documentToReactComponents(details.json)}
           </div>
         </div>
