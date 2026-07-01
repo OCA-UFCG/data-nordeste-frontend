@@ -134,7 +134,9 @@ export default async function MacroThemePage({
 
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 mt-12 pb-10 pt-0">
         {!!theme.articleTitle && (
-          <h2 className="text-2xl font-semibold">{theme.articleTitle}</h2>
+          <h2 className="text-xl lg:text-3xl font-semibold">
+            {theme.articleTitle}
+          </h2>
         )}
 
         {!!theme.article?.json && (
