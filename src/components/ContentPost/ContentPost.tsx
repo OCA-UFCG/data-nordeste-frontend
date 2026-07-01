@@ -44,11 +44,7 @@ const ContentPost = ({ content }: { content: IPublication }) => {
           <p className="line-clamp-2 text-sm font-medium leading-5 tracking-[-0.03em] text-[#292829]">
             {type === "data-panel" ? "Acessar" : title}
           </p>
-          <Icon
-            className="md:flex rotate-270 size-2 min-w-2"
-            id="expand"
-            size={9}
-          />
+          <Icon className="md:flex size-2 min-w-2" id="expand-black" size={9} />
         </div>
       </div>
     </Link>
