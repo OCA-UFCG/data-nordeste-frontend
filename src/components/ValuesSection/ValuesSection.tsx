@@ -6,18 +6,22 @@ const ValuesSection = ({ content }: { content: IValues[] }) => {
   const { title, thumb, details } = content[0];
 
   return (
-    <section className="flex items-center flex-col w-full px-6 py-9 lg:px-[80px] lg:py-[32px]">
-      <div className="flex flex-col w-full lg:max-w-[1440px] h-fit gap-[24px]">
-        <h1 className="text-[24px] lg:text-[30px] font-bold">{title}</h1>
-        <div className="">
-          <Image
-            className="w-full float-none md:float-left h-full md:max-w-[300px] object-cover rounded-md aspect-[16/9] order-1 mb-4 mr-4"
-            src={thumb?.url || ""}
-            alt={"Sobre nós"}
-            width={1200}
-            height={800}
-          />
-          <div className="h-full text-gray-800 order-2 text-justify">
+    <section className="flex items-center flex-col w-full px-6 lg:px-20 py-6">
+      <div className="flex flex-col w-full max-w-[1280px] gap-6">
+        <h1 className="text-[30px] font-semibold leading-[36px] tracking-[-0.0075em] text-[#292829] pb-2">
+          {title}
+        </h1>
+        <div className="flex flex-col lg:flex-row items-center gap-6">
+          {thumb?.url && (
+            <Image
+              className="w-full lg:w-[274px] h-[248px] object-cover rounded-lg shrink-0"
+              src={thumb.url}
+              alt={"Sobre nós"}
+              width={274}
+              height={248}
+            />
+          )}
+          <div className="prose max-w-none lg:flex-1 [&>p]:text-[16px] [&>p]:font-normal [&>p]:leading-[24px] [&>p]:text-[#292829] [&_*]:text-[#292829]">
             {documentToReactComponents(details.json)}
           </div>
         </div>
