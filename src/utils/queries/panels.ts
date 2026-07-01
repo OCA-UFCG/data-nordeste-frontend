@@ -6,6 +6,7 @@ export const DATA_PANEL_QUERY = `
         date
         source
         macroTheme
+        abovePanelDescription
         descriptionTitle
         description {
           json

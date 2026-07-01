@@ -9,7 +9,7 @@ const PowerBIContainer = ({
   panel: ReportData;
   pageName?: string;
 }) => {
-  const { macroTheme, title, source, date } = panel;
+  const { macroTheme, title, source, date, abovePanelDescription } = panel;
   const dateObj = date ? new Date(date) : null;
   const formattedDate = dateObj ? dateObj.toLocaleDateString("pt-BR") : "";
 
@@ -21,6 +21,12 @@ const PowerBIContainer = ({
           Publicado em: {formattedDate}
         </span>
       </div>
+
+      {abovePanelDescription && (
+        <p className="w-full max-w-[1280px] text-base leading-[150%] text-[#292829]">
+          {abovePanelDescription}
+        </p>
+      )}
 
       {/* IMPORTANT: pageName is a public query parameter, so keep URL encoding
       centralized here before passing the Power BI source into the iframe. */}

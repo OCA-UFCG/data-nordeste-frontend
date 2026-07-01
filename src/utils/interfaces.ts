@@ -86,6 +86,7 @@ export interface ReportData {
   title: string;
   source: string;
   macroTheme: string;
+  abovePanelDescription?: string;
   description?: ContentfulRichTextField;
   descriptionTitle?: string;
 }
