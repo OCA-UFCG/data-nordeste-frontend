@@ -29,7 +29,7 @@ const ContactSection = ({ content }: { content: IContact[] }) => {
               className="flex flex-row gap-2 items-center hover:underline cursor-pointer"
             >
               <Icon id={type} size={32} className="text-green-900" />
-              <span className="text-[16px]">{name}</span>
+              <span className="text-[18px]">{name}</span>
             </a>
           ))}
         </div>
