@@ -55,14 +55,14 @@ export const sortingTypes: {
     | "sys.contentType.sys.id"
     | "-sys.contentType.sys.id";
 } = {
-  "Ordem Alfabética": "title_ASC" as "sys.contentType.sys.id",
   "Mais recente": "date_DESC" as "sys.contentType.sys.id",
+  "Ordem alfabética": "title_ASC" as "sys.contentType.sys.id",
 };
 
 export const dataSortingTypes = {
   "Mais recente": "mostrecent",
-  "Mais visualizados": "mostviewed",
-};
+  "Ordem alfabética": "title_ASC",
+} as const;
 
 export const POST_TYPES = POST_TYPE_LABELS;
 

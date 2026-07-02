@@ -91,7 +91,8 @@ export const buildZenodoRecordsQuery = (
     page: page.toString(),
   });
 
-  if (filters.sort) query.append("sort", filters.sort);
+  if (filters.sort && filters.sort !== "title_ASC")
+    query.append("sort", filters.sort);
 
   const { dateCondition, searchCondition, otherConditions } =
     buildConditions(filters);
