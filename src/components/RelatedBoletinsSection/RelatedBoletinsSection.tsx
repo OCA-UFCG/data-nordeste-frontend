@@ -1,9 +1,25 @@
 import type { RelatedBoletim } from "@/features/boletim/types";
-import ContentPost from "@/components/ContentPost/ContentPost";
+import { SearchResultCard } from "@/components/SearchResultCard/SearchResultCard";
+import type { SearchResult, SearchItemType } from "@/features/search/types";
 
 type RelatedBoletinsSectionProps = {
   items: RelatedBoletim[];
 };
+
+const toSearchResult = (item: RelatedBoletim): SearchResult => ({
+  id: item.sys.id,
+  source: "post",
+  type: item.type as SearchItemType,
+  title: item.title,
+  description: item.description || "",
+  href: `/boletim/${item.sys.id}`,
+  date: item.date || null,
+  thumb: item.thumb?.url || null,
+  themes: [],
+  tags: [],
+  text: item.title,
+  score: 0,
+});
 
 export const RelatedBoletinsSection = ({
   items,
@@ -19,7 +35,10 @@ export const RelatedBoletinsSection = ({
         <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {items.slice(0, 4).map((item) => (
             <div key={item.sys.id} className="h-full">
-              <ContentPost content={item} />
+              <SearchResultCard
+                result={toSearchResult(item)}
+                showAccessAction
+              />
             </div>
           ))}
         </div>
