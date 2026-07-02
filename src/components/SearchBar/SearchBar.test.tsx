@@ -107,6 +107,30 @@ describe("SearchBar", () => {
     ).toHaveValue("agua");
   });
 
+  it("moves focus and the cursor when another search activates it", async () => {
+    const onUserFocus = vi.fn();
+    const { rerender } = render(
+      <SearchBar
+        initialQuery="traba"
+        focusOnActivate={false}
+        onUserFocus={onUserFocus}
+      />,
+    );
+
+    rerender(
+      <SearchBar
+        initialQuery="traba"
+        focusOnActivate
+        onUserFocus={onUserFocus}
+      />,
+    );
+
+    const input = screen.getByRole("searchbox", { name: "Buscar conteúdo" });
+    await waitFor(() => expect(input).toHaveFocus());
+    expect(input).toHaveProperty("selectionStart", 5);
+    expect(onUserFocus).not.toHaveBeenCalled();
+  });
+
   it("reuses the loaded index across remounts", async () => {
     const fetchMock = vi
       .fn()

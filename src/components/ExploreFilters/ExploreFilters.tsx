@@ -22,6 +22,7 @@ import {
 } from "../ui/select";
 import type { SearchIndexItem } from "@/features/search/types";
 import { useExploreNavigation } from "@/features/explore/navigation";
+import { setExploreSearchFocusOwner } from "@/features/explore/searchFocus";
 
 import ThemeFilterCard from "./ThemeFilterCard";
 import SeeThemesModal from "./SeeThemesModal";
@@ -178,17 +179,20 @@ export function ExploreFilters({
             {mobileCatalogLayout ? (
               <CatalogTextFilter />
             ) : (
-              <SearchBar
-                variant="page"
-                className="flex-1 max-w-none"
-                initialQuery={searchQuery}
-                placeholder="Digite sua pesquisa"
-                hideViewAll={true}
-                hideSuggestions={true}
-                filterItems={handleFilterItems}
-                onSubmit={(q) => updateUrl({ q: q || null, page: "1" })}
-                onQueryChange={(q) => updateUrl({ q: q || null, page: "1" })}
-              />
+              <div className="flex-1" id="explore-search-anchor">
+                <SearchBar
+                  variant="page"
+                  className="max-w-none"
+                  initialQuery={searchQuery}
+                  placeholder="Digite sua pesquisa"
+                  hideViewAll={true}
+                  hideSuggestions={true}
+                  filterItems={handleFilterItems}
+                  onUserFocus={() => setExploreSearchFocusOwner("explore")}
+                  onSubmit={(q) => updateUrl({ q: q || null, page: "1" })}
+                  onQueryChange={(q) => updateUrl({ q: q || null, page: "1" })}
+                />
+              </div>
             )}
 
             {mobileCatalogLayout && (
@@ -322,6 +326,7 @@ export function ExploreFilters({
           hideViewAll={true}
           hideSuggestions={true}
           filterItems={handleFilterItems}
+          onUserFocus={() => setExploreSearchFocusOwner("explore")}
           onSubmit={(q) => updateUrl({ q: q || null, page: "1" })}
           onQueryChange={(q) => updateUrl({ q: q || null, page: "1" })}
         />

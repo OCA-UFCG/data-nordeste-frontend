@@ -33,8 +33,10 @@ import { normalizeKey } from "@/utils/functions";
 type SearchBarProps = {
   autoFocus?: boolean;
   className?: string;
+  focusOnActivate?: boolean;
   initialQuery?: string;
   onNavigate?: () => void;
+  onUserFocus?: () => void;
   placeholder?: string;
   variant?: "header" | "mobile" | "page";
   hideViewAll?: boolean;
@@ -66,8 +68,10 @@ const SearchSuggestionIcon = ({ themes }: { themes: string[] }) => {
 export const SearchBar = ({
   autoFocus,
   className,
+  focusOnActivate = false,
   initialQuery = "",
   onNavigate,
+  onUserFocus,
   placeholder = "Digite sua pesquisa",
   variant = "header",
   hideViewAll = false,
@@ -85,11 +89,26 @@ export const SearchBar = ({
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const isMountedRef = useRef(true);
   const pendingUpdate = useRef<ReturnType<typeof setTimeout>>();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const transferringFocusRef = useRef(false);
   const inputId = useId();
 
   useEffect(() => {
     setQuery(initialQuery);
   }, [initialQuery]);
+
+  useEffect(() => {
+    if (!focusOnActivate) return;
+
+    const frame = requestAnimationFrame(() => {
+      transferringFocusRef.current = true;
+      inputRef.current?.focus({ preventScroll: true });
+      inputRef.current?.setSelectionRange(query.length, query.length);
+      transferringFocusRef.current = false;
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [focusOnActivate, query.length]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -190,7 +209,7 @@ export const SearchBar = ({
       className={cn(
         "relative",
         variant === "header" &&
-          "max-w-[407px] transition-[max-width] duration-200 focus-within:max-w-none",
+          "max-w-[407px] transition-[max-width] duration-300 ease-out focus-within:max-w-[1200px]",
         variant === "page" && "w-full max-w-[961px]",
         className,
       )}
@@ -213,9 +232,11 @@ export const SearchBar = ({
           autoFocus={autoFocus}
           className="min-w-0 flex-1 appearance-none bg-transparent px-1 text-sm font-normal leading-5 text-[#292829] outline-none placeholder:text-[#292829] placeholder:font-normal placeholder:text-sm placeholder:leading-5 [&::-webkit-search-cancel-button]:hidden"
           id={inputId}
+          ref={inputRef}
           onChange={(event) => handleQueryChange(event.target.value)}
           onFocus={() => {
             setOpen(true);
+            if (!transferringFocusRef.current) onUserFocus?.();
             if (!hideSuggestions) void loadIndex();
           }}
           placeholder={placeholder}
