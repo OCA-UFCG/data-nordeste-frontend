@@ -130,7 +130,7 @@ export function MacroThemeBanner({
                     <div
                       className="prose prose-invert max-w-[1044px] text-center md:text-left
                       prose-p:my-0 prose-p:text-sm prose-p:font-medium prose-p:leading-relaxed
-                      prose-p:sm:text-base prose-p:lg:text-[16px] prose-p:lg:leading-[150%]"
+                      prose-p:sm:text-base prose-p:lg:text-[18px] prose-p:lg:leading-[150%]"
                     >
                       {documentToReactComponents(content.description.json)}
                     </div>
