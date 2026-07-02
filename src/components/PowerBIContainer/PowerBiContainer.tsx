@@ -32,6 +32,7 @@ const PowerBIContainer = ({
       centralized here before passing the Power BI source into the iframe. */}
       <iframe
         src={buildPowerBiSource(source, pageName)}
+        loading="lazy"
         allowFullScreen
         title={title}
         className="w-full aspect-[32/25] h-auto"

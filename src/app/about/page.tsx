@@ -39,17 +39,21 @@ interface IAboutTab {
 }
 
 export default async function AboutPage() {
+  const [pageContent, tabContent] = await Promise.all([
+    getContent<IAboutContent>(ABOUT_PAGE_QUERY),
+    getContent<IAboutTab>(ABOUT_QUERY),
+  ]);
   const {
     pageHeadersCollection: { items: pageHeaders },
     pageTabsCollection: { items: pageTabs },
     contactInfoCollection: { items: contactInfo },
     partnersInfoCollection: { items: partnersInfo },
-  }: IAboutContent = await getContent(ABOUT_PAGE_QUERY);
+  } = pageContent;
 
   const {
     aboutCollection: { items: about },
     visionMissionValuesCollection: { items: visionMissionValues },
-  }: IAboutTab = await getContent(ABOUT_QUERY);
+  } = tabContent;
 
   const tabs: { [key: string]: React.ReactElement } = {
     "contato": <ContactSection content={contactInfo} />,

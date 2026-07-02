@@ -1,9 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
+import dynamic from "next/dynamic";
 import { RelatedBoletinsSection } from "@/components/RelatedBoletinsSection/RelatedBoletinsSection";
 import type { BoletimDetail, RelatedBoletim } from "@/features/boletim/types";
+
+// PERF: pdf.js is one of the largest client dependencies. Keep it out of the
+// initial boletim bundle and show stable space while its chunk is requested.
+const PdfViewer = dynamic(
+  () =>
+    import("@/components/PdfViewer/PdfViewer").then(
+      (module) => module.PdfViewer,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="pdf-viewer-loading" aria-live="polite">
+        <div className="pdf-viewer-spinner" />
+        <span>Carregando visualizador...</span>
+      </div>
+    ),
+  },
+);
 
 type BoletimContentProps = {
   boletim: BoletimDetail;

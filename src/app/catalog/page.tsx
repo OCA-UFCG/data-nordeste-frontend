@@ -63,8 +63,10 @@ export default async function CatalogPage({
     [key: string]: string | string[] | undefined;
   }>;
 }) {
-  const rawSearchParams = await searchParams;
-  const data: IFilterDataPage = await getContent(FILTERS_QUERY);
+  const [rawSearchParams, data] = await Promise.all([
+    searchParams,
+    getContent<IFilterDataPage>(FILTERS_QUERY),
+  ]);
 
   const header = data.pageHeadersCollection?.items?.[0];
   const filters = data.filterDataPageCollection.items.map((item) => ({
