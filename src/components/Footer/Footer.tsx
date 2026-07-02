@@ -95,10 +95,10 @@ const Footer = ({ content }: { content: ISection[] }) => {
           </div>
           <div className="flex flex-wrap gap-4 justify-center lg:justify-start px-4 lg:px-0 max-w-2xl mx-auto">
             <Icon
-              id="footer-signature"
-              width={530}
-              height={100}
-              className="w-[320px] h-[60px] sm:w-[530px] sm:h-[100px]"
+              id="logo-sudene"
+              width={139}
+              height={51}
+              className="w-[139px] h-[51px]"
             />
           </div>
         </div>
