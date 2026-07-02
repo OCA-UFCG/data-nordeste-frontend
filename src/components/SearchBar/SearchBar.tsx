@@ -27,6 +27,8 @@ import {
   loadSearchIndexItems,
 } from "@/features/search/clientIndex";
 import type { SearchIndexItem } from "@/features/search/types";
+import { MACROTHEME_ICON_BY_ID } from "@/features/macrothemes/constants";
+import { normalizeKey } from "@/utils/functions";
 
 type SearchBarProps = {
   autoFocus?: boolean;
@@ -40,6 +42,25 @@ type SearchBarProps = {
   onSubmit?: (query: string) => void;
   onQueryChange?: (query: string) => void;
   hideSuggestions?: boolean;
+};
+
+const SearchSuggestionIcon = ({ themes }: { themes: string[] }) => {
+  const themeKey = normalizeKey(themes[0]);
+  const themeIconId = MACROTHEME_ICON_BY_ID[themeKey];
+
+  if (!themeIconId) {
+    return (
+      <Search className="size-4 shrink-0 text-[#292829]" aria-hidden="true" />
+    );
+  }
+
+  return (
+    <Icon
+      className="size-4 shrink-0 text-[#292829]"
+      id={themeIconId}
+      aria-hidden="true"
+    />
+  );
 };
 
 export const SearchBar = ({
@@ -263,10 +284,7 @@ export const SearchBar = ({
                         onNavigate?.();
                       }}
                     >
-                      <Search
-                        className="size-4 shrink-0 text-[#292829]"
-                        aria-hidden="true"
-                      />
+                      <SearchSuggestionIcon themes={item.themes} />
                       <span className="flex min-w-0 items-center gap-2">
                         <span className="truncate text-sm font-normal leading-5 text-[#292829]">
                           {item.title}

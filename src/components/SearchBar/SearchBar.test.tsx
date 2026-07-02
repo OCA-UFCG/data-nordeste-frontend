@@ -54,6 +54,9 @@ describe("SearchBar", () => {
 
     expect(await screen.findByText("PIB")).toBeInTheDocument();
     expect(screen.getByText("Produto interno bruto")).toBeInTheDocument();
+    expect(
+      document.querySelector('use[href="/sprite.svg#money"]'),
+    ).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith("/search-index.json");
 
     await userEvent.keyboard("{Enter}");
