@@ -17,14 +17,14 @@ import { SearchBar } from "@/components/SearchBar/SearchBar";
 const Header = ({ content }: { content: ISection[] }) => {
   return (
     <div className="w-full border-b-2 border-grey-200 bg-white">
-      <div className="flex items-center justify-between gap-8 w-full max-w-[1440px] max-h-20 mx-auto px-20 py-4">
+      <div className="flex w-full max-w-[1440px] items-center justify-between gap-6 px-20 py-[18px] mx-auto">
         <Link href="/" className="flex items-center gap-2">
           <Icon id="logo-DNE" width={99} height={47} />
         </Link>
 
-        <SearchBar className="flex-1" variant="header" />
+        <SearchBar className="peer flex-1" variant="header" />
 
-        <NavigationMenu className="flex-none">
+        <NavigationMenu className="flex-none peer-focus-within:hidden">
           <NavigationMenuList className="flex items-center gap-6 h-10">
             {content
               .filter((item) => item.appears)

@@ -168,7 +168,8 @@ export const SearchBar = ({
       role="search"
       className={cn(
         "relative",
-        variant === "header" && "max-w-[407px]",
+        variant === "header" &&
+          "max-w-[407px] transition-[max-width] duration-200 focus-within:max-w-none",
         variant === "page" && "w-full max-w-[961px]",
         className,
       )}
@@ -176,11 +177,13 @@ export const SearchBar = ({
       onSubmit={submitSearch}
     >
       <label className="sr-only" htmlFor={inputId}>
-        Digite sua pesquisa
+        Buscar conteúdo
       </label>
       <div
         className={cn(
           "flex items-center justify-end h-10 w-full gap-2 rounded-lg bg-[#EFEFEF] px-3 py-[6px] transition-colors focus-within:bg-[#E8E7E8]",
+          variant === "header" &&
+            "h-[47px] bg-[#F8F7F8] px-4 focus-within:border focus-within:border-[#018F39] focus-within:bg-[#F8F7F8]",
           variant === "page" && "h-10",
         )}
       >
@@ -208,18 +211,27 @@ export const SearchBar = ({
             <X className="size-3" aria-hidden="true" />
           </button>
         )}
-        <span className="w-3 h-3 flex items-center justify-center shrink-0">
-          <Icon id="search-icon" width={12} height={12} aria-hidden="true" />
-        </span>
+        <button
+          aria-label="Buscar"
+          className="flex size-4 shrink-0 items-center justify-center text-[#018F39]"
+          type="submit"
+        >
+          <Icon
+            id="search-icon"
+            width={variant === "header" ? 16 : 12}
+            height={variant === "header" ? 16 : 12}
+            aria-hidden="true"
+          />
+        </button>
       </div>
 
       {showPanel && (
         <div
           className={cn(
-            "overflow-hidden rounded-md border border-grey-200 bg-white shadow-lg",
+            "overflow-hidden rounded-lg bg-white pt-1.5 shadow-lg",
             variant === "mobile"
               ? "relative mt-3"
-              : "absolute left-0 right-0 top-full z-50 mt-2",
+              : "absolute left-0 right-0 top-full z-50 mt-1",
           )}
         >
           {status === "loading" && (
@@ -238,10 +250,10 @@ export const SearchBar = ({
           {status !== "loading" && status !== "error" && canSearch && (
             <>
               {suggestions.length > 0 ? (
-                <div className="max-h-[360px] overflow-auto py-2">
+                <div className="max-h-[360px] overflow-auto px-1">
                   {suggestions.map((item) => (
                     <Link
-                      className="flex flex-col gap-1 px-4 py-3 text-left transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
+                      className="flex h-8 min-w-32 items-center gap-2 px-2 py-1.5 text-left transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
                       href={item.href}
                       key={item.id}
                       onMouseDown={(e) => e.preventDefault()}
@@ -251,16 +263,18 @@ export const SearchBar = ({
                         onNavigate?.();
                       }}
                     >
-                      <span className="text-xs font-semibold text-green-900">
-                        {getSearchTypeLabel(item)}
-                      </span>
-                      <span className="line-clamp-1 text-sm font-semibold text-grey-1100">
+                      <Search
+                        className="size-4 shrink-0 text-[#292829]"
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0 flex-1 truncate text-sm font-normal leading-5 text-[#292829]">
                         {item.title}
                       </span>
-                      {(item.description || item.themes.length > 0) && (
-                        <span className="line-clamp-1 text-xs text-grey-700">
-                          {item.description || item.themes.join(", ")}
-                        </span>
+                      <span className="shrink-0 rounded-full border border-[#EFEFEF] bg-[#EFEFEF] px-2.5 py-0.5 text-xs font-semibold leading-4 text-[#292829]">
+                        {getSearchTypeLabel(item)}
+                      </span>
+                      {item.description && (
+                        <span className="sr-only">{item.description}</span>
                       )}
                     </Link>
                   ))}
@@ -273,7 +287,7 @@ export const SearchBar = ({
 
               {!hideViewAll && (
                 <Link
-                  className="flex items-center justify-between border-t border-grey-200 px-4 py-3 text-sm font-semibold text-green-900 transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
+                  className="flex h-9 items-center justify-between border-t border-[#EDEDED] px-4 py-2 text-sm font-normal leading-5 text-[#018F39] transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
                   href={buildExploreSearchHref(query)}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
