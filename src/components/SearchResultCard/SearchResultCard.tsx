@@ -4,13 +4,21 @@ import { Icon } from "@/components/Icon/Icon";
 import { getSearchTypeLabel } from "@/features/search/search";
 import type { SearchResult } from "@/features/search/types";
 
-export const SearchResultCard = ({ result }: { result: SearchResult }) => (
+type SearchResultCardProps = {
+  result: SearchResult;
+  showAccessAction?: boolean;
+};
+
+export const SearchResultCard = ({
+  result,
+  showAccessAction = false,
+}: SearchResultCardProps) => (
   <Link
     className="group flex h-full w-full flex-col overflow-hidden rounded-md border border-grey-200 bg-grey-100 shadow-md transition duration-300 hover:border-grey-300 hover:bg-grey-200"
     href={result.href}
   >
     <SearchResultImage result={result} />
-    <SearchResultContent result={result} />
+    <SearchResultContent result={result} showAccessAction={showAccessAction} />
   </Link>
 );
 
@@ -30,10 +38,13 @@ const SearchResultImage = ({ result }: { result: SearchResult }) => {
   );
 };
 
-const SearchResultContent = ({ result }: { result: SearchResult }) => (
+const SearchResultContent = ({
+  result,
+  showAccessAction,
+}: SearchResultCardProps) => (
   <div className="flex flex-1 flex-col justify-between">
     <SearchResultMeta result={result} />
-    <SearchResultSummary result={result} />
+    <SearchResultSummary result={result} showAccessAction={showAccessAction} />
   </div>
 );
 
@@ -50,13 +61,17 @@ const SearchResultMeta = ({ result }: { result: SearchResult }) => (
   </div>
 );
 
-const SearchResultSummary = ({ result }: { result: SearchResult }) => (
+const SearchResultSummary = ({
+  result,
+  showAccessAction,
+}: SearchResultCardProps) => (
   <div className="flex h-full items-center justify-between gap-3 px-5 py-4">
     <div className="flex min-w-0 flex-1 flex-col gap-2">
+      {showAccessAction && <span className="sr-only">{result.title}</span>}
       <p className="line-clamp-2 text-sm font-medium text-grey-1100">
-        {result.title}
+        {showAccessAction ? "Acessar" : result.title}
       </p>
-      <SearchResultDescription result={result} />
+      {!showAccessAction && <SearchResultDescription result={result} />}
     </div>
 
     <Icon className="size-2 min-w-2 rotate-270 md:flex" id="expand" size={9} />

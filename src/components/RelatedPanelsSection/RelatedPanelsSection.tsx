@@ -29,7 +29,7 @@ const RelatedPanelsGrid = ({ items }: RelatedPanelsSectionProps) => (
   <div className={relatedPanelsGridClassName}>
     {items.slice(0, 4).map((item) => (
       <div key={item.id} className="h-full">
-        <SearchResultCard result={item} />
+        <SearchResultCard result={item} showAccessAction />
       </div>
     ))}
   </div>
