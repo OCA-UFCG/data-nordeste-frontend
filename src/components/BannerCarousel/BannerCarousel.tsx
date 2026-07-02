@@ -45,7 +45,9 @@ const MainBanner = ({ content }: { content: IMainBanner[] }) => {
                   alt=""
                   width={1920}
                   height={1080}
-                  priority
+                  priority={index === 0}
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                  sizes="100vw"
                 />
                 <div className="absolute top-0 right-0 h-full w-full bg-gradient-to-l from-black via-transparent to-transparent"></div>
                 <div className="absolute top-0 left-0 h-full w-[140%] bg-gradient-to-r from-black via-transparent to-transparent"></div>
