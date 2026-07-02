@@ -59,7 +59,7 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
       <main className="w-full max-w-[1120px] mx-auto px-6 py-12 lg:px-20">
         <nav className="mb-8 text-sm text-grey-600">
           <Link href="/catalog" className="font-semibold text-[#018F39]">
-            Catalogo
+            Catálogo
           </Link>
           <span className="mx-2">/</span>
           <span>{record.id}</span>
@@ -83,7 +83,7 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
           <dl className="grid gap-4 rounded-lg bg-grey-100 p-5 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <dt className="text-xs font-semibold uppercase text-grey-600">
-                Publicacao
+                Publicação
               </dt>
               <dd className="mt-1 text-sm text-[#292829]">{formattedDate}</dd>
             </div>
@@ -95,13 +95,13 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
             </div>
             <div>
               <dt className="text-xs font-semibold uppercase text-grey-600">
-                Licenca
+                Licença
               </dt>
               <dd className="mt-1 text-sm text-[#292829]">{record.license}</dd>
             </div>
             <div>
               <dt className="text-xs font-semibold uppercase text-grey-600">
-                Versao
+                Versão
               </dt>
               <dd className="mt-1 text-sm text-[#292829]">{record.version}</dd>
             </div>
