@@ -49,7 +49,7 @@ jobs:
 
   push-beta:
     needs: build-image
-    runs-on: beta-runner
+    runs-on: [beta-runner, gamma-runner]
     steps:
       - name: Pull the latest image
         run: sudo docker pull ${{ vars.DOCKER_IMAGE_BETA }}:latest
