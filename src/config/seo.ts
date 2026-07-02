@@ -15,9 +15,54 @@ export const buildPageTitle = (title: string) => `${title} | ${SITE_NAME}`;
 export const absoluteUrl = (path = "/") =>
   `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
+const HTML_ENTITIES_MAP: Record<string, string> = {
+  nbsp: " ",
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  ccedil: "ç",
+  Ccedil: "Ç",
+  aacute: "á",
+  Aacute: "Á",
+  eacute: "é",
+  Eacute: "É",
+  iacute: "í",
+  Iacute: "Í",
+  oacute: "ó",
+  Oacute: "Ó",
+  uacute: "ú",
+  Uacute: "Ú",
+  atilde: "ã",
+  Atilde: "Ã",
+  otilde: "õ",
+  Otilde: "Õ",
+  acirc: "â",
+  Acirc: "Â",
+  ecirc: "ê",
+  Ecirc: "Ê",
+  ocirc: "ô",
+  Ocirc: "Ô",
+  agrave: "à",
+  Agrave: "À",
+};
+
+export const decodeHtmlEntities = (str: string): string => {
+  return str.replace(/&(#?[a-zA-Z0-9]+);/g, (match, entity) => {
+    if (entity.startsWith("#")) {
+      const isHex = entity[1]?.toLowerCase() === "x";
+      const code = parseInt(entity.substring(isHex ? 2 : 1), isHex ? 16 : 10);
+
+      return isNaN(code) ? match : String.fromCodePoint(code);
+    }
+
+    return HTML_ENTITIES_MAP[entity] || match;
+  });
+};
+
 export const stripHtml = (value = "") =>
-  value
-    .replace(/<[^>]*>/g, " ")
+  decodeHtmlEntities(value.replace(/<[^>]*>/g, " "))
     .replace(/\s+/g, " ")
     .trim();
 
