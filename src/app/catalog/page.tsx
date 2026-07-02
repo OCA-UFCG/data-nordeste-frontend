@@ -106,6 +106,13 @@ export default async function CatalogPage({
     slugToTitle,
   );
 
+  const sortedRecords =
+    filterValues.sort === "title_ASC"
+      ? [...initialRecords].sort((a, b) =>
+          a.title.localeCompare(b.title, "pt-BR"),
+        )
+      : initialRecords;
+
   return (
     <HubTemplate>
       {header && <PageHeader content={header} />}
@@ -120,7 +127,7 @@ export default async function CatalogPage({
       <Suspense>
         <DataRecords
           themes={themes}
-          initialRecords={initialRecords}
+          initialRecords={sortedRecords}
           currentPage={catalogRecords.currentPage}
           totalPages={catalogRecords.totalPages}
         />

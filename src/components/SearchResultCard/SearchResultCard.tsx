@@ -14,7 +14,7 @@ export const SearchResultCard = ({
   showAccessAction = false,
 }: SearchResultCardProps) => (
   <Link
-    className="group flex h-full w-full flex-col overflow-hidden rounded-md border border-grey-200 bg-grey-100 shadow-md transition duration-300 hover:border-grey-300 hover:bg-grey-200"
+    className="group flex h-full w-full flex-col overflow-hidden rounded-lg border border-[#EFEFEF] bg-white shadow-md transition duration-300 hover:border-grey-300 hover:bg-grey-100"
     href={result.href}
   >
     <SearchResultImage result={result} />
@@ -49,12 +49,12 @@ const SearchResultContent = ({
 );
 
 const SearchResultMeta = ({ result }: { result: SearchResult }) => (
-  <div className="flex flex-row items-center justify-between bg-gray-200 px-5 py-1">
-    <p className="text-xs font-semibold text-grey-1100">
+  <div className="flex flex-row items-center justify-between bg-[#DCDBDC] px-4 py-1">
+    <p className="text-xs font-semibold text-[#0F172A]">
       {getSearchTypeLabel(result)}
     </p>
     {result.date && (
-      <p className="text-xs text-grey-600">
+      <p className="text-[10px] leading-3 text-[#595557]">
         {new Date(result.date).toLocaleDateString("pt-BR")}
       </p>
     )}
@@ -65,16 +65,16 @@ const SearchResultSummary = ({
   result,
   showAccessAction,
 }: SearchResultCardProps) => (
-  <div className="flex h-full items-center justify-between gap-3 px-5 py-4">
+  <div className="flex h-full items-center justify-between gap-3 bg-[#F8F7F8] px-4 py-3">
     <div className="flex min-w-0 flex-1 flex-col gap-2">
       {showAccessAction && <span className="sr-only">{result.title}</span>}
-      <p className="line-clamp-2 text-sm font-medium text-grey-1100">
+      <p className="line-clamp-2 text-sm font-medium leading-5 tracking-[-0.03em] text-[#292829]">
         {showAccessAction ? "Acessar" : result.title}
       </p>
       {!showAccessAction && <SearchResultDescription result={result} />}
     </div>
 
-    <Icon className="size-2 min-w-2 md:flex" id="expand" size={9} />
+    <Icon className="md:flex size-2 min-w-2" id="expand-black" size={9} />
   </div>
 );
 

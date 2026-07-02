@@ -44,7 +44,7 @@ function sortExploreItems(
   sorting: string | null,
 ): SearchIndexItem[] {
   return [...items].sort((left, right) => {
-    if (sorting === sortingTypes["Ordem Alfabética"]) {
+    if (sorting === sortingTypes["Ordem alfabética"]) {
       return left.title.localeCompare(right.title, "pt-BR");
     }
 

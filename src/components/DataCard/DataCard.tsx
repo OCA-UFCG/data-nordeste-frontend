@@ -99,12 +99,6 @@ export const DataCard = ({
 
           <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600">
             <span>Publicado em: {formattedDate}</span>
-            <Link
-              href={`/catalog/${post.id}`}
-              className="font-semibold text-[#018F39] hover:underline"
-            >
-              Ver detalhes
-            </Link>
           </div>
         </div>
 
@@ -167,11 +161,7 @@ export const DataCard = ({
                 variant="secondary"
                 className="w-full border border-[#DCDBDC] bg-transparent"
               >
-                <Link
-                  href={post.html}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <Link href={`/catalog/${post.id}`}>
                   <Icon
                     id="icon-external"
                     size={16}
@@ -232,11 +222,7 @@ export const DataCard = ({
                 variant="secondary"
                 className="bg-transparent border border-1 border-[#DCDBDC] md:w-[225px] w-[100px]"
               >
-                <Link
-                  href={post.html}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <Link href={`/catalog/${post.id}`}>
                   <Icon
                     id="icon-external"
                     size={16}
