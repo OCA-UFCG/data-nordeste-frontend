@@ -137,7 +137,7 @@ export const DataCard = ({
                 >
                   <Icon id="icon-download" size={16} />
                   <span className="hidden sm:block">
-                    Baixar Todos os Arquivos
+                    Baixar todos os arquivos
                   </span>
 
                   <span className="block sm:hidden">Baixar Dados</span>
@@ -194,7 +194,7 @@ export const DataCard = ({
               className="w-full text-[14px] font-medium text-[#F8F7F8]"
             >
               <Icon id="icon-download" size={16} />
-              Baixar todos os Arquivos
+              Baixar todos os arquivos
             </Button>
           </div>
 
