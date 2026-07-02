@@ -82,8 +82,9 @@ export default async function DataPanel({
         <div className="flex justify-center w-full items-center overflow-hidden">
           <PowerBIContainer panel={panel} pageName={pageName} />
         </div>
-        {catalogHref && <CatalogLink href={catalogHref} />}
       </div>
+
+      {catalogHref && <CatalogLinkSection href={catalogHref} />}
 
       <PanelDescriptionSection panel={panel} />
 
@@ -124,13 +125,19 @@ const MacroThemeLink = ({ href }: { href: string }) => (
     href={href}
   >
     Ver mais sobre o tema
-    <Icon className="size-2 rotate-270" id="expand" size={9} />
+    <Icon className="size-2" id="expand" size={9} />
   </Link>
+);
+
+const CatalogLinkSection = ({ href }: { href: string }) => (
+  <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-2.5 px-4 py-8 sm:px-6 lg:px-20">
+    <CatalogLink href={href} />
+  </div>
 );
 
 const CatalogLink = ({ href }: { href: string }) => (
   <Link
-    className="mt-4 inline-flex h-10 w-full items-center justify-center gap-3 rounded-md bg-green-800 px-5 text-sm font-medium leading-6 text-white transition hover:bg-green-900"
+    className="inline-flex h-10 w-full items-center justify-center gap-3 rounded-md bg-green-800 px-5 text-sm font-medium leading-6 text-white transition hover:bg-green-900"
     href={href}
   >
     Acessar o catálogo de dados

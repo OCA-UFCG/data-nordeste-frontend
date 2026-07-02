@@ -37,7 +37,8 @@ function ThemeFilterCard({
       {href ? (
         <Link
           href={href}
-          className="flex items-center justify-center w-12 h-full shrink-0 transition-colors hover:bg-[#DDEADF] bg-[#F8F7F8]"
+          title="Acesse o tema"
+          className="group/tooltip relative flex items-center justify-center w-12 h-full shrink-0 transition-colors hover:bg-[#DDEADF] bg-[#F8F7F8]"
           onClick={(e) => e.stopPropagation()}
         >
           <Icon
@@ -45,6 +46,9 @@ function ThemeFilterCard({
             id="expand"
             size={10}
           />
+          <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#292829] px-2 py-1 text-xs font-medium text-white opacity-0 shadow-md transition-opacity group-hover/tooltip:opacity-100">
+            Acesse o tema
+          </span>
         </Link>
       ) : (
         <div className="flex items-center justify-center w-12 h-full shrink-0 transition-colors hover:bg-[#DDEADF] bg-[#F8F7F8]">
