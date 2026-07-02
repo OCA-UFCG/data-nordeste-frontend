@@ -17,7 +17,7 @@ export const RelatedPanelsSection = ({ items }: RelatedPanelsSectionProps) => {
     <section className="w-full bg-white py-10">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 sm:px-6 lg:px-20">
         <h2 className="text-[30px] font-semibold leading-[36px] text-[#292829]">
-          Conteúdo Relacionado
+          Conteúdos relacionados
         </h2>
         <RelatedPanelsGrid items={items} />
       </div>
