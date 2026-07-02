@@ -125,7 +125,7 @@ const MacroThemeLink = ({ href }: { href: string }) => (
     href={href}
   >
     Ver mais sobre o tema
-    <Icon className="size-2 rotate-270" id="expand" size={9} />
+    <Icon className="size-2" id="expand" size={9} />
   </Link>
 );
 
