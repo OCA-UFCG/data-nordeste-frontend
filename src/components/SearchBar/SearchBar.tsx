@@ -12,7 +12,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import { Icon } from "@/components/Icon/Icon";
 import { cn } from "@/lib/utils";
 import {
@@ -187,7 +187,7 @@ export const SearchBar = ({
         <input
           autoComplete="off"
           autoFocus={autoFocus}
-          className="min-w-0 flex-1 bg-transparent px-1 text-sm font-normal leading-5 text-[#292829] outline-none placeholder:text-[#292829] placeholder:font-normal placeholder:text-sm placeholder:leading-5"
+          className="min-w-0 flex-1 appearance-none bg-transparent px-1 text-sm font-normal leading-5 text-[#292829] outline-none placeholder:text-[#292829] placeholder:font-normal placeholder:text-sm placeholder:leading-5 [&::-webkit-search-cancel-button]:hidden"
           id={inputId}
           onChange={(event) => handleQueryChange(event.target.value)}
           onFocus={() => {
@@ -198,6 +198,16 @@ export const SearchBar = ({
           type="search"
           value={query}
         />
+        {query && (
+          <button
+            aria-label="Limpar pesquisa"
+            className="flex size-3 shrink-0 items-center justify-center text-[#292829]"
+            onClick={() => handleQueryChange("")}
+            type="button"
+          >
+            <X className="size-3" aria-hidden="true" />
+          </button>
+        )}
         <span className="w-3 h-3 flex items-center justify-center shrink-0">
           <Icon id="search-icon" width={12} height={12} aria-hidden="true" />
         </span>
