@@ -65,7 +65,7 @@ export const BoletimContent = ({
               href={`/explore?category=${categoryId}&page=1`}
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-md bg-[#078f39] px-4 py-4 text-sm font-medium text-white transition hover:bg-[#067430]"
             >
-              Ver outros dados de {categoryName.toLowerCase()}
+              Ver mais sobre o tema
               <svg
                 width="16"
                 height="16"

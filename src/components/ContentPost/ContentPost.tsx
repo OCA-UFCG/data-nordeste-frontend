@@ -42,7 +42,7 @@ const ContentPost = ({ content }: { content: IPublication }) => {
         <div className="py-3 px-4 flex gap-4 justify-between h-full items-center box-border bg-[#F8F7F8]">
           <span className="sr-only">{title}</span>
           <p className="line-clamp-2 text-sm font-medium leading-5 tracking-[-0.03em] text-[#292829]">
-            {type === "data-panel" ? "Acessar" : title}
+            {type === "data-panel" || type === "newsletter" ? "Acessar" : title}
           </p>
           <Icon className="md:flex size-2 min-w-2" id="expand-black" size={9} />
         </div>
