@@ -311,9 +311,9 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
 
         if (!context) return;
 
-        // PERF: Render at a higher resolution (DPR × 2) for sharp images on
-        // high-DPI mobile screens, then scale down via CSS for display.
-        const devicePixelRatio = window.devicePixelRatio || 1;
+        // PERF: Unbounded DPR makes each canvas disproportionately expensive
+        // on mobile. A 1.5 cap keeps text sharp without tripling pixel memory.
+        const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
         const renderScale = effectiveScale * devicePixelRatio;
         const renderViewport = page.getViewport({ scale: renderScale });
         const displayViewport = page.getViewport({ scale: effectiveScale });

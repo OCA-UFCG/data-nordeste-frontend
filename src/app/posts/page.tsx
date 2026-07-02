@@ -52,17 +52,19 @@ export default async function PostsPage({
     urlSearchParams,
     Number.MAX_SAFE_INTEGER,
   );
-  const { pageHeadersCollection: pageHeaders }: IPostsContent =
-    await getContent(POST_PAGE_QUERY, {
+  const [pageContent, postsContent] = await Promise.all([
+    getContent<IPostsContent>(POST_PAGE_QUERY, {
       header_id: "posts",
       head_id: "posts-content",
-    });
-  const { postCollection: initialPosts }: IInitialPostsContent =
-    await getContent(PUBLICATION_QUERY, {
+    }),
+    getContent<IInitialPostsContent>(PUBLICATION_QUERY, {
       order: initialQueryState.sorting,
       skip: buildPostsSkip(initialQueryState.currentPage),
       filter: buildPostsContentfulFilter(initialQueryState.filter, rootFilter),
-    });
+    }),
+  ]);
+  const { pageHeadersCollection: pageHeaders } = pageContent;
+  const { postCollection: initialPosts } = postsContent;
   const totalPages = buildPostsTotalPages(initialPosts.total);
 
   return (
