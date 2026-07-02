@@ -1,5 +1,6 @@
 import type { IPublication } from "@/utils/interfaces";
 import type { PostType } from "@/features/posts/postTypes";
+import type { ContentfulRichTextField } from "@/utils/interfaces";
 
 export type BoletimDetail = {
   sys: { id: string };
@@ -8,7 +9,7 @@ export type BoletimDetail = {
   type: PostType;
   thumb: { url: string };
   date: string;
-  description: string;
+  description?: ContentfulRichTextField;
   categoryCollection: {
     items: { name: string; sys: { id: string } }[];
   };

@@ -78,7 +78,7 @@ export interface IPublication {
   };
   type: PostType;
   date: string;
-  description: string;
+  description?: ContentfulRichTextField;
 }
 
 export interface ReportData {

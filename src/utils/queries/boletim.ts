@@ -14,7 +14,7 @@ export const BOLETIM_DETAIL_QUERY = `
         type
         thumb { url }
         date
-        description
+        description: descriptionNew { json }
         categoryCollection(limit: 5) {
           items {
             name
@@ -51,7 +51,7 @@ export const RELATED_BOLETINS_QUERY = `
         type
         thumb { url }
         date
-        description
+        description: descriptionNew { json }
       }
     }
   }

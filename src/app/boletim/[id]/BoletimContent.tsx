@@ -4,6 +4,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { RelatedBoletinsSection } from "@/components/RelatedBoletinsSection/RelatedBoletinsSection";
 import type { BoletimDetail, RelatedBoletim } from "@/features/boletim/types";
+import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
+import type { ContentfulRichTextField } from "@/utils/interfaces";
 
 // PERF: pdf.js is one of the largest client dependencies. Keep it out of the
 // initial boletim bundle and show stable space while its chunk is requested.
@@ -91,7 +93,7 @@ export const BoletimContent = ({
 
 type BoletimHeaderProps = {
   title: string;
-  description: string;
+  description?: ContentfulRichTextField;
   formattedDate: string;
   pdfUrl: string;
   pdfFileName: string;
@@ -118,8 +120,10 @@ const BoletimHeader = ({
         )}
       </div>
     </div>
-    {description && (
-      <p className="text-base text-[#525659] leading-relaxed">{description}</p>
+    {description?.json && (
+      <div className="text-base text-[#525659] leading-relaxed">
+        {documentToReactComponents(description.json)}
+      </div>
     )}
     <a
       href={pdfUrl}

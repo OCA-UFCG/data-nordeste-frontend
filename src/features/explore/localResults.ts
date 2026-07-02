@@ -2,6 +2,8 @@ import { POSTS_PER_PAGE, sortingTypes } from "@/utils/constants";
 import type { IPublication } from "@/utils/interfaces";
 import { normalizeSearchText } from "@/features/search/search";
 import type { SearchIndexItem } from "@/features/search/types";
+import { plainTextToRichText } from "@/utils/richText";
+import type { PostType } from "@/features/posts/postTypes";
 import {
   resolveExploreTab,
   type ExploreResults,
@@ -23,6 +25,15 @@ export type LocalExploreSelection = {
 
 function isExplorePost(item: SearchIndexItem): boolean {
   return item.source === "post" && item.explorePost !== null;
+}
+
+function isPostType(type: SearchIndexItem["type"]): type is PostType {
+  return [
+    "additional-content",
+    "data-panel",
+    "newsletter",
+    "data-story",
+  ].includes(type);
 }
 
 function matchesQuery(item: SearchIndexItem, query: string): boolean {
@@ -56,9 +67,9 @@ function sortExploreItems(
 }
 
 function toPublication(item: SearchIndexItem): IPublication {
-  if (!item.explorePost) {
+  if (!item.explorePost || !isPostType(item.type)) {
     throw new Error(
-      `Search item ${item.id} has no explorePost; expected a post item.`,
+      `Search item ${item.id} has type ${item.type} and explorePost ${Boolean(item.explorePost)}; expected an explore post type with metadata.`,
     );
   }
 
@@ -69,8 +80,8 @@ function toPublication(item: SearchIndexItem): IPublication {
     thumb: { url: item.thumb || "" },
     type: item.type,
     date: item.date || "",
-    description: item.description,
-  } as IPublication;
+    description: plainTextToRichText(item.description),
+  };
 }
 
 function totalForTab(items: SearchIndexItem[], tab: ExploreTab): number {

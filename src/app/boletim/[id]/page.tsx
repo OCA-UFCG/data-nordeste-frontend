@@ -7,6 +7,7 @@ import { buildMetadata } from "@/config/seo";
 import type { BoletimDetail, RelatedBoletim } from "@/features/boletim/types";
 import { extractPdfFileName } from "@/features/boletim/types";
 import { BoletimContent } from "./BoletimContent";
+import { richTextToPlainText } from "@/utils/richText";
 
 type BoletimDetailResponse = {
   postCollection: { items: BoletimDetail[] };
@@ -34,7 +35,7 @@ export async function generateMetadata({
 
   return buildMetadata({
     title: boletim.title,
-    description: boletim.description ?? "",
+    description: richTextToPlainText(boletim.description),
     path: `/boletim/${id}`,
     images: boletim.thumb?.url ? [boletim.thumb.url] : ["/banner.png"],
   });

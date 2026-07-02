@@ -40,7 +40,6 @@ const initialResults: ExploreResultsState = {
       thumb: { url: "" },
       type: "data-panel",
       date: "",
-      description: "",
     },
   ],
   total: 1,

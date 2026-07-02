@@ -8,7 +8,7 @@ export const SEARCH_INDEX_QUERY = `
         title
         type
         date
-        description
+        description: descriptionNew { json }
         link
         thumb {
           url

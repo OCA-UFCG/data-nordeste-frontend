@@ -2,8 +2,8 @@ import { getContent } from "@/utils/contentful";
 import { SEARCH_INDEX_QUERY } from "@/utils/queries";
 import type { SearchIndex, SearchIndexItem, SearchItemType } from "./types";
 import { buildSearchText } from "./search";
-import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 import type { ContentfulRichTextField } from "@/utils/interfaces";
+import { richTextToPlainText } from "@/utils/richText";
 
 type ContentfulAsset = {
   url?: string | null;
@@ -28,7 +28,7 @@ type ContentfulPost = {
   title?: string | null;
   type?: SearchItemType | null;
   date?: string | null;
-  description?: string | null;
+  description?: ContentfulRichTextField | null;
   link?: string | null;
   thumb?: ContentfulAsset | null;
   categoryCollection?: {
@@ -91,19 +91,20 @@ const buildPostItems = (posts: ContentfulPost[]): SearchIndexItem[] =>
       const themes = categories
         .map((category) => category.name)
         .filter((name): name is string => Boolean(name));
+      const description = richTextToPlainText(post.description);
 
       return {
         id: `post:${post.sys.id}`,
         source: "post",
         type: post.type || "additional-content",
         title,
-        description: post.description || "",
+        description,
         href: buildPostHref(post),
         date: post.date || null,
         thumb: post.thumb?.url || null,
         themes,
         tags,
-        text: buildSearchText([title, post.description, ...themes, ...tags]),
+        text: buildSearchText([title, description, ...themes, ...tags]),
         explorePost: {
           contentfulId: post.sys.id,
           link: post.link || "",
@@ -168,7 +169,7 @@ const getPanelDisplayTitle = (
 const getPanelDescription = (panel: ContentfulPanel): string => {
   if (!panel.description?.json) return "";
 
-  return documentToPlainTextString(panel.description.json);
+  return richTextToPlainText(panel.description);
 };
 
 const buildPanelHref = (title: string): string =>

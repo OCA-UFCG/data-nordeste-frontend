@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { getContent } from "@/utils/contentful";
 import { getSearchIndex } from "./contentful";
+import { plainTextToRichText } from "@/utils/richText";
 
 vi.mock("@/utils/contentful", () => ({
   getContent: vi.fn(),
@@ -16,7 +17,7 @@ describe("Contentful search index", () => {
             title: "Acessar Painel: PIB",
             type: "data-panel",
             date: "2026-01-01",
-            description: "Produto interno bruto",
+            description: plainTextToRichText("Produto interno bruto"),
             link: "/data-panel/pib",
             thumb: { url: "https://images.ctfassets.net/thumb.png" },
             categoryCollection: {
@@ -35,7 +36,7 @@ describe("Contentful search index", () => {
             title: "Explore Nordeste",
             type: "data-story",
             date: "2025-01-01",
-            description: "",
+            description: plainTextToRichText(""),
             link: "https://storymaps.arcgis.com/stories/21bae45539be473f8666d857c481d443",
             categoryCollection: { items: [] },
           },
@@ -44,7 +45,7 @@ describe("Contentful search index", () => {
             title: "Boletim econômico",
             type: "newsletter",
             date: "2025-02-01",
-            description: "PDF do boletim",
+            description: plainTextToRichText("PDF do boletim"),
             link: "https://downloads.ctfassets.net/boletim.pdf",
             categoryCollection: { items: [] },
           },

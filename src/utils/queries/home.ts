@@ -131,6 +131,7 @@ export const POSTS_QUERY = `
         link
         date
         type
+        description: descriptionNew { json }
       }
     }
   }

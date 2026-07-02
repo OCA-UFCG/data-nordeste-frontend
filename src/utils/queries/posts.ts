@@ -54,7 +54,7 @@ export const PUBLICATION_QUERY = `
         }
         type
         date
-        description
+        description: descriptionNew { json }
       }
     }
   }
@@ -87,7 +87,7 @@ export const EXPLORE_RESULTS_QUERY = `
         thumb { url }
         type
         date
-        description
+        description: descriptionNew { json }
       }
     }
     dashboards: postCollection(limit: 1, where: $dashboardsFilter, preview: $preview) {

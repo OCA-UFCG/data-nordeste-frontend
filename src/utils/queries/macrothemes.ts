@@ -56,7 +56,7 @@ export const MACROTHEME_PAGE_QUERY = `
         type
         thumb { url }
         date
-        description
+        description: descriptionNew { json }
       }
     }
 
@@ -74,7 +74,7 @@ export const MACROTHEME_PAGE_QUERY = `
         type
         thumb { url }
         date
-        description
+        description: descriptionNew { json }
       }
     }
     
@@ -92,7 +92,7 @@ export const MACROTHEME_PAGE_QUERY = `
         type
         thumb { url }
         date
-        description
+        description: descriptionNew { json }
       }
     }
 
@@ -110,7 +110,7 @@ export const MACROTHEME_PAGE_QUERY = `
         type
         thumb { url }
         date
-        description
+        description: descriptionNew { json }
       }
     }
 

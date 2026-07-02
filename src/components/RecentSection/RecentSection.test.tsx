@@ -26,7 +26,6 @@ const initialPosts = [
     thumb: { url: "/thumb.png" },
     type: "newsletter",
     date: "2024-01-01",
-    description: "",
   },
 ] satisfies IPublication[];
 
@@ -37,7 +36,6 @@ const panelPosts = [
     thumb: { url: "/panel.png" },
     type: "data-panel",
     date: "2024-02-01",
-    description: "",
   },
 ] satisfies IPublication[];
 
@@ -48,7 +46,6 @@ const storyPosts = [
     thumb: { url: "/story.png" },
     type: "data-story",
     date: "2024-03-01",
-    description: "",
   },
 ] satisfies IPublication[];
 
@@ -59,7 +56,6 @@ const newsletterPosts = [
     thumb: { url: "/newsletter.png" },
     type: "newsletter",
     date: "2024-04-01",
-    description: "",
   },
 ] satisfies IPublication[];
 

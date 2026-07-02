@@ -1,6 +1,7 @@
 import type { RelatedBoletim } from "@/features/boletim/types";
 import { SearchResultCard } from "@/components/SearchResultCard/SearchResultCard";
 import type { SearchResult, SearchItemType } from "@/features/search/types";
+import { richTextToPlainText } from "@/utils/richText";
 
 type RelatedBoletinsSectionProps = {
   items: RelatedBoletim[];
@@ -11,7 +12,7 @@ const toSearchResult = (item: RelatedBoletim): SearchResult => ({
   source: "post",
   type: item.type as SearchItemType,
   title: item.title,
-  description: item.description || "",
+  description: richTextToPlainText(item.description),
   href: `/boletim/${item.sys.id}`,
   date: item.date || null,
   thumb: item.thumb?.url || null,
