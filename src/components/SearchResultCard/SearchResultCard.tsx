@@ -74,7 +74,7 @@ const SearchResultSummary = ({
       {!showAccessAction && <SearchResultDescription result={result} />}
     </div>
 
-    <Icon className="size-2 min-w-2 rotate-270 md:flex" id="expand" size={9} />
+    <Icon className="size-2 min-w-2 md:flex" id="expand" size={9} />
   </div>
 );
 
