@@ -6,6 +6,12 @@ export const POST_PAGE_QUERY = `
       items {
         title
         subtitle
+        richSubtitle {
+          json
+        }
+        banner {
+          url
+        }
       }
     }
 
