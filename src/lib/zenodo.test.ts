@@ -4,7 +4,7 @@ import { buildZenodoRecordsQuery, parseZenodoRecords } from "./zenodo";
 describe("buildZenodoRecordsQuery", () => {
   it("builds the Zenodo community query with date and array filters", () => {
     const query = buildZenodoRecordsQuery(2, 6, {
-      category: ["saude", "educacao"],
+      category: ["Saúde", "Educação"],
       date_gte: new Date("2024-01-01T00:00:00.000Z"),
       date_lte: new Date("2024-12-31T00:00:00.000Z"),
       sort: "mostrecent",
@@ -15,7 +15,7 @@ describe("buildZenodoRecordsQuery", () => {
     expect(query.get("size")).toBe("6");
     expect(query.get("sort")).toBe("mostrecent");
     expect(query.get("q")).toBe(
-      'publication_date:[2024-01-01 TO 2024-12-31] AND ("saude" OR "educacao")',
+      'publication_date:[2024-01-01 TO 2024-12-31] AND ("Saúde" OR "Educação")',
     );
   });
 

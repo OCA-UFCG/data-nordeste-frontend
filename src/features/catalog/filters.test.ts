@@ -25,7 +25,7 @@ describe("catalog filters", () => {
     ).toEqual({
       currentPage: 6,
       filterValues: {
-        category: ["saude"],
+        category: ["Saúde"],
         date_gte: undefined,
         date_lte: undefined,
         search: undefined,
@@ -40,12 +40,29 @@ describe("catalog filters", () => {
     );
 
     expect(buildCatalogFilterValues(params, filterGroups)).toEqual({
-      category: ["saude", "educacao"],
+      category: ["Saúde", "educacao"],
       date_gte: new Date("2024-01-01"),
       date_lte: undefined,
       search: undefined,
       sort: "mostrecent",
     });
+  });
+
+  it("translates an accented theme slug to its Zenodo keyword", () => {
+    const waterSecurityFilters: FilterGroup[] = [
+      {
+        title: "Tema",
+        type: "category",
+        options: [{ slug: "seguranca-hidrica", title: "Segurança Hídrica" }],
+      },
+    ];
+
+    const request = buildCatalogRequest(
+      { category: "seguranca-hidrica" },
+      waterSecurityFilters,
+    );
+
+    expect(request.filterValues.category).toEqual(["Segurança Hídrica"]);
   });
 
   it("maps catalog text to the Zenodo search filter", () => {

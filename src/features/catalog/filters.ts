@@ -37,8 +37,11 @@ export const buildCatalogFilterValues = (
     sort: params.get("sort") || undefined,
   };
 
-  filters.forEach(({ type }) => {
-    values[type] = parseCatalogList(params.get(type));
+  filters.forEach(({ type, options }) => {
+    values[type] = translateCatalogSlugs(
+      parseCatalogList(params.get(type)),
+      options,
+    );
   });
 
   return values;
@@ -98,6 +101,19 @@ const createCatalogUrlSearchParams = (
 
 const parseCatalogList = (value: string | null): string[] =>
   value ? value.split(",").filter(Boolean) : [];
+
+const translateCatalogSlugs = (
+  selectedSlugs: string[],
+  options: FilterGroup["options"],
+): string[] => {
+  const titleBySlug = new Map(
+    options.map((option) => [option.slug, option.title]),
+  );
+
+  // IMPORTANT: Public URLs use stable Contentful slugs, but Zenodo indexes the
+  // human-readable keyword. Sending the slug drops records with accented tags.
+  return selectedSlugs.map((slug) => titleBySlug.get(slug) ?? slug);
+};
 
 const appendCatalogFilterParam = (
   urlParams: URLSearchParams,
