@@ -267,11 +267,13 @@ export const SearchBar = ({
                         className="size-4 shrink-0 text-[#292829]"
                         aria-hidden="true"
                       />
-                      <span className="min-w-0 flex-1 truncate text-sm font-normal leading-5 text-[#292829]">
-                        {item.title}
-                      </span>
-                      <span className="shrink-0 rounded-full border border-[#EFEFEF] bg-[#EFEFEF] px-2.5 py-0.5 text-xs font-semibold leading-4 text-[#292829]">
-                        {getSearchTypeLabel(item)}
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="truncate text-sm font-normal leading-5 text-[#292829]">
+                          {item.title}
+                        </span>
+                        <span className="shrink-0 rounded-full border border-[#EFEFEF] bg-[#EFEFEF] px-2.5 py-0.5 text-xs font-semibold leading-4 text-[#292829]">
+                          {getSearchTypeLabel(item)}
+                        </span>
                       </span>
                       {item.description && (
                         <span className="sr-only">{item.description}</span>

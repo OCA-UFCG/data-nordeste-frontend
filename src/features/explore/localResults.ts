@@ -100,10 +100,13 @@ function filterSharedItems(
 ): SearchIndexItem[] {
   const query = params.get("q") || "";
   const themeIds = params.get("category")?.split(",").filter(Boolean) ?? [];
+  const matchingHrefs = new Set(
+    items.filter((item) => matchesQuery(item, query)).map((item) => item.href),
+  );
 
   return items
     .filter(isExplorePost)
-    .filter((item) => matchesQuery(item, query))
+    .filter((item) => matchingHrefs.has(item.href))
     .filter((item) => matchesThemes(item, themeIds));
 }
 

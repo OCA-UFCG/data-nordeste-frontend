@@ -33,6 +33,23 @@ const items = [
   post("boletim", "Economia", "newsletter", "2023-01-01", "economia"),
 ];
 
+const cagedPost = post(
+  "caged",
+  "Cadastro Geral de Empregados e Desempregados (CAGED)",
+  "data-panel",
+  "2026-04-30",
+  "economia",
+);
+const cagedDetail: SearchIndexItem = {
+  ...cagedPost,
+  id: "panel:caged",
+  source: "panels",
+  type: "data-panel-detail",
+  description: "Indicadores do mercado de trabalho",
+  text: buildSearchText(["Indicadores do mercado de trabalho"]),
+  explorePost: null,
+};
+
 describe("selectLocalExploreResults", () => {
   it("combines normalized search, theme, tab, and alphabetical sorting", () => {
     const params = new URLSearchParams(
@@ -60,5 +77,17 @@ describe("selectLocalExploreResults", () => {
     expect(selection.activeTab).toBe("boletins");
     expect(selection.currentPage).toBe(1);
     expect(selection.results.items[0].sys?.id).toBe("boletim");
+  });
+
+  it("returns a panel card when its indexed detail matches the query", () => {
+    const selection = selectLocalExploreResults(
+      [...items, cagedPost, cagedDetail],
+      new URLSearchParams("q=traba&type_in=data-panel&page=1"),
+    );
+
+    expect(selection.activeTab).toBe("paineis");
+    expect(selection.results.items.map((item) => item.title)).toEqual([
+      "Cadastro Geral de Empregados e Desempregados (CAGED)",
+    ]);
   });
 });
