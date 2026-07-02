@@ -32,6 +32,7 @@ jobs:
           context: .
           push: true
           file: Dockerfile.production
+          platforms: linux/amd64,linux/arm64
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
             ${{ vars.DOCKER_IMAGE_BETA }}:latest
