@@ -28,6 +28,67 @@ type ContentfulVariable =
 
 type ContentfulVariables = { [key: string]: ContentfulVariable };
 
+type ContentfulErrorDetails = {
+  field?: string;
+  linkId?: string;
+  linkingEntryId?: string;
+};
+
+type ContentfulGraphqlError = {
+  message: string;
+  extensions?: {
+    contentful?: {
+      code?: string;
+      details?: ContentfulErrorDetails;
+      requestId?: string;
+    };
+  };
+};
+
+type ContentfulGraphqlResponse<T> = {
+  data?: T;
+  errors?: ContentfulGraphqlError[];
+};
+
+const UNRESOLVABLE_LINK = "UNRESOLVABLE_LINK";
+
+function isUnresolvableLink(error: ContentfulGraphqlError): boolean {
+  return error.extensions?.contentful?.code === UNRESOLVABLE_LINK;
+}
+
+function logUnresolvableLinks(errors: ContentfulGraphqlError[]): void {
+  for (const error of errors) {
+    const contentfulError = error.extensions?.contentful;
+    console.warn(
+      JSON.stringify({
+        event: "contentful_unresolvable_link",
+        requestId: contentfulError?.requestId,
+        ...contentfulError?.details,
+      }),
+    );
+  }
+}
+
+function requireContentfulData<T>(
+  response: ContentfulGraphqlResponse<T>,
+  variables: ContentfulVariables,
+): T {
+  const errors = response.errors || [];
+  const fatalErrors = errors.filter((error) => !isUnresolvableLink(error));
+
+  if (fatalErrors.length > 0 || response.data === undefined) {
+    throw new Error(
+      `Contentful GraphQL returned errors for variables ${JSON.stringify(variables)}; expected data field. Errors: ${JSON.stringify(errors)}`,
+    );
+  }
+
+  // INTENTIONAL: Contentful returns valid partial data when a referenced entry
+  // is unpublished. One editorial mistake must not take the whole portal down.
+  logUnresolvableLinks(errors);
+
+  return response.data;
+}
+
 export function buildContentfulEndpoint(env: ContentfulEnv): string {
   const space = env.NEXT_PUBLIC_CONTENTFUL_SPACE;
   const accessToken = env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN;
@@ -81,15 +142,9 @@ export function createContentfulClient({
       );
     }
 
-    const json = await response.json();
+    const json = (await response.json()) as ContentfulGraphqlResponse<T>;
 
-    if (json.errors) {
-      throw new Error(
-        `Contentful GraphQL returned errors for variables ${JSON.stringify(finalVariables)}; expected data field. Errors: ${JSON.stringify(json.errors)}`,
-      );
-    }
-
-    return json.data;
+    return requireContentfulData(json, finalVariables);
   };
 }
 

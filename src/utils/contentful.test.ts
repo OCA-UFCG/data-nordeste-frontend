@@ -100,4 +100,75 @@ describe("Contentful client", () => {
       'Contentful GraphQL returned errors for variables {"preview":false}',
     );
   });
+
+  it("returns partial data when Contentful reports an unresolvable link", async () => {
+    const warning = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
+    const partialData = { postCollection: { items: [{ title: "PIB" }] } };
+    const client = createContentfulClient({
+      endpoint: "https://contentful.example.com/graphql",
+      fetcher: vi.fn(async () =>
+        createResponse({
+          body: {
+            data: partialData,
+            errors: [
+              {
+                message: "Link cannot be resolved",
+                extensions: {
+                  contentful: {
+                    code: "UNRESOLVABLE_LINK",
+                    requestId: "request-1",
+                    details: {
+                      field: "category",
+                      linkId: "missing-theme",
+                      linkingEntryId: "post-1",
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        }),
+      ) as unknown as typeof fetch,
+      preview: false,
+      revalidate: 300,
+    });
+
+    await expect(client("query SearchIndex")).resolves.toEqual(partialData);
+    expect(warning).toHaveBeenCalledWith(
+      JSON.stringify({
+        event: "contentful_unresolvable_link",
+        requestId: "request-1",
+        field: "category",
+        linkId: "missing-theme",
+        linkingEntryId: "post-1",
+      }),
+    );
+    warning.mockRestore();
+  });
+
+  it("rejects unresolvable-link errors when partial data is absent", async () => {
+    const client = createContentfulClient({
+      endpoint: "https://contentful.example.com/graphql",
+      fetcher: vi.fn(async () =>
+        createResponse({
+          body: {
+            errors: [
+              {
+                message: "Link cannot be resolved",
+                extensions: { contentful: { code: "UNRESOLVABLE_LINK" } },
+              },
+            ],
+          },
+        }),
+      ) as unknown as typeof fetch,
+      preview: false,
+      revalidate: 300,
+    });
+
+    await expect(client("query SearchIndex")).rejects.toThrow(
+      "expected data field",
+    );
+  });
 });
