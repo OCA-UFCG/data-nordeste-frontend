@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update Docker metadata with the tag
+      - name: Update docker metadata with the tag
         uses: docker/metadata-action@v4
         id: meta
         with:
@@ -32,7 +32,6 @@ jobs:
           context: .
           push: true
           file: Dockerfile.production
-          platforms: linux/amd64,linux/arm64
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
             ${{ vars.DOCKER_IMAGE_BETA }}:latest
@@ -50,49 +49,30 @@ jobs:
             NEXT_PUBLIC_APP_ENV=beta
 
   push-beta:
-    name: Deploy beta on ${{ matrix.runner }}
     needs: build-image
-
-    strategy:
-      fail-fast: false
-      matrix:
-        runner:
-          - beta-runner
-          - gamma-runner
-
-    runs-on:
-      - self-hosted
-      - ${{ matrix.runner }}
+    runs-on: beta-runner
 
     steps:
       - name: Pull the latest image
-        run: |
-          sudo docker pull ${{ vars.DOCKER_IMAGE_BETA }}:latest
-
-      - name: Create Docker network if it does not exist
-        run: |
-          sudo docker network inspect ${{ vars.NETWORK_NAME }} >/dev/null 2>&1 \
-            || sudo docker network create ${{ vars.NETWORK_NAME }}
+        run: sudo docker pull ${{ vars.DOCKER_IMAGE_BETA }}:latest
 
       - name: Stop existing container
-        run: |
-          sudo docker rm -f ${{ vars.CONTAINER_NAME_BETA }} || true
+        run: sudo docker rm -f ${{ vars.CONTAINER_NAME_BETA }} || true
 
       - name: Run new container
         run: |
           sudo docker run \
             --name ${{ vars.CONTAINER_NAME_BETA }} \
             --restart unless-stopped \
-            --network ${{ vars.NETWORK_NAME }} \
             -p ${{ vars.HOST_PORT_BETA }}:${{ vars.CONTAINER_PORT }} \
             -d \
             ${{ vars.DOCKER_IMAGE_BETA }}:latest
 
-      - name: Check container status
+      - name: Connect to network
         run: |
-          sudo docker ps \
-            --filter "name=${{ vars.CONTAINER_NAME_BETA }}"
+          sudo docker network connect \
+            ${{ vars.NETWORK_NAME }} \
+            ${{ vars.CONTAINER_NAME_BETA }}
 
       - name: Prune unused Docker images
-        run: |
-          sudo docker image prune -f
+        run: sudo docker system prune -f
