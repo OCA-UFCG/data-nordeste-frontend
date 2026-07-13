@@ -18,10 +18,12 @@ import { useState } from "react";
 import { isHrefActive, sortContentByDesiredOrder } from "@/utils/functions";
 import { cn } from "@/lib/utils";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
+import { withReportsNavigation } from "@/features/navigation/reportLink";
 
 const HeaderModal = ({ content }: { content: ISection[] }) => {
   const pathname = usePathname();
   const category = useSearchParams().get("category");
+  const navigationSections = withReportsNavigation(content);
   const [open, setOpen] = useState(false);
 
   return (
@@ -48,7 +50,7 @@ const HeaderModal = ({ content }: { content: ISection[] }) => {
             type="multiple"
             className="w-full space-y-2 py-4 px-2 pt-0"
           >
-            {content
+            {navigationSections
               .filter((item) => item.appears)
               .map((item, idx) => (
                 <AccordionItem
