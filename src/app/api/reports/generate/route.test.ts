@@ -16,6 +16,9 @@ class AutomaticReportFetchFake {
     if (url.endsWith("relatorio_saude__recife.pdf")) {
       return this.pdfResponse();
     }
+    if (url.endsWith("relatorio_demografia+saude__recife.pdf")) {
+      return this.pdfResponse();
+    }
 
     return new Response("Not found", { status: 404 });
   };
@@ -30,6 +33,10 @@ class AutomaticReportFetchFake {
     return Response.json([
       this.reportEntry("Salvador Ba", "/output/relatorio_saude__salvador.pdf"),
       this.reportEntry("Recife Pe", "/output/relatorio_saude__recife.pdf"),
+      this.reportEntry(
+        "Recife Pe",
+        "/output/relatorio_demografia+saude__recife.pdf",
+      ),
     ]);
   }
 
@@ -73,6 +80,25 @@ describe("automatic report generation proxy", () => {
     expect(await response.text()).toBe("%PDF-1.7 test");
     expect(automaticReportApi.requestedUrls.at(-1)).toBe(
       `${API_URL}/output/relatorio_saude__recife.pdf`,
+    );
+  });
+
+  it("forwards multiple macrothemes and returns their combined PDF", async () => {
+    const automaticReportApi = new AutomaticReportFetchFake();
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    process.env.AUTOMATIC_REPORT_API_URL = API_URL;
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=demografia&macrotema=saude",
+    );
+
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-disposition")).toBe(
+      'inline; filename="relatorio_demografia+saude__recife.pdf"',
+    );
+    expect(automaticReportApi.requestedUrls[0]).toBe(
+      `${API_URL}/relatorio/Recife%20(PE)?macrotema=demografia&macrotema=saude`,
     );
   });
 });

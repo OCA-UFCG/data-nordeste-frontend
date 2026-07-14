@@ -9,7 +9,7 @@ export type AutomaticReportMacrothemeSlug =
 
 export type AutomaticReportRequest = {
   city: string;
-  macrotheme: AutomaticReportMacrothemeSlug;
+  macrothemes: AutomaticReportMacrothemeSlug[];
 };
 
 const AUTOMATIC_REPORT_SLUGS = new Set<AutomaticReportMacrothemeSlug>([
@@ -56,12 +56,12 @@ export function parseAutomaticReportSlug(
   );
 }
 
-/** Builds the public Next proxy URL for a generated report. Example: `buildReportProxyUrl({ city, macrotheme })`. */
+/** Builds the public Next proxy URL for a generated report. Example: `buildReportProxyUrl({ city, macrothemes: ["demografia", "saude"] })`. */
 export function buildReportProxyUrl(request: AutomaticReportRequest): string {
-  const params = new URLSearchParams({
-    city: request.city,
-    macrotema: request.macrotheme,
-  });
+  const params = new URLSearchParams({ city: request.city });
+  request.macrothemes.forEach((macrotheme) =>
+    params.append("macrotema", macrotheme),
+  );
 
   return `/api/reports/generate?${params.toString()}`;
 }

@@ -4,7 +4,7 @@ import {
   parseAutomaticReportSlug,
 } from "@/features/reports/automaticReport";
 
-/** Proxies Automatic-Reporting generation. Example: `GET /api/reports/generate?city=Recife%20(PE)&macrotema=demografia`. */
+/** Proxies Automatic-Reporting generation. Example: `GET /api/reports/generate?city=Recife%20(PE)&macrotema=demografia&macrotema=saude`. */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const generationUrl = buildGenerationUrl(request.nextUrl.searchParams);
@@ -38,12 +38,14 @@ function buildGenerationUrl(params: URLSearchParams): string {
     throw new Error('Invalid city ""; expected a non-empty municipality name.');
   }
 
-  const macrotheme = parseAutomaticReportSlug(params.get("macrotema"));
+  const macrothemes = parseRequestedMacrothemes(params);
   const url = new URL(
     `/relatorio/${encodeURIComponent(city)}`,
     getAutomaticReportApiBaseUrl(),
   );
-  url.searchParams.set("macrotema", macrotheme);
+  macrothemes.forEach((macrotheme) =>
+    url.searchParams.append("macrotema", macrotheme),
+  );
 
   return url.toString();
 }
@@ -74,15 +76,15 @@ async function findGeneratedReport(
   }
 
   const reports = (await reportsResponse.json()) as AutomaticReportEntry[];
-  const macrotheme = parseAutomaticReportSlug(params.get("macrotema"));
+  const macrothemes = parseRequestedMacrothemes(params);
   const city = params.get("city") ?? "";
   const candidates = reports.filter((entry) =>
-    matchesGeneratedMacrotheme(entry, macrotheme),
+    matchesGeneratedMacrothemes(entry, macrothemes),
   );
   const report = findCityReport(candidates, city) ?? candidates[0];
   if (!report) {
     throw new Error(
-      `Generated report for macrotheme "${macrotheme}" was not listed; expected an entry with a PDF URL.`,
+      `Generated report for macrothemes "${macrothemes.join(",")}" was not listed; expected an entry with a PDF URL.`,
     );
   }
 
@@ -92,16 +94,27 @@ async function findGeneratedReport(
   };
 }
 
-function matchesGeneratedMacrotheme(
+function matchesGeneratedMacrothemes(
   entry: AutomaticReportEntry,
-  macrotheme: string,
+  macrothemes: string[],
 ): boolean {
   const normalizedEntry = normalizeReportLabel(entry.arquivo_pdf);
-  const normalizedMacrotheme = normalizeReportLabel(macrotheme);
 
   return (
-    Boolean(entry.pdf_url) && normalizedEntry.includes(normalizedMacrotheme)
+    Boolean(entry.pdf_url) &&
+    macrothemes.every((macrotheme) =>
+      normalizedEntry.includes(normalizeReportLabel(macrotheme)),
+    )
   );
+}
+
+function parseRequestedMacrothemes(
+  params: URLSearchParams,
+): ReturnType<typeof parseAutomaticReportSlug>[] {
+  const values = params.getAll("macrotema");
+  if (values.length === 0) return [parseAutomaticReportSlug(null)];
+
+  return [...new Set(values.map((value) => parseAutomaticReportSlug(value)))];
 }
 
 function findCityReport(

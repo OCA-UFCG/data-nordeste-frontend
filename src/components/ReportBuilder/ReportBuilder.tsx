@@ -77,7 +77,9 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
   const generateReport = (): void => {
     const request = buildReportRequest(municipality, selectedThemeIds);
     if (!request) {
-      setErrorMessage("Selecione um município e um macrotema disponível.");
+      setErrorMessage(
+        "Selecione um município e ao menos um macrotema disponível.",
+      );
 
       return;
     }
@@ -432,12 +434,12 @@ function toggleThemeId(
   supportedThemeIds: string[],
 ): string[] {
   if (currentIds.includes(themeId)) {
-    if (currentIds.length > 1) return [themeId];
-
     return currentIds.filter((id) => id !== themeId);
   }
 
-  return supportedThemeIds.includes(themeId) ? [themeId] : currentIds;
+  return supportedThemeIds.includes(themeId)
+    ? [...currentIds, themeId]
+    : currentIds;
 }
 
 function getSupportedThemeIds(themes: ReportTheme[]): string[] {
@@ -459,11 +461,11 @@ function hasSelectedAllThemes(
 function buildReportRequest(
   city: string,
   selectedThemeIds: string[],
-): { city: string; macrotheme: AutomaticReportMacrothemeSlug } | null {
-  const macrotheme = resolveSelectedMacrotheme(selectedThemeIds);
-  if (!city.trim() || !macrotheme) return null;
+): { city: string; macrothemes: AutomaticReportMacrothemeSlug[] } | null {
+  const macrothemes = resolveSelectedMacrothemes(selectedThemeIds);
+  if (!city.trim() || macrothemes.length === 0) return null;
 
-  return { city: city.trim(), macrotheme };
+  return { city: city.trim(), macrothemes };
 }
 
 function buildReportFileName(city: string): string {
@@ -472,12 +474,14 @@ function buildReportFileName(city: string): string {
   return `relatorio-${safeCity.toLowerCase()}.pdf`;
 }
 
-function resolveSelectedMacrotheme(
+function resolveSelectedMacrothemes(
   selectedThemeIds: string[],
-): AutomaticReportMacrothemeSlug | null {
-  if (selectedThemeIds.length > 1) return "todos";
+): AutomaticReportMacrothemeSlug[] {
+  return selectedThemeIds.flatMap((themeId) => {
+    const slug = getAutomaticReportSlug(themeId);
 
-  return getAutomaticReportSlug(selectedThemeIds[0] ?? "");
+    return slug ? [slug] : [];
+  });
 }
 
 async function loadReportCities(
