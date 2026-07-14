@@ -1,29 +1,21 @@
 export type BrowserDownloadDeps = {
-  createObjectUrl: (blob: Blob) => string;
-  fetcher: typeof fetch;
-  revokeObjectUrl: (url: string) => void;
   createAnchor: () => HTMLAnchorElement;
 };
 
 export const browserDownloadDeps: BrowserDownloadDeps = {
-  createObjectUrl: (blob) => URL.createObjectURL(blob),
-  fetcher: fetch,
-  revokeObjectUrl: (url) => URL.revokeObjectURL(url),
   createAnchor: () => document.createElement("a"),
 };
 
+/** Starts a browser download from its source URL. Example: `await downloadFile(url, "dados.csv")`. */
 export const downloadFile = async (
   url: string,
   name: string,
   deps: BrowserDownloadDeps = browserDownloadDeps,
-) => {
-  const response = await deps.fetcher(url);
-  const blob = await response.blob();
-  const blobUrl = deps.createObjectUrl(blob);
+): Promise<void> => {
   const link = deps.createAnchor();
 
-  link.href = blobUrl;
+  link.href = url;
   link.download = name;
+  link.rel = "noopener noreferrer";
   link.click();
-  deps.revokeObjectUrl(blobUrl);
 };
