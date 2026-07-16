@@ -301,7 +301,7 @@ function ReportThemeActions({
         <Icon id="trash" size={14} />
       </button>
       <button
-        className="flex h-10 w-[223px] items-center justify-center gap-2.5 rounded-md bg-white px-4 text-sm font-medium text-[#018F39] transition-colors hover:bg-[#F0FFF4]"
+        className="flex h-10 w-[223px] items-center justify-center gap-2.5 rounded-md bg-white px-4 text-sm font-medium text-[#018F39] transition-colors hover:bg-[#D6E9DB]"
         disabled={allThemesSelected}
         onClick={onSelectAll}
         type="button"
@@ -369,9 +369,9 @@ function ReportThemeRow({
   return (
     <div
       className={cn(
-        "flex h-8 w-full items-center gap-2 rounded-lg bg-[#F8F7F8] px-2 text-left transition-colors hover:bg-[#F0EFEE]",
+        "flex h-8 w-full items-center gap-0 rounded-lg border border-[#EFEFEF] bg-[#F8F7F8] text-left transition-colors",
         checked && "bg-[#E8F5EC]",
-        disabled && "cursor-not-allowed opacity-50 hover:bg-[#F8F7F8]",
+        disabled && "cursor-not-allowed opacity-50",
       )}
       role="button"
       tabIndex={disabled ? -1 : 0}
@@ -388,20 +388,38 @@ function ReportThemeRow({
           : undefined
       }
     >
-      <Checkbox
-        checked={checked}
-        className="h-4 w-4 border-[#018F39] data-[state=checked]:bg-[#018F39]"
-        disabled={disabled}
-        onCheckedChange={() => onToggle(theme.id)}
-        onClick={(event) => event.stopPropagation()}
-      />
-      <div className="flex h-6 w-6 items-center justify-center rounded-md">
-        <Icon id={iconId} size={16} style={{ color: theme.color }} />
+      <div
+        className={cn(
+          "flex h-full items-center gap-2 px-2 hover:bg-[#F0EFEE]",
+          checked && "bg-[#E8F5EC]",
+        )}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!disabled) onToggle(theme.id);
+        }}
+      >
+        <Checkbox
+          checked={checked}
+          className="h-4 w-4 border-[#018F39] data-[state=checked]:bg-[#018F39]"
+          disabled={disabled}
+          onCheckedChange={() => onToggle(theme.id)}
+          onClick={(event) => event.stopPropagation()}
+        />
       </div>
-      <span className="flex-1 text-sm font-normal leading-5 text-[#292829]">
-        {theme.name}
-      </span>
-      <Icon id="expand-black" size={8} className="text-[#292829]" />
+      <div
+        className={cn(
+          "flex h-full flex-1 items-center gap-2 border-l border-[#EFEFEF] px-2 hover:bg-[#F0EFEE]",
+          checked && "bg-[#E8F5EC]",
+        )}
+      >
+        <div className="flex h-6 w-6 items-center justify-center rounded-md">
+          <Icon id={iconId} size={16} style={{ color: theme.color }} />
+        </div>
+        <span className="flex-1 text-sm font-normal leading-5 text-[#292829]">
+          {theme.name}
+        </span>
+        <Icon id="expand-black" size={8} className="text-[#292829]" />
+      </div>
     </div>
   );
 }
