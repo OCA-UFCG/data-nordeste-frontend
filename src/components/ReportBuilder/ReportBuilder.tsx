@@ -1,6 +1,5 @@
 "use client";
 
-import { FileText, Search } from "lucide-react";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -172,11 +171,13 @@ function ReportSectionHeader({
   title: string;
 }): ReactElement {
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-2xl font-semibold leading-8 text-grey-1100">
+    <div className="flex flex-col gap-2">
+      <h2 className="text-2xl font-semibold leading-9 tracking-tight text-[#292829]">
         {title}
       </h2>
-      <p className="text-sm leading-5 text-grey-700">{subtitle}</p>
+      <p className="text-base font-normal leading-relaxed text-[#292829]">
+        {subtitle}
+      </p>
     </div>
   );
 }
@@ -218,10 +219,10 @@ function MunicipalitySearch({
   value: string;
 }): ReactElement {
   return (
-    <label className="mt-4 flex h-12 w-full items-center gap-2 rounded-md bg-grey-100 px-4">
+    <label className="mt-4 flex h-10 w-full items-center gap-2 rounded-lg bg-[#EFEFEF] px-3">
       <span className="sr-only">Pesquise o município</span>
       <input
-        className="min-w-0 flex-1 bg-transparent text-sm text-grey-1100 outline-none placeholder:text-grey-700"
+        className="min-w-0 flex-1 bg-transparent text-sm text-[#292929] outline-none placeholder:text-[#737373]"
         onChange={(event) => onChange(event.target.value)}
         placeholder="Pesquise o município"
         list="report-municipalities"
@@ -229,7 +230,7 @@ function MunicipalitySearch({
         value={value}
       />
       <MunicipalityOptions cities={cities} />
-      <Search className="size-4 text-grey-700" />
+      <Icon id="search-icon" size={12} />
     </label>
   );
 }
@@ -290,17 +291,17 @@ function ReportThemeActions({
   onSelectAll: () => void;
 }): ReactElement {
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+    <div className="mt-4 flex items-center gap-4">
       <button
-        className="flex h-9 min-w-[180px] items-center justify-center gap-2 rounded-md border border-grey-200 bg-white px-4 text-sm font-medium text-red-700 transition-colors hover:bg-grey-100"
+        className="flex h-10 w-[223px] items-center justify-center gap-2.5 rounded-md border border-[#EFEFEF] bg-white px-4 text-sm font-medium text-[#E5333F] transition-colors hover:bg-[#FFF5F5]"
         onClick={onClear}
         type="button"
       >
         Limpar seleções
-        <Icon id="no-filter" size={14} />
+        <Icon id="trash" size={14} />
       </button>
       <button
-        className="h-9 rounded-md px-4 text-sm font-medium text-green-800 transition-colors hover:bg-green-neutro"
+        className="flex h-10 w-[223px] items-center justify-center gap-2.5 rounded-md bg-white px-4 text-sm font-medium text-[#018F39] transition-colors hover:bg-[#F0FFF4]"
         disabled={allThemesSelected}
         onClick={onSelectAll}
         type="button"
@@ -324,7 +325,7 @@ function ReportThemeList({
 }): ReactElement {
   return (
     <>
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="mt-4 flex flex-col gap-2">
         {themes.map((theme) => (
           <ReportThemeRow
             checked={selectedThemeIds.includes(theme.id)}
@@ -368,9 +369,9 @@ function ReportThemeRow({
   return (
     <div
       className={cn(
-        "flex h-11 w-full items-center rounded-md bg-grey-100 text-left transition-colors hover:bg-green-neutro",
-        checked && "bg-green-100",
-        disabled && "cursor-not-allowed opacity-50 hover:bg-grey-100",
+        "flex h-8 w-full items-center gap-2 rounded-lg bg-[#F8F7F8] px-2 text-left transition-colors hover:bg-[#F0EFEE]",
+        checked && "bg-[#E8F5EC]",
+        disabled && "cursor-not-allowed opacity-50 hover:bg-[#F8F7F8]",
       )}
       role="button"
       tabIndex={disabled ? -1 : 0}
@@ -387,22 +388,20 @@ function ReportThemeRow({
           : undefined
       }
     >
-      <span className="flex min-w-0 flex-1 items-center gap-3 px-3">
-        <Checkbox
-          checked={checked}
-          className="border-green-800 data-[state=checked]:bg-green-800"
-          disabled={disabled}
-          onCheckedChange={() => onToggle(theme.id)}
-          onClick={(event) => event.stopPropagation()}
-        />
+      <Checkbox
+        checked={checked}
+        className="h-4 w-4 border-[#018F39] data-[state=checked]:bg-[#018F39]"
+        disabled={disabled}
+        onCheckedChange={() => onToggle(theme.id)}
+        onClick={(event) => event.stopPropagation()}
+      />
+      <div className="flex h-6 w-6 items-center justify-center rounded-md">
         <Icon id={iconId} size={16} style={{ color: theme.color }} />
-        <span className="truncate text-sm leading-5 text-grey-1100">
-          {theme.name}
-        </span>
+      </div>
+      <span className="flex-1 text-sm font-normal leading-5 text-[#292829]">
+        {theme.name}
       </span>
-      <span className="flex h-full w-11 items-center justify-center border-l border-grey-200">
-        <Icon className="rotate-[-90deg] text-grey-700" id="expand" size={10} />
-      </span>
+      <Icon id="expand-black" size={8} className="text-[#292829]" />
     </div>
   );
 }
@@ -418,11 +417,11 @@ function ReportSubmitButton({
 }): ReactElement {
   return (
     <Button
-      className="mt-5 h-12 w-full rounded-md"
+      className="mt-5 h-10 w-full rounded-md bg-[#018F39] text-[#F8F7F8] hover:bg-[#017032]"
       onClick={onClick}
       type="button"
     >
-      <FileText className="size-4" />
+      <Icon id="file-text" size={12} />
       Gerar Relatório
     </Button>
   );
