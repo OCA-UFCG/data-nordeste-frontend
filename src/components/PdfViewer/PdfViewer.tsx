@@ -40,6 +40,14 @@ export const PdfViewer = ({ pdfUrl, fileName }: PdfViewerProps) => {
 
   useEffect(() => {
     let cancelled = false;
+
+    // INTENTIONAL: Reset all document state on URL change so the viewer does not
+    // keep showing the previous PDF or a stale error while the new one loads.
+    setPdfDoc(null);
+    setTotalPages(0);
+    setPages([]);
+    setError(false);
+
     const loadDocument = async () => {
       try {
         const doc = await getDocument({ url: pdfUrl, cMapPacked: true })
