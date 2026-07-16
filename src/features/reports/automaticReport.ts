@@ -61,6 +61,7 @@ export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   const params = new URLSearchParams({
     city: request.city,
     macrotema: request.macrotheme,
+    _: Date.now().toString(),
   });
 
   return `/api/reports/generate?${params.toString()}`;
