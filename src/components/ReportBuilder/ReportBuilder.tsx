@@ -366,20 +366,26 @@ function ReportThemeRow({
   const iconId = MACROTHEME_ICON_BY_ID[iconKey] || "list";
 
   return (
-    <button
+    <div
       className={cn(
         "flex h-11 w-full items-center rounded-md bg-grey-100 text-left transition-colors hover:bg-green-neutro",
         checked && "bg-green-100",
         disabled && "cursor-not-allowed opacity-50 hover:bg-grey-100",
       )}
-      disabled={disabled}
-      onClick={() => onToggle(theme.id)}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      onClick={() => !disabled && onToggle(theme.id)}
+      onKeyDown={(event) => {
+        if (!disabled && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          onToggle(theme.id);
+        }
+      }}
       title={
         disabled
           ? "Macrotema ainda indisponível no relatório automático"
           : undefined
       }
-      type="button"
     >
       <span className="flex min-w-0 flex-1 items-center gap-3 px-3">
         <Checkbox
@@ -397,7 +403,7 @@ function ReportThemeRow({
       <span className="flex h-full w-11 items-center justify-center border-l border-grey-200">
         <Icon className="rotate-[-90deg] text-grey-700" id="expand" size={10} />
       </span>
-    </button>
+    </div>
   );
 }
 

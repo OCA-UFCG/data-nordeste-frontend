@@ -79,10 +79,10 @@ async function findGeneratedReport(
   const candidates = reports.filter((entry) =>
     matchesGeneratedMacrotheme(entry, macrotheme),
   );
-  const report = findCityReport(candidates, city) ?? candidates[0];
+  const report = findCityReport(candidates, city);
   if (!report) {
     throw new Error(
-      `Generated report for macrotheme "${macrotheme}" was not listed; expected an entry with a PDF URL.`,
+      `Generated report for macrotheme "${macrotheme}" and city "${city}" was not listed; expected an entry with a PDF URL.`,
     );
   }
 
