@@ -6,6 +6,8 @@ export interface ThemeFilterCardProps {
   name: string;
   href?: string;
   checked?: boolean;
+  disabled?: boolean;
+  className?: string;
   onCheckedChange?: (checked: boolean) => void;
 }
 

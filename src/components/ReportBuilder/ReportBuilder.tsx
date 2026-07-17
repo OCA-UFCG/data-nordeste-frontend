@@ -2,9 +2,9 @@
 
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/Icon/Icon";
+import ThemeFilterCard from "@/components/ExploreFilters/ThemeFilterCard";
 import {
   ReportPreview,
   type ReportPreviewDocument,
@@ -23,16 +23,10 @@ import { normalizeKey, sortContentByDesiredOrder } from "@/utils/functions";
 import type { MacroTheme } from "@/utils/interfaces";
 
 type ReportTheme = Pick<MacroTheme, "id" | "name" | "color" | "sys">;
+type ReportMobileTab = "config" | "report";
 
 type ReportBuilderProps = {
   themes: ReportTheme[];
-};
-
-type ReportThemeRowProps = {
-  theme: ReportTheme;
-  checked: boolean;
-  disabled: boolean;
-  onToggle: (themeId: string) => void;
 };
 
 /** Renders the automatic report form. Example: `<ReportBuilder themes={themes} />`. */
@@ -44,6 +38,8 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
   const [loadingCities, setLoadingCities] = useState(false);
   const [reportPreview, setReportPreview] =
     useState<ReportPreviewDocument | null>(null);
+
+  const [activeTab, setActiveTab] = useState<ReportMobileTab>("config");
   const sortedThemes = useMemo(() => sortThemes(themes), [themes]);
   const supportedThemeIds = useMemo(
     () => getSupportedThemeIds(themes),
@@ -90,6 +86,7 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
 
   return (
     <ReportBuilderLayout
+      activeTab={activeTab}
       allThemesSelected={allThemesSelected}
       cities={cities}
       errorMessage={errorMessage}
@@ -99,6 +96,7 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
       onGenerate={generateReport}
       onMunicipalityChange={setMunicipality}
       onSelectAll={selectEveryTheme}
+      onTabChange={setActiveTab}
       onToggleTheme={toggleTheme}
       reportPreview={reportPreview}
       selectedThemeIds={selectedThemeIds}
@@ -108,6 +106,7 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
 }
 
 function ReportBuilderLayout({
+  activeTab,
   allThemesSelected,
   cities,
   errorMessage,
@@ -117,11 +116,13 @@ function ReportBuilderLayout({
   onGenerate,
   onMunicipalityChange,
   onSelectAll,
+  onTabChange,
   onToggleTheme,
   reportPreview,
   selectedThemeIds,
   themes,
 }: {
+  activeTab: ReportMobileTab;
   allThemesSelected: boolean;
   cities: string[];
   errorMessage: string;
@@ -131,6 +132,7 @@ function ReportBuilderLayout({
   onGenerate: () => void;
   onMunicipalityChange: (value: string) => void;
   onSelectAll: () => void;
+  onTabChange: (tab: ReportMobileTab) => void;
   onToggleTheme: (themeId: string) => void;
   reportPreview: ReportPreviewDocument | null;
   selectedThemeIds: string[];
@@ -138,8 +140,17 @@ function ReportBuilderLayout({
 }): ReactElement {
   return (
     <section className="w-full bg-white">
+      {/* Abas só aparecem no mobile (<lg); no desktop o grid abaixo as ignora. */}
+      <ReportMobileTabs activeTab={activeTab} onTabChange={onTabChange} />
       <div className="mx-auto grid w-full max-w-[1440px] gap-8 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(360px,462px)_minmax(0,1fr)] lg:px-20 lg:py-10">
-        <div className="w-full">
+        {/* Mobile: mostra só o painel da aba ativa. Desktop (lg:block): ambos visíveis. */}
+        <div
+          className={cn(
+            "w-full",
+            activeTab === "config" ? "block" : "hidden",
+            "lg:block",
+          )}
+        >
           <MunicipalityField
             cities={cities}
             loadingCities={loadingCities}
@@ -157,9 +168,74 @@ function ReportBuilderLayout({
           {errorMessage && <ReportErrorMessage message={errorMessage} />}
           <ReportSubmitButton onClick={onGenerate} />
         </div>
-        <ReportPreview preview={reportPreview} />
+        <div
+          className={cn(
+            "min-w-0",
+            activeTab === "report" ? "block" : "hidden",
+            "lg:block",
+          )}
+        >
+          <ReportPreview preview={reportPreview} />
+        </div>
       </div>
     </section>
+  );
+}
+
+function ReportMobileTabs({
+  activeTab,
+  onTabChange,
+}: {
+  activeTab: ReportMobileTab;
+  onTabChange: (tab: ReportMobileTab) => void;
+}): ReactElement {
+  return (
+    <div
+      role="tablist"
+      aria-label="Relatório"
+      className="flex h-[60px] w-full items-start gap-4 border-b border-grey-400 bg-white px-4 pt-2 lg:hidden"
+    >
+      <ReportMobileTabButton
+        active={activeTab === "config"}
+        label="Configurações"
+        onSelect={() => onTabChange("config")}
+        tabId="report-tab-config"
+      />
+      <ReportMobileTabButton
+        active={activeTab === "report"}
+        label="Relatório"
+        onSelect={() => onTabChange("report")}
+        tabId="report-tab-preview"
+      />
+    </div>
+  );
+}
+
+function ReportMobileTabButton({
+  active,
+  label,
+  onSelect,
+  tabId,
+}: {
+  active: boolean;
+  label: string;
+  onSelect: () => void;
+  tabId: string;
+}): ReactElement {
+  return (
+    <button
+      aria-selected={active}
+      className={cn(
+        "flex h-[52px] items-center justify-center px-4 text-base font-medium leading-5 transition-colors",
+        active ? "border-b-2 border-green-800 text-green-800" : "text-grey-600",
+      )}
+      id={tabId}
+      role="tab"
+      type="button"
+      onClick={onSelect}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -266,161 +342,88 @@ function ReportThemesField({
         subtitle="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
         title="Selecione os temas"
       />
-      <ReportThemeActions
-        allThemesSelected={allThemesSelected}
-        onClear={onClear}
-        onSelectAll={onSelectAll}
-      />
+      <ReportThemeActions onClear={onClear} />
       <ReportThemeList
-        onSelectAll={onSelectAll}
         onToggleTheme={onToggleTheme}
         selectedThemeIds={selectedThemeIds}
         themes={themes}
+      />
+      <SelectAllThemesButton
+        allThemesSelected={allThemesSelected}
+        onClick={onSelectAll}
       />
     </div>
   );
 }
 
 function ReportThemeActions({
-  allThemesSelected,
   onClear,
-  onSelectAll,
 }: {
-  allThemesSelected: boolean;
   onClear: () => void;
-  onSelectAll: () => void;
 }): ReactElement {
   return (
     <div className="mt-4 flex items-center gap-4">
       <button
-        className="flex h-10 w-[223px] items-center justify-center gap-2.5 rounded-md border border-[#EFEFEF] bg-white px-4 text-sm font-medium text-[#E5333F] transition-colors hover:bg-[#FFF5F5]"
+        className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-[#EFEFEF] bg-white px-4 text-sm font-medium text-[#E5333F] transition-colors hover:bg-[#FFF5F5] lg:w-full lg:flex-none lg:rounded-md"
         onClick={onClear}
         type="button"
       >
-        Limpar seleções
+        Limpar Seleções
         <Icon id="trash" size={14} />
-      </button>
-      <button
-        className="flex h-10 w-[223px] items-center justify-center gap-2.5 rounded-md bg-white px-4 text-sm font-medium text-[#018F39] transition-colors hover:bg-[#D6E9DB]"
-        disabled={allThemesSelected}
-        onClick={onSelectAll}
-        type="button"
-      >
-        Selecionar todos
       </button>
     </div>
   );
 }
 
 function ReportThemeList({
-  onSelectAll,
   onToggleTheme,
   selectedThemeIds,
   themes,
 }: {
-  onSelectAll: () => void;
   onToggleTheme: (themeId: string) => void;
   selectedThemeIds: string[];
   themes: ReportTheme[];
 }): ReactElement {
   return (
-    <>
-      <div className="mt-4 flex flex-col gap-2">
-        {themes.map((theme) => (
-          <ReportThemeRow
-            checked={selectedThemeIds.includes(theme.id)}
-            disabled={!getAutomaticReportSlug(theme.id)}
+    <div className="mt-4 flex flex-col gap-2">
+      {themes.map((theme) => {
+        const iconKey = normalizeKey(theme.name);
+        const iconId = MACROTHEME_ICON_BY_ID[iconKey] || "list";
+        const disabled = !getAutomaticReportSlug(theme.id);
+
+        return (
+          <ThemeFilterCard
             key={theme.sys.id}
-            onToggle={onToggleTheme}
-            theme={theme}
+            iconId={iconId}
+            color={theme.color}
+            name={theme.name}
+            checked={selectedThemeIds.includes(theme.id)}
+            disabled={disabled}
+            className="w-full"
+            onCheckedChange={() => !disabled && onToggleTheme(theme.id)}
           />
-        ))}
-      </div>
-      <SelectAllThemesButton onClick={onSelectAll} />
-    </>
+        );
+      })}
+    </div>
   );
 }
 
 function SelectAllThemesButton({
+  allThemesSelected,
   onClick,
 }: {
+  allThemesSelected: boolean;
   onClick: () => void;
 }): ReactElement {
   return (
     <button
-      className="mx-auto mt-5 flex h-9 items-center justify-center rounded-md px-4 text-xs font-medium text-green-800 transition-colors hover:bg-green-neutro"
+      className="mt-4 flex h-10 w-full items-center justify-center rounded-md text-sm font-medium text-[#018F39] transition-colors hover:bg-[#DDEADF] disabled:opacity-50"
+      disabled={allThemesSelected}
       onClick={onClick}
       type="button"
     >
       Selecionar todos
     </button>
-  );
-}
-
-function ReportThemeRow({
-  checked,
-  disabled,
-  onToggle,
-  theme,
-}: ReportThemeRowProps): ReactElement {
-  const iconKey = normalizeKey(theme.name);
-  const iconId = MACROTHEME_ICON_BY_ID[iconKey] || "list";
-
-  return (
-    <div
-      className={cn(
-        "flex h-8 w-full items-center gap-0 rounded-lg border border-[#EFEFEF] bg-[#F8F7F8] text-left transition-colors",
-        checked && "bg-[#E8F5EC]",
-        disabled && "cursor-not-allowed opacity-50",
-      )}
-      role="button"
-      tabIndex={disabled ? -1 : 0}
-      onClick={() => !disabled && onToggle(theme.id)}
-      onKeyDown={(event) => {
-        if (!disabled && (event.key === "Enter" || event.key === " ")) {
-          event.preventDefault();
-          onToggle(theme.id);
-        }
-      }}
-      title={
-        disabled
-          ? "Macrotema ainda indisponível no relatório automático"
-          : undefined
-      }
-    >
-      <div
-        className={cn(
-          "flex h-full items-center gap-2 px-2 hover:bg-[#F0EFEE]",
-          checked && "bg-[#E8F5EC]",
-        )}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!disabled) onToggle(theme.id);
-        }}
-      >
-        <Checkbox
-          checked={checked}
-          className="h-4 w-4 border-[#018F39] data-[state=checked]:bg-[#018F39]"
-          disabled={disabled}
-          onCheckedChange={() => onToggle(theme.id)}
-          onClick={(event) => event.stopPropagation()}
-        />
-      </div>
-      <div
-        className={cn(
-          "flex h-full flex-1 items-center gap-2 border-l border-[#EFEFEF] px-2 hover:bg-[#F0EFEE]",
-          checked && "bg-[#E8F5EC]",
-        )}
-      >
-        <div className="flex h-6 w-6 items-center justify-center rounded-md">
-          <Icon id={iconId} size={16} style={{ color: theme.color }} />
-        </div>
-        <span className="flex-1 text-sm font-normal leading-5 text-[#292829]">
-          {theme.name}
-        </span>
-        <Icon id="expand-black" size={8} className="text-[#292829]" />
-      </div>
-    </div>
   );
 }
 
