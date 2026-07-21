@@ -19,10 +19,12 @@ export function ReportPreview({
     <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
       {/* Botão de download visível só no mobile (<lg): a toolbar do PdfViewer
           fica `hidden sm:block`, então no mobile esse botão dá acesso ao PDF. */}
-      <div className="my-2 flex px-6 lg:hidden">
+      <div className="mt-4 lg:mt-0 flex px-6 lg:hidden">
         <ReportDownloadButton fileName={preview.fileName} url={preview.url} />
       </div>
-      <PdfViewer fileName={preview.fileName} pdfUrl={preview.url} />
+      <div className="mt-4 mb-6 lg:mt-0">
+        <PdfViewer fileName={preview.fileName} pdfUrl={preview.url} />
+      </div>
     </div>
   );
 }

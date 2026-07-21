@@ -131,13 +131,11 @@ export const PdfViewer = ({ pdfUrl, fileName }: PdfViewerProps) => {
       </div>
       <div className="pdf-viewer-overlay">
         <div className="pdf-viewer-page-indicator">
-          <input
-            type="text"
-            readOnly
-            value={currentPage}
-            className="pdf-viewer-page-input"
-          />
-          <span> / {totalPages}</span>
+          <div className="pdf-viewer-page-field">
+            <span className="pdf-viewer-page-current">{currentPage}</span>
+          </div>
+          <span className="pdf-viewer-page-sep">/</span>
+          <span className="pdf-viewer-page-total">{totalPages}</span>
         </div>
         <button
           onClick={toggleFullscreen}

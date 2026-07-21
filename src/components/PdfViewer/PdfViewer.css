@@ -5,7 +5,6 @@
   flex-direction: column;
   border: 1px solid #EFEFEF;
   border-radius: 0 0 8px 8px;
-  overflow: hidden;
   background: #525659;
 }
 
@@ -186,48 +185,82 @@
   align-items: flex-end;
   gap: 8px;
   z-index: 10;
-  pointer-events: none;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .pdf-viewer-overlay {
     display: none;
   }
 }
 
-.pdf-viewer-overlay > * {
-  pointer-events: auto;
-}
-
-.pdf-viewer-page-indicator-mobile {
+.pdf-viewer-page-indicator {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  background: white;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 14px;
-  color: #333;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  font-weight: 500;
+  gap: 8px;
+  padding: 8px;
+  background: #F8F7F8;
+  border-radius: 8px;
 }
 
-.pdf-viewer-fullscreen-btn {
+.pdf-viewer-page-field {
+  width: 33px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: white;
-  border: none;
+  background: #fff;
+  border: 1px solid #DCDBDC;
   border-radius: 6px;
-  color: #078f39;
+}
+
+.pdf-viewer-page-current {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #7E797B;
+}
+
+.pdf-viewer-page-sep {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #292829;
+}
+
+.pdf-viewer-page-total {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #292829;
+}
+
+.pdf-viewer-fullscreen-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #EFEFEF;
+  border-radius: 4px;
+  color: #018F39;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transition: background 0.2s;
+  padding: 8px;
+  transition: background 150ms ease;
 }
 
 .pdf-viewer-fullscreen-btn:hover {
-  background: #f4f4f4;
+  background: #F0EFEE;
+}
+
+.pdf-viewer-fullscreen-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pdf-viewer-page-indicator-mobile {
+  display: none;
 }
 
 .pdf-viewer-canvas-wrapper {

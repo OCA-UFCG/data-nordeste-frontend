@@ -142,11 +142,11 @@ function ReportBuilderLayout({
     <section className="w-full bg-white">
       {/* Abas só aparecem no mobile (<lg); no desktop o grid abaixo as ignora. */}
       <ReportMobileTabs activeTab={activeTab} onTabChange={onTabChange} />
-      <div className="mx-auto grid w-full max-w-[1440px] gap-8 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(360px,462px)_minmax(0,1fr)] lg:px-20 lg:py-10">
+      <div className="mx-auto grid w-full max-w-[1440px] gap-4 px-4 sm:px-6 lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)] lg:px-10 lg:py-10 lg:gap-8">
         {/* Mobile: mostra só o painel da aba ativa. Desktop (lg:block): ambos visíveis. */}
         <div
           className={cn(
-            "w-full",
+            "w-full pt-6 pb-6 lg:pt-0",
             activeTab === "config" ? "block" : "hidden",
             "lg:block",
           )}
