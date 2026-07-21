@@ -7,7 +7,7 @@ export type BrowserDownloadDeps = {
 
 export const browserDownloadDeps: BrowserDownloadDeps = {
   createObjectUrl: (blob) => URL.createObjectURL(blob),
-  fetcher: fetch,
+  fetcher: (...args) => fetch(...args),
   revokeObjectUrl: (url) => URL.revokeObjectURL(url),
   createAnchor: () => document.createElement("a"),
 };
