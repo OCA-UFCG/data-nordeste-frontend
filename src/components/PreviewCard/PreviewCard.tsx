@@ -9,9 +9,9 @@ const PreviewCard = ({ content }: { content: IPreviewCard }) => {
   return (
     <Link href={link || ""} className="flex-none">
       <div className="group w-[268px] md:w-full rounded-lg shadow h-full flex flex-col">
-        <div className="px-4 py-3 flex gap-2 w-full items-center bg-grey-100 group-hover:bg-grey-200 rounded-t-lg transition duration-300 min-h-[68px]">
+        <div className="px-4 py-3 flex gap-2 w-full items-start bg-grey-100 group-hover:bg-grey-200 rounded-t-lg transition duration-300 min-h-[68px]">
           <div
-            className="flex items-center justify-center rounded-sm min-w-[40px] w-[40px] h-[40px]"
+            className="flex size-[40px] shrink-0 items-center justify-center rounded-sm"
             style={{ backgroundColor: category.color }}
           >
             {iconsvg?.url ? (
@@ -32,8 +32,10 @@ const PreviewCard = ({ content }: { content: IPreviewCard }) => {
               />
             )}
           </div>
-          <div className="flex flex-col w-full overflow-hidden">
-            <h3 className="text-sm font-medium">{title}</h3>
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+            <h3 className="min-h-10 text-sm font-medium leading-5">
+              {title}
+            </h3>
             <p className="text-xs text-grey-600">{subtitle}</p>
           </div>
           <Icon className="hidden md:flex" id="expand-black" size={9} />
