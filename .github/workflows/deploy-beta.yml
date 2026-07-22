@@ -65,6 +65,7 @@ jobs:
           sudo docker run \
             --name ${{ vars.CONTAINER_NAME_BETA }} \
             --restart unless-stopped \
+            -e AUTOMATIC_REPORT_API_URL="${{ vars.AUTOMATIC_REPORT_API_URL }}" \
             -p ${{ vars.HOST_PORT_BETA }}:${{ vars.CONTAINER_PORT }} \
             -d \
             ${{ vars.DOCKER_IMAGE_BETA }}:latest
