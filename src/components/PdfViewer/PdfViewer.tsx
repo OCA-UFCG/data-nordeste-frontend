@@ -7,6 +7,7 @@ import {
   type PDFDocumentProxy,
   type PDFPageProxy,
 } from "pdfjs-dist";
+import { Icon } from "@/components/Icon/Icon";
 import "./PdfViewer.css";
 
 // IMPORTANT: pdf.js requires a web worker to parse PDFs off the main thread.
@@ -40,6 +41,14 @@ export const PdfViewer = ({ pdfUrl, fileName }: PdfViewerProps) => {
 
   useEffect(() => {
     let cancelled = false;
+
+    // INTENTIONAL: Reset all document state on URL change so the viewer does not
+    // keep showing the previous PDF or a stale error while the new one loads.
+    setPdfDoc(null);
+    setTotalPages(0);
+    setPages([]);
+    setError(false);
+
     const loadDocument = async () => {
       try {
         const doc = await getDocument({ url: pdfUrl, cMapPacked: true })
@@ -122,13 +131,11 @@ export const PdfViewer = ({ pdfUrl, fileName }: PdfViewerProps) => {
       </div>
       <div className="pdf-viewer-overlay">
         <div className="pdf-viewer-page-indicator">
-          <input
-            type="text"
-            readOnly
-            value={currentPage}
-            className="pdf-viewer-page-input"
-          />
-          <span> / {totalPages}</span>
+          <div className="pdf-viewer-page-field">
+            <span className="pdf-viewer-page-current">{currentPage}</span>
+          </div>
+          <span className="pdf-viewer-page-sep">/</span>
+          <span className="pdf-viewer-page-total">{totalPages}</span>
         </div>
         <button
           onClick={toggleFullscreen}
@@ -136,7 +143,7 @@ export const PdfViewer = ({ pdfUrl, fileName }: PdfViewerProps) => {
           aria-label="Tela cheia"
           title="Tela cheia"
         >
-          <FullscreenIcon />
+          <Icon id="fullscreen" size={18} />
         </button>
       </div>
       <div
@@ -185,78 +192,83 @@ const PdfToolbar = ({
   onToggleFullscreen,
 }: PdfToolbarProps) => (
   <div className="pdf-toolbar">
-    <span className="pdf-toolbar-filename" title={fileName}>
-      {fileName}
-    </span>
+    <div className="pdf-toolbar-left">
+      <span className="pdf-toolbar-filename" title={fileName}>
+        {fileName}
+      </span>
+    </div>
 
-    <div className="pdf-toolbar-controls">
-      <div className="pdf-toolbar-pages">
+    <div className="pdf-toolbar-center">
+      <div className="pdf-toolbar-page-indicator">
         <button
           onClick={onPreviousPage}
           disabled={currentPage <= 1}
           aria-label="Página anterior"
-          className="pdf-toolbar-btn"
+          className="pdf-toolbar-btn-page"
         >
-          ‹
+          <span className="pdf-toolbar-page-nav">‹</span>
         </button>
-        <span className="pdf-toolbar-page-info">
-          {currentPage} / {totalPages}
-        </span>
+        <div className="pdf-toolbar-page-field">
+          <span className="pdf-toolbar-page-current">{currentPage}</span>
+          <span className="pdf-toolbar-page-sep">/</span>
+          <span className="pdf-toolbar-page-total">{totalPages}</span>
+        </div>
         <button
           onClick={onNextPage}
           disabled={currentPage >= totalPages}
           aria-label="Próxima página"
-          className="pdf-toolbar-btn"
+          className="pdf-toolbar-btn-page"
         >
-          ›
+          <span className="pdf-toolbar-page-nav">›</span>
         </button>
       </div>
-
-      <div className="pdf-toolbar-separator" />
 
       <div className="pdf-toolbar-zoom">
         <button
           onClick={onZoomOut}
           disabled={zoom <= MIN_ZOOM}
           aria-label="Diminuir zoom"
-          className="pdf-toolbar-btn"
+          className="pdf-toolbar-btn-icon"
         >
-          −
+          <Icon id="zoom-out" size={18} />
         </button>
-        <span className="pdf-toolbar-zoom-level">
-          {Math.round(zoom * 100)}%
-        </span>
+        <div className="pdf-toolbar-zoom-field">
+          <span className="pdf-toolbar-zoom-level">
+            {Math.round(zoom * 100)}%
+          </span>
+        </div>
         <button
           onClick={onZoomIn}
           disabled={zoom >= MAX_ZOOM}
           aria-label="Aumentar zoom"
-          className="pdf-toolbar-btn"
+          className="pdf-toolbar-btn-icon"
         >
-          +
+          <Icon id="zoom-in" size={18} />
         </button>
       </div>
-
-      <div className="pdf-toolbar-separator" />
 
       <button
         onClick={onToggleFullscreen}
         aria-label="Tela cheia"
-        className="pdf-toolbar-btn"
+        className="pdf-toolbar-btn-icon"
         title="Tela cheia"
       >
-        <FullscreenIcon />
+        <Icon id="fullscreen" size={18} />
       </button>
     </div>
 
-    <a
-      href={pdfUrl}
-      download={fileName}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="pdf-toolbar-download"
-    >
-      ↓ Baixar PDF
-    </a>
+    <div className="pdf-toolbar-right">
+      <a
+        href={pdfUrl}
+        download={fileName}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pdf-toolbar-download"
+      >
+        <Icon id="download" size={11} />
+        <span>Baixar PDF</span>
+      </a>
+    </div>
   </div>
 );
 
@@ -404,9 +416,3 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
     </div>
   );
 };
-
-const FullscreenIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M1 1h5v1.5H2.5V5H1V1zm14 0h-5v1.5h3.5V5H15V1zM1 15h5v-1.5H2.5V11H1v4zm14 0h-5v-1.5h3.5V11H15v4z" />
-  </svg>
-);

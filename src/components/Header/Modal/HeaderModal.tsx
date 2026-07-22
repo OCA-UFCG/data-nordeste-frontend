@@ -2,7 +2,12 @@
 
 import { ISection } from "@/utils/interfaces";
 
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import {
@@ -18,10 +23,12 @@ import { useState } from "react";
 import { isHrefActive, sortContentByDesiredOrder } from "@/utils/functions";
 import { cn } from "@/lib/utils";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
+import { withReportsNavigation } from "@/features/navigation/reportLink";
 
 const HeaderModal = ({ content }: { content: ISection[] }) => {
   const pathname = usePathname();
   const category = useSearchParams().get("category");
+  const navigationSections = withReportsNavigation(content);
   const [open, setOpen] = useState(false);
 
   return (
@@ -41,6 +48,7 @@ const HeaderModal = ({ content }: { content: ISection[] }) => {
           side="top"
           className="max-h-dvh w-full overflow-y-auto border-t-0 border-b-2 rounded-bl-lg rounded-br-lg shadow-[0px_6px_6px_-1px_#0000001A]"
         >
+          <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
           <div className="px-2 pb-4">
             <SearchBar onNavigate={() => setOpen(false)} variant="mobile" />
           </div>
@@ -48,7 +56,7 @@ const HeaderModal = ({ content }: { content: ISection[] }) => {
             type="multiple"
             className="w-full space-y-2 py-4 px-2 pt-0"
           >
-            {content
+            {navigationSections
               .filter((item) => item.appears)
               .map((item, idx) => (
                 <AccordionItem
