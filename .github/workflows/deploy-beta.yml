@@ -47,6 +47,7 @@ jobs:
             NEXT_PUBLIC_RECAPTCHA_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_KEY }}
             NEXT_PUBLIC_SURVEY_FEEDBACK_URL=${{ secrets.NEXT_PUBLIC_SURVEY_FEEDBACK_URL }}
             NEXT_PUBLIC_APP_ENV=beta
+            NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL=${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }} 
 
   push-beta:
     needs: build-image
@@ -64,6 +65,7 @@ jobs:
           sudo docker run \
             --name ${{ vars.CONTAINER_NAME_BETA }} \
             --restart unless-stopped \
+            -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" \
             -p ${{ vars.HOST_PORT_BETA }}:${{ vars.CONTAINER_PORT }} \
             -d \
             ${{ vars.DOCKER_IMAGE_BETA }}:latest
