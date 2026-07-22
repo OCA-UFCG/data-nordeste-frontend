@@ -1,13 +1,11 @@
 import type { ReactElement } from "react";
-import { Icon } from "@/components/Icon/Icon";
-import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
 export type ReportPreviewDocument = {
   fileName: string;
   url: string;
 };
 
-/** Displays the generated PDF or its empty state. Example: `<ReportPreview preview={document} />`. */
+/** Displays the generated report or its empty state. Example: `<ReportPreview preview={document} />`. */
 export function ReportPreview({
   preview,
 }: {
@@ -17,41 +15,21 @@ export function ReportPreview({
 
   return (
     <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
-      {/* Botão de download visível só no mobile (<lg): a toolbar do PdfViewer
-          fica `hidden sm:block`, então no mobile esse botão dá acesso ao PDF. */}
-      <div className="my-2 flex px-6 lg:hidden">
-        <ReportDownloadButton fileName={preview.fileName} url={preview.url} />
-      </div>
-      <PdfViewer fileName={preview.fileName} pdfUrl={preview.url} />
+      {/* The generation endpoint returns HTML. The iframe keeps its
+          print-oriented styles isolated from the portal. */}
+      <iframe
+        className="h-[calc(100vh-48px)] min-h-[520px] w-full rounded-md border border-grey-300 bg-white"
+        src={preview.url}
+        title={`Relatório ${preview.fileName}`}
+      />
     </div>
-  );
-}
-
-function ReportDownloadButton({
-  fileName,
-  url,
-}: {
-  fileName: string;
-  url: string;
-}): ReactElement {
-  return (
-    <a
-      className="flex h-10 w-full flex-1 items-center justify-center gap-2 rounded bg-[#018F39] px-4 text-sm font-medium leading-6 text-[#F8F7F8] transition-colors hover:bg-[#077432]"
-      download={fileName}
-      href={url}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      <Icon id="download" size={16} />
-      Baixar PDF
-    </a>
   );
 }
 
 function EmptyReportPreview(): ReactElement {
   return (
     <div className="flex min-h-[320px] items-center justify-center rounded-md border border-dashed border-grey-300 bg-grey-100 px-6 py-10 text-center text-sm leading-6 text-grey-700 lg:min-h-[520px] lg:sticky lg:top-6 lg:h-[calc(100vh-48px)] lg:max-h-[900px]">
-      Selecione um município e os temas para visualizar o relatório em PDF.
+      Selecione um município e os temas para visualizar o relatório.
     </div>
   );
 }

@@ -56,22 +56,29 @@ export function parseAutomaticReportSlug(
   );
 }
 
-/** Builds the public Next proxy URL for a generated report. Example: `buildReportProxyUrl({ city, macrotheme })`. */
-export function buildReportProxyUrl(request: AutomaticReportRequest): string {
+/** Builds the public report-service URL. Example: `buildAutomaticReportUrl({ city, macrotheme })`. */
+export function buildAutomaticReportUrl(
+  request: AutomaticReportRequest,
+): string {
   const params = new URLSearchParams({
-    city: request.city,
     macrotema: request.macrotheme,
     _: Date.now().toString(),
   });
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL ?? ""
+  ).replace(/\/+$/, "");
 
-  return `/api/reports/generate?${params.toString()}`;
+  // IMPORTANT: Production routes /relatorio to Automatic-Reporting at the
+  // public origin. Local development sets a public base URL because Next and
+  // FastAPI listen on different ports.
+  return `${baseUrl}/relatorio/${encodeURIComponent(request.city)}?${params.toString()}`;
 }
 
 export function getAutomaticReportApiBaseUrl(): string {
-  const baseUrl = process.env.AUTOMATIC_REPORT_API_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL;
   if (baseUrl) return baseUrl.replace(/\/+$/, "");
 
   throw new Error(
-    'Invalid AUTOMATIC_REPORT_API_URL ""; expected an absolute URL like "http://127.0.0.1:8000".',
+    'Invalid NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL ""; expected an absolute URL like "http://127.0.0.1:8000".',
   );
 }
