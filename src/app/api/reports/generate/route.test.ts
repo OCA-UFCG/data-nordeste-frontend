@@ -51,14 +51,14 @@ class AutomaticReportFetchFake {
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  delete process.env.AUTOMATIC_REPORT_API_URL;
+  vi.unstubAllEnvs();
 });
 
 describe("automatic report generation proxy", () => {
   it("returns the generated municipality PDF inline", async () => {
     const automaticReportApi = new AutomaticReportFetchFake();
     vi.stubGlobal("fetch", automaticReportApi.fetch);
-    process.env.AUTOMATIC_REPORT_API_URL = API_URL;
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
     const request = new NextRequest(
       "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude",
     );
