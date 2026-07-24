@@ -15,7 +15,7 @@ import {
   THEMES_NAVIGATION_ORDER,
 } from "@/features/macrothemes/constants";
 import {
-  buildAutomaticReportUrl,
+  buildReportProxyUrl,
   getAutomaticReportSlug,
   type AutomaticReportMacrothemeSlug,
 } from "@/features/reports/automaticReport";
@@ -80,7 +80,7 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
     setErrorMessage("");
     setReportPreview({
       fileName: buildReportFileName(request.city),
-      url: buildAutomaticReportUrl(request),
+      url: buildReportProxyUrl(request),
     });
   };
 
