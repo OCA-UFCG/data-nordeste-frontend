@@ -17,12 +17,10 @@ import { sortContentByDesiredOrder } from "@/utils/functions";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { useExploreNavigation } from "@/features/explore/navigation";
 import { setExploreSearchFocusOwner } from "@/features/explore/searchFocus";
-import { withReportsNavigation } from "@/features/navigation/reportLink";
 import { useMergedExploreSearch } from "./useMergedExploreSearch";
 
 const Header = ({ content }: { content: ISection[] }) => {
   const pathname = usePathname();
-  const navigationSections = withReportsNavigation(content);
   const headerRef = useRef<HTMLDivElement>(null);
   const { replaceQuery } = useExploreNavigation();
   const mergedExploreSearch = useMergedExploreSearch(
@@ -58,7 +56,7 @@ const Header = ({ content }: { content: ISection[] }) => {
 
         <NavigationMenu className="flex-none peer-focus-within:hidden">
           <NavigationMenuList className="flex items-center gap-6 h-10">
-            {navigationSections
+            {content
               .filter((item) => item.appears)
               .map((item, idx) => (
                 <NavigationMenuItem key={idx}>
