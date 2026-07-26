@@ -62,9 +62,10 @@ type GeneratedReport = {
 
 // PERF: Polling config — the Automatic-Reporting service generates the PDF
 // asynchronously, so the report index may not list it immediately after the
-// POST trigger. These values trade a little latency for reliability.
-const REPORT_POLL_INTERVAL_MS = 1000;
-const REPORT_POLL_MAX_ATTEMPTS = 5;
+// POST trigger. A 60s window (30 attempts × 2s) accommodates slower report
+// generation in production without giving up too quickly.
+const REPORT_POLL_INTERVAL_MS = 2000;
+const REPORT_POLL_MAX_ATTEMPTS = 30;
 
 async function findGeneratedReport(
   params: URLSearchParams,

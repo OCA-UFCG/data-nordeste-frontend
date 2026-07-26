@@ -56,22 +56,20 @@ export function parseAutomaticReportSlug(
   );
 }
 
-/** Builds the public report-service URL. Example: `buildAutomaticReportUrl({ city, macrotheme })`. */
-export function buildAutomaticReportUrl(
-  request: AutomaticReportRequest,
-): string {
+/**
+ * Builds the public Next proxy URL for a generated report PDF.
+ *
+ * Example: `buildReportProxyUrl({ city, macrotheme })` =>
+ * `/api/reports/generate?city=Recife%20(PE)&macrotema=saude&_=1721600000000`.
+ */
+export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   const params = new URLSearchParams({
+    city: request.city,
     macrotema: request.macrotheme,
     _: Date.now().toString(),
   });
-  const baseUrl = (
-    process.env.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL ?? ""
-  ).replace(/\/+$/, "");
 
-  // IMPORTANT: Production routes /relatorio to Automatic-Reporting at the
-  // public origin. Local development sets a public base URL because Next and
-  // FastAPI listen on different ports.
-  return `${baseUrl}/relatorio/${encodeURIComponent(request.city)}?${params.toString()}`;
+  return `/api/reports/generate?${params.toString()}`;
 }
 
 export function getAutomaticReportApiBaseUrl(): string {

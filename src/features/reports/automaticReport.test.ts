@@ -1,40 +1,34 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildAutomaticReportUrl } from "./automaticReport";
+import { buildReportProxyUrl } from "./automaticReport";
 
 afterEach(() => {
   vi.restoreAllMocks();
-  vi.unstubAllEnvs();
 });
 
-describe("automatic report URL", () => {
-  it("uses the production report route at the public origin", () => {
-    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", "");
+describe("automatic report proxy URL", () => {
+  it("builds the Next proxy URL with city and macrotheme", () => {
     vi.spyOn(Date, "now").mockReturnValue(1_721_600_000_000);
 
-    const url = buildAutomaticReportUrl({
+    const url = buildReportProxyUrl({
       city: "São Luís (MA)",
       macrotheme: "saude",
     });
 
     expect(url).toBe(
-      "/relatorio/S%C3%A3o%20Lu%C3%ADs%20(MA)?macrotema=saude&_=1721600000000",
+      "/api/reports/generate?city=S%C3%A3o+Lu%C3%ADs+%28MA%29&macrotema=saude&_=1721600000000",
     );
   });
 
-  it("uses the configured report-service origin in local development", () => {
-    vi.stubEnv(
-      "NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL",
-      "http://localhost:8000/",
-    );
-    vi.spyOn(Date, "now").mockReturnValue(1_721_600_000_000);
+  it("appends a cache-busting timestamp on every call", () => {
+    vi.spyOn(Date, "now").mockReturnValue(1_000);
 
-    const url = buildAutomaticReportUrl({
-      city: "Água Branca (AL)",
+    const url = buildReportProxyUrl({
+      city: "Recife (PE)",
       macrotheme: "demografia",
     });
 
     expect(url).toBe(
-      "http://localhost:8000/relatorio/%C3%81gua%20Branca%20(AL)?macrotema=demografia&_=1721600000000",
+      "/api/reports/generate?city=Recife+%28PE%29&macrotema=demografia&_=1000",
     );
   });
 });
