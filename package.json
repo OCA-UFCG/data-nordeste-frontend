@@ -87,7 +87,7 @@
     "lightningcss": "^1.30.0",
     "lint-staged": "^15.2.2",
     "next": "^16.2.4",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.18",
     "prettier": "3.2.5",
     "tailwindcss": "^4.1.6",
     "typescript": "^5.4.5",
