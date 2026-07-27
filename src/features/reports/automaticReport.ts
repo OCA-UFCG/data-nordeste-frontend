@@ -73,10 +73,12 @@ export function buildReportProxyUrl(request: AutomaticReportRequest): string {
 }
 
 export function getAutomaticReportApiBaseUrl(): string {
-  const baseUrl = process.env.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL;
+  const baseUrl =
+    process.env.AUTOMATIC_REPORT_API_URL ??
+    process.env.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL;
   if (baseUrl) return baseUrl.replace(/\/+$/, "");
 
   throw new Error(
-    'Invalid NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL ""; expected an absolute URL like "http://127.0.0.1:8000".',
+    'Invalid AUTOMATIC_REPORT_API_URL ""; expected an absolute URL like "http://127.0.0.1:8000".',
   );
 }
