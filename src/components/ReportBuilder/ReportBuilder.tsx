@@ -1,8 +1,7 @@
 "use client";
 
-import type { ReactElement, ReactNode } from "react";
+import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/Icon/Icon";
 import ThemeFilterCard from "@/components/ExploreFilters/ThemeFilterCard";
@@ -20,24 +19,18 @@ import {
   getAutomaticReportSlug,
   type AutomaticReportMacrothemeSlug,
 } from "@/features/reports/automaticReport";
-import type { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
 import { normalizeKey, sortContentByDesiredOrder } from "@/utils/functions";
+import type { MacroTheme } from "@/utils/interfaces";
 
 type ReportTheme = Pick<MacroTheme, "id" | "name" | "color" | "sys">;
 type ReportMobileTab = "config" | "report";
 
 type ReportBuilderProps = {
   themes: ReportTheme[];
-  municipalityText?: ContentfulRichTextField;
-  themeText?: ContentfulRichTextField;
 };
 
 /** Renders the automatic report form. Example: `<ReportBuilder themes={themes} />`. */
-export function ReportBuilder({
-  themes,
-  municipalityText,
-  themeText,
-}: ReportBuilderProps): ReactElement {
+export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
   const [municipality, setMunicipality] = useState("");
   const [selectedThemeIds, setSelectedThemeIds] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
@@ -99,7 +92,6 @@ export function ReportBuilder({
       errorMessage={errorMessage}
       loadingCities={loadingCities}
       municipality={municipality}
-      municipalityText={municipalityText}
       onClear={clearSelectedThemes}
       onGenerate={generateReport}
       onMunicipalityChange={setMunicipality}
@@ -109,7 +101,6 @@ export function ReportBuilder({
       reportPreview={reportPreview}
       selectedThemeIds={selectedThemeIds}
       themes={sortedThemes}
-      themeText={themeText}
     />
   );
 }
@@ -121,7 +112,6 @@ function ReportBuilderLayout({
   errorMessage,
   loadingCities,
   municipality,
-  municipalityText,
   onClear,
   onGenerate,
   onMunicipalityChange,
@@ -131,7 +121,6 @@ function ReportBuilderLayout({
   reportPreview,
   selectedThemeIds,
   themes,
-  themeText,
 }: {
   activeTab: ReportMobileTab;
   allThemesSelected: boolean;
@@ -139,7 +128,6 @@ function ReportBuilderLayout({
   errorMessage: string;
   loadingCities: boolean;
   municipality: string;
-  municipalityText?: ContentfulRichTextField;
   onClear: () => void;
   onGenerate: () => void;
   onMunicipalityChange: (value: string) => void;
@@ -149,7 +137,6 @@ function ReportBuilderLayout({
   reportPreview: ReportPreviewDocument | null;
   selectedThemeIds: string[];
   themes: ReportTheme[];
-  themeText?: ContentfulRichTextField;
 }): ReactElement {
   return (
     <section className="w-full bg-white">
@@ -167,7 +154,6 @@ function ReportBuilderLayout({
           <MunicipalityField
             cities={cities}
             loadingCities={loadingCities}
-            municipalityText={municipalityText}
             onChange={onMunicipalityChange}
             value={municipality}
           />
@@ -178,7 +164,6 @@ function ReportBuilderLayout({
             onToggleTheme={onToggleTheme}
             selectedThemeIds={selectedThemeIds}
             themes={themes}
-            themeText={themeText}
           />
           {errorMessage && <ReportErrorMessage message={errorMessage} />}
           <ReportSubmitButton onClick={onGenerate} />
@@ -258,7 +243,7 @@ function ReportSectionHeader({
   subtitle,
   title,
 }: {
-  subtitle: ReactNode;
+  subtitle: string;
   title: string;
 }): ReactElement {
   return (
@@ -266,9 +251,9 @@ function ReportSectionHeader({
       <h2 className="text-2xl font-semibold leading-9 tracking-tight text-[#292829]">
         {title}
       </h2>
-      <div className="text-base font-normal leading-relaxed text-[#292829]">
+      <p className="text-base font-normal leading-relaxed text-[#292829]">
         {subtitle}
-      </div>
+      </p>
     </div>
   );
 }
@@ -278,22 +263,16 @@ function MunicipalityField({
   loadingCities,
   onChange,
   value,
-  municipalityText,
 }: {
   cities: string[];
   loadingCities: boolean;
   onChange: (value: string) => void;
   value: string;
-  municipalityText?: ContentfulRichTextField;
 }): ReactElement {
   return (
     <>
       <ReportSectionHeader
-        subtitle={
-          municipalityText
-            ? documentToReactComponents(municipalityText.json)
-            : "Selecione o município para gerar o relatório."
-        }
+        subtitle="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
         title="Selecione o município"
       />
       <MunicipalitySearch cities={cities} onChange={onChange} value={value} />
@@ -349,7 +328,6 @@ function ReportThemesField({
   onToggleTheme,
   selectedThemeIds,
   themes,
-  themeText,
 }: {
   allThemesSelected: boolean;
   onClear: () => void;
@@ -357,16 +335,11 @@ function ReportThemesField({
   onToggleTheme: (themeId: string) => void;
   selectedThemeIds: string[];
   themes: ReportTheme[];
-  themeText?: ContentfulRichTextField;
 }): ReactElement {
   return (
     <div className="mt-6">
       <ReportSectionHeader
-        subtitle={
-          themeText
-            ? documentToReactComponents(themeText.json)
-            : "Escolha um ou mais macrotemas para compor o relatório."
-        }
+        subtitle="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
         title="Selecione os temas"
       />
       <ReportThemeActions onClear={onClear} />
@@ -395,7 +368,7 @@ function ReportThemeActions({
         onClick={onClear}
         type="button"
       >
-        Limpar seleções
+        Limpar Seleções
         <Icon id="trash" size={14} />
       </button>
     </div>
@@ -470,7 +443,7 @@ function ReportSubmitButton({
       type="button"
     >
       <Icon id="file-text" size={12} />
-      Gerar relatório
+      Gerar Relatório
     </Button>
   );
 }
