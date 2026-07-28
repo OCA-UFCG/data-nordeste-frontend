@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { GET } from "./route";
+import { GET, POST } from "./route";
+import { GET as DOWNLOAD } from "@/app/api/reports/download/route";
 
 const API_URL = "http://automatic-report.test";
 
@@ -55,7 +56,22 @@ afterEach(() => {
 });
 
 describe("automatic report generation proxy", () => {
-  it("returns the generated municipality PDF inline", async () => {
+  it("starts generation and returns immediately", async () => {
+    const automaticReportApi = new AutomaticReportFetchFake();
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude",
+    );
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({ status: "processing" });
+    expect(automaticReportApi.requestedUrls).toHaveLength(1);
+  });
+
+  it("returns a same-origin download URL when the report is ready", async () => {
     const automaticReportApi = new AutomaticReportFetchFake();
     vi.stubGlobal("fetch", automaticReportApi.fetch);
     vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
@@ -64,6 +80,24 @@ describe("automatic report generation proxy", () => {
     );
 
     const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      status: "ready",
+      fileName: "relatorio_saude__recife.pdf",
+      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude",
+    });
+  });
+
+  it("streams the ready municipality PDF inline", async () => {
+    const automaticReportApi = new AutomaticReportFetchFake();
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+    const request = new NextRequest(
+      "http://localhost/api/reports/download?city=Recife%20(PE)&macrotema=saude",
+    );
+
+    const response = await DOWNLOAD(request);
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("application/pdf");
