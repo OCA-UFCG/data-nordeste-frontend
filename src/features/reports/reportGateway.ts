@@ -40,7 +40,7 @@ export async function findAvailableAutomaticReport(
   const report = reports.find(
     (entry) =>
       Boolean(entry.pdf_url) &&
-      normalizeReportLabel(entry.cidade) === normalizeReportLabel(city) &&
+      matchesReportCity(entry.cidade, city) &&
       normalizeReportLabel(entry.arquivo_pdf).includes(
         normalizeReportLabel(macrotheme),
       ),
@@ -54,6 +54,20 @@ export async function findAvailableAutomaticReport(
       getAutomaticReportApiBaseUrl(),
     ).toString(),
   };
+}
+
+function matchesReportCity(entryCity: string, requestedCity: string): boolean {
+  if (normalizeReportLabel(entryCity) === normalizeReportLabel(requestedCity)) {
+    return true;
+  }
+
+  // LEGACY: Automatic-Reporting used to replace accented characters with "_"
+  // in filenames. Keep matching "Bel M Al" to "Belém (AL)" until old PDFs
+  // have been regenerated with accent-aware slugs.
+  return (
+    normalizeReportLabel(entryCity) ===
+    normalizeLegacyReportLabel(requestedCity)
+  );
 }
 
 function requireCity(params: URLSearchParams): string {
@@ -75,6 +89,12 @@ async function fetchReportIndex(): Promise<AutomaticReportEntry[]> {
   }
 
   return (await response.json()) as AutomaticReportEntry[];
+}
+
+function normalizeLegacyReportLabel(value: string): string {
+  return value
+    .replaceAll(/[^a-zA-Z0-9]/g, "")
+    .toLowerCase();
 }
 
 function normalizeReportLabel(value: string): string {
