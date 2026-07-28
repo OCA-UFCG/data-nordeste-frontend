@@ -36,6 +36,7 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
   const [cities, setCities] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [loadingCities, setLoadingCities] = useState(false);
+  const [generatingReport, setGeneratingReport] = useState(false);
   const [reportPreview, setReportPreview] =
     useState<ReportPreviewDocument | null>(null);
 
@@ -69,7 +70,7 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
     setSelectedThemeIds([]);
   };
 
-  const generateReport = (): void => {
+  const generateReport = async (): Promise<void> => {
     const request = buildReportRequest(municipality, selectedThemeIds);
     if (!request) {
       setErrorMessage("Selecione um município e um macrotema disponível.");
@@ -78,10 +79,19 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
     }
 
     setErrorMessage("");
-    setReportPreview({
-      fileName: buildReportFileName(request.city),
-      url: buildReportProxyUrl(request),
-    });
+    setGeneratingReport(true);
+    setReportPreview(null);
+    try {
+      const preview = await requestReportPreview(request);
+      setReportPreview(preview);
+      setActiveTab("report");
+    } catch {
+      setErrorMessage(
+        "O relatório demorou mais que o esperado. Tente novamente.",
+      );
+    } finally {
+      setGeneratingReport(false);
+    }
   };
 
   return (
@@ -90,6 +100,7 @@ export function ReportBuilder({ themes }: ReportBuilderProps): ReactElement {
       allThemesSelected={allThemesSelected}
       cities={cities}
       errorMessage={errorMessage}
+      generatingReport={generatingReport}
       loadingCities={loadingCities}
       municipality={municipality}
       onClear={clearSelectedThemes}
@@ -110,6 +121,7 @@ function ReportBuilderLayout({
   allThemesSelected,
   cities,
   errorMessage,
+  generatingReport,
   loadingCities,
   municipality,
   onClear,
@@ -126,6 +138,7 @@ function ReportBuilderLayout({
   allThemesSelected: boolean;
   cities: string[];
   errorMessage: string;
+  generatingReport: boolean;
   loadingCities: boolean;
   municipality: string;
   onClear: () => void;
@@ -166,7 +179,10 @@ function ReportBuilderLayout({
             themes={themes}
           />
           {errorMessage && <ReportErrorMessage message={errorMessage} />}
-          <ReportSubmitButton onClick={onGenerate} />
+          <ReportSubmitButton
+            generating={generatingReport}
+            onClick={onGenerate}
+          />
         </div>
         <div
           className={cn(
@@ -432,18 +448,21 @@ function ReportErrorMessage({ message }: { message: string }): ReactElement {
 }
 
 function ReportSubmitButton({
+  generating,
   onClick,
 }: {
+  generating: boolean;
   onClick: () => void;
 }): ReactElement {
   return (
     <Button
       className="mt-5 h-10 w-full rounded-md bg-[#018F39] text-[#F8F7F8] hover:bg-[#017032]"
+      disabled={generating}
       onClick={onClick}
       type="button"
     >
       <Icon id="file-text" size={12} />
-      Gerar Relatório
+      {generating ? "Gerando relatório..." : "Gerar Relatório"}
     </Button>
   );
 }
@@ -492,12 +511,6 @@ function buildReportRequest(
   return { city: city.trim(), macrotheme };
 }
 
-function buildReportFileName(city: string): string {
-  const safeCity = city.trim().replaceAll(/[^\p{L}\p{N}]+/gu, "-");
-
-  return `relatorio-${safeCity.toLowerCase()}.pdf`;
-}
-
 function resolveSelectedMacrotheme(
   selectedThemeIds: string[],
 ): AutomaticReportMacrothemeSlug | null {
@@ -522,4 +535,48 @@ async function loadReportCities(
   } finally {
     setLoading(false);
   }
+}
+
+const REPORT_STATUS_INTERVAL_MS = 2000;
+const REPORT_STATUS_MAX_ATTEMPTS = 60;
+
+async function requestReportPreview(
+  request: {
+    city: string;
+    macrotheme: AutomaticReportMacrothemeSlug;
+  },
+): Promise<ReportPreviewDocument> {
+  const generationUrl = buildReportProxyUrl(request);
+  const startResponse = await fetch(generationUrl, { method: "POST" });
+  if (!startResponse.ok) throw new Error(`status ${startResponse.status}`);
+
+  for (let attempt = 0; attempt < REPORT_STATUS_MAX_ATTEMPTS; attempt++) {
+    const preview = await fetchReadyReport(generationUrl);
+    if (preview) return preview;
+    await waitForReportStatus();
+  }
+
+  throw new Error(
+    `Report for city "${request.city}" was not ready after ${REPORT_STATUS_MAX_ATTEMPTS} attempts; expected a PDF URL.`,
+  );
+}
+
+async function fetchReadyReport(
+  generationUrl: string,
+): Promise<ReportPreviewDocument | null> {
+  const response = await fetch(generationUrl, { cache: "no-store" });
+  if (response.status === 202) return null;
+  if (!response.ok) throw new Error(`status ${response.status}`);
+
+  const result = (await response.json()) as ReportPreviewDocument & {
+    status: "ready";
+  };
+
+  return { fileName: result.fileName, url: result.url };
+}
+
+function waitForReportStatus(): Promise<void> {
+  return new Promise((resolve) =>
+    window.setTimeout(resolve, REPORT_STATUS_INTERVAL_MS),
+  );
 }
