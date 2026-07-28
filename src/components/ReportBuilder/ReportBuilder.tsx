@@ -188,7 +188,7 @@ function ReportBuilderLayout({
           className={cn(
             "min-w-0",
             activeTab === "report" ? "block" : "hidden",
-            "lg:block",
+            "lg:block lg:sticky lg:top-6 lg:self-start lg:h-screen",
           )}
         >
           <ReportPreview preview={reportPreview} />
@@ -540,12 +540,10 @@ async function loadReportCities(
 const REPORT_STATUS_INTERVAL_MS = 2000;
 const REPORT_STATUS_MAX_ATTEMPTS = 60;
 
-async function requestReportPreview(
-  request: {
-    city: string;
-    macrotheme: AutomaticReportMacrothemeSlug;
-  },
-): Promise<ReportPreviewDocument> {
+async function requestReportPreview(request: {
+  city: string;
+  macrotheme: AutomaticReportMacrothemeSlug;
+}): Promise<ReportPreviewDocument> {
   const generationUrl = buildReportProxyUrl(request);
   const startResponse = await fetch(generationUrl, { method: "POST" });
   if (!startResponse.ok) throw new Error(`status ${startResponse.status}`);

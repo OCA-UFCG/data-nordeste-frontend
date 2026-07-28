@@ -8,6 +8,19 @@
   background: #525659;
 }
 
+.pdf-viewer--empty {
+  background: #DCDBDC;
+  min-height: 800px;
+}
+
+.pdf-viewer-empty-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .pdf-toolbar {
   display: flex;
   align-items: center;
@@ -17,6 +30,11 @@
   background: #F8F7F8;
   border-bottom: 1px solid #EFEFEF;
   min-height: 72px;
+}
+
+.pdf-toolbar--empty {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .pdf-toolbar-left {
@@ -174,6 +192,12 @@
 
 .pdf-toolbar-download:hover {
   background: #017032;
+}
+
+.pdf-toolbar-download--empty {
+  cursor: not-allowed;
+  background: #017032;
+  pointer-events: none;
 }
 
 .pdf-viewer-overlay {
