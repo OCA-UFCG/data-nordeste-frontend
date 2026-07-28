@@ -31,6 +31,10 @@ class AutomaticReportFetchFake {
     return Response.json([
       this.reportEntry("Salvador Ba", "/output/relatorio_saude__salvador.pdf"),
       this.reportEntry("Recife Pe", "/output/relatorio_saude__recife.pdf"),
+      this.reportEntry(
+        "Bel M Al",
+        "/output/relatorio_economia-renda__bel_m_al_.pdf",
+      ),
     ]);
   }
 
@@ -86,6 +90,24 @@ describe("automatic report generation proxy", () => {
       status: "ready",
       fileName: "relatorio_saude__recife.pdf",
       url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude",
+    });
+  });
+
+  it("finds legacy report filenames that dropped accented characters", async () => {
+    const automaticReportApi = new AutomaticReportFetchFake();
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Bel%C3%A9m%20(AL)&macrotema=economia-renda",
+    );
+
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      status: "ready",
+      fileName: "relatorio_economia-renda__bel_m_al_.pdf",
+      url: "/api/reports/download?city=Bel%C3%A9m%20(AL)&macrotema=economia-renda",
     });
   });
 
