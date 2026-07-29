@@ -22,6 +22,7 @@
 }
 
 .pdf-toolbar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -35,6 +36,12 @@
 .pdf-toolbar--empty {
   opacity: 0.6;
   pointer-events: none;
+}
+
+.pdf-toolbar--empty .pdf-toolbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .pdf-toolbar-left {
