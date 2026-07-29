@@ -1,29 +1,31 @@
 import type { ReactElement } from "react";
 import { Icon } from "@/components/Icon/Icon";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
+import "./ReportPreview.css";
 
 export type ReportPreviewDocument = {
   fileName: string;
   url: string;
 };
 
-/** Displays the generated PDF or its empty state. Example: `<ReportPreview preview={document} />`. */
 export function ReportPreview({
   preview,
 }: {
   preview: ReportPreviewDocument | null;
 }): ReactElement {
-  if (!preview) return <EmptyReportPreview />;
-
   return (
-    <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
-      {/* Botão de download visível só no mobile (<lg): a toolbar do PdfViewer
-          fica `hidden sm:block`, então no mobile esse botão dá acesso ao PDF. */}
-      <div className="mt-4 lg:mt-0 flex px-6 lg:hidden">
-        <ReportDownloadButton fileName={preview.fileName} url={preview.url} />
-      </div>
-      <div className="mt-4 mb-6 lg:mt-0">
-        <PdfViewer fileName={preview.fileName} pdfUrl={preview.url} />
+    <div className="min-w-0 h-full">
+      {preview ? (
+        <div className="mt-4 lg:mt-0 flex px-6 lg:hidden">
+          <ReportDownloadButton fileName={preview.fileName} url={preview.url} />
+        </div>
+      ) : null}
+      <div className="mt-4 mb-6 lg:mt-0 lg:mb-0 h-full">
+        <PdfViewer
+          fileName={preview?.fileName ?? ""}
+          pdfUrl={preview?.url ?? ""}
+          emptyState={preview ? undefined : <EmptyPreviewCard />}
+        />
       </div>
     </div>
   );
@@ -50,10 +52,13 @@ function ReportDownloadButton({
   );
 }
 
-function EmptyReportPreview(): ReactElement {
+function EmptyPreviewCard(): ReactElement {
   return (
-    <div className="flex min-h-[320px] items-center justify-center rounded-md border border-dashed border-grey-300 bg-grey-100 px-6 py-10 text-center text-sm leading-6 text-grey-700 lg:min-h-[520px] lg:sticky lg:top-6 lg:h-[calc(100vh-48px)] lg:max-h-[900px]">
-      Selecione um município e os temas para visualizar o relatório em PDF.
+    <div className="pdf-viewer-empty-card">
+      <Icon id="info" size={54} className="pdf-viewer-empty-icon" />
+      <p className="pdf-viewer-empty-text">
+        Selecione as informações ao lado primeiro para gerar um relatório
+      </p>
     </div>
   );
 }

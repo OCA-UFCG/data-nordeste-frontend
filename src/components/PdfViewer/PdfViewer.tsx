@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   getDocument,
   GlobalWorkerOptions,
@@ -18,6 +24,7 @@ GlobalWorkerOptions.workerSrc =
 type PdfViewerProps = {
   pdfUrl: string;
   fileName: string;
+  emptyState?: ReactNode;
 };
 
 const ZOOM_STEP = 0.25;
@@ -25,12 +32,7 @@ const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
 const INITIAL_ZOOM = 1;
 
-/**
- * Renders a PDF inline with page navigation, zoom, fullscreen, and download.
- *
- * Usage: <PdfViewer pdfUrl="https://example.com/doc.pdf" fileName="report.pdf" />
- */
-export const PdfViewer = ({ pdfUrl, fileName }: PdfViewerProps) => {
+export const PdfViewer = ({ pdfUrl, fileName, emptyState }: PdfViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,8 +44,8 @@ export const PdfViewer = ({ pdfUrl, fileName }: PdfViewerProps) => {
   useEffect(() => {
     let cancelled = false;
 
-    // INTENTIONAL: Reset all document state on URL change so the viewer does not
-    // keep showing the previous PDF or a stale error while the new one loads.
+    if (emptyState) return;
+
     setPdfDoc(null);
     setTotalPages(0);
     setPages([]);
@@ -67,7 +69,7 @@ export const PdfViewer = ({ pdfUrl, fileName }: PdfViewerProps) => {
     return () => {
       cancelled = true;
     };
-  }, [pdfUrl]);
+  }, [pdfUrl, emptyState]);
 
   const goToPage = (p: number) => {
     const el = document.getElementById(`pdf-page-${p}`);
@@ -95,6 +97,29 @@ export const PdfViewer = ({ pdfUrl, fileName }: PdfViewerProps) => {
   const handlePageVisible = useCallback((pageNum: number) => {
     setCurrentPage(pageNum);
   }, []);
+
+  if (emptyState) {
+    return (
+      <div className="pdf-viewer pdf-viewer--empty" ref={containerRef}>
+        <div className="hidden sm:block">
+          <PdfToolbar
+            fileName={fileName}
+            currentPage={0}
+            totalPages={0}
+            zoom={INITIAL_ZOOM}
+            pdfUrl=""
+            onPreviousPage={noop}
+            onNextPage={noop}
+            onZoomIn={noop}
+            onZoomOut={noop}
+            onToggleFullscreen={noop}
+            disabled
+          />
+        </div>
+        <div className="pdf-viewer-empty-body">{emptyState}</div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -177,7 +202,12 @@ type PdfToolbarProps = {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onToggleFullscreen: () => void;
+
+  /** Renderiza todos os controles como desabilitados (estado vazio do viewer). */
+  disabled?: boolean;
 };
+
+const noop = (): void => undefined;
 
 const PdfToolbar = ({
   fileName,
@@ -190,8 +220,9 @@ const PdfToolbar = ({
   onZoomIn,
   onZoomOut,
   onToggleFullscreen,
+  disabled = false,
 }: PdfToolbarProps) => (
-  <div className="pdf-toolbar">
+  <div className={`pdf-toolbar${disabled ? " pdf-toolbar--empty" : ""}`}>
     <div className="pdf-toolbar-left">
       <span className="pdf-toolbar-filename" title={fileName}>
         {fileName}
@@ -202,7 +233,7 @@ const PdfToolbar = ({
       <div className="pdf-toolbar-page-indicator">
         <button
           onClick={onPreviousPage}
-          disabled={currentPage <= 1}
+          disabled={disabled || currentPage <= 1}
           aria-label="Página anterior"
           className="pdf-toolbar-btn-page"
         >
@@ -215,7 +246,7 @@ const PdfToolbar = ({
         </div>
         <button
           onClick={onNextPage}
-          disabled={currentPage >= totalPages}
+          disabled={disabled || currentPage >= totalPages}
           aria-label="Próxima página"
           className="pdf-toolbar-btn-page"
         >
@@ -226,7 +257,7 @@ const PdfToolbar = ({
       <div className="pdf-toolbar-zoom">
         <button
           onClick={onZoomOut}
-          disabled={zoom <= MIN_ZOOM}
+          disabled={disabled || zoom <= MIN_ZOOM}
           aria-label="Diminuir zoom"
           className="pdf-toolbar-btn-icon"
         >
@@ -239,7 +270,7 @@ const PdfToolbar = ({
         </div>
         <button
           onClick={onZoomIn}
-          disabled={zoom >= MAX_ZOOM}
+          disabled={disabled || zoom >= MAX_ZOOM}
           aria-label="Aumentar zoom"
           className="pdf-toolbar-btn-icon"
         >
@@ -249,6 +280,7 @@ const PdfToolbar = ({
 
       <button
         onClick={onToggleFullscreen}
+        disabled={disabled}
         aria-label="Tela cheia"
         className="pdf-toolbar-btn-icon"
         title="Tela cheia"
@@ -258,16 +290,23 @@ const PdfToolbar = ({
     </div>
 
     <div className="pdf-toolbar-right">
-      <a
-        href={pdfUrl}
-        download={fileName}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="pdf-toolbar-download"
-      >
-        <Icon id="download" size={11} />
-        <span>Baixar PDF</span>
-      </a>
+      {disabled ? (
+        <span className="pdf-toolbar-download pdf-toolbar-download--empty">
+          <Icon id="download" size={11} />
+          <span>Baixar PDF</span>
+        </span>
+      ) : (
+        <a
+          href={pdfUrl}
+          download={fileName}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pdf-toolbar-download"
+        >
+          <Icon id="download" size={11} />
+          <span>Baixar PDF</span>
+        </a>
+      )}
     </div>
   </div>
 );
