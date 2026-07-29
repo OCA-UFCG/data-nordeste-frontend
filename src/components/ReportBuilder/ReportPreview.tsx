@@ -14,13 +14,13 @@ export function ReportPreview({
   preview: ReportPreviewDocument | null;
 }): ReactElement {
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 h-full">
       {preview ? (
         <div className="mt-4 lg:mt-0 flex px-6 lg:hidden">
           <ReportDownloadButton fileName={preview.fileName} url={preview.url} />
         </div>
       ) : null}
-      <div className="mt-4 mb-6 lg:mt-0 lg:mb-0">
+      <div className="mt-4 mb-6 lg:mt-0 lg:mb-0 h-full">
         <PdfViewer
           fileName={preview?.fileName ?? ""}
           pdfUrl={preview?.url ?? ""}
@@ -55,7 +55,7 @@ function ReportDownloadButton({
 function EmptyPreviewCard(): ReactElement {
   return (
     <div className="pdf-viewer-empty-card">
-      <Icon id="info" size={72} className="pdf-viewer-empty-icon" />
+      <Icon id="info" size={54} className="pdf-viewer-empty-icon" />
       <p className="pdf-viewer-empty-text">
         Selecione as informações ao lado primeiro para gerar um relatório
       </p>

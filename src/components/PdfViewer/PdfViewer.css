@@ -5,7 +5,7 @@
   flex-direction: column;
   border: 1px solid #EFEFEF;
   border-radius: 0 0 8px 8px;
-  background: #525659;
+  background: #DCDBDC;
 }
 
 .pdf-viewer--empty {
@@ -293,11 +293,6 @@
   overflow: auto;
   padding: 16px;
   max-height: 80vh;
-}
-
-.pdf-viewer:fullscreen .pdf-viewer-canvas-wrapper {
-  max-height: none;
-  flex: 1;
 }
 
 .pdf-viewer-canvas {

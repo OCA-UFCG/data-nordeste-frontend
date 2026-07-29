@@ -155,43 +155,43 @@ function ReportBuilderLayout({
     <section className="w-full bg-white">
       {/* Abas só aparecem no mobile (<lg); no desktop o grid abaixo as ignora. */}
       <ReportMobileTabs activeTab={activeTab} onTabChange={onTabChange} />
-      <div className="mx-auto grid w-full max-w-[1440px] gap-4 px-4 sm:px-6 lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)] lg:px-10 lg:py-10 lg:gap-8">
-        {/* Mobile: mostra só o painel da aba ativa. Desktop (lg:block): ambos visíveis. */}
-        <div
-          className={cn(
-            "w-full pt-6 pb-6 lg:pt-0",
-            activeTab === "config" ? "block" : "hidden",
-            "lg:block",
-          )}
-        >
-          <MunicipalityField
-            cities={cities}
-            loadingCities={loadingCities}
-            onChange={onMunicipalityChange}
-            value={municipality}
-          />
-          <ReportThemesField
-            allThemesSelected={allThemesSelected}
-            onClear={onClear}
-            onSelectAll={onSelectAll}
-            onToggleTheme={onToggleTheme}
-            selectedThemeIds={selectedThemeIds}
-            themes={themes}
-          />
-          {errorMessage && <ReportErrorMessage message={errorMessage} />}
-          <ReportSubmitButton
-            generating={generatingReport}
-            onClick={onGenerate}
-          />
-        </div>
-        <div
-          className={cn(
-            "min-w-0",
-            activeTab === "report" ? "block" : "hidden",
-            "lg:block lg:sticky lg:top-6 lg:self-start lg:h-screen",
-          )}
-        >
-          <ReportPreview preview={reportPreview} />
+      <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-10 lg:py-10">
+        <div className="lg:flex lg:gap-8">
+          <div
+            className={cn(
+              "w-full pt-6 pb-6 lg:flex-1 lg:pt-0 lg:max-w-[400px]",
+              activeTab === "config" ? "block" : "hidden",
+              "lg:block",
+            )}
+          >
+            <MunicipalityField
+              cities={cities}
+              loadingCities={loadingCities}
+              onChange={onMunicipalityChange}
+              value={municipality}
+            />
+            <ReportThemesField
+              allThemesSelected={allThemesSelected}
+              onClear={onClear}
+              onSelectAll={onSelectAll}
+              onToggleTheme={onToggleTheme}
+              selectedThemeIds={selectedThemeIds}
+              themes={themes}
+            />
+            {errorMessage && <ReportErrorMessage message={errorMessage} />}
+            <ReportSubmitButton
+              generating={generatingReport}
+              onClick={onGenerate}
+            />
+          </div>
+          <div
+            className={cn(
+              activeTab === "report" ? "block" : "hidden",
+              "lg:block lg:flex-1 lg:sticky lg:top-[104px] lg:h-[calc(100vh-104px)] lg:overflow-y-auto",
+            )}
+          >
+            <ReportPreview preview={reportPreview} />
+          </div>
         </div>
       </div>
     </section>
@@ -456,13 +456,13 @@ function ReportSubmitButton({
 }): ReactElement {
   return (
     <Button
-      className="mt-5 h-10 w-full rounded-md bg-[#018F39] text-[#F8F7F8] hover:bg-[#017032]"
+      className="mt-5 h-10 w-full rounded-md bg-[#018F39] text-[#F8F7F8] hover:bg-[#017032] disabled:bg-[#BEBBBD]"
       disabled={generating}
       onClick={onClick}
       type="button"
     >
       <Icon id="file-text" size={12} />
-      {generating ? "Gerando relatório..." : "Gerar Relatório"}
+      {generating ? "Gerando relatório..." : "Gerar relatório"}
     </Button>
   );
 }
