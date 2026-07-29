@@ -45,7 +45,9 @@
 }
 
 .pdf-toolbar-left {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .pdf-toolbar-center {
@@ -66,7 +68,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 251px;
+  max-width: 100%;
 }
 
 .pdf-toolbar-page-indicator {
