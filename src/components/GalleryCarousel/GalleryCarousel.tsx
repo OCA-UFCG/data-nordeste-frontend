@@ -7,7 +7,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 
 import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
@@ -68,7 +68,7 @@ const GalleryCarousel = ({
                 >
                   {path ? (
                     <Link href={path}>
-                      <Image
+                      <ContentfulImage
                         alt={photo.title || ""}
                         width={600}
                         height={height}
@@ -84,7 +84,7 @@ const GalleryCarousel = ({
                         setLightboxOpen(true);
                       }}
                     >
-                      <Image
+                      <ContentfulImage
                         alt={photo?.title || ""}
                         width={600}
                         height={height}

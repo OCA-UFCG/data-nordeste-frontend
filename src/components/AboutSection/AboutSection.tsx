@@ -1,6 +1,6 @@
 import { SectionHeader } from "@/utils/interfaces";
 import { LinkButton } from "../LinkButton/LinkButton";
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 
 export const AboutSection = ({ header }: { header?: SectionHeader }) => {
   const { id, title, subtitle, thumb } = header || {
@@ -16,7 +16,7 @@ export const AboutSection = ({ header }: { header?: SectionHeader }) => {
           {title}
         </h2>
         <div className="flex flex-col lg:flex-row gap-6">
-          <Image
+          <ContentfulImage
             alt=""
             src={thumb?.url || ""}
             width={462}

@@ -1,6 +1,6 @@
 import { IValues } from "@/utils/interfaces";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 
 const ValuesSection = ({ content }: { content: IValues[] }) => {
   const { title, thumb, details } = content[0];
@@ -13,7 +13,7 @@ const ValuesSection = ({ content }: { content: IValues[] }) => {
         </h1>
         <div className="flex flex-col lg:flex-row items-center gap-6">
           {thumb?.url && (
-            <Image
+            <ContentfulImage
               className="w-full lg:w-[274px] h-[248px] object-cover rounded-lg shrink-0"
               src={thumb.url}
               alt={"Sobre nós"}

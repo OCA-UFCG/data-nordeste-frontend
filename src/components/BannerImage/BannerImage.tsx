@@ -1,6 +1,6 @@
 import { IMainBanner } from "@/utils/interfaces";
 import { Icon } from "../Icon/Icon";
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 import { LinkButton } from "../LinkButton/LinkButton";
 
 const MainBanner = ({ content }: { content: IMainBanner }) => {
@@ -8,7 +8,7 @@ const MainBanner = ({ content }: { content: IMainBanner }) => {
 
   return (
     <div className="overflow-hidden relative flex justify-center items-center w-full lg:mt-4 min-h-[380px] lg:min-h-[510px]">
-      <Image
+      <ContentfulImage
         className="absolute w-full min-h-[450px] h-full object-cover rounded-t-md md:rounded-l-md md:rounded-tr-none z-0"
         src={`${image.url}`}
         alt=""
