@@ -73,6 +73,7 @@ export function getCachedContentfulAssetUrl(url: string): string {
 function normalizeContentfulAssetUrls<T>(content: T): T {
   if (Array.isArray(content)) {
     content.forEach(normalizeContentfulAssetUrls);
+
     return content;
   }
 
@@ -80,9 +81,10 @@ function normalizeContentfulAssetUrls<T>(content: T): T {
 
   const fields = content as ContentfulResponseObject;
   Object.entries(fields).forEach(([key, value]) => {
-    fields[key] = key === "url" && typeof value === "string"
-      ? getCachedContentfulAssetUrl(value)
-      : normalizeContentfulAssetUrls(value);
+    fields[key] =
+      key === "url" && typeof value === "string"
+        ? getCachedContentfulAssetUrl(value)
+        : normalizeContentfulAssetUrls(value);
   });
 
   return content;

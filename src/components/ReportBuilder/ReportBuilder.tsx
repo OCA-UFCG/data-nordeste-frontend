@@ -18,6 +18,7 @@ import {
 import {
   buildReportProxyUrl,
   getAutomaticReportSlug,
+  joinReportSlugs,
   type AutomaticReportMacrothemeSlug,
 } from "@/features/reports/automaticReport";
 import type { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
@@ -80,7 +81,9 @@ export function ReportBuilder({
   const generateReport = async (): Promise<void> => {
     const request = buildReportRequest(municipality, selectedThemeIds);
     if (!request) {
-      setErrorMessage("Selecione um município e um macrotema disponível.");
+      setErrorMessage(
+        "Selecione um município e ao menos um macrotema disponível.",
+      );
 
       return;
     }
@@ -503,13 +506,12 @@ function toggleThemeId(
   themeId: string,
   supportedThemeIds: string[],
 ): string[] {
+  if (!supportedThemeIds.includes(themeId)) return currentIds;
   if (currentIds.includes(themeId)) {
-    if (currentIds.length > 1) return [themeId];
-
     return currentIds.filter((id) => id !== themeId);
   }
 
-  return supportedThemeIds.includes(themeId) ? [themeId] : currentIds;
+  return [...currentIds, themeId];
 }
 
 function getSupportedThemeIds(themes: ReportTheme[]): string[] {
@@ -531,19 +533,20 @@ function hasSelectedAllThemes(
 function buildReportRequest(
   city: string,
   selectedThemeIds: string[],
-): { city: string; macrotheme: AutomaticReportMacrothemeSlug } | null {
+): { city: string; macrotheme: string } | null {
   const macrotheme = resolveSelectedMacrotheme(selectedThemeIds);
   if (!city.trim() || !macrotheme) return null;
 
   return { city: city.trim(), macrotheme };
 }
 
-function resolveSelectedMacrotheme(
-  selectedThemeIds: string[],
-): AutomaticReportMacrothemeSlug | null {
-  if (selectedThemeIds.length > 1) return "todos";
+function resolveSelectedMacrotheme(selectedThemeIds: string[]): string | null {
+  const slugs = selectedThemeIds
+    .map((themeId) => getAutomaticReportSlug(themeId))
+    .filter((slug): slug is AutomaticReportMacrothemeSlug => Boolean(slug));
+  if (slugs.length === 0) return null;
 
-  return getAutomaticReportSlug(selectedThemeIds[0] ?? "");
+  return joinReportSlugs(slugs);
 }
 
 async function loadReportCities(
@@ -569,7 +572,7 @@ const REPORT_STATUS_MAX_ATTEMPTS = 60;
 
 async function requestReportPreview(request: {
   city: string;
-  macrotheme: AutomaticReportMacrothemeSlug;
+  macrotheme: string;
 }): Promise<ReportPreviewDocument> {
   const generationUrl = buildReportProxyUrl(request);
   const startResponse = await fetch(generationUrl, { method: "POST" });
