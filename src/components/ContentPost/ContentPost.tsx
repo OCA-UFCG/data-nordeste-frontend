@@ -1,7 +1,7 @@
 import { IPublication } from "@/utils/interfaces";
 import { POST_TYPE_LABELS } from "@/features/posts/postTypes";
 import Link from "next/link";
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 import { Icon } from "@/components/Icon/Icon";
 import { getArcGisInternalEmbedHref } from "@/features/embeds/arcgis";
 
@@ -20,7 +20,7 @@ const ContentPost = ({ content }: { content: IPublication }) => {
       className="group flex flex-col overflow-hidden rounded-lg w-full bg-white hover:bg-grey-100 border border-[#EFEFEF] hover:border-grey-300 cursor-pointer transition duration-300 shadow-md h-full"
     >
       <div className="w-full overflow-hidden">
-        <Image
+        <ContentfulImage
           width={300}
           height={300}
           alt=""

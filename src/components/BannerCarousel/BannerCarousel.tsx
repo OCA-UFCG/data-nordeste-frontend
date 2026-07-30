@@ -11,7 +11,7 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import { IMainBanner } from "@/utils/interfaces";
 import { Icon } from "../Icon/Icon";
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 import { LinkButton } from "../LinkButton/LinkButton";
 
 const MainBanner = ({ content }: { content: IMainBanner[] }) => {
@@ -39,7 +39,7 @@ const MainBanner = ({ content }: { content: IMainBanner[] }) => {
               className="relative  w-full flex-shrink-0"
             >
               <div className="relative flex justify-center items-center px-4 w-full h-full min-h-[380px] lg:min-h-[510px]">
-                <Image
+                <ContentfulImage
                   className="absolute inset-0 w-full h-full object-cover z-0"
                   src={image.url || ""}
                   alt=""

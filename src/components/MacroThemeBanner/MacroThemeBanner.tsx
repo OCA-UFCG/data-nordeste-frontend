@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 import { Icon } from "@/components/Icon/Icon";
 import { MacroTheme } from "@/utils/interfaces";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
@@ -82,7 +82,7 @@ export function MacroThemeBanner({
     <section className={cn(`relative w-full`, className)}>
       <div className="relative z-0 w-full overflow-hidden">
         {backgroundUrl ? (
-          <Image
+          <ContentfulImage
             className="absolute inset-0 w-full h-full object-cover object-[center_43%]"
             src={backgroundUrl}
             alt={title}

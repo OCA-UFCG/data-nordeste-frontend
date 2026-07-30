@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 import Link from "next/link";
 import { Icon } from "@/components/Icon/Icon";
 import { getSearchTypeLabel } from "@/features/search/search";
@@ -27,7 +27,7 @@ const SearchResultImage = ({ result }: { result: SearchResult }) => {
 
   return (
     <div className="w-full overflow-hidden">
-      <Image
+      <ContentfulImage
         alt=""
         className="block aspect-7/4 w-full object-cover object-top transition-transform duration-300 group-hover:scale-102"
         height={300}

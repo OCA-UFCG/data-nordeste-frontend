@@ -1,6 +1,6 @@
 import { Project } from "@/utils/interfaces";
 import { LinkButton } from "../LinkButton/LinkButton";
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 
 const ProjectBigCard = ({
@@ -22,7 +22,7 @@ const ProjectBigCard = ({
               direction === "left" ? "lg:order-1" : "lg:order-2"
             }`}
           >
-            <Image
+            <ContentfulImage
               className="w-full h-full object-cover rounded-md aspect-[16/9] mb-4"
               src={thumb?.url || ""}
               alt={name}

@@ -1,5 +1,5 @@
 import { IAbout } from "@/utils/interfaces";
-import Image from "next/image";
+import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 
 const AboutBigCard = ({ content }: { content: IAbout }) => {
@@ -12,7 +12,7 @@ const AboutBigCard = ({ content }: { content: IAbout }) => {
       </h2>
       <div className="flex flex-col lg:flex-row gap-6">
         {thumb && (
-          <Image
+          <ContentfulImage
             className="w-full lg:w-[450px] h-[337px] object-cover rounded-md shrink-0"
             src={thumb?.url || ""}
             alt={"Sobre nós"}
