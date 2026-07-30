@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildContentfulEndpoint, createContentfulClient } from "./contentful";
+import {
+  buildContentfulEndpoint,
+  createContentfulClient,
+  getCachedContentfulAssetUrl,
+} from "./contentful";
 
 const createResponse = ({
   body,
@@ -38,6 +42,20 @@ describe("Contentful client", () => {
     ).toBe("https://portal.example.com/contentful-api");
   });
 
+  it("maps Contentful asset URLs to the local cache proxy", () => {
+    expect(
+      getCachedContentfulAssetUrl(
+        "https://images.ctfassets.net/space/asset/banner.jpg?w=1200&fm=webp",
+      ),
+    ).toBe("/contentful-assets/space/asset/banner.jpg?w=1200&fm=webp");
+    expect(
+      getCachedContentfulAssetUrl("//images.ctfassets.net/space/asset/icon.svg"),
+    ).toBe("/contentful-assets/space/asset/icon.svg");
+    expect(getCachedContentfulAssetUrl("https://example.com/banner.jpg")).toBe(
+      "https://example.com/banner.jpg",
+    );
+  });
+
   it("sends preview variables, headers, and revalidation options", async () => {
     const fetcher = vi.fn(async () =>
       createResponse({ body: { data: { ok: true } } }),
@@ -68,6 +86,31 @@ describe("Contentful client", () => {
         }),
       }),
     );
+  });
+
+  it("normalizes Contentful asset URLs in nested GraphQL data", async () => {
+    const client = createContentfulClient({
+      endpoint: "https://contentful.example.com/graphql",
+      fetcher: vi.fn(async () =>
+        createResponse({
+          body: {
+            data: {
+              banner: {
+                url: "https://images.ctfassets.net/space/asset/banner.jpg?w=800",
+              },
+              external: { url: "https://example.com/image.jpg" },
+            },
+          },
+        }),
+      ) as unknown as typeof fetch,
+      preview: true,
+      revalidate: 60,
+    });
+
+    await expect(client("query Home")).resolves.toEqual({
+      banner: { url: "/contentful-assets/space/asset/banner.jpg?w=800" },
+      external: { url: "https://example.com/image.jpg" },
+    });
   });
 
   it("throws readable errors for HTTP and GraphQL failures", async () => {

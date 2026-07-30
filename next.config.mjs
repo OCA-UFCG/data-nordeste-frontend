@@ -13,12 +13,6 @@ const nextConfig = {
         pathname: "**",
       },
       {
-        protocol: "https",
-        hostname: "images.ctfassets.net",
-        port: "",
-        pathname: "**",
-      },
-      {
         protocol: "http",
         hostname: "servicosweb.cnpq.br",
         port: "",
