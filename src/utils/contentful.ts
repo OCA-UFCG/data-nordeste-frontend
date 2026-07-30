@@ -51,6 +51,42 @@ type ContentfulGraphqlResponse<T> = {
 };
 
 const UNRESOLVABLE_LINK = "UNRESOLVABLE_LINK";
+const CONTENTFUL_ASSET_HOST = "images.ctfassets.net";
+const CONTENTFUL_ASSET_PROXY_PATH = "/contentful-assets";
+
+type ContentfulResponseObject = { [key: string]: unknown };
+
+export function getCachedContentfulAssetUrl(url: string): string {
+  const absoluteUrl = url.startsWith("//") ? `https:${url}` : url;
+
+  try {
+    const parsedUrl = new URL(absoluteUrl);
+
+    return parsedUrl.hostname === CONTENTFUL_ASSET_HOST
+      ? `${CONTENTFUL_ASSET_PROXY_PATH}${parsedUrl.pathname}${parsedUrl.search}`
+      : url;
+  } catch {
+    return url;
+  }
+}
+
+function normalizeContentfulAssetUrls<T>(content: T): T {
+  if (Array.isArray(content)) {
+    content.forEach(normalizeContentfulAssetUrls);
+    return content;
+  }
+
+  if (content === null || typeof content !== "object") return content;
+
+  const fields = content as ContentfulResponseObject;
+  Object.entries(fields).forEach(([key, value]) => {
+    fields[key] = key === "url" && typeof value === "string"
+      ? getCachedContentfulAssetUrl(value)
+      : normalizeContentfulAssetUrls(value);
+  });
+
+  return content;
+}
 
 function isUnresolvableLink(error: ContentfulGraphqlError): boolean {
   return error.extensions?.contentful?.code === UNRESOLVABLE_LINK;
@@ -144,7 +180,9 @@ export function createContentfulClient({
 
     const json = (await response.json()) as ContentfulGraphqlResponse<T>;
 
-    return requireContentfulData(json, finalVariables);
+    return normalizeContentfulAssetUrls(
+      requireContentfulData(json, finalVariables),
+    );
   };
 }
 
