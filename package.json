@@ -48,7 +48,7 @@
     "lightgallery": "^2.7.2",
     "lucide-react": "^0.503.0",
     "maplibre-gl": "^4.2.0",
-    "nodemailer": "^8.0.5",
+    "nodemailer": "^9.0.1",
     "pdfjs-dist": "^4.10.38",
     "powerbi-client": "^2.23.1",
     "powerbi-client-react": "^2.0.0",
