@@ -13,19 +13,21 @@ export function ReportPreview({
 }: {
   preview: ReportPreviewDocument | null;
 }): ReactElement {
+  if (!preview) {
+    return (
+      <div className="report-preview-empty">
+        <EmptyPreviewCard />
+      </div>
+    );
+  }
+
   return (
     <div className="min-w-0 h-full">
-      {preview ? (
-        <div className="mt-4 lg:mt-0 flex px-6 lg:hidden">
-          <ReportDownloadButton fileName={preview.fileName} url={preview.url} />
-        </div>
-      ) : null}
+      <div className="mt-4 lg:mt-0 flex px-6 lg:hidden">
+        <ReportDownloadButton fileName={preview.fileName} url={preview.url} />
+      </div>
       <div className="mt-4 mb-6 lg:mt-0 lg:mb-0 h-full">
-        <PdfViewer
-          fileName={preview?.fileName ?? ""}
-          pdfUrl={preview?.url ?? ""}
-          emptyState={preview ? undefined : <EmptyPreviewCard />}
-        />
+        <PdfViewer fileName={preview.fileName} pdfUrl={preview.url} />
       </div>
     </div>
   );

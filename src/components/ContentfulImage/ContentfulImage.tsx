@@ -20,6 +20,7 @@ export function shouldBypassContentfulImageOptimization(
  * @example <ContentfulImage src="/contentful-assets/space/image.png" alt="" width={1} height={1} />
  */
 export function ContentfulImage({
+  alt,
   src,
   unoptimized,
   ...props
@@ -27,6 +28,7 @@ export function ContentfulImage({
   return (
     <Image
       {...props}
+      alt={alt}
       src={src}
       unoptimized={unoptimized || shouldBypassContentfulImageOptimization(src)}
     />

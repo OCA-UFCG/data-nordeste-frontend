@@ -169,10 +169,10 @@ function ReportBuilderLayout({
       {/* Abas só aparecem no mobile (<lg); no desktop o grid abaixo as ignora. */}
       <ReportMobileTabs activeTab={activeTab} onTabChange={onTabChange} />
       <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-10 lg:py-10">
-        <div className="lg:flex lg:gap-8">
+        <div className="lg:grid lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:gap-8">
           <div
             className={cn(
-              "w-full pt-6 pb-6 lg:flex-1 lg:pt-0 lg:max-w-[400px]",
+              "w-full pt-6 pb-6 lg:pt-0",
               activeTab === "config" ? "block" : "hidden",
               "lg:block",
             )}
@@ -202,7 +202,7 @@ function ReportBuilderLayout({
           <div
             className={cn(
               activeTab === "report" ? "block" : "hidden",
-              "lg:block lg:flex-1 lg:sticky lg:top-[104px] lg:h-[calc(100vh-104px)] lg:overflow-y-auto",
+              "lg:block lg:relative lg:min-h-0",
             )}
           >
             <ReportPreview preview={reportPreview} />
