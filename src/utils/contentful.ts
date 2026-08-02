@@ -73,6 +73,7 @@ export function getCachedContentfulAssetUrl(url: string): string {
 function normalizeContentfulAssetUrls<T>(content: T): T {
   if (Array.isArray(content)) {
     content.forEach(normalizeContentfulAssetUrls);
+
     return content;
   }
 
