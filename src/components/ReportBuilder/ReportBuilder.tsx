@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactElement, ReactNode } from "react";
+import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,11 @@ import {
   ReportPreview,
   type ReportPreviewDocument,
 } from "@/components/ReportBuilder/ReportPreview";
+import {
+  ReportStep,
+  ReportSteps,
+  type ReportStepId,
+} from "@/components/ReportBuilder/ReportSteps";
 import { cn } from "@/lib/utils";
 import {
   MACROTHEME_ICON_BY_ID,
@@ -167,12 +172,17 @@ function ReportBuilderLayout({
   themes: ReportTheme[];
   themeText?: ContentfulRichTextField;
 }): ReactElement {
+  const [openStep, setOpenStep] = useState<ReportStepId | "">("municipality");
+  const municipalitySelected = cities.includes(municipality.trim());
+  const themesSelected = selectedThemeIds.length > 0;
+  const formCompleted = municipalitySelected && themesSelected;
+
   return (
     <section className="w-full bg-white">
       {/* Abas só aparecem no mobile (<lg); no desktop o grid abaixo as ignora. */}
       <ReportMobileTabs activeTab={activeTab} onTabChange={onTabChange} />
       <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-10 lg:py-10">
-        <div className="lg:grid lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:gap-8">
+        <div className="lg:grid lg:min-h-[900px] lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:gap-8">
           <div
             className={cn(
               "w-full pt-6 pb-6 lg:pt-0",
@@ -180,24 +190,41 @@ function ReportBuilderLayout({
               "lg:block",
             )}
           >
-            <MunicipalityField
-              cities={cities}
-              loadingCities={loadingCities}
-              municipalityText={municipalityText}
-              onChange={onMunicipalityChange}
-              value={municipality}
-            />
-            <ReportThemesField
-              allThemesSelected={allThemesSelected}
-              onClear={onClear}
-              onSelectAll={onSelectAll}
-              onToggleTheme={onToggleTheme}
-              selectedThemeIds={selectedThemeIds}
-              themeText={themeText}
-              themes={themes}
-            />
+            <ReportSteps onStepChange={setOpenStep} openStep={openStep}>
+              <ReportStep
+                completed={municipalitySelected}
+                number={1}
+                stepId="municipality"
+                title="Selecione o município"
+              >
+                <MunicipalityField
+                  cities={cities}
+                  loadingCities={loadingCities}
+                  municipalityText={municipalityText}
+                  onChange={onMunicipalityChange}
+                  value={municipality}
+                />
+              </ReportStep>
+              <ReportStep
+                completed={themesSelected}
+                number={2}
+                stepId="themes"
+                title="Selecione os temas"
+              >
+                <ReportThemesField
+                  allThemesSelected={allThemesSelected}
+                  onClear={onClear}
+                  onSelectAll={onSelectAll}
+                  onToggleTheme={onToggleTheme}
+                  selectedThemeIds={selectedThemeIds}
+                  themeText={themeText}
+                  themes={themes}
+                />
+              </ReportStep>
+            </ReportSteps>
             {errorMessage && <ReportErrorMessage message={errorMessage} />}
             <ReportSubmitButton
+              disabled={!formCompleted}
               generating={generatingReport}
               onClick={onGenerate}
             />
@@ -205,10 +232,10 @@ function ReportBuilderLayout({
           <div
             className={cn(
               activeTab === "report" ? "block" : "hidden",
-              "lg:block lg:relative lg:min-h-0",
+              "lg:relative lg:block lg:h-full lg:min-h-0",
             )}
           >
-            <ReportPreview preview={reportPreview} />
+            <ReportPreview loading={generatingReport} preview={reportPreview} />
           </div>
         </div>
       </div>
@@ -273,25 +300,6 @@ function ReportMobileTabButton({
   );
 }
 
-function ReportSectionHeader({
-  subtitle,
-  title,
-}: {
-  subtitle: ReactNode;
-  title: string;
-}): ReactElement {
-  return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-2xl font-semibold leading-9 tracking-tight text-[#292829]">
-        {title}
-      </h2>
-      <div className="text-base font-normal leading-relaxed text-[#292829]">
-        {subtitle}
-      </div>
-    </div>
-  );
-}
-
 function MunicipalityField({
   cities,
   loadingCities,
@@ -307,14 +315,11 @@ function MunicipalityField({
 }): ReactElement {
   return (
     <>
-      <ReportSectionHeader
-        subtitle={
-          municipalityText
-            ? documentToReactComponents(municipalityText.json)
-            : "Selecione o município para gerar o relatório."
-        }
-        title="Selecione o município"
-      />
+      <div className="text-base leading-relaxed text-[#292829]">
+        {municipalityText
+          ? documentToReactComponents(municipalityText.json)
+          : "Selecione o município para gerar o relatório."}
+      </div>
       <MunicipalitySearch cities={cities} onChange={onChange} value={value} />
       {loadingCities && (
         <p className="mt-2 text-xs leading-5 text-grey-700">
@@ -379,15 +384,12 @@ function ReportThemesField({
   themeText?: ContentfulRichTextField;
 }): ReactElement {
   return (
-    <div className="mt-6">
-      <ReportSectionHeader
-        subtitle={
-          themeText
-            ? documentToReactComponents(themeText.json)
-            : "Escolha um ou mais macrotemas para compor o relatório."
-        }
-        title="Selecione os temas"
-      />
+    <div>
+      <div className="text-base leading-relaxed text-[#292829]">
+        {themeText
+          ? documentToReactComponents(themeText.json)
+          : "Escolha um ou mais macrotemas para compor o relatório."}
+      </div>
       <ReportThemeActions onClear={onClear} />
       <ReportThemeList
         onToggleTheme={onToggleTheme}
@@ -478,16 +480,18 @@ function ReportErrorMessage({ message }: { message: string }): ReactElement {
 }
 
 function ReportSubmitButton({
+  disabled,
   generating,
   onClick,
 }: {
+  disabled: boolean;
   generating: boolean;
   onClick: () => void;
 }): ReactElement {
   return (
     <Button
       className="mt-5 h-10 w-full rounded-md bg-[#018F39] text-[#F8F7F8] hover:bg-[#017032] disabled:bg-[#BEBBBD]"
-      disabled={generating}
+      disabled={disabled || generating}
       onClick={onClick}
       type="button"
     >

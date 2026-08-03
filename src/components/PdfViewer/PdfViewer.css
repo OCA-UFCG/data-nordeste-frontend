@@ -3,14 +3,21 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  border: 1px solid #EFEFEF;
+  border: 1px solid #efefef;
   border-radius: 0 0 8px 8px;
-  background: #DCDBDC;
+  background: #dcdbdc;
 }
 
 .pdf-viewer--empty {
-  background: #DCDBDC;
-  min-height: 800px;
+  background: #dcdbdc;
+  height: 100%;
+  min-height: 400px;
+}
+
+@media (min-width: 1024px) {
+  .pdf-viewer--empty {
+    min-height: 1000px;
+  }
 }
 
 .pdf-viewer-empty-body {
@@ -18,7 +25,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .pdf-toolbar {
@@ -28,13 +35,12 @@
   justify-content: space-between;
   gap: 16px;
   padding: 16px 24px;
-  background: #F8F7F8;
-  border-bottom: 1px solid #EFEFEF;
+  background: #f8f7f8;
+  border-bottom: 1px solid #efefef;
   min-height: 72px;
 }
 
 .pdf-toolbar--empty {
-  opacity: 0.6;
   pointer-events: none;
 }
 
@@ -83,8 +89,8 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: #FFFFFF;
-  border: 1px solid #EFEFEF;
+  background: #ffffff;
+  border: 1px solid #efefef;
   border-radius: 4px;
   cursor: pointer;
   padding: 8px;
@@ -92,7 +98,7 @@
 }
 
 .pdf-toolbar-btn-page:hover:not(:disabled) {
-  background: #F0EFEE;
+  background: #f0efee;
 }
 
 .pdf-toolbar-btn-page:disabled {
@@ -111,8 +117,8 @@
   align-items: center;
   padding: 8px 12px;
   height: 40px;
-  background: #FFFFFF;
-  border: 1px solid #DCDBDC;
+  background: #ffffff;
+  border: 1px solid #dcdbdc;
   border-radius: 6px;
   gap: 6px;
 }
@@ -120,7 +126,7 @@
 .pdf-toolbar-page-current {
   font-size: 16px;
   line-height: 24px;
-  color: #7E797B;
+  color: #7e797b;
 }
 
 .pdf-toolbar-page-sep {
@@ -147,8 +153,8 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: #FFFFFF;
-  border: 1px solid #EFEFEF;
+  background: #ffffff;
+  border: 1px solid #efefef;
   border-radius: 4px;
   cursor: pointer;
   padding: 8px;
@@ -156,7 +162,7 @@
 }
 
 .pdf-toolbar-btn-icon:hover:not(:disabled) {
-  background: #F0EFEE;
+  background: #f0efee;
 }
 
 .pdf-toolbar-btn-icon:disabled {
@@ -169,15 +175,15 @@
   align-items: center;
   padding: 8px 12px;
   height: 40px;
-  background: #FFFFFF;
-  border: 1px solid #DCDBDC;
+  background: #ffffff;
+  border: 1px solid #dcdbdc;
   border-radius: 6px;
 }
 
 .pdf-toolbar-zoom-level {
   font-size: 16px;
   line-height: 24px;
-  color: #7E797B;
+  color: #7e797b;
   min-width: 32px;
   text-align: center;
 }
@@ -189,12 +195,12 @@
   gap: 8px;
   padding: 8px 16px;
   height: 40px;
-  background: #018F39;
+  background: #018f39;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 500;
   line-height: 24px;
-  color: #F8F7F8;
+  color: #f8f7f8;
   text-decoration: none;
   transition: background 150ms ease;
 }
@@ -232,7 +238,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px;
-  background: #F8F7F8;
+  background: #f8f7f8;
   border-radius: 8px;
 }
 
@@ -243,7 +249,7 @@
   align-items: center;
   justify-content: center;
   background: #fff;
-  border: 1px solid #DCDBDC;
+  border: 1px solid #dcdbdc;
   border-radius: 6px;
 }
 
@@ -251,7 +257,7 @@
   font-family: "Inter", sans-serif;
   font-size: 16px;
   line-height: 24px;
-  color: #7E797B;
+  color: #7e797b;
 }
 
 .pdf-viewer-page-sep {
@@ -275,16 +281,16 @@
   align-items: center;
   justify-content: center;
   background: #fff;
-  border: 1px solid #EFEFEF;
+  border: 1px solid #efefef;
   border-radius: 4px;
-  color: #018F39;
+  color: #018f39;
   cursor: pointer;
   padding: 8px;
   transition: background 150ms ease;
 }
 
 .pdf-viewer-fullscreen-btn:hover {
-  background: #F0EFEE;
+  background: #f0efee;
 }
 
 .pdf-viewer-fullscreen-btn svg {
@@ -313,12 +319,7 @@
 .pdf-viewer-placeholder {
   width: 100%;
   aspect-ratio: 1 / 1.414;
-  background: linear-gradient(
-    90deg,
-    #3a3c3f 25%,
-    #4a4c4f 50%,
-    #3a3c3f 75%
-  );
+  background: linear-gradient(90deg, #3a3c3f 25%, #4a4c4f 50%, #3a3c3f 75%);
   background-size: 200% 100%;
   animation: pdf-shimmer 1.8s ease-in-out infinite;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
