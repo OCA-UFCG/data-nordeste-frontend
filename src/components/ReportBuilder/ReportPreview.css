@@ -1,36 +1,24 @@
-.report-preview-empty {
-  display: flex;
-  height: 100%;
-  min-height: 400px;
-  align-items: flex-start;
-  justify-content: center;
-}
-
 .pdf-viewer-empty-card {
+  position: sticky;
+  top: 24px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   gap: 12px;
   width: 100%;
-  max-width: 451px;
-  padding: 27px;
-  background: #F8F7F8;
-  border: 2px solid #EFEFEF;
-  border-radius: 12px;
+  max-width: 602px;
+  padding: 16px;
+  background: #eaf8fd;
+  border: 1px solid #94dcf7;
+  border-radius: 8px;
   box-sizing: border-box;
-  margin: 18px;
-}
-
-@media (min-width: 1024px) {
-  .pdf-viewer-empty-card {
-    position: sticky;
-    top: calc(50vh - 50px);
-  }
+  margin: 24px;
+  box-shadow: 0 8px 16px rgba(41, 40, 41, 0.12);
 }
 
 .pdf-viewer-empty-icon {
-  color: #018F39;
+  color: #018f39;
   flex: 0 0 auto;
 }
 
@@ -38,32 +26,55 @@
   margin: 0;
   font-family: "Open Sans", sans-serif;
   font-style: normal;
-  font-weight: 600;
-  font-size: 18px;
+  font-weight: 400;
+  font-size: 14px;
   line-height: 150%;
-  color: #020617;
+  color: #075985;
   flex: 1 1 auto;
 }
 
+.report-preview-loading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  color: #018f39;
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.report-preview-loading-spinner {
+  width: 124px;
+  height: 124px;
+  border: 14px solid rgba(1, 143, 57, 0.12);
+  border-right-color: #08bd58;
+  border-bottom-color: #08bd58;
+  border-radius: 50%;
+  animation: report-preview-spin 900ms linear infinite;
+}
+
+@keyframes report-preview-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 640px) {
-  .report-preview-empty {
-    min-height: 300px;
+  .pdf-viewer--empty {
+    height: 400px;
+    min-height: 400px;
   }
 
   .pdf-viewer-empty-card {
-    flex-direction: column;
+    position: static;
     gap: 12px;
-    padding: 18px;
+    padding: 14px;
     margin: 12px;
   }
 
   .pdf-viewer-empty-text {
     font-size: 14px;
-    text-align: center;
-  }
-
-  .pdf-viewer-empty-icon {
-    width: 36px;
-    height: 36px;
   }
 }

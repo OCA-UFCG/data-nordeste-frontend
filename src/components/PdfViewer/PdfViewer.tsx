@@ -104,9 +104,9 @@ export const PdfViewer = ({ pdfUrl, fileName, emptyState }: PdfViewerProps) => {
         <div className="hidden sm:block">
           <PdfToolbar
             fileName={fileName}
-            currentPage={0}
-            totalPages={0}
-            zoom={INITIAL_ZOOM}
+            currentPage={1}
+            totalPages={20}
+            zoom={0.75}
             pdfUrl=""
             onPreviousPage={noop}
             onNextPage={noop}

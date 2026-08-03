@@ -9,15 +9,29 @@ export type ReportPreviewDocument = {
 };
 
 export function ReportPreview({
+  loading,
   preview,
 }: {
+  loading: boolean;
   preview: ReportPreviewDocument | null;
 }): ReactElement {
+  if (loading) {
+    return (
+      <PdfViewer
+        emptyState={<LoadingPreviewState />}
+        fileName="Gerando relatório..."
+        pdfUrl=""
+      />
+    );
+  }
+
   if (!preview) {
     return (
-      <div className="report-preview-empty">
-        <EmptyPreviewCard />
-      </div>
+      <PdfViewer
+        emptyState={<EmptyPreviewCard />}
+        fileName="boletim-sudene-infancia1025.pdf"
+        pdfUrl=""
+      />
     );
   }
 
@@ -29,6 +43,20 @@ export function ReportPreview({
       <div className="mt-4 mb-6 lg:mt-0 lg:mb-0 h-full">
         <PdfViewer fileName={preview.fileName} pdfUrl={preview.url} />
       </div>
+    </div>
+  );
+}
+
+function LoadingPreviewState(): ReactElement {
+  return (
+    <div
+      aria-label="Carregando seu relatório"
+      aria-live="polite"
+      className="report-preview-loading"
+      role="status"
+    >
+      <span aria-hidden="true" className="report-preview-loading-spinner" />
+      <p>Carregando seu Relatório</p>
     </div>
   );
 }
@@ -57,7 +85,7 @@ function ReportDownloadButton({
 function EmptyPreviewCard(): ReactElement {
   return (
     <div className="pdf-viewer-empty-card">
-      <Icon id="info" size={54} className="pdf-viewer-empty-icon" />
+      <Icon id="info" size={20} className="pdf-viewer-empty-icon" />
       <p className="pdf-viewer-empty-text">
         Selecione as informações ao lado primeiro para gerar um relatório
       </p>
