@@ -81,9 +81,10 @@ function normalizeContentfulAssetUrls<T>(content: T): T {
 
   const fields = content as ContentfulResponseObject;
   Object.entries(fields).forEach(([key, value]) => {
-    fields[key] = key === "url" && typeof value === "string"
-      ? getCachedContentfulAssetUrl(value)
-      : normalizeContentfulAssetUrls(value);
+    fields[key] =
+      key === "url" && typeof value === "string"
+        ? getCachedContentfulAssetUrl(value)
+        : normalizeContentfulAssetUrls(value);
   });
 
   return content;

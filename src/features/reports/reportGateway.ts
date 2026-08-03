@@ -1,6 +1,8 @@
 import {
   getAutomaticReportApiBaseUrl,
+  joinReportSlugs,
   parseAutomaticReportSlug,
+  type AutomaticReportMacrothemeSlug,
 } from "@/features/reports/automaticReport";
 
 type AutomaticReportEntry = {
@@ -20,12 +22,16 @@ export function buildAutomaticReportGenerationUrl(
   params: URLSearchParams,
 ): string {
   const city = requireCity(params);
-  const macrotheme = parseAutomaticReportSlug(params.get("macrotema"));
+  const slugs = parseAutomaticReportSlug(params.get("macrotema"));
   const url = new URL(
     `/relatorio/${encodeURIComponent(city)}`,
     getAutomaticReportApiBaseUrl(),
   );
-  url.searchParams.set("macrotema", macrotheme);
+
+  // PERF: The backend accepts a comma-separated list in a single `macrotema`
+  // query param. Keeping the legacy single-value shape avoids a new contract
+  // while letting users request several macrothemes in one shot.
+  url.searchParams.set("macrotema", joinReportSlugs(slugs));
 
   return url.toString();
 }
@@ -35,25 +41,37 @@ export async function findAvailableAutomaticReport(
   params: URLSearchParams,
 ): Promise<AvailableAutomaticReport | null> {
   const city = requireCity(params);
-  const macrotheme = parseAutomaticReportSlug(params.get("macrotema"));
+  const slugs = parseAutomaticReportSlug(params.get("macrotema"));
   const reports = await fetchReportIndex();
   const report = reports.find(
     (entry) =>
       Boolean(entry.pdf_url) &&
       matchesReportCity(entry.cidade, city) &&
-      normalizeReportLabel(entry.arquivo_pdf).includes(
-        normalizeReportLabel(macrotheme),
-      ),
+      entryMatchesAnyMacrotheme(entry.arquivo_pdf, slugs),
   );
   if (!report) return null;
 
   return {
     fileName: report.arquivo_pdf,
-    pdfUrl: new URL(
-      report.pdf_url,
-      getAutomaticReportApiBaseUrl(),
-    ).toString(),
+    pdfUrl: new URL(report.pdf_url, getAutomaticReportApiBaseUrl()).toString(),
   };
+}
+
+/**
+ * Matches a report filename against any of the requested macrotheme slugs.
+ * The backend writes one PDF per macrotheme per city, so "any match" returns
+ * the first ready one. This is intentional: when multiple themes are selected,
+ * the client polls for whichever becomes available first.
+ */
+function entryMatchesAnyMacrotheme(
+  fileName: string,
+  slugs: AutomaticReportMacrothemeSlug[],
+): boolean {
+  const normalizedFileName = normalizeReportLabel(fileName);
+
+  return slugs.some((slug) =>
+    normalizedFileName.includes(normalizeReportLabel(slug)),
+  );
 }
 
 function matchesReportCity(entryCity: string, requestedCity: string): boolean {
@@ -78,10 +96,9 @@ function requireCity(params: URLSearchParams): string {
 }
 
 async function fetchReportIndex(): Promise<AutomaticReportEntry[]> {
-  const response = await fetch(
-    `${getAutomaticReportApiBaseUrl()}/relatorios`,
-    { cache: "no-store" },
-  );
+  const response = await fetch(`${getAutomaticReportApiBaseUrl()}/relatorios`, {
+    cache: "no-store",
+  });
   if (!response.ok) {
     throw new Error(
       `Automatic report index returned ${response.status}; expected 200.`,
@@ -92,9 +109,7 @@ async function fetchReportIndex(): Promise<AutomaticReportEntry[]> {
 }
 
 function normalizeLegacyReportLabel(value: string): string {
-  return value
-    .replaceAll(/[^a-zA-Z0-9]/g, "")
-    .toLowerCase();
+  return value.replaceAll(/[^a-zA-Z0-9]/g, "").toLowerCase();
 }
 
 function normalizeReportLabel(value: string): string {
