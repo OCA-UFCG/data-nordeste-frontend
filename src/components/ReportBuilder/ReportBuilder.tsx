@@ -177,6 +177,11 @@ function ReportBuilderLayout({
   const themesSelected = selectedThemeIds.length > 0;
   const formCompleted = municipalitySelected && themesSelected;
 
+  useEffect(() => {
+    if (!municipalitySelected) return;
+    setOpenStep("themes");
+  }, [municipalitySelected]);
+
   return (
     <section className="w-full bg-white">
       {/* Abas só aparecem no mobile (<lg); no desktop o grid abaixo as ignora. */}
