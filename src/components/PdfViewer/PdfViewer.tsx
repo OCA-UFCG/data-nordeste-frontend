@@ -203,7 +203,6 @@ type PdfToolbarProps = {
   onZoomOut: () => void;
   onToggleFullscreen: () => void;
 
-  /** Renderiza todos os controles como desabilitados (estado vazio do viewer). */
   disabled?: boolean;
 };
 
