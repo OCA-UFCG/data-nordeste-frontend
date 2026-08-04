@@ -81,17 +81,6 @@ export function joinReportSlugs(
   return slugs.join(",");
 }
 
-/**
- * Builds the public Next proxy URL for a generated report PDF.
- *
- * Example: `buildReportProxyUrl({ city, macrotheme: "saude,demografia" })` =>
- * `/api/reports/generate?city=Recife%20(PE)&macrotema=saude%2Cdemografia&_=1721600000000`.
- *
- * When `request.geradoApos` is provided, an extra `gerado_apos` query param is
- * included so the proxy can filter the report index to entries written at or
- * after that instant — preventing a stale PDF from a previous run from being
- * served while a new one is being generated.
- */
 export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   const params = new URLSearchParams({
     city: request.city,

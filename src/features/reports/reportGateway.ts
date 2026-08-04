@@ -61,13 +61,6 @@ export async function findAvailableAutomaticReport(
   };
 }
 
-/**
- * Filters out reports whose `last_modified_utc` predates `minGeneratedAt`.
- * When `minGeneratedAt` is null (no freshness requirement), any report matches.
- * Entries missing `last_modified_utc` are treated as unknown-age and are only
- * accepted when no freshness requirement is set, so a backend that forgets to
- * send the field cannot serve a stale PDF while a new one is being generated.
- */
 function wasGeneratedAfter(
   entry: AutomaticReportEntry,
   minGeneratedAt: number | null,
