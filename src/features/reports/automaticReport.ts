@@ -10,6 +10,7 @@ export type AutomaticReportMacrothemeSlug =
 export type AutomaticReportRequest = {
   city: string;
   macrotheme: string;
+  geradoApos?: string;
 };
 
 const AUTOMATIC_REPORT_SLUGS = new Set<AutomaticReportMacrothemeSlug>([
@@ -85,6 +86,11 @@ export function joinReportSlugs(
  *
  * Example: `buildReportProxyUrl({ city, macrotheme: "saude,demografia" })` =>
  * `/api/reports/generate?city=Recife%20(PE)&macrotema=saude%2Cdemografia&_=1721600000000`.
+ *
+ * When `request.geradoApos` is provided, an extra `gerado_apos` query param is
+ * included so the proxy can filter the report index to entries written at or
+ * after that instant — preventing a stale PDF from a previous run from being
+ * served while a new one is being generated.
  */
 export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   const params = new URLSearchParams({
@@ -92,6 +98,9 @@ export function buildReportProxyUrl(request: AutomaticReportRequest): string {
     macrotema: request.macrotheme,
     _: Date.now().toString(),
   });
+  if (request.geradoApos) {
+    params.set("gerado_apos", request.geradoApos);
+  }
 
   return `/api/reports/generate?${params.toString()}`;
 }

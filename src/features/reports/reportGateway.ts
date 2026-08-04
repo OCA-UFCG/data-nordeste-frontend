@@ -10,6 +10,7 @@ type AutomaticReportEntry = {
   cidade: string;
   macrotema: string;
   pdf_url: string;
+  last_modified_utc?: string;
 };
 
 export type AvailableAutomaticReport = {
@@ -39,13 +40,16 @@ export function buildAutomaticReportGenerationUrl(
 /** Looks for one ready report without polling. Example: `await findAvailableAutomaticReport(params)`. */
 export async function findAvailableAutomaticReport(
   params: URLSearchParams,
+  geradoApos: string | null = null,
 ): Promise<AvailableAutomaticReport | null> {
   const city = requireCity(params);
   const slugs = parseAutomaticReportSlug(params.get("macrotema"));
   const reports = await fetchReportIndex();
+  const minGeneratedAt = geradoApos ? Date.parse(geradoApos) : null;
   const report = reports.find(
     (entry) =>
       Boolean(entry.pdf_url) &&
+      wasGeneratedAfter(entry, minGeneratedAt) &&
       matchesReportCity(entry.cidade, city) &&
       entryMatchesAnyMacrotheme(entry.arquivo_pdf, slugs),
   );
@@ -55,6 +59,25 @@ export async function findAvailableAutomaticReport(
     fileName: report.arquivo_pdf,
     pdfUrl: new URL(report.pdf_url, getAutomaticReportApiBaseUrl()).toString(),
   };
+}
+
+/**
+ * Filters out reports whose `last_modified_utc` predates `minGeneratedAt`.
+ * When `minGeneratedAt` is null (no freshness requirement), any report matches.
+ * Entries missing `last_modified_utc` are treated as unknown-age and are only
+ * accepted when no freshness requirement is set, so a backend that forgets to
+ * send the field cannot serve a stale PDF while a new one is being generated.
+ */
+function wasGeneratedAfter(
+  entry: AutomaticReportEntry,
+  minGeneratedAt: number | null,
+): boolean {
+  if (minGeneratedAt === null) return true;
+  if (!entry.last_modified_utc) return false;
+  const entryTime = Date.parse(entry.last_modified_utc);
+  if (Number.isNaN(entryTime)) return false;
+
+  return entryTime >= minGeneratedAt;
 }
 
 /**
