@@ -29,21 +29,35 @@ class AutomaticReportFetchFake {
 
   private reportIndexResponse(): Response {
     return Response.json([
-      this.reportEntry("Salvador Ba", "/output/relatorio_saude__salvador.pdf"),
-      this.reportEntry("Recife Pe", "/output/relatorio_saude__recife.pdf"),
+      this.reportEntry(
+        "Salvador Ba",
+        "/output/relatorio_saude__salvador.pdf",
+        "2026-08-03T10:00:00.000Z",
+      ),
+      this.reportEntry(
+        "Recife Pe",
+        "/output/relatorio_saude__recife.pdf",
+        "2026-08-03T10:00:00.000Z",
+      ),
       this.reportEntry(
         "Bel M Al",
         "/output/relatorio_economia-renda__bel_m_al_.pdf",
+        "2026-08-03T10:00:00.000Z",
       ),
     ]);
   }
 
-  private reportEntry(cidade: string, pdfUrl: string): object {
+  private reportEntry(
+    cidade: string,
+    pdfUrl: string,
+    lastModifiedUtc: string,
+  ): object {
     return {
       arquivo_pdf: pdfUrl.split("/").at(-1),
       cidade,
       macrotema: "Saúde",
       pdf_url: pdfUrl,
+      last_modified_utc: lastModifiedUtc,
     };
   }
 
@@ -130,5 +144,43 @@ describe("automatic report generation proxy", () => {
     expect(automaticReportApi.requestedUrls.at(-1)).toBe(
       `${API_URL}/output/relatorio_saude__recife.pdf`,
     );
+  });
+
+  it("ignores stale reports when gerado_apos is newer than the last PDF", async () => {
+    const automaticReportApi = new AutomaticReportFetchFake();
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+
+    // Index entries are dated 2026-08-03; ask for anything written after the
+    // next day. No entry should match, so the proxy must keep polling.
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-04T17%3A01%3A17.000Z",
+    );
+
+    const response = await GET(request);
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({ status: "processing" });
+  });
+
+  it("accepts a fresh report when gerado_apos predates the last PDF", async () => {
+    const automaticReportApi = new AutomaticReportFetchFake();
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+
+    // Index entries are dated 2026-08-03; ask for anything written after the
+    // day before — the entry should be accepted.
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-02T00%3A00%3A00.000Z",
+    );
+
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      status: "ready",
+      fileName: "relatorio_saude__recife.pdf",
+      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-02T00%3A00%3A00.000Z",
+    });
   });
 });

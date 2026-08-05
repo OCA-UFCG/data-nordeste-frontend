@@ -24,6 +24,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const report = await findAvailableAutomaticReport(
       request.nextUrl.searchParams,
+      request.nextUrl.searchParams.get("gerado_apos"),
     );
     if (!report) {
       return NextResponse.json({ status: "processing" }, { status: 202 });

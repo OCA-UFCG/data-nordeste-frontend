@@ -578,7 +578,8 @@ async function requestReportPreview(request: {
   city: string;
   macrotheme: string;
 }): Promise<ReportPreviewDocument> {
-  const generationUrl = buildReportProxyUrl(request);
+  const geradoApos = new Date().toISOString();
+  const generationUrl = buildReportProxyUrl({ ...request, geradoApos });
   const startResponse = await fetch(generationUrl, { method: "POST" });
   if (!startResponse.ok) throw new Error(`status ${startResponse.status}`);
 

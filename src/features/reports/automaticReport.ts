@@ -10,6 +10,7 @@ export type AutomaticReportMacrothemeSlug =
 export type AutomaticReportRequest = {
   city: string;
   macrotheme: string;
+  geradoApos?: string;
 };
 
 const AUTOMATIC_REPORT_SLUGS = new Set<AutomaticReportMacrothemeSlug>([
@@ -80,18 +81,15 @@ export function joinReportSlugs(
   return slugs.join(",");
 }
 
-/**
- * Builds the public Next proxy URL for a generated report PDF.
- *
- * Example: `buildReportProxyUrl({ city, macrotheme: "saude,demografia" })` =>
- * `/api/reports/generate?city=Recife%20(PE)&macrotema=saude%2Cdemografia&_=1721600000000`.
- */
 export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   const params = new URLSearchParams({
     city: request.city,
     macrotema: request.macrotheme,
     _: Date.now().toString(),
   });
+  if (request.geradoApos) {
+    params.set("gerado_apos", request.geradoApos);
+  }
 
   return `/api/reports/generate?${params.toString()}`;
 }
