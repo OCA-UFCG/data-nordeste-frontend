@@ -324,7 +324,6 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
 
   // PERF: Lazy render — the canvas is only drawn when the page enters the
   // pre-load window. Once true, this never reverts to false so that scrolling
-  // back does not trigger a re-render and the canvas stays in memory.
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
