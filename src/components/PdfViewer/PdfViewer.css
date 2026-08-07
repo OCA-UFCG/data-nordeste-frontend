@@ -156,6 +156,7 @@
   background: #ffffff;
   border: 1px solid #efefef;
   border-radius: 4px;
+  color: #018f39;
   cursor: pointer;
   padding: 8px;
   transition: background 150ms ease;
@@ -166,7 +167,7 @@
 }
 
 .pdf-toolbar-btn-icon:disabled {
-  opacity: 0.4;
+  color: #bab8ba;
   cursor: not-allowed;
 }
 
@@ -196,6 +197,7 @@
   padding: 8px 16px;
   height: 40px;
   background: #018f39;
+  border: 0;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 500;
@@ -211,7 +213,7 @@
 
 .pdf-toolbar-download--empty {
   cursor: not-allowed;
-  background: #017032;
+  background: #bab8ba;
   pointer-events: none;
 }
 

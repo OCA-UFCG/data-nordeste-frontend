@@ -94,6 +94,23 @@ export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   return `/api/reports/generate?${params.toString()}`;
 }
 
+/** Creates a stable download name. Example: `buildReportFileName("São Luís (MA)")` => `relatorio_sao_luis_ma.pdf`. */
+export function buildReportFileName(city: string): string {
+  const citySlug = city
+    .normalize("NFD")
+    .replaceAll(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]+/g, "_")
+    .replaceAll(/^_+|_+$/g, "");
+  if (!citySlug) {
+    throw new Error(
+      `Invalid report city "${city}"; expected a name containing letters or numbers.`,
+    );
+  }
+
+  return `relatorio_${citySlug}.pdf`;
+}
+
 export function getAutomaticReportApiBaseUrl(): string {
   const baseUrl =
     process.env.AUTOMATIC_REPORT_API_URL ??

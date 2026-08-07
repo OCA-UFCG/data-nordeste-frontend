@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { buildReportFileName } from "@/features/reports/automaticReport";
 import {
   buildAutomaticReportGenerationUrl,
   findAvailableAutomaticReport,
@@ -35,7 +36,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({
       status: "ready",
-      fileName: report.fileName,
+      fileName: buildReportFileName(
+        request.nextUrl.searchParams.get("city") ?? "",
+      ),
       url: `${downloadUrl.pathname}${downloadUrl.search}`,
     });
   } catch (error) {

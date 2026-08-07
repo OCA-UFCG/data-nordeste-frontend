@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildReportProxyUrl } from "./automaticReport";
+import { buildReportFileName, buildReportProxyUrl } from "./automaticReport";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -43,6 +43,14 @@ describe("automatic report proxy URL", () => {
 
     expect(url).toBe(
       "/api/reports/generate?city=Recife+%28PE%29&macrotema=demografia&_=1000&gerado_apos=2026-08-04T17%3A01%3A17.000Z",
+    );
+  });
+});
+
+describe("automatic report download name", () => {
+  it("normalizes the municipality and state into a safe PDF filename", () => {
+    expect(buildReportFileName("São Luís (MA)")).toBe(
+      "relatorio_sao_luis_ma.pdf",
     );
   });
 });

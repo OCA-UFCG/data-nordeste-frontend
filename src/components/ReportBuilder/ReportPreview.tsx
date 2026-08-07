@@ -19,7 +19,7 @@ export function ReportPreview({
     return (
       <PdfViewer
         emptyState={<LoadingPreviewState />}
-        fileName="Gerando relatório..."
+        fileName="relatorio.pdf"
         pdfUrl=""
       />
     );
@@ -29,7 +29,7 @@ export function ReportPreview({
     return (
       <PdfViewer
         emptyState={<EmptyPreviewCard />}
-        fileName="boletim-sudene-infancia1025.pdf"
+        fileName="relatorio.pdf"
         pdfUrl=""
       />
     );
@@ -50,13 +50,13 @@ export function ReportPreview({
 function LoadingPreviewState(): ReactElement {
   return (
     <div
-      aria-label="Carregando seu relatório"
+      aria-label="Carregando o seu relatório"
       aria-live="polite"
       className="report-preview-loading"
       role="status"
     >
       <span aria-hidden="true" className="report-preview-loading-spinner" />
-      <p>Carregando seu Relatório</p>
+      <p>Carregando o seu relatório</p>
     </div>
   );
 }

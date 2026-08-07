@@ -54,10 +54,13 @@ export function ReportBuilder({
     useState<ReportPreviewDocument | null>(null);
 
   const [activeTab, setActiveTab] = useState<ReportMobileTab>("config");
-  const sortedThemes = useMemo(() => sortThemes(themes), [themes]);
-  const supportedThemeIds = useMemo(
-    () => getSupportedThemeIds(themes),
+  const sortedThemes = useMemo(
+    () => sortThemes(getSupportedThemes(themes)),
     [themes],
+  );
+  const supportedThemeIds = useMemo(
+    () => getSupportedThemeIds(sortedThemes),
+    [sortedThemes],
   );
   const allThemesSelected = hasSelectedAllThemes(
     selectedThemeIds,
@@ -527,6 +530,10 @@ function getSupportedThemeIds(themes: ReportTheme[]): string[] {
   return themes
     .map((theme) => theme.id)
     .filter((themeId) => Boolean(getAutomaticReportSlug(themeId)));
+}
+
+function getSupportedThemes(themes: ReportTheme[]): ReportTheme[] {
+  return themes.filter((theme) => Boolean(getAutomaticReportSlug(theme.id)));
 }
 
 function hasSelectedAllThemes(

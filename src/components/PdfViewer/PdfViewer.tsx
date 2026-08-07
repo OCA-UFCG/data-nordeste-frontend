@@ -105,7 +105,7 @@ export const PdfViewer = ({ pdfUrl, fileName, emptyState }: PdfViewerProps) => {
           <PdfToolbar
             fileName={fileName}
             currentPage={1}
-            totalPages={20}
+            totalPages={null}
             zoom={0.75}
             pdfUrl=""
             onPreviousPage={noop}
@@ -194,7 +194,7 @@ export const PdfViewer = ({ pdfUrl, fileName, emptyState }: PdfViewerProps) => {
 type PdfToolbarProps = {
   fileName: string;
   currentPage: number;
-  totalPages: number;
+  totalPages: number | null;
   zoom: number;
   pdfUrl: string;
   onPreviousPage: () => void;
@@ -241,11 +241,13 @@ const PdfToolbar = ({
         <div className="pdf-toolbar-page-field">
           <span className="pdf-toolbar-page-current">{currentPage}</span>
           <span className="pdf-toolbar-page-sep">/</span>
-          <span className="pdf-toolbar-page-total">{totalPages}</span>
+          <span className="pdf-toolbar-page-total">{totalPages ?? "--"}</span>
         </div>
         <button
           onClick={onNextPage}
-          disabled={disabled || currentPage >= totalPages}
+          disabled={
+            disabled || totalPages === null || currentPage >= totalPages
+          }
           aria-label="Próxima página"
           className="pdf-toolbar-btn-page"
         >
@@ -290,10 +292,14 @@ const PdfToolbar = ({
 
     <div className="pdf-toolbar-right">
       {disabled ? (
-        <span className="pdf-toolbar-download pdf-toolbar-download--empty">
+        <button
+          className="pdf-toolbar-download pdf-toolbar-download--empty"
+          disabled
+          type="button"
+        >
           <Icon id="download" size={11} />
           <span>Baixar PDF</span>
-        </span>
+        </button>
       ) : (
         <a
           href={pdfUrl}
