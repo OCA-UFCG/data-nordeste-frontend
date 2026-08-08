@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { buildReportFileName } from "@/features/reports/automaticReport";
 import { findAvailableAutomaticReport } from "@/features/reports/reportGateway";
 
 /** Streams a ready report through the same origin used by pdf.js. */
@@ -21,7 +22,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return new NextResponse(response.body, {
       headers: {
         "Cache-Control": "no-store",
-        "Content-Disposition": `inline; filename="${report.fileName}"`,
+        "Content-Disposition": `inline; filename="${buildReportFileName(
+          request.nextUrl.searchParams.get("city") ?? "",
+        )}"`,
         "Content-Type": "application/pdf",
       },
     });

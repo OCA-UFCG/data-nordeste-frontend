@@ -102,7 +102,7 @@ describe("automatic report generation proxy", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       status: "ready",
-      fileName: "relatorio_saude__recife.pdf",
+      fileName: "relatorio_recife_pe.pdf",
       url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude",
     });
   });
@@ -120,7 +120,7 @@ describe("automatic report generation proxy", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       status: "ready",
-      fileName: "relatorio_economia-renda__bel_m_al_.pdf",
+      fileName: "relatorio_belem_al.pdf",
       url: "/api/reports/download?city=Bel%C3%A9m%20(AL)&macrotema=economia-renda",
     });
   });
@@ -138,7 +138,7 @@ describe("automatic report generation proxy", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("application/pdf");
     expect(response.headers.get("content-disposition")).toBe(
-      'inline; filename="relatorio_saude__recife.pdf"',
+      'inline; filename="relatorio_recife_pe.pdf"',
     );
     expect(await response.text()).toBe("%PDF-1.7 test");
     expect(automaticReportApi.requestedUrls.at(-1)).toBe(
@@ -179,7 +179,7 @@ describe("automatic report generation proxy", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       status: "ready",
-      fileName: "relatorio_saude__recife.pdf",
+      fileName: "relatorio_recife_pe.pdf",
       url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-02T00%3A00%3A00.000Z",
     });
   });
