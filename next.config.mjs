@@ -4,6 +4,14 @@ const nextConfig = {
   compiler: {
     styledComponents: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/contentful-assets/:path*",
+        destination: "https://images.ctfassets.net/:path*",
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
