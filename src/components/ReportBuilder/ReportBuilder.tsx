@@ -425,6 +425,7 @@ function ReportThemeList({
             iconId={iconId}
             color={theme.color}
             name={theme.name}
+            href={`/macrothemes/${theme.id.replace(/_/g, "-")}`}
             checked={selectedThemeIds.includes(theme.id)}
             disabled={disabled}
             className="w-full"
