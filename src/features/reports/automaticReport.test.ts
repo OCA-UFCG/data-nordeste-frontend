@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildReportFileName, buildReportProxyUrl } from "./automaticReport";
+import {
+  buildReportFileName,
+  buildReportProxyUrl,
+  getAutomaticReportSlug,
+  parseAutomaticReportSlug,
+} from "./automaticReport";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -52,5 +57,20 @@ describe("automatic report download name", () => {
     expect(buildReportFileName("São Luís (MA)")).toBe(
       "relatorio_sao_luis_ma.pdf",
     );
+  });
+});
+
+describe("automatic report macrothemes", () => {
+  it.each([
+    ["desenvolvimento_social", "desenvolvimento-social"],
+    ["meio_ambiente", "meio-ambiente"],
+  ])("maps the Contentful id %s to the backend slug", (themeId, slug) => {
+    expect(getAutomaticReportSlug(themeId)).toBe(slug);
+  });
+
+  it("accepts the new backend slugs in a combined request", () => {
+    expect(
+      parseAutomaticReportSlug("desenvolvimento-social,meio-ambiente"),
+    ).toEqual(["desenvolvimento-social", "meio-ambiente"]);
   });
 });

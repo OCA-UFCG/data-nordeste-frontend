@@ -1,6 +1,8 @@
 export type AutomaticReportMacrothemeSlug =
   | "demografia"
+  | "desenvolvimento-social"
   | "educacao"
+  | "meio-ambiente"
   | "saude"
   | "economia-renda"
   | "saneamento"
@@ -15,7 +17,9 @@ export type AutomaticReportRequest = {
 
 const AUTOMATIC_REPORT_SLUGS = new Set<AutomaticReportMacrothemeSlug>([
   "demografia",
+  "desenvolvimento-social",
   "educacao",
+  "meio-ambiente",
   "saude",
   "economia-renda",
   "saneamento",
@@ -27,7 +31,9 @@ const REPORT_SLUG_BY_THEME_ID: {
   [themeId: string]: AutomaticReportMacrothemeSlug;
 } = {
   demografia: "demografia",
+  desenvolvimento_social: "desenvolvimento-social",
   educacao: "educacao",
+  meio_ambiente: "meio-ambiente",
   saude: "saude",
   economia_e_renda: "economia-renda",
   infraestrutura_e_saneamento: "saneamento",
