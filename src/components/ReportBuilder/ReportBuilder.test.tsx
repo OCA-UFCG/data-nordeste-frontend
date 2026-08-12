@@ -15,7 +15,7 @@ describe("ReportBuilder", () => {
     vi.unstubAllGlobals();
   });
 
-  it("opens the theme step after a municipality is selected from suggestions", async () => {
+  it("opens the theme step after a municipality is selected", async () => {
     const citiesApi = new FakeCitiesApi();
     vi.stubGlobal("fetch", citiesApi.fetch);
     const user = userEvent.setup();
@@ -25,12 +25,13 @@ describe("ReportBuilder", () => {
     const municipalitySearch = screen.getByPlaceholderText(
       "Pesquise o município",
     );
-    await user.type(municipalitySearch, "campina");
-
-    const suggestion = await screen.findByRole("option", {
-      name: "Campina Grande",
+    await waitFor(() => {
+      expect(
+        document.querySelector('option[value="Campina Grande"]'),
+      ).toBeInTheDocument();
     });
-    await user.click(suggestion);
+
+    await user.type(municipalitySearch, "Campina Grande");
 
     await waitFor(() =>
       expect(
@@ -40,22 +41,5 @@ describe("ReportBuilder", () => {
     expect(
       screen.getByRole("button", { name: /Selecione o município/ }),
     ).toHaveAttribute("aria-expanded", "false");
-  });
-
-  it("suggests accented municipalities when typing without accents", async () => {
-    const citiesApi = new FakeCitiesApi();
-    vi.stubGlobal("fetch", citiesApi.fetch);
-    const user = userEvent.setup();
-
-    render(<ReportBuilder themes={[]} />);
-
-    const municipalitySearch = screen.getByPlaceholderText(
-      "Pesquise o município",
-    );
-    await user.type(municipalitySearch, "joao");
-
-    expect(
-      await screen.findByRole("option", { name: "João Pessoa" }),
-    ).toBeInTheDocument();
   });
 });

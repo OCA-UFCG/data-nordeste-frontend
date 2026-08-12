@@ -10,7 +10,6 @@ import {
   ReportPreview,
   type ReportPreviewDocument,
 } from "@/components/ReportBuilder/ReportPreview";
-import { MunicipalitySearch } from "@/components/ReportBuilder/MunicipalitySearch";
 import {
   ReportStep,
   ReportSteps,
@@ -27,7 +26,6 @@ import {
   joinReportSlugs,
   type AutomaticReportMacrothemeSlug,
 } from "@/features/reports/automaticReport";
-import { resolveMunicipality } from "@/features/reports/municipalitySearch";
 import type { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
 import { normalizeKey, sortContentByDesiredOrder } from "@/utils/functions";
 
@@ -69,11 +67,6 @@ export function ReportBuilder({
     supportedThemeIds,
   );
 
-  // INTENTIONAL: Resolve the typed municipality against the known city list
-  // using accent- and case-insensitive normalization, so users can type
-  // "campina grande" or "sao luis" and still select "Campina Grande" / "São Luís".
-  const resolvedMunicipality = resolveMunicipality(municipality, cities);
-
   useEffect(() => {
     void loadReportCities(setCities, setLoadingCities, setErrorMessage);
   }, []);
@@ -94,7 +87,7 @@ export function ReportBuilder({
   };
 
   const generateReport = async (): Promise<void> => {
-    const request = buildReportRequest(resolvedMunicipality, selectedThemeIds);
+    const request = buildReportRequest(municipality, selectedThemeIds);
     if (!request) {
       setErrorMessage(
         "Selecione um município e ao menos um macrotema disponível.",
@@ -183,8 +176,7 @@ function ReportBuilderLayout({
   themeText?: ContentfulRichTextField;
 }): ReactElement {
   const [openStep, setOpenStep] = useState<ReportStepId | "">("municipality");
-  const municipalitySelected =
-    resolveMunicipality(municipality, cities) !== null;
+  const municipalitySelected = cities.includes(municipality.trim());
   const themesSelected = selectedThemeIds.length > 0;
   const formCompleted = municipalitySelected && themesSelected;
 
@@ -346,6 +338,42 @@ function MunicipalityField({
   );
 }
 
+function MunicipalitySearch({
+  cities,
+  onChange,
+  value,
+}: {
+  cities: string[];
+  onChange: (value: string) => void;
+  value: string;
+}): ReactElement {
+  return (
+    <label className="mt-4 flex h-10 w-full items-center gap-2 rounded-lg bg-[#EFEFEF] px-3">
+      <span className="sr-only">Pesquise o município</span>
+      <input
+        className="min-w-0 flex-1 bg-transparent text-sm text-[#292929] outline-none placeholder:text-[#737373]"
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Pesquise o município"
+        list="report-municipalities"
+        type="search"
+        value={value}
+      />
+      <MunicipalityOptions cities={cities} />
+      <Icon id="search-icon" size={12} />
+    </label>
+  );
+}
+
+function MunicipalityOptions({ cities }: { cities: string[] }): ReactElement {
+  return (
+    <datalist id="report-municipalities">
+      {cities.map((city) => (
+        <option key={city} value={city} />
+      ))}
+    </datalist>
+  );
+}
+
 function ReportThemesField({
   allThemesSelected,
   onClear,
@@ -425,7 +453,6 @@ function ReportThemeList({
             iconId={iconId}
             color={theme.color}
             name={theme.name}
-            href={`/macrothemes/${theme.id.replace(/_/g, "-")}`}
             checked={selectedThemeIds.includes(theme.id)}
             disabled={disabled}
             className="w-full"
@@ -520,13 +547,13 @@ function hasSelectedAllThemes(
 }
 
 function buildReportRequest(
-  city: string | null,
+  city: string,
   selectedThemeIds: string[],
 ): { city: string; macrotheme: string } | null {
   const macrotheme = resolveSelectedMacrotheme(selectedThemeIds);
-  if (!city || !macrotheme) return null;
+  if (!city.trim() || !macrotheme) return null;
 
-  return { city, macrotheme };
+  return { city: city.trim(), macrotheme };
 }
 
 function resolveSelectedMacrotheme(selectedThemeIds: string[]): string | null {
