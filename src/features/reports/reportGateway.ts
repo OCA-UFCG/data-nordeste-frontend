@@ -94,14 +94,31 @@ function matchesReportCity(entryCity: string, requestedCity: string): boolean {
   if (normalizeReportLabel(entryCity) === normalizeReportLabel(requestedCity)) {
     return true;
   }
+  if (
+    normalizeReportLabel(entryCity) ===
+    normalizeLegacyReportLabel(requestedCity)
+  ) {
+    return true;
+  }
+
+  const cityWithoutState = removeStateSuffix(requestedCity);
+  if (normalizeReportLabel(entryCity) === normalizeReportLabel(cityWithoutState)) {
+    return true;
+  }
 
   // LEGACY: Automatic-Reporting used to replace accented characters with "_"
   // in filenames. Keep matching "Bel M Al" to "Belém (AL)" until old PDFs
   // have been regenerated with accent-aware slugs.
   return (
     normalizeReportLabel(entryCity) ===
-    normalizeLegacyReportLabel(requestedCity)
+    normalizeLegacyReportLabel(cityWithoutState)
   );
+}
+
+function removeStateSuffix(city: string): string {
+  // LEGACY: `/cities` includes the state, but `/relatorios` derives `cidade`
+  // from filenames that contain only the municipality name.
+  return city.replace(/\s+\([A-Z]{2}\)\s*$/, "").trim();
 }
 
 function requireCity(params: URLSearchParams): string {
