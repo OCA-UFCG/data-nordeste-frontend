@@ -1,6 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { createRef } from "react";
 import { useMergedExploreSearch } from "./useMergedExploreSearch";
 import { setExploreSearchFocusOwner } from "@/features/explore/searchFocus";
 
@@ -16,8 +15,7 @@ describe("useMergedExploreSearch", () => {
     Object.defineProperty(header, "offsetHeight", { value: 84 });
     let anchorTop = 120;
     anchor.getBoundingClientRect = () => ({ top: anchorTop }) as DOMRect;
-    const headerRef = createRef<HTMLDivElement>();
-    headerRef.current = header;
+    const headerRef = { current: header } as React.RefObject<HTMLDivElement>;
 
     const { result } = renderHook(() =>
       useMergedExploreSearch(headerRef, true),

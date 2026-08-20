@@ -1,21 +1,33 @@
 import { describe, expect, it } from "vitest";
+import { BLOCKS } from "@contentful/rich-text-types";
 import {
   findHomeSection,
   getFilteredPreviewCards,
   getPreviewStates,
   normalizePreviewCards,
 } from "./content";
-import { IPreviewCards, SectionHeader } from "@/utils/interfaces";
+import {
+  IPreviewCards,
+  IStateData,
+  MacroTheme,
+  SectionHeader,
+} from "@/utils/interfaces";
 
-const category = {
+type RawState = IStateData & { icon_svg?: { url: string } };
+type RawPreviewCard = Omit<IPreviewCards, "jsonFile"> & {
+  iconsvg?: { url: string };
+  jsonFile: Omit<IPreviewCards["jsonFile"], "states"> & { states: RawState[] };
+};
+
+const category: MacroTheme = {
   name: "Saúde",
   id: "saude",
   color: "#018F39",
   sys: {
     id: "theme-saude",
   },
-  description: { json: {} },
-  article: { json: {} },
+  description: { json: { nodeType: BLOCKS.DOCUMENT, data: {}, content: [] } },
+  article: { json: { nodeType: BLOCKS.DOCUMENT, data: {}, content: [] } },
   articleTitle: "",
   banner: { url: "" },
   tags: [],
@@ -44,7 +56,7 @@ const cards = [
       ],
     },
   },
-] satisfies IPreviewCards[];
+] satisfies RawPreviewCard[];
 
 describe("home content helpers", () => {
   it("finds section headers by id", () => {

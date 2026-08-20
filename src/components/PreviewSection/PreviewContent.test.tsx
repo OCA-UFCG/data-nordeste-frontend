@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReactNode, createContext, useContext } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { BLOCKS } from "@contentful/rich-text-types";
 import PreviewContent from "./PreviewContent";
 import { IPreviewCard, IPreviewCards } from "@/utils/interfaces";
 
@@ -75,8 +76,12 @@ const cards = [
       id: "saude",
       color: "#018F39",
       sys: { id: "theme-saude" },
-      description: { json: {} },
-      article: { json: {} },
+      description: {
+        json: { nodeType: BLOCKS.DOCUMENT, data: {}, content: [] },
+      },
+      article: {
+        json: { nodeType: BLOCKS.DOCUMENT, data: {}, content: [] },
+      },
       articleTitle: "",
       banner: { url: "" },
       tags: [],
