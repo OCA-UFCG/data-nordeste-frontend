@@ -51,7 +51,7 @@ jobs:
 
   push-gamma:
     needs: build-image
-    runs-on: gamma-runner
+    runs-on: failover-runner
 
     steps:
       - name: Pull the latest image
