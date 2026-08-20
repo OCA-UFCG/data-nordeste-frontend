@@ -10,7 +10,8 @@ Power BI, ArcGIS e Firebase.
 
 Para contexto operacional detalhado para agentes e mantenedores, leia também
 [`docs/README.md`](docs/README.md). Regras de escrita, estrutura e validação de
-código ficam em [`AGENTS.md`](AGENTS.md).
+código ficam em [`CLAUDE.md`](CLAUDE.md). Convenções de branch, commit e pull
+request ficam em [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Pré-requisitos
 
@@ -99,21 +100,9 @@ npm run dev
 
 ## Convenções De Trabalho
 
-Use branches semânticas:
-
-- `feat/<descricao>` para novas funcionalidades.
-- `fix/<descricao>` para correções.
-- `refact/<descricao>` para refactors.
-- `test/<descricao>` para testes.
-- `docs/<descricao>` para documentação.
-
-Use commits semânticos:
-
-- `feat: ...`
-- `fix: ...`
-- `refactor: ...`
-- `test: ...`
-- `docs: ...`
+Branches, commits e pull requests estão em
+[`CONTRIBUTING.md`](CONTRIBUTING.md). A convenção de commit é verificada pelo
+hook `commit-msg`, então uma mensagem fora do padrão é recusada na hora.
 
 Antes de finalizar mudanças de código, rode `npm run lint`. Rode também
 `npm test` quando houver lógica coberta por testes ou correção de bug. Rode
