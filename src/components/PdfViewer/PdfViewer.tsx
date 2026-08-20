@@ -89,8 +89,11 @@ export const PdfViewer = ({ pdfUrl, fileName, emptyState }: PdfViewerProps) => {
 
     if (document.fullscreenElement) {
       document.exitFullscreen();
+      setZoom(INITIAL_ZOOM);
+      containerRef.current.classList.remove("pdf-viewer-fullscreen");
     } else {
       containerRef.current.requestFullscreen();
+      containerRef.current.classList.add("pdf-viewer-fullscreen");
     }
   };
 

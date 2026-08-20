@@ -427,3 +427,7 @@
     justify-content: center;
   }
 }
+.pdf-viewer-fullscreen .pdf-viewer-canvas-wrapper {
+  max-height: none;
+  overflow: auto;
+}
