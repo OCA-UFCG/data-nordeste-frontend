@@ -58,6 +58,25 @@ Detalhes que o hook aceita de propósito:
 O histórico anterior a esta regra tem desvios (`add: ...`, mensagens sem prefixo).
 Não use o `git log` como referência de estilo — use esta tabela.
 
+## O que não escrever
+
+Este repositório é público. Mensagem de commit, descrição de PR e texto de issue
+são legíveis por qualquer pessoa e indexados pela busca do GitHub.
+
+Descreva a mudança e a restrição técnica por trás dela. Não narre a fraqueza que
+uma correção fechou, nem nomeie o ativo que poderia ter vazado. Isso não ensina
+nada além do que o diff já mostra, e serve de reconhecimento para quem varre
+histórico procurando `token`, `secret` ou `credential` — o jeito mais barato de
+achar segredo que foi rotacionado no presente mas continua no passado.
+
+| Escreva                                                                   | Não escreva                                          |
+| ------------------------------------------------------------------------- | ---------------------------------------------------- |
+| "o padrão de env cobria apenas `.env`, mas o Next também lê `.env.local`" | "até este commit, um segredo podia entrar sem aviso" |
+
+Incidente de verdade não vai para o histórico: abra um
+[Security Advisory](https://docs.github.com/code-security/security-advisories),
+que nasce privado.
+
 ## Pull requests
 
 - Um PR por assunto. PR grande demais para revisar é PR que não é revisado.
