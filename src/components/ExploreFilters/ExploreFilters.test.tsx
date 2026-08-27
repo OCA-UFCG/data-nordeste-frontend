@@ -69,7 +69,7 @@ describe("ExploreFilters", () => {
       name: "Selecionar todos",
     })[0];
 
-    expect(selectAllButton).toHaveClass("hover:bg-[#DDEADF]");
+    expect(selectAllButton).toHaveClass("hover:bg-[#D6E9DB]");
     await userEvent.click(selectAllButton);
 
     expect(replaceRoute).toHaveBeenCalledWith("/catalog?page=1", {
