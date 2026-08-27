@@ -73,7 +73,7 @@ function buildGenerationFailure(
   );
 
   return NextResponse.json(
-    { error: "Não foi possível gerar o relatório automático." },
+    { error: "Não foi possível gerar o relatório personalizado." },
     { status },
   );
 }

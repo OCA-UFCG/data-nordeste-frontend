@@ -38,7 +38,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
 
     return NextResponse.json(
-      { error: "Não foi possível baixar o relatório automático." },
+      { error: "Não foi possível baixar o relatório personalizado." },
       { status: 502 },
     );
   }

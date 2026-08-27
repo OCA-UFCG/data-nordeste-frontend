@@ -8,9 +8,9 @@ import type { ContentfulRichTextField } from "@/utils/interfaces";
 import HubTemplate from "@/templates/HubTemplate";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Relatório automático",
+  title: "Relatório personalizado",
   description:
-    "Gere relatorios automaticos do Data Nordeste por municipio e macrotema.",
+    "Gere relatórios personalizados do Data Nordeste por município e macrotema.",
   path: "/reports",
 });
 
@@ -51,7 +51,7 @@ function ReportsHero({
       <div className="relative z-10 mx-auto flex h-full w-full max-w-[1440px] items-center px-4 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-5">
           <h1 className="text-[34px] font-extrabold leading-[40px] text-grey-100 sm:text-[48px] sm:leading-[52px]">
-            Relatório Automático
+            Relatório Personalizado
           </h1>
           {description ? (
             <div className="text-sm font-medium leading-6 text-grey-100 sm:text-lg">
