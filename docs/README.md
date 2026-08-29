@@ -114,6 +114,13 @@ outside the repository and rendered through frontend route/component logic.
   route served directly by Automatic-Reporting returns an HTML page, not a
   PDF, and is intentionally not used by the frontend preview; pointing pdf.js
   at it would fail to render.
+- The deploy `failover-runner` (`aws-datane-failover`) is arm64/Graviton. That
+  is why `deploy-gamma.yml` and `deploy-prod.yml` build
+  `linux/amd64,linux/arm64` while `deploy-beta.yml` does not. Dropping
+  `linux/arm64` breaks the deploy with `no matching manifest for
+  linux/arm64/v8`. Consequence: `package-lock.json` must keep its
+  `*-linux-arm64-*` entries, or the arm64 build fails resolving native
+  binaries.
 - Do not document secrets or concrete environment values here. Use
   `.env.sample` for variable names and the project root `README.md` for local
   setup flow.
