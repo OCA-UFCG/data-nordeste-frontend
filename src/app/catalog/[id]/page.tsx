@@ -2,7 +2,12 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import HubTemplate from "@/templates/HubTemplate";
-import { buildMetadata, stripHtml, truncateDescription } from "@/config/seo";
+import {
+  buildDatasetJsonLd,
+  buildMetadata,
+  stripHtml,
+  truncateDescription,
+} from "@/config/seo";
 import {
   buildZenodoArchiveFileName,
   buildZenodoFilesArchiveUrl,
@@ -53,9 +58,16 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
   const plainDescription = stripHtml(record.description);
   const archiveUrl = buildZenodoFilesArchiveUrl(record.id);
   const archiveName = buildZenodoArchiveFileName(record.title);
+  const jsonLd = buildDatasetJsonLd(record);
 
   return (
     <HubTemplate>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <main className="w-full max-w-[1120px] mx-auto px-6 py-12 lg:px-20">
         <nav className="mb-8 text-sm text-grey-600">
           <Link href="/catalog" className="font-semibold text-[#018F39]">

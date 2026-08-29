@@ -8,9 +8,9 @@ const ValuesSection = ({ content }: { content: IValues[] }) => {
   return (
     <section className="flex items-center flex-col w-full px-6 lg:px-20 py-6">
       <div className="flex flex-col w-full max-w-[1280px] gap-6">
-        <h1 className="text-[30px] font-semibold leading-[36px] tracking-[-0.0075em] text-[#292829] pb-2">
+        <h2 className="text-[30px] font-semibold leading-[36px] tracking-[-0.0075em] text-[#292829] pb-2">
           {title}
-        </h1>
+        </h2>
         <div className="flex flex-col lg:flex-row items-center gap-6">
           {thumb?.url && (
             <ContentfulImage

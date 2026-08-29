@@ -74,6 +74,54 @@ export const truncateDescription = (value: string, maxLength = 155) => {
   return `${normalized.slice(0, maxLength - 1).trim()}...`;
 };
 
+const ZENODO_LICENSE_URLS: Record<string, string> = {
+  "cc-by-4.0": "https://creativecommons.org/licenses/by/4.0/",
+  "cc-by-sa-4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "cc-by-nc-4.0": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "cc-by-nc-sa-4.0": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "cc-by-nd-4.0": "https://creativecommons.org/licenses/by-nd/4.0/",
+  "cc0-1.0": "https://creativecommons.org/publicdomain/zero/1.0/",
+};
+
+type DatasetJsonLdRecord = {
+  id: string;
+  title: string;
+  description: string;
+  license: string;
+  publication_date: string;
+  html: string;
+  files: { name: string; downloadUrl: string }[];
+};
+
+export const buildDatasetJsonLd = (record: DatasetJsonLdRecord) => {
+  const licenseUrl = ZENODO_LICENSE_URLS[record.license];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": record.title,
+    "description": stripHtml(record.description) || SITE_DESCRIPTION,
+    "url": absoluteUrl(`/catalog/${record.id}`),
+    "sameAs": record.html,
+    "datePublished": record.publication_date,
+    ...(licenseUrl ? { license: licenseUrl } : {}),
+    "includedInDataCatalog": {
+      "@type": "DataCatalog",
+      "name": SITE_NAME,
+      "url": siteUrl,
+    },
+    ...(record.files.length
+      ? {
+          distribution: record.files.map((file) => ({
+            "@type": "DataDownload",
+            "name": file.name,
+            "contentUrl": file.downloadUrl,
+          })),
+        }
+      : {}),
+  };
+};
+
 export const buildMetadata = ({
   title,
   description = SITE_DESCRIPTION,

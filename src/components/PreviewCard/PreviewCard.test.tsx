@@ -1,5 +1,6 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { BLOCKS } from "@contentful/rich-text-types";
 import { IPreviewCard } from "@/utils/interfaces";
 import PreviewCard from "./PreviewCard";
 
@@ -13,6 +14,14 @@ const previewWithContentfulIcon = {
     id: "saude",
     name: "Saúde",
     color: "#007A33",
+    sys: { id: "theme-saude" },
+    description: {
+      json: { nodeType: BLOCKS.DOCUMENT, data: {}, content: [] },
+    },
+    article: { json: { nodeType: BLOCKS.DOCUMENT, data: {}, content: [] } },
+    articleTitle: "",
+    banner: { url: "" },
+    tags: [],
   },
   iconsvg: { url: "//cdn.example.com/health.svg" },
 } satisfies IPreviewCard;
