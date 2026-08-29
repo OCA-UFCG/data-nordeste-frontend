@@ -4,7 +4,9 @@ import { absoluteUrl } from "@/config/seo";
 import { getSearchIndex } from "@/features/search/contentful";
 import type { SearchIndexItem } from "@/features/search/types";
 
-const DATASET_SITEMAP_SIZE = 100;
+// Zenodo's public API caps unauthenticated page size at 25; larger values
+// return 400 and get silently swallowed by the per-source catch below.
+const DATASET_SITEMAP_SIZE = 25;
 
 const staticRoutes = [
   "/",
