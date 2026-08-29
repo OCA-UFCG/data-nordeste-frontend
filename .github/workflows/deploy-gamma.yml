@@ -11,6 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # O leg arm64 leva ~10min sob QEMU. Falhar aqui custa 5s e aponta a causa:
+      # um package-lock.json regenerado com node_modules presente perde os
+      # binarios nativos de outras plataformas. Ver CONTRIBUTING.md.
+      - name: Lockfile cobre arm64
+        run: grep -q '"node_modules/lightningcss-linux-arm64-gnu"' package-lock.json
+
       - name: Update docker metadata with the tag
         uses: docker/metadata-action@v4
         id: meta
