@@ -18,6 +18,22 @@ Sempre a partir da `main`, com prefixo semântico e descrição em kebab-case:
 
 Exemplo: `fix/pdf-viewer`, `feat/municipality-search`.
 
+## Conflito em `package-lock.json`
+
+Não resolva à mão nem aceite um dos lados. Regenere:
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+O `rm -rf node_modules` não é opcional. Com ele presente, o npm reconstrói o
+lockfile a partir do que já está instalado na sua máquina e apaga as entradas
+dos binários nativos das outras plataformas. O build `linux/arm64` do gamma
+passa a quebrar e nada local acusa — `lint`, `test` e `build` continuam verdes,
+porque a sua máquina tem tudo o que precisa. Aconteceu no merge `78b6e6c`
+(29/08/2026).
+
 ## Commits
 
 Commits seguem [Conventional Commits](https://www.conventionalcommits.org/):

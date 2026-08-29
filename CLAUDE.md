@@ -82,6 +82,8 @@ Validation policy before finishing a change:
 - `npm run lint` — always.
 - `npm test` — when touching logic that has tests, or fixing a bug.
 - `npm run build` — when touching routes, `next.config.mjs`, types or integrations.
+- Touched `package-lock.json` — none of the three catch the multi-platform
+  failure mode. See `CONTRIBUTING.md`.
 
 CI does not run lint or tests: `.github/workflows/deploy-*.yml` only build and
 restart Docker containers (beta/gamma/prod). Local validation is the only gate.
