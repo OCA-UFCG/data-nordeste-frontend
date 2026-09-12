@@ -11,7 +11,10 @@ import {
 } from "@/utils/interfaces";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
-import { getZenodoCommunityRecords } from "@/lib/zenodo";
+import {
+  getZenodoCommunityRecords,
+  type ZenodoCommunityRecordsResult,
+} from "@/lib/zenodo";
 import { dataSortingTypes, RECORDS_PER_PAGE } from "@/utils/constants";
 import {
   buildCatalogRequest,
@@ -98,11 +101,21 @@ export default async function CatalogPage({
     rawSearchParams,
     filters,
   );
-  const catalogRecords = await getZenodoCommunityRecords(
-    currentPage,
-    RECORDS_PER_PAGE,
-    filterValues,
-  );
+
+  // O Zenodo e um servico externo instavel (Cloudflare anti-bot, manutencao,
+  // timeout). Degrada para catalogo vazio em vez de derrubar a pagina inteira
+  // com "This page couldn't load".
+  let catalogRecords: ZenodoCommunityRecordsResult;
+  try {
+    catalogRecords = await getZenodoCommunityRecords(
+      currentPage,
+      RECORDS_PER_PAGE,
+      filterValues,
+    );
+  } catch (error) {
+    console.error("Falha ao buscar registros do Zenodo:", error);
+    catalogRecords = { records: [], totalPages: 0, currentPage };
+  }
   const initialRecords: IMetadata[] = applyCatalogFilterLabels(
     catalogRecords.records,
     slugToTitle,

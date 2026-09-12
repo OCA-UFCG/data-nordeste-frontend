@@ -190,6 +190,12 @@ const fetchZenodoData = async (
     headers: {
       "Content-Type": "application/json",
       "Accept": "application/json",
+
+      // Cloudflare do Zenodo bloqueia (403) o User-Agent padrao do undici/fetch
+      // do Node. Um UA explicito nao-browser passa; sem isso a pagina /catalog
+      // quebra em prod (SSR) enquanto curl no mesmo host retorna 200.
+      "User-Agent":
+        "data-nordeste-portal/1.0 (+https://datane.lsd.ufcg.edu.br)",
     },
     next: { revalidate: 300 },
   });
