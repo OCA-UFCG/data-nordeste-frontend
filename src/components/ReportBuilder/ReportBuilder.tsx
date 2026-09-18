@@ -22,11 +22,11 @@ import {
   THEMES_NAVIGATION_ORDER,
 } from "@/features/macrothemes/constants";
 import {
-  buildReportProxyUrl,
   getAutomaticReportSlug,
   joinReportSlugs,
   type AutomaticReportMacrothemeSlug,
 } from "@/features/reports/automaticReport";
+import { requestReportPreview } from "@/features/reports/requestReportPreview";
 import { resolveMunicipality } from "@/features/reports/municipalitySearch";
 import type { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
 import { normalizeKey, sortContentByDesiredOrder } from "@/utils/functions";
@@ -554,47 +554,4 @@ async function loadReportCities(
   } finally {
     setLoading(false);
   }
-}
-
-const REPORT_STATUS_INTERVAL_MS = 2000;
-const REPORT_STATUS_MAX_ATTEMPTS = 60;
-
-async function requestReportPreview(request: {
-  city: string;
-  macrotheme: string;
-}): Promise<ReportPreviewDocument> {
-  const geradoApos = new Date().toISOString();
-  const generationUrl = buildReportProxyUrl({ ...request, geradoApos });
-  const startResponse = await fetch(generationUrl, { method: "POST" });
-  if (!startResponse.ok) throw new Error(`status ${startResponse.status}`);
-
-  for (let attempt = 0; attempt < REPORT_STATUS_MAX_ATTEMPTS; attempt++) {
-    const preview = await fetchReadyReport(generationUrl);
-    if (preview) return preview;
-    await waitForReportStatus();
-  }
-
-  throw new Error(
-    `Report for city "${request.city}" was not ready after ${REPORT_STATUS_MAX_ATTEMPTS} attempts; expected a PDF URL.`,
-  );
-}
-
-async function fetchReadyReport(
-  generationUrl: string,
-): Promise<ReportPreviewDocument | null> {
-  const response = await fetch(generationUrl, { cache: "no-store" });
-  if (response.status === 202) return null;
-  if (!response.ok) throw new Error(`status ${response.status}`);
-
-  const result = (await response.json()) as ReportPreviewDocument & {
-    status: "ready";
-  };
-
-  return { fileName: result.fileName, url: result.url };
-}
-
-function waitForReportStatus(): Promise<void> {
-  return new Promise((resolve) =>
-    window.setTimeout(resolve, REPORT_STATUS_INTERVAL_MS),
-  );
 }

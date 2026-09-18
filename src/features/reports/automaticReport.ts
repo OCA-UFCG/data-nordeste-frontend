@@ -87,6 +87,9 @@ export function joinReportSlugs(
   return slugs.join(",");
 }
 
+/** Response header where Automatic-Reporting names the artifact it just served. */
+export const REPORT_ARTIFACT_HEADER = "X-Relatorio-Arquivo";
+
 export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   const params = new URLSearchParams({
     city: request.city,
