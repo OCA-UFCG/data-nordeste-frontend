@@ -13,7 +13,6 @@ export const findHomeSection = (
 };
 
 type PreviewIconFields = {
-  icon?: unknown;
   icons?: unknown;
   iconsvg?: IPreviewCard["iconsvg"];
   icon_svg?: IPreviewCard["iconsvg"];
@@ -22,8 +21,10 @@ type PreviewIconFields = {
   icon_url?: unknown;
 };
 
-type PreviewCardJson = IPreviewCards["jsonFile"] & PreviewIconFields;
-type PreviewState = IStateData & PreviewIconFields;
+type RawIconFields = PreviewIconFields & { icon?: unknown };
+
+type PreviewCardJson = IPreviewCards["jsonFile"] & RawIconFields;
+type PreviewState = IStateData & RawIconFields;
 
 export type NormalizedPreviewRegion = IPreviewCard &
   PreviewIconFields & {
@@ -34,18 +35,22 @@ const firstDefined = <T>(...values: (T | undefined)[]): T | undefined => {
   return values.find((value) => value !== undefined);
 };
 
+const asString = (value: unknown): string | undefined => {
+  return typeof value === "string" ? value : undefined;
+};
+
 export const normalizePreviewCards = (
   cards: IPreviewCards[],
 ): NormalizedPreviewRegion[] => {
   return cards.map((card) => {
-    const cardIcons = card as IPreviewCards & PreviewIconFields;
+    const cardIcons = card as IPreviewCards & RawIconFields;
     const json = (card.jsonFile ?? {}) as PreviewCardJson;
     const normalizedStates = (json.states ?? []).map((state) => {
       const stateData = state as PreviewState;
 
       return {
         ...stateData,
-        icon: firstDefined(stateData.icon, stateData.icons),
+        icon: asString(firstDefined(stateData.icon, stateData.icons)),
         iconsvg: firstDefined(stateData.iconsvg, stateData.icon_svg),
         iconUrl: firstDefined(
           stateData.iconUrl,
@@ -63,11 +68,8 @@ export const normalizePreviewCards = (
       link: json.link,
       note: json.note,
       states: normalizedStates,
-      icon: firstDefined(
-        cardIcons.icon,
-        cardIcons.icons,
-        json.icon,
-        json.icons,
+      icon: asString(
+        firstDefined(cardIcons.icon, cardIcons.icons, json.icon, json.icons),
       ),
       iconsvg: firstDefined(cardIcons.iconsvg, json.iconsvg),
       iconUrl: firstDefined(
@@ -109,6 +111,7 @@ export const getFilteredPreviewCards = (
         link: source.link,
         note: source.note,
         category: regionData.category,
+        icon: asString(firstDefined(stateSource?.icon, regionData.icon)),
         iconsvg: firstDefined(stateSource?.iconsvg, regionData.iconsvg),
       },
     ];

@@ -112,6 +112,7 @@ export interface IPreviewCard {
   link: string;
   data: string;
   note?: string;
+  icon?: string;
   iconsvg?: { url: string };
 }
 
