@@ -1,19 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { findAvailableAutomaticReport } from "./reportGateway";
+import {
+  findAutomaticReportByFileName,
+  findAvailableAutomaticReport,
+} from "./reportGateway";
 
 const API_URL = "http://automatic-report.test";
 
 class AutomaticReportIndexFetchFake {
-  readonly fetch = vi.fn(async (): Promise<Response> =>
-    Response.json([
-      {
-        arquivo_pdf: "relatorio_saude__maragogi.pdf",
-        cidade: "Maragogi",
-        macrotema: "Saúde",
-        pdf_url: "/output/relatorio_saude__maragogi.pdf",
-        last_modified_utc: "2026-08-12T17:48:08.000Z",
-      },
-    ]),
+  readonly fetch = vi.fn(
+    async (): Promise<Response> =>
+      Response.json([
+        {
+          arquivo_pdf: "relatorio_saude__maragogi.pdf",
+          cidade: "Maragogi",
+          macrotema: "Saúde",
+          pdf_url: "/output/relatorio_saude__maragogi.pdf",
+          last_modified_utc: "2026-08-12T17:48:08.000Z",
+        },
+      ]),
   );
 }
 
@@ -37,5 +41,36 @@ describe("automatic report city matching", () => {
       fileName: "relatorio_saude__maragogi.pdf",
       pdfUrl: `${API_URL}/output/relatorio_saude__maragogi.pdf`,
     });
+  });
+});
+
+describe("automatic report lookup by file name", () => {
+  it("resolves the named artifact whatever its age", async () => {
+    // O gate de frescor do backend já decidiu que este artefato vale; comparar o
+    // mtime dele com o instante do clique só reprovaria um HIT legítimo.
+    const reportIndex = new AutomaticReportIndexFetchFake();
+    vi.stubGlobal("fetch", reportIndex.fetch);
+    vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
+
+    const report = await findAutomaticReportByFileName(
+      "relatorio_saude__maragogi.pdf",
+    );
+
+    expect(report).toEqual({
+      fileName: "relatorio_saude__maragogi.pdf",
+      pdfUrl: `${API_URL}/output/relatorio_saude__maragogi.pdf`,
+    });
+  });
+
+  it("returns null when the index does not list the artifact", async () => {
+    const reportIndex = new AutomaticReportIndexFetchFake();
+    vi.stubGlobal("fetch", reportIndex.fetch);
+    vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
+
+    const report = await findAutomaticReportByFileName(
+      "relatorio_saude__maragogi_pb.pdf",
+    );
+
+    expect(report).toBeNull();
   });
 });

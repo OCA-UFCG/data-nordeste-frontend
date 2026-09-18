@@ -55,9 +55,34 @@ export async function findAvailableAutomaticReport(
   );
   if (!report) return null;
 
+  return toAvailableReport(report);
+}
+
+/**
+ * Resolves one artifact by its exact file name, as named by the backend in the
+ * `X-Relatorio-Arquivo` response header. Deliberately ignores `gerado_apos`: the
+ * backend's own cache gate already decided the artifact is fresh, and on a cache
+ * HIT the PDF is served without being rewritten, so its mtime stays older than
+ * the click that asked for it. Example: `await findAutomaticReportByFileName(name)`.
+ */
+export async function findAutomaticReportByFileName(
+  fileName: string,
+): Promise<AvailableAutomaticReport | null> {
+  const reports = await fetchReportIndex();
+  const report = reports.find(
+    (entry) => entry.arquivo_pdf === fileName && Boolean(entry.pdf_url),
+  );
+  if (!report) return null;
+
+  return toAvailableReport(report);
+}
+
+function toAvailableReport(
+  entry: AutomaticReportEntry,
+): AvailableAutomaticReport {
   return {
-    fileName: report.arquivo_pdf,
-    pdfUrl: new URL(report.pdf_url, getAutomaticReportApiBaseUrl()).toString(),
+    fileName: entry.arquivo_pdf,
+    pdfUrl: new URL(entry.pdf_url, getAutomaticReportApiBaseUrl()).toString(),
   };
 }
 
@@ -102,7 +127,9 @@ function matchesReportCity(entryCity: string, requestedCity: string): boolean {
   }
 
   const cityWithoutState = removeStateSuffix(requestedCity);
-  if (normalizeReportLabel(entryCity) === normalizeReportLabel(cityWithoutState)) {
+  if (
+    normalizeReportLabel(entryCity) === normalizeReportLabel(cityWithoutState)
+  ) {
     return true;
   }
 
