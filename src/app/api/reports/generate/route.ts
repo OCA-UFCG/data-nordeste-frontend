@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   buildReportFileName,
   REPORT_ARTIFACT_HEADER,
+  REPORT_STALE_VERSION_HEADER,
   REPORT_VERSION_HEADER,
 } from "@/features/reports/automaticReport";
 import {
@@ -16,7 +17,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       request.nextUrl.searchParams,
     );
     const response = await fetch(generationUrl, { cache: "no-store" });
-    if (!response.ok) return await buildUpstreamErrorResponse(response);
+    if (response.status === 503) return buildBusyResponse(response);
+    if (!response.ok && response.status !== 202) {
+      return await buildUpstreamErrorResponse(response);
+    }
+
+    // 202 must be branched on before any ready-path header read below: those
+    // same header names read as "ready" would point the client at whatever
+    // stale PDF already sits on disk under this artifact name — the failure
+    // `aguardar=nao` exists to avoid. `versaoObsoleta` (not `versao`) is what
+    // requestReportPreview forwards as `versao_obsoleta` on the next poll.
+    if (response.status === 202) return buildProcessingResponse(response);
 
     // The backend answers 200 only once the artifact is on disk and these
     // headers name it, so the client can download without polling at all —
@@ -36,6 +47,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     return buildGenerationFailure(request, error);
   }
+}
+
+/** Too many generations already in flight: fail fast instead of queueing past the portal's own budget. */
+function buildBusyResponse(response: Response): NextResponse {
+  return NextResponse.json(
+    {
+      error:
+        "O gerador de relatórios está ocupado. Tente novamente em instantes.",
+    },
+    {
+      status: 503,
+      headers: { "Retry-After": response.headers.get("Retry-After") ?? "30" },
+    },
+  );
+}
+
+/** Processing payload for POST when the backend accepted the job at 202 (`aguardar=nao`). */
+function buildProcessingResponse(response: Response): NextResponse {
+  return NextResponse.json(
+    {
+      status: "processing",
+      arquivo: response.headers.get(REPORT_ARTIFACT_HEADER),
+      versaoObsoleta: response.headers.get(REPORT_STALE_VERSION_HEADER),
+    },
+    { status: 202 },
+  );
 }
 
 /** Ready payload for POST, carrying the artifact's identity for task 7's gate. */

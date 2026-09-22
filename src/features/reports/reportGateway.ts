@@ -33,6 +33,10 @@ export function buildAutomaticReportGenerationUrl(
   // while letting users request several macrothemes in one shot.
   url.searchParams.set("macrotema", joinReportSlugs(slugs));
 
+  // O portal nunca lê o corpo desta resposta: ele descobre o artefato pronto
+  // pelo índice de /relatorios. Segurar a conexão por até 46s só produzia timeout.
+  url.searchParams.set("aguardar", "nao");
+
   return url.toString();
 }
 

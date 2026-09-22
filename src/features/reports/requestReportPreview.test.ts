@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { requestReportPreview } from "./requestReportPreview";
+import { ReportBusyError } from "./reportBusyError";
 
 const REQUEST = { city: "Recife (PE)", macrotheme: "saude" };
 const READY = {
@@ -64,6 +65,19 @@ describe("automatic report preview request", () => {
     expect(preview).toEqual({ fileName: READY.fileName, url: READY.url });
     expect(urls[1]).toContain("arquivo=relatorio_saude__recife.pdf");
     expect(urls[1]).toContain("versao_obsoleta=111");
+  });
+
+  it("throws a typed error when the POST answers 503 instead of matching on message text", async () => {
+    // Matching on error.message.includes("503") would also trip for a city or
+    // file name that happens to contain "503" — the typed error can't do that.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 503 })),
+    );
+
+    await expect(requestReportPreview(REQUEST)).rejects.toBeInstanceOf(
+      ReportBusyError,
+    );
   });
 
   it("falls back to polling while the POST answers processing", async () => {

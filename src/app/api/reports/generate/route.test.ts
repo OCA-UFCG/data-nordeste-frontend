@@ -77,6 +77,18 @@ class AutomaticReportFetchFake {
   }
 }
 
+/** Mimics a raw backend answer by status/headers alone — used for the 202 and 503 branches, which do not need the richer request-tracking fake above. */
+class GenerationStatusFetchFake {
+  constructor(
+    private readonly status: number,
+    private readonly headers: Record<string, string> = {},
+  ) {}
+
+  fetch = async (): Promise<Response> => {
+    return new Response(null, { status: this.status, headers: this.headers });
+  };
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -175,6 +187,48 @@ describe("automatic report generation proxy", () => {
     const response = await GET(request);
 
     expect(response.status).toBe(400);
+  });
+
+  it("POST devolve processing com a versao obsoleta quando o backend aceita em 202", async () => {
+    // 202 must be branched on before any ready-path header read: a POST that
+    // treats 202 as `response.ok` would read these same headers and report
+    // "ready", pointing the client at whatever stale PDF already sits on disk.
+    const automaticReportApi = new GenerationStatusFetchFake(202, {
+      "X-Relatorio-Arquivo": "relatorio_demografia__recife_pe_.pdf",
+      "X-Relatorio-Versao-Obsoleta": "111",
+    });
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=demografia",
+      { method: "POST" },
+    );
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(202);
+    await expect(response.json()).resolves.toMatchObject({
+      status: "processing",
+      arquivo: "relatorio_demografia__recife_pe_.pdf",
+      versaoObsoleta: "111",
+    });
+  });
+
+  it("POST propaga 503 do backend", async () => {
+    const automaticReportApi = new GenerationStatusFetchFake(503, {
+      "Retry-After": "30",
+    });
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=demografia",
+      { method: "POST" },
+    );
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("30");
   });
 
   it("serves a cached report the backend identified by header", async () => {

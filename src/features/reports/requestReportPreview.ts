@@ -1,4 +1,5 @@
 import { buildReportProxyUrl } from "@/features/reports/automaticReport";
+import { ReportBusyError } from "@/features/reports/reportBusyError";
 
 export type AutomaticReportPreview = {
   fileName: string;
@@ -24,6 +25,7 @@ export async function requestReportPreview(request: {
   const startResponse = await fetch(buildReportProxyUrl(request), {
     method: "POST",
   });
+  if (startResponse.status === 503) throw new ReportBusyError();
   if (!startResponse.ok) throw new Error(`status ${startResponse.status}`);
 
   const started = (await startResponse.json()) as ReportGenerationStart;

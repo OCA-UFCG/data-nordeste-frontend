@@ -99,6 +99,13 @@ export const REPORT_ARTIFACT_HEADER = "X-Relatorio-Arquivo";
  */
 export const REPORT_VERSION_HEADER = "X-Relatorio-Versao";
 
+/**
+ * Response header carrying the artifact's stale version on a 202 ("still
+ * generating") answer — the marker the poll must forward as `versao_obsoleta`
+ * so it never accepts the older artifact already on disk under the same name.
+ */
+export const REPORT_STALE_VERSION_HEADER = "X-Relatorio-Versao-Obsoleta";
+
 export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   const params = new URLSearchParams({
     city: request.city,
