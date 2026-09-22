@@ -8,7 +8,7 @@ export type AutomaticReportPreview = {
 type ReportGenerationStart = {
   status: "ready" | "processing";
   arquivo?: string;
-  versao?: string;
+  versaoObsoleta?: string;
   fileName?: string;
   url?: string;
 };
@@ -41,7 +41,7 @@ export async function requestReportPreview(request: {
   const pollUrl = buildReportProxyUrl({
     ...request,
     arquivo: started.arquivo,
-    versaoObsoleta: started.versao,
+    versaoObsoleta: started.versaoObsoleta,
   });
 
   for (let attempt = 0; attempt < REPORT_STATUS_MAX_ATTEMPTS; attempt++) {
@@ -60,7 +60,11 @@ async function readReadyReport(
   response: Response,
 ): Promise<AutomaticReportPreview | null> {
   if (response.status === 202) return null;
-  if (!response.ok) throw new Error(`status ${response.status}`);
+  if (!response.ok) {
+    throw new Error(
+      `Automatic report poll returned status ${response.status}; expected 200 with a ready report or 202 while still processing.`,
+    );
+  }
 
   const result = (await response.json()) as AutomaticReportPreview & {
     status: "ready";

@@ -49,7 +49,7 @@ describe("automatic report preview request", () => {
             {
               status: "processing",
               arquivo: "relatorio_saude__recife.pdf",
-              versao: "111",
+              versaoObsoleta: "111",
             },
             { status: 202 },
           );

@@ -49,11 +49,6 @@ class AutomaticReportFetchFake {
         "2026-08-03T10:00:00.000Z",
       ),
       this.reportEntry(
-        "Bel M Al",
-        "/output/relatorio_economia-renda__bel_m_al_.pdf",
-        "2026-08-03T10:00:00.000Z",
-      ),
-      this.reportEntry(
         "Recife Pe",
         "/output/relatorio_educacao_saude__recife.pdf",
         "2026-08-01T10:00:00.000Z",
