@@ -90,6 +90,14 @@ export function joinReportSlugs(
 /** Response header where Automatic-Reporting names the artifact it just served. */
 export const REPORT_ARTIFACT_HEADER = "X-Relatorio-Arquivo";
 
+/**
+ * Response header carrying the artifact's version (`st_mtime_ns`). The artifact
+ * name alone is not enough once the backend can answer before overwriting the
+ * file in place — this is what distinguishes a fresh artifact from a stale one
+ * at the same name.
+ */
+export const REPORT_VERSION_HEADER = "X-Relatorio-Versao";
+
 export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   const params = new URLSearchParams({
     city: request.city,

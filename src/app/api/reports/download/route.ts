@@ -8,10 +8,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // `arquivo` carries the exact name the generation route got from the backend.
     // The name is only ever resolved against the backend index, so it cannot point
     // anywhere else. Without it we fall back to matching by city + macrotheme.
+    // `versao_obsoleta` rejects a match while its version is still the one marked
+    // stale — see findAvailableAutomaticReport.
     const artifactName = request.nextUrl.searchParams.get("arquivo");
+    const staleVersion = request.nextUrl.searchParams.get("versao_obsoleta");
     const report = await findAvailableAutomaticReport(
       request.nextUrl.searchParams,
       artifactName,
+      staleVersion,
     );
     if (!report) {
       return NextResponse.json(

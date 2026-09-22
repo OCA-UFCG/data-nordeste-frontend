@@ -8,8 +8,14 @@ const API_URL = "http://automatic-report.test";
 class AutomaticReportFetchFake {
   readonly requestedUrls: string[] = [];
 
-  /** `artefato` mimics the `X-Relatorio-Arquivo` header; null = backend without it. */
-  constructor(private readonly artefato: string | null = null) {}
+  /**
+   * `artefato` mimics the `X-Relatorio-Arquivo` header (null = backend without
+   * it); `versao` mimics `X-Relatorio-Versao`.
+   */
+  constructor(
+    private readonly artefato: string | null = null,
+    private readonly versao: string | null = null,
+  ) {}
 
   fetch = async (input: RequestInfo | URL): Promise<Response> => {
     const url = input.toString();
@@ -25,6 +31,7 @@ class AutomaticReportFetchFake {
   private generationResponse(): Response {
     const headers: Record<string, string> = { "Content-Type": "text/html" };
     if (this.artefato) headers["X-Relatorio-Arquivo"] = this.artefato;
+    if (this.versao) headers["X-Relatorio-Versao"] = this.versao;
 
     return new Response("<html>Relatório</html>", { headers });
   }
@@ -81,6 +88,28 @@ afterEach(() => {
 });
 
 describe("automatic report generation proxy", () => {
+  it("POST devolve arquivo e versao lidos dos headers do backend", async () => {
+    const automaticReportApi = new AutomaticReportFetchFake(
+      "relatorio_demografia__recife_pe_.pdf",
+      "111",
+    );
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=demografia",
+      { method: "POST" },
+    );
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: "ready",
+      arquivo: "relatorio_demografia__recife_pe_.pdf",
+      versao: "111",
+    });
+  });
+
   it("starts generation and returns immediately", async () => {
     const automaticReportApi = new AutomaticReportFetchFake();
     vi.stubGlobal("fetch", automaticReportApi.fetch);
@@ -153,18 +182,18 @@ describe("automatic report generation proxy", () => {
     );
   });
 
-  it("no longer gates the poll by gerado_apos (freshness dropped; task 7 removes this branch)", async () => {
-    // gerado_apos ainda é enviado pelo front-end, mas o gateway não lê mais esse
-    // parâmetro: sem nome de artefato, o fallback casa só por cidade+macrotema,
-    // sem checar frescor. Esta era a heurística de mtime-vs-clique que causava o
-    // bug P1 (HIT de cache nunca reconhecido); a versão que a substitui só se
-    // aplica quando o backend nomeia o artefato — este branch sem nome fica sem
-    // gate até a tarefa 7 removê-lo.
+  it("does not gate the poll without an arquivo, even with versao_obsoleta set (task 7 wires the poller with a name)", async () => {
+    // versao_obsoleta só importa quando `arquivo` também é dado: sem nome, o
+    // match cai no fallback cidade+macrotema, sem checar frescor nenhum. Esta
+    // era a heurística de mtime-vs-clique (agora removida) que causava o bug P1
+    // (HIT de cache nunca reconhecido); a versão que a substitui só se aplica
+    // quando o backend nomeia o artefato — este branch sem nome fica sem gate
+    // até a tarefa 7 fazer o poller enviar `arquivo`.
     const automaticReportApi = new AutomaticReportFetchFake();
     vi.stubGlobal("fetch", automaticReportApi.fetch);
     vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
     const request = new NextRequest(
-      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-04T17%3A01%3A17.000Z",
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude&versao_obsoleta=999",
     );
 
     const response = await GET(request);
@@ -173,22 +202,24 @@ describe("automatic report generation proxy", () => {
     expect(await response.json()).toEqual({
       status: "ready",
       fileName: "relatorio_recife_pe.pdf",
-      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-04T17%3A01%3A17.000Z",
+      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&versao_obsoleta=999",
     });
   });
 
   it("serves a cached report the backend identified by header", async () => {
     // A regressão do cache: num HIT o backend devolve o artefato em disco sem
-    // reescrevê-lo, então o mtime continua anterior ao clique e o filtro por
-    // gerado_apos nunca casava — o portal ficava em 202 até estourar o polling.
-    // Com o artefato identificado, o frescor é decidido pelo gate do backend.
+    // reescrevê-lo, então o mtime nunca ficava mais novo que o clique. Com o
+    // nome e a versão vindos direto dos headers do backend, o POST não precisa
+    // mais resolver contra o índice nem depender de mtime para responder ready.
     const automaticReportApi = new AutomaticReportFetchFake(
       "relatorio_saude__recife.pdf",
+      "42",
     );
     vi.stubGlobal("fetch", automaticReportApi.fetch);
     vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
     const request = new NextRequest(
-      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-09-01T00%3A00%3A00.000Z",
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude",
+      { method: "POST" },
     );
 
     const response = await POST(request);
@@ -196,8 +227,10 @@ describe("automatic report generation proxy", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       status: "ready",
+      arquivo: "relatorio_saude__recife.pdf",
+      versao: "42",
       fileName: "relatorio_recife_pe.pdf",
-      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-09-01T00%3A00%3A00.000Z&arquivo=relatorio_saude__recife.pdf",
+      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&arquivo=relatorio_saude__recife.pdf",
     });
   });
 

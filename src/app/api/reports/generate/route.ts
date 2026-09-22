@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   buildReportFileName,
   REPORT_ARTIFACT_HEADER,
+  REPORT_VERSION_HEADER,
 } from "@/features/reports/automaticReport";
 import {
   buildAutomaticReportGenerationUrl,
@@ -17,36 +18,55 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const response = await fetch(generationUrl, { cache: "no-store" });
     if (!response.ok) return await buildUpstreamErrorResponse(response);
 
-    // The backend generates synchronously, so by now the artifact is on disk and
-    // this header names it. Resolving it here skips the polling loop entirely and
-    // removes both guesses it depended on: the newest file matching the macrotheme
-    // slug as a substring, and a mtime newer than the click — which a cache HIT
-    // never produces, because it serves the PDF without rewriting it.
-    const artifactName = response.headers.get(REPORT_ARTIFACT_HEADER);
-    const report = artifactName
-      ? await findAvailableAutomaticReport(
-          request.nextUrl.searchParams,
-          artifactName,
-        )
-      : null;
-    if (report) return buildReadyResponse(request, report.fileName);
+    // The backend answers 200 only once the artifact is on disk and these
+    // headers name it, so the client can download without polling at all —
+    // no need to resolve it against the backend index first (download/route.ts
+    // still does that before it streams, so a bad name fails there instead).
+    const arquivo = response.headers.get(REPORT_ARTIFACT_HEADER);
+    const versao = response.headers.get(REPORT_VERSION_HEADER);
 
-    // Backend without the header, or artifact not listed yet: the browser keeps
-    // polling GET below, exactly as before.
-    return NextResponse.json({ status: "processing" }, { status: 202 });
+    // Backend without the header (deploy skew: new portal, old backend): the
+    // browser keeps polling GET below rather than trusting a download URL
+    // nothing can resolve.
+    if (!arquivo) {
+      return NextResponse.json({ status: "processing" }, { status: 202 });
+    }
+
+    return buildGenerationReadyResponse(request, arquivo, versao);
   } catch (error) {
     return buildGenerationFailure(request, error);
   }
 }
 
+/** Ready payload for POST, carrying the artifact's identity for task 7's gate. */
+function buildGenerationReadyResponse(
+  request: NextRequest,
+  arquivo: string,
+  versao: string | null,
+): NextResponse {
+  return NextResponse.json({
+    status: "ready",
+    arquivo,
+    versao,
+    fileName: buildReportFileName(
+      request.nextUrl.searchParams.get("city") ?? "",
+    ),
+    url: buildDownloadUrl(request, arquivo),
+  });
+}
+
 /** Checks once for a generated PDF. The browser owns the retry interval. */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    // The poller never knows the artifact name yet (POST already returned before
-    // one was known), so this falls to the city+macrotheme branch of
-    // findAvailableAutomaticReport — no freshness gate. Task 7 closes that gap.
+    // `arquivo`/`versao_obsoleta` let a poller that already knows the name pin
+    // the match by identity instead of city+macrotheme. Today's poller never
+    // sends them (POST already returned before a name was known), so this
+    // still falls to the city+macrotheme branch, no freshness gate. Task 7
+    // wires the client to send them.
     const report = await findAvailableAutomaticReport(
       request.nextUrl.searchParams,
+      request.nextUrl.searchParams.get("arquivo"),
+      request.nextUrl.searchParams.get("versao_obsoleta"),
     );
     if (!report) {
       return NextResponse.json({ status: "processing" }, { status: 202 });
@@ -63,6 +83,20 @@ function buildReadyResponse(
   request: NextRequest,
   artifactName: string | null,
 ): NextResponse {
+  return NextResponse.json({
+    status: "ready",
+    fileName: buildReportFileName(
+      request.nextUrl.searchParams.get("city") ?? "",
+    ),
+    url: buildDownloadUrl(request, artifactName),
+  });
+}
+
+/** Builds the same-origin download URL, forwarding the original query. */
+function buildDownloadUrl(
+  request: NextRequest,
+  artifactName: string | null,
+): string {
   const downloadUrl = new URL("/api/reports/download", request.nextUrl);
   downloadUrl.search = request.nextUrl.search;
 
@@ -74,13 +108,7 @@ function buildReadyResponse(
     ? `${downloadUrl.search}${separator}arquivo=${encodeURIComponent(artifactName)}`
     : downloadUrl.search;
 
-  return NextResponse.json({
-    status: "ready",
-    fileName: buildReportFileName(
-      request.nextUrl.searchParams.get("city") ?? "",
-    ),
-    url: `${downloadUrl.pathname}${search}`,
-  });
+  return `${downloadUrl.pathname}${search}`;
 }
 
 async function buildUpstreamErrorResponse(
