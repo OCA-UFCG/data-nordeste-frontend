@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactElement } from "react";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon/Icon";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 import "./ReportPreview.css";
@@ -8,6 +11,45 @@ export type ReportPreviewDocument = {
   url: string;
 };
 
+// Report generation is a single request/response with no server-reported
+// progress, so completion is simulated: climb toward 99% while waiting and
+// hold at 100% for a beat once the response lands, so the ring never jumps
+// straight from a low number to the finished report.
+const SIMULATED_PROGRESS_CAP = 99;
+const SIMULATED_PROGRESS_INTERVAL_MS = 400;
+const COMPLETE_HOLD_MS = 500;
+
+function useSimulatedReportProgress(loading: boolean): {
+  showLoading: boolean;
+  percent: number;
+} {
+  const [percent, setPercent] = useState(0);
+  const [showLoading, setShowLoading] = useState(loading);
+
+  useEffect(() => {
+    if (!loading) {
+      setPercent(100);
+      const timeout = setTimeout(() => setShowLoading(false), COMPLETE_HOLD_MS);
+
+      return () => clearTimeout(timeout);
+    }
+
+    setShowLoading(true);
+    setPercent(0);
+    const interval = setInterval(() => {
+      setPercent((prev) =>
+        prev >= SIMULATED_PROGRESS_CAP
+          ? prev
+          : Math.min(SIMULATED_PROGRESS_CAP, prev + Math.random() * 10 + 5),
+      );
+    }, SIMULATED_PROGRESS_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  return { showLoading, percent: Math.round(percent) };
+}
+
 export function ReportPreview({
   loading,
   preview,
@@ -15,10 +57,12 @@ export function ReportPreview({
   loading: boolean;
   preview: ReportPreviewDocument | null;
 }): ReactElement {
-  if (loading) {
+  const { showLoading, percent } = useSimulatedReportProgress(loading);
+
+  if (showLoading) {
     return (
       <PdfViewer
-        emptyState={<LoadingPreviewState />}
+        emptyState={<LoadingPreviewState percent={percent} />}
         fileName="relatorio.pdf"
         pdfUrl=""
       />
@@ -47,16 +91,47 @@ export function ReportPreview({
   );
 }
 
-function LoadingPreviewState(): ReactElement {
+const PROGRESS_RING_RADIUS = 54;
+const PROGRESS_RING_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_RING_RADIUS;
+
+function LoadingPreviewState({ percent }: { percent: number }): ReactElement {
+  const offset =
+    PROGRESS_RING_CIRCUMFERENCE * (1 - Math.min(percent, 100) / 100);
+
   return (
     <div
-      aria-label="Carregando o seu relatório"
+      aria-label={`Carregando o seu relatório: ${percent}%`}
       aria-live="polite"
       className="report-preview-loading"
       role="status"
     >
-      <span aria-hidden="true" className="report-preview-loading-spinner" />
-      <p>Carregando o seu relatório</p>
+      <div className="report-preview-loading-ring">
+        <svg height="124" viewBox="0 0 124 124" width="124">
+          <circle
+            className="report-preview-loading-ring-track"
+            cx="62"
+            cy="62"
+            fill="none"
+            r={PROGRESS_RING_RADIUS}
+            strokeWidth="14"
+          />
+          <circle
+            className="report-preview-loading-ring-progress"
+            cx="62"
+            cy="62"
+            fill="none"
+            r={PROGRESS_RING_RADIUS}
+            strokeDasharray={PROGRESS_RING_CIRCUMFERENCE}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            strokeWidth="14"
+          />
+        </svg>
+        <span aria-hidden="true" className="report-preview-loading-percent">
+          {percent}%
+        </span>
+      </div>
+      <p>Carregando seu Relatório</p>
     </div>
   );
 }
