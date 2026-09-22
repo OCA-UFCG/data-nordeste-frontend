@@ -12,11 +12,17 @@ export type ReportPreviewDocument = {
 };
 
 // Report generation is a single request/response with no server-reported
-// progress, so completion is simulated: climb toward 99% while waiting and
+// progress, so completion is simulated: ease toward 99% while waiting and
 // hold at 100% for a beat once the response lands, so the ring never jumps
 // straight from a low number to the finished report.
+//
+// The step is proportional to the remaining distance to the cap (not a fixed
+// amount), so the climb decelerates the closer it gets — spreading visible
+// progress across the whole real wait instead of hitting 99% in the first
+// couple seconds and then appearing frozen until the response lands.
 const SIMULATED_PROGRESS_CAP = 99;
 const SIMULATED_PROGRESS_INTERVAL_MS = 400;
+const SIMULATED_PROGRESS_EASE_FACTOR = 0.05;
 const COMPLETE_HOLD_MS = 500;
 
 function useSimulatedReportProgress(loading: boolean): {
@@ -37,11 +43,13 @@ function useSimulatedReportProgress(loading: boolean): {
     setShowLoading(true);
     setPercent(0);
     const interval = setInterval(() => {
-      setPercent((prev) =>
-        prev >= SIMULATED_PROGRESS_CAP
-          ? prev
-          : Math.min(SIMULATED_PROGRESS_CAP, prev + Math.random() * 10 + 5),
-      );
+      setPercent((prev) => {
+        const remaining = SIMULATED_PROGRESS_CAP - prev;
+
+        return prev + remaining * SIMULATED_PROGRESS_EASE_FACTOR < 1
+          ? prev + 1
+          : prev + remaining * SIMULATED_PROGRESS_EASE_FACTOR;
+      });
     }, SIMULATED_PROGRESS_INTERVAL_MS);
 
     return () => clearInterval(interval);
