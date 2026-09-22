@@ -37,65 +37,50 @@ export function buildAutomaticReportGenerationUrl(
   return url.toString();
 }
 
-/** Looks for one ready report without polling. Example: `await findAvailableAutomaticReport(params)`. */
+/** Extrai a versão do artefato de `/output/v{versao}/{arquivo}`. */
+export function extractVersionFromPdfUrl(pdfUrl: string): string | null {
+  return /\/output\/v(\d+)\//.exec(pdfUrl)?.[1] ?? null;
+}
+
+/**
+ * Looks for one ready report. When `arquivo` is given, matches by the exact file
+ * name the backend named in the `X-Relatorio-Arquivo` response header instead of
+ * city/macrotheme — the backend's own cache gate already decided the artifact is
+ * fresh, and on a cache HIT the PDF is served without being rewritten, so its
+ * mtime stays older than the click that asked for it (P1 regression). When
+ * `versaoObsoleta` is also given, the entry's own version must differ from it:
+ * once the backend can answer "still generating", a name-only match would find
+ * last week's PDF and declare it ready with no error at all.
+ * Example: `await findAvailableAutomaticReport(params, arquivo)`.
+ */
 export async function findAvailableAutomaticReport(
   params: URLSearchParams,
-  geradoApos: string | null = null,
+  arquivo: string | null = null,
+  versaoObsoleta: string | null = null,
 ): Promise<AvailableAutomaticReport | null> {
   const city = requireCity(params);
   const slugs = parseAutomaticReportSlug(params.get("macrotema"));
   const reports = await fetchReportIndex();
-  const minGeneratedAt = geradoApos ? Date.parse(geradoApos) : null;
-  const report = reports.find(
-    (entry) =>
-      Boolean(entry.pdf_url) &&
-      wasGeneratedAfter(entry, minGeneratedAt) &&
+  const report = reports.find((entry) => {
+    if (!entry.pdf_url) return false;
+    if (arquivo) {
+      if (entry.arquivo_pdf !== arquivo) return false;
+      if (!versaoObsoleta) return true;
+
+      return extractVersionFromPdfUrl(entry.pdf_url) !== versaoObsoleta;
+    }
+
+    return (
       matchesReportCity(entry.cidade, city) &&
-      entryMatchesAnyMacrotheme(entry.arquivo_pdf, slugs),
-  );
+      entryMatchesAnyMacrotheme(entry.arquivo_pdf, slugs)
+    );
+  });
   if (!report) return null;
 
-  return toAvailableReport(report);
-}
-
-/**
- * Resolves one artifact by its exact file name, as named by the backend in the
- * `X-Relatorio-Arquivo` response header. Deliberately ignores `gerado_apos`: the
- * backend's own cache gate already decided the artifact is fresh, and on a cache
- * HIT the PDF is served without being rewritten, so its mtime stays older than
- * the click that asked for it. Example: `await findAutomaticReportByFileName(name)`.
- */
-export async function findAutomaticReportByFileName(
-  fileName: string,
-): Promise<AvailableAutomaticReport | null> {
-  const reports = await fetchReportIndex();
-  const report = reports.find(
-    (entry) => entry.arquivo_pdf === fileName && Boolean(entry.pdf_url),
-  );
-  if (!report) return null;
-
-  return toAvailableReport(report);
-}
-
-function toAvailableReport(
-  entry: AutomaticReportEntry,
-): AvailableAutomaticReport {
   return {
-    fileName: entry.arquivo_pdf,
-    pdfUrl: new URL(entry.pdf_url, getAutomaticReportApiBaseUrl()).toString(),
+    fileName: report.arquivo_pdf,
+    pdfUrl: new URL(report.pdf_url, getAutomaticReportApiBaseUrl()).toString(),
   };
-}
-
-function wasGeneratedAfter(
-  entry: AutomaticReportEntry,
-  minGeneratedAt: number | null,
-): boolean {
-  if (minGeneratedAt === null) return true;
-  if (!entry.last_modified_utc) return false;
-  const entryTime = Date.parse(entry.last_modified_utc);
-  if (Number.isNaN(entryTime)) return false;
-
-  return entryTime >= minGeneratedAt;
 }
 
 /**

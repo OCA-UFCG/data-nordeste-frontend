@@ -153,21 +153,28 @@ describe("automatic report generation proxy", () => {
     );
   });
 
-  it("ignores stale reports when gerado_apos is newer than the last PDF", async () => {
+  it("no longer gates the poll by gerado_apos (freshness dropped; task 7 removes this branch)", async () => {
+    // gerado_apos ainda é enviado pelo front-end, mas o gateway não lê mais esse
+    // parâmetro: sem nome de artefato, o fallback casa só por cidade+macrotema,
+    // sem checar frescor. Esta era a heurística de mtime-vs-clique que causava o
+    // bug P1 (HIT de cache nunca reconhecido); a versão que a substitui só se
+    // aplica quando o backend nomeia o artefato — este branch sem nome fica sem
+    // gate até a tarefa 7 removê-lo.
     const automaticReportApi = new AutomaticReportFetchFake();
     vi.stubGlobal("fetch", automaticReportApi.fetch);
     vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
-
-    // Index entries are dated 2026-08-03; ask for anything written after the
-    // next day. No entry should match, so the proxy must keep polling.
     const request = new NextRequest(
       "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-04T17%3A01%3A17.000Z",
     );
 
     const response = await GET(request);
 
-    expect(response.status).toBe(202);
-    expect(await response.json()).toEqual({ status: "processing" });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      status: "ready",
+      fileName: "relatorio_recife_pe.pdf",
+      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-04T17%3A01%3A17.000Z",
+    });
   });
 
   it("accepts a fresh report when gerado_apos predates the last PDF", async () => {

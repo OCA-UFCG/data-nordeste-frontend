@@ -5,7 +5,6 @@ import {
 } from "@/features/reports/automaticReport";
 import {
   buildAutomaticReportGenerationUrl,
-  findAutomaticReportByFileName,
   findAvailableAutomaticReport,
 } from "@/features/reports/reportGateway";
 
@@ -25,7 +24,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // never produces, because it serves the PDF without rewriting it.
     const artifactName = response.headers.get(REPORT_ARTIFACT_HEADER);
     const report = artifactName
-      ? await findAutomaticReportByFileName(artifactName)
+      ? await findAvailableAutomaticReport(
+          request.nextUrl.searchParams,
+          artifactName,
+        )
       : null;
     if (report) return buildReadyResponse(request, report.fileName);
 
@@ -40,9 +42,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 /** Checks once for a generated PDF. The browser owns the retry interval. */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
+    // The poller never knows the artifact name yet (POST already returned before
+    // one was known), so this falls to the city+macrotheme branch of
+    // findAvailableAutomaticReport — no freshness gate. Task 7 closes that gap.
     const report = await findAvailableAutomaticReport(
       request.nextUrl.searchParams,
-      request.nextUrl.searchParams.get("gerado_apos"),
     );
     if (!report) {
       return NextResponse.json({ status: "processing" }, { status: 202 });
