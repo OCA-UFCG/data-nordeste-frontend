@@ -18,9 +18,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
     const response = await fetch(generationUrl, { cache: "no-store" });
     if (response.status === 503) return buildBusyResponse(response);
-    if (!response.ok && response.status !== 202) {
-      return await buildUpstreamErrorResponse(response);
-    }
+    if (!response.ok) return await buildUpstreamErrorResponse(response);
 
     // 202 must be branched on before any ready-path header read below: those
     // same header names read as "ready" would point the client at whatever
@@ -36,9 +34,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const arquivo = response.headers.get(REPORT_ARTIFACT_HEADER);
     const versao = response.headers.get(REPORT_VERSION_HEADER);
 
-    // Backend without the header (deploy skew: new portal, old backend): the
-    // browser keeps polling GET below rather than trusting a download URL
-    // nothing can resolve.
+    // Backend without the header (deploy skew: new portal, old backend): this
+    // does NOT degrade to polling — GET has no more city+macrotheme fallback,
+    // so the poll it triggers (arquivo-less) fails fast with 400 on its very
+    // first attempt instead of ever finding the artifact. An explicit error
+    // beats masking deploy skew as an infinite spinner; normal deploy order
+    // (backend ships before portal) means this path should not be reached.
     if (!arquivo) {
       return NextResponse.json({ status: "processing" }, { status: 202 });
     }

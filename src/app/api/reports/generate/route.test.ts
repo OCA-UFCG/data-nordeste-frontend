@@ -89,6 +89,18 @@ class GenerationStatusFetchFake {
   };
 }
 
+/** Serves a fixed `/relatorios` index with real `/vN/` pdf_url entries — the shape the DEFAULT_INDEX-style fakes above don't exercise, needed to test the stale-version gate itself. */
+class VersionedReportIndexFetchFake {
+  constructor(private readonly index: object[]) {}
+
+  fetch = async (input: RequestInfo | URL): Promise<Response> => {
+    const url = input.toString();
+    if (url.endsWith("/relatorios")) return Response.json(this.index);
+
+    return new Response("Not found", { status: 404 });
+  };
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -187,6 +199,54 @@ describe("automatic report generation proxy", () => {
     const response = await GET(request);
 
     expect(response.status).toBe(400);
+  });
+
+  it("GET rejeita o poll enquanto o índice só mostra a versão marcada obsoleta", async () => {
+    const reportIndex = new VersionedReportIndexFetchFake([
+      {
+        arquivo_pdf: "relatorio_demografia__recife_pe_.pdf",
+        cidade: "Recife (PE)",
+        macrotema: "Demografia",
+        pdf_url: "/output/v111/relatorio_demografia__recife_pe_.pdf",
+      },
+    ]);
+    vi.stubGlobal("fetch", reportIndex.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=demografia&arquivo=relatorio_demografia__recife_pe_.pdf&versao_obsoleta=111",
+    );
+
+    const response = await GET(request);
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({ status: "processing" });
+  });
+
+  it("GET aceita o poll quando o índice já mostra uma versão diferente da obsoleta, e o url de download carrega versao_obsoleta adiante", async () => {
+    const reportIndex = new VersionedReportIndexFetchFake([
+      {
+        arquivo_pdf: "relatorio_demografia__recife_pe_.pdf",
+        cidade: "Recife (PE)",
+        macrotema: "Demografia",
+        pdf_url: "/output/v222/relatorio_demografia__recife_pe_.pdf",
+      },
+    ]);
+    vi.stubGlobal("fetch", reportIndex.fetch);
+    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+    const request = new NextRequest(
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=demografia&arquivo=relatorio_demografia__recife_pe_.pdf&versao_obsoleta=111",
+    );
+
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.status).toBe("ready");
+
+    // buildDownloadUrl copies the whole querystring verbatim, so the stale
+    // marker this poll was resolved against travels into the download URL —
+    // an untested byproduct until this assertion.
+    expect(body.url).toContain("versao_obsoleta=111");
   });
 
   it("POST devolve processing com a versao obsoleta quando o backend aceita em 202", async () => {

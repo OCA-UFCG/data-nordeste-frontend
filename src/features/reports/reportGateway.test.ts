@@ -116,4 +116,43 @@ describe("automatic report version matching", () => {
 
     expect(report?.fileName).toBe("relatorio_demografia__recife_pe_.pdf");
   });
+
+  it("rejeita (fail closed) um artefato sem versão discernível no pdf_url quando uma versão obsoleta é conhecida", async () => {
+    // pdf_url sem /vN/ não tem como provar que não é a versão marcada
+    // obsoleta; aceitar por nome sozinho aqui serviria o PDF da semana
+    // passada sem erro nenhum — exatamente a falha que aguardar=nao existe
+    // para evitar.
+    const reportIndex = new AutomaticReportIndexFetchFake([
+      {
+        ...RECIFE_INDEX[0],
+        pdf_url: "/output/relatorio_demografia__recife_pe_.pdf",
+      },
+    ]);
+    vi.stubGlobal("fetch", reportIndex.fetch);
+    vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
+
+    const report = await findAvailableAutomaticReport(
+      "relatorio_demografia__recife_pe_.pdf",
+      "111",
+    );
+
+    expect(report).toBeNull();
+  });
+
+  it("aceita por nome quando nenhuma versão obsoleta é conhecida, mesmo com índice versionado", async () => {
+    // `versaoObsoleta` ausente (null) é a chamada de pronto síncrono: os
+    // headers do backend já garantiram frescor e nenhum marcador obsoleto
+    // chegou a existir para comparar. Diferente do caso acima, aqui não há
+    // nada a rejeitar — mantido permissivo de propósito.
+    const reportIndex = new AutomaticReportIndexFetchFake(RECIFE_INDEX);
+    vi.stubGlobal("fetch", reportIndex.fetch);
+    vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
+
+    const report = await findAvailableAutomaticReport(
+      "relatorio_demografia__recife_pe_.pdf",
+      null,
+    );
+
+    expect(report?.fileName).toBe("relatorio_demografia__recife_pe_.pdf");
+  });
 });

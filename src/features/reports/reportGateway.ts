@@ -53,7 +53,12 @@ export function extractVersionFromPdfUrl(pdfUrl: string): string | null {
  * for it (P1 regression). When `versaoObsoleta` is also given, the entry's own
  * version must differ from it: once the backend can answer "still generating",
  * a name-only match would find last week's PDF and declare it ready with no
- * error at all.
+ * error at all. An index entry with no discoverable version (no `/vN/` in its
+ * `pdf_url`) fails this comparison closed — rejected, not accepted by name.
+ * `versaoObsoleta` itself being absent (`null`) is different and stays a
+ * trusted name-only match: that is the synchronous-ready call path above,
+ * where the backend's headers already vouch for freshness and no stale
+ * marker was ever produced to compare against.
  * Example: `await findAvailableAutomaticReport(arquivo, versaoObsoleta)`.
  */
 export async function findAvailableAutomaticReport(
@@ -72,7 +77,15 @@ export async function findAvailableAutomaticReport(
     if (entry.arquivo_pdf !== arquivo) return false;
     if (!versaoObsoleta) return true;
 
-    return extractVersionFromPdfUrl(entry.pdf_url) !== versaoObsoleta;
+    const entryVersion = extractVersionFromPdfUrl(entry.pdf_url);
+
+    // Fail closed: a known stale version but an entry with no discoverable
+    // version number can't be proven fresh, so it is rejected instead of
+    // accepted by name alone — the alternative silently serves last week's
+    // PDF with no error, exactly the failure `aguardar=nao` exists to avoid.
+    if (entryVersion === null) return false;
+
+    return entryVersion !== versaoObsoleta;
   });
   if (!report) return null;
 
