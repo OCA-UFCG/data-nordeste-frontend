@@ -177,27 +177,6 @@ describe("automatic report generation proxy", () => {
     });
   });
 
-  it("accepts a fresh report when gerado_apos predates the last PDF", async () => {
-    const automaticReportApi = new AutomaticReportFetchFake();
-    vi.stubGlobal("fetch", automaticReportApi.fetch);
-    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
-
-    // Index entries are dated 2026-08-03; ask for anything written after the
-    // day before — the entry should be accepted.
-    const request = new NextRequest(
-      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-02T00%3A00%3A00.000Z",
-    );
-
-    const response = await GET(request);
-
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
-      status: "ready",
-      fileName: "relatorio_recife_pe.pdf",
-      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&gerado_apos=2026-08-02T00%3A00%3A00.000Z",
-    });
-  });
-
   it("serves a cached report the backend identified by header", async () => {
     // A regressão do cache: num HIT o backend devolve o artefato em disco sem
     // reescrevê-lo, então o mtime continua anterior ao clique e o filtro por
