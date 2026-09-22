@@ -58,13 +58,10 @@ function buildGenerationReadyResponse(
 /** Checks once for a generated PDF. The browser owns the retry interval. */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    // `arquivo`/`versao_obsoleta` let a poller that already knows the name pin
-    // the match by identity instead of city+macrotheme. Today's poller never
-    // sends them (POST already returned before a name was known), so this
-    // still falls to the city+macrotheme branch, no freshness gate. Task 7
-    // wires the client to send them.
+    // The poller sends the artifact name and version the POST resolved, so the
+    // match is by identity rather than by city+macrotheme: a missing `arquivo`
+    // is a caller that skipped the POST step, not a legacy fallback to honor.
     const report = await findAvailableAutomaticReport(
-      request.nextUrl.searchParams,
       request.nextUrl.searchParams.get("arquivo"),
       request.nextUrl.searchParams.get("versao_obsoleta"),
     );

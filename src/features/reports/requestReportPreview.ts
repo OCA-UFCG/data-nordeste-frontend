@@ -5,6 +5,14 @@ export type AutomaticReportPreview = {
   url: string;
 };
 
+type ReportGenerationStart = {
+  status: "ready" | "processing";
+  arquivo?: string;
+  versao?: string;
+  fileName?: string;
+  url?: string;
+};
+
 const REPORT_STATUS_INTERVAL_MS = 2000;
 const REPORT_STATUS_MAX_ATTEMPTS = 60;
 
@@ -13,23 +21,31 @@ export async function requestReportPreview(request: {
   city: string;
   macrotheme: string;
 }): Promise<AutomaticReportPreview> {
-  // The freshness cursor is still sent for a backend that cannot name the
-  // artifact it served; when the POST below resolves, the name settles which
-  // report this is and the cursor plays no part.
-  const geradoApos = new Date().toISOString();
-  const generationUrl = buildReportProxyUrl({ ...request, geradoApos });
-  const startResponse = await fetch(generationUrl, { method: "POST" });
+  const startResponse = await fetch(buildReportProxyUrl(request), {
+    method: "POST",
+  });
   if (!startResponse.ok) throw new Error(`status ${startResponse.status}`);
 
-  // Generation is synchronous upstream: when the proxy answers "ready" the
-  // artifact already exists and there is nothing to wait for. Polling here is
-  // what hung on a cache HIT, whose PDF is served without being rewritten and so
-  // never looks newer than the click that asked for it.
-  const started = await readReadyReport(startResponse);
-  if (started) return started;
+  const started = (await startResponse.json()) as ReportGenerationStart;
+
+  // Generation is synchronous upstream: when the POST already answers "ready"
+  // the artifact exists now (cache HIT or fresh render) and there is nothing
+  // to poll for.
+  if (started.status === "ready" && started.fileName && started.url) {
+    return { fileName: started.fileName, url: started.url };
+  }
+
+  // The artifact's own name and version — not the click's timestamp — decide
+  // whether a later poll response is this request's report; see
+  // findAvailableAutomaticReport for the match this feeds.
+  const pollUrl = buildReportProxyUrl({
+    ...request,
+    arquivo: started.arquivo,
+    versaoObsoleta: started.versao,
+  });
 
   for (let attempt = 0; attempt < REPORT_STATUS_MAX_ATTEMPTS; attempt++) {
-    const response = await fetch(generationUrl, { cache: "no-store" });
+    const response = await fetch(pollUrl, { cache: "no-store" });
     const preview = await readReadyReport(response);
     if (preview) return preview;
     await waitForReportStatus();

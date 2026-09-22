@@ -12,7 +12,8 @@ export type AutomaticReportMacrothemeSlug =
 export type AutomaticReportRequest = {
   city: string;
   macrotheme: string;
-  geradoApos?: string;
+  arquivo?: string;
+  versaoObsoleta?: string;
 };
 
 const AUTOMATIC_REPORT_SLUGS = new Set<AutomaticReportMacrothemeSlug>([
@@ -104,8 +105,9 @@ export function buildReportProxyUrl(request: AutomaticReportRequest): string {
     macrotema: request.macrotheme,
     _: Date.now().toString(),
   });
-  if (request.geradoApos) {
-    params.set("gerado_apos", request.geradoApos);
+  if (request.arquivo) params.set("arquivo", request.arquivo);
+  if (request.versaoObsoleta) {
+    params.set("versao_obsoleta", request.versaoObsoleta);
   }
 
   return `/api/reports/generate?${params.toString()}`;

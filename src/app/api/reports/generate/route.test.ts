@@ -129,8 +129,10 @@ describe("automatic report generation proxy", () => {
     const automaticReportApi = new AutomaticReportFetchFake();
     vi.stubGlobal("fetch", automaticReportApi.fetch);
     vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
+
+    // Polling now always carries the artifact name the earlier POST returned.
     const request = new NextRequest(
-      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude",
+      "http://localhost/api/reports/generate?city=Recife%20(PE)&macrotema=saude&arquivo=relatorio_saude__recife.pdf",
     );
 
     const response = await GET(request);
@@ -139,25 +141,7 @@ describe("automatic report generation proxy", () => {
     expect(await response.json()).toEqual({
       status: "ready",
       fileName: "relatorio_recife_pe.pdf",
-      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude",
-    });
-  });
-
-  it("finds legacy report filenames that dropped accented characters", async () => {
-    const automaticReportApi = new AutomaticReportFetchFake();
-    vi.stubGlobal("fetch", automaticReportApi.fetch);
-    vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
-    const request = new NextRequest(
-      "http://localhost/api/reports/generate?city=Bel%C3%A9m%20(AL)&macrotema=economia-renda",
-    );
-
-    const response = await GET(request);
-
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
-      status: "ready",
-      fileName: "relatorio_belem_al.pdf",
-      url: "/api/reports/download?city=Bel%C3%A9m%20(AL)&macrotema=economia-renda",
+      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&arquivo=relatorio_saude__recife.pdf",
     });
   });
 
@@ -166,7 +150,7 @@ describe("automatic report generation proxy", () => {
     vi.stubGlobal("fetch", automaticReportApi.fetch);
     vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
     const request = new NextRequest(
-      "http://localhost/api/reports/download?city=Recife%20(PE)&macrotema=saude",
+      "http://localhost/api/reports/download?city=Recife%20(PE)&macrotema=saude&arquivo=relatorio_saude__recife.pdf",
     );
 
     const response = await DOWNLOAD(request);
@@ -182,13 +166,10 @@ describe("automatic report generation proxy", () => {
     );
   });
 
-  it("does not gate the poll without an arquivo, even with versao_obsoleta set (task 7 wires the poller with a name)", async () => {
-    // versao_obsoleta só importa quando `arquivo` também é dado: sem nome, o
-    // match cai no fallback cidade+macrotema, sem checar frescor nenhum. Esta
-    // era a heurística de mtime-vs-clique (agora removida) que causava o bug P1
-    // (HIT de cache nunca reconhecido); a versão que a substitui só se aplica
-    // quando o backend nomeia o artefato — este branch sem nome fica sem gate
-    // até a tarefa 7 fazer o poller enviar `arquivo`.
+  it("rejects a poll without an arquivo instead of falling back to city+macrotheme", async () => {
+    // O casamento por cidade+macrotema (e a heurística de acento que vinha com
+    // ele) foi removido: com os dois chamadores mandando `arquivo`, um poll sem
+    // nome é um cliente que pulou o POST, não um caso a resolver por fallback.
     const automaticReportApi = new AutomaticReportFetchFake();
     vi.stubGlobal("fetch", automaticReportApi.fetch);
     vi.stubEnv("NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL", API_URL);
@@ -198,12 +179,7 @@ describe("automatic report generation proxy", () => {
 
     const response = await GET(request);
 
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
-      status: "ready",
-      fileName: "relatorio_recife_pe.pdf",
-      url: "/api/reports/download?city=Recife%20(PE)&macrotema=saude&versao_obsoleta=999",
-    });
+    expect(response.status).toBe(400);
   });
 
   it("serves a cached report the backend identified by header", async () => {

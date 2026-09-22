@@ -26,27 +26,11 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("automatic report city matching", () => {
-  it("finds a backend report without a state suffix", async () => {
-    const reportIndex = new AutomaticReportIndexFetchFake();
-    vi.stubGlobal("fetch", reportIndex.fetch);
-    vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
-
-    const report = await findAvailableAutomaticReport(
-      new URLSearchParams({ city: "Maragogi (AL)", macrotema: "saude" }),
-    );
-
-    expect(report).toEqual({
-      fileName: "relatorio_saude__maragogi.pdf",
-      pdfUrl: `${API_URL}/output/relatorio_saude__maragogi.pdf`,
-    });
-  });
-});
-
 describe("automatic report lookup by file name", () => {
-  const params = new URLSearchParams({
-    city: "Maragogi (AL)",
-    macrotema: "saude",
+  it("requires arquivo — there is no more city+macrotheme fallback", async () => {
+    await expect(findAvailableAutomaticReport(null)).rejects.toThrow(
+      'Invalid arquivo ""; expected the artifact name from the backend.',
+    );
   });
 
   it("resolves the named artifact whatever its age", async () => {
@@ -57,7 +41,6 @@ describe("automatic report lookup by file name", () => {
     vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
 
     const report = await findAvailableAutomaticReport(
-      params,
       "relatorio_saude__maragogi.pdf",
     );
 
@@ -73,7 +56,6 @@ describe("automatic report lookup by file name", () => {
     vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
 
     const report = await findAvailableAutomaticReport(
-      params,
       "relatorio_saude__maragogi_pb.pdf",
     );
 
@@ -91,10 +73,6 @@ describe("automatic report version matching", () => {
       last_modified_utc: "2026-08-12T17:48:08.000Z",
     },
   ];
-  const params = new URLSearchParams({
-    city: "Recife (PE)",
-    macrotema: "demografia",
-  });
 
   it("aceita um artefato mais velho que o clique quando o nome casa (regressão P1)", async () => {
     const reportIndex = new AutomaticReportIndexFetchFake(RECIFE_INDEX);
@@ -102,7 +80,6 @@ describe("automatic report version matching", () => {
     vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
 
     const report = await findAvailableAutomaticReport(
-      params,
       "relatorio_demografia__recife_pe_.pdf",
     );
 
@@ -115,7 +92,6 @@ describe("automatic report version matching", () => {
     vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
 
     const report = await findAvailableAutomaticReport(
-      params,
       "relatorio_demografia__recife_pe_.pdf",
       "111",
     );
@@ -134,7 +110,6 @@ describe("automatic report version matching", () => {
     vi.stubEnv("AUTOMATIC_REPORT_API_URL", API_URL);
 
     const report = await findAvailableAutomaticReport(
-      params,
       "relatorio_demografia__recife_pe_.pdf",
       "111",
     );

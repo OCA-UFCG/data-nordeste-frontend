@@ -35,6 +35,37 @@ describe("automatic report preview request", () => {
     expect(methods).toEqual(["POST"]);
   });
 
+  it("polls using the artifact identity the POST response carried", async () => {
+    // The client stops stamping its own clock: once the backend names the
+    // artifact (even mid-processing), the poll asks for that exact name and
+    // version instead of a fresh city+macrotheme lookup.
+    const urls: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        urls.push(url);
+        if (init?.method === "POST") {
+          return Response.json(
+            {
+              status: "processing",
+              arquivo: "relatorio_saude__recife.pdf",
+              versao: "111",
+            },
+            { status: 202 },
+          );
+        }
+
+        return Response.json(READY);
+      }),
+    );
+
+    const preview = await requestReportPreview(REQUEST);
+
+    expect(preview).toEqual({ fileName: READY.fileName, url: READY.url });
+    expect(urls[1]).toContain("arquivo=relatorio_saude__recife.pdf");
+    expect(urls[1]).toContain("versao_obsoleta=111");
+  });
+
   it("falls back to polling while the POST answers processing", async () => {
     vi.useFakeTimers();
     const methods: (string | undefined)[] = [];

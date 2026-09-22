@@ -2,7 +2,6 @@ import {
   getAutomaticReportApiBaseUrl,
   joinReportSlugs,
   parseAutomaticReportSlug,
-  type AutomaticReportMacrothemeSlug,
 } from "@/features/reports/automaticReport";
 
 type AutomaticReportEntry = {
@@ -43,37 +42,33 @@ export function extractVersionFromPdfUrl(pdfUrl: string): string | null {
 }
 
 /**
- * Looks for one ready report. When `arquivo` is given, matches by the exact file
- * name the backend named in the `X-Relatorio-Arquivo` response header instead of
- * city/macrotheme — the backend's own cache gate already decided the artifact is
- * fresh, and on a cache HIT the PDF is served without being rewritten, so its
- * mtime stays older than the click that asked for it (P1 regression). When
- * `versaoObsoleta` is also given, the entry's own version must differ from it:
- * once the backend can answer "still generating", a name-only match would find
- * last week's PDF and declare it ready with no error at all.
- * Example: `await findAvailableAutomaticReport(params, arquivo)`.
+ * Looks for one ready report, matched by the exact file name the backend named
+ * in the `X-Relatorio-Arquivo` response header — the backend's own cache gate
+ * already decided the artifact is fresh, and on a cache HIT the PDF is served
+ * without being rewritten, so its mtime stays older than the click that asked
+ * for it (P1 regression). When `versaoObsoleta` is also given, the entry's own
+ * version must differ from it: once the backend can answer "still generating",
+ * a name-only match would find last week's PDF and declare it ready with no
+ * error at all.
+ * Example: `await findAvailableAutomaticReport(arquivo, versaoObsoleta)`.
  */
 export async function findAvailableAutomaticReport(
-  params: URLSearchParams,
-  arquivo: string | null = null,
+  arquivo: string | null,
   versaoObsoleta: string | null = null,
 ): Promise<AvailableAutomaticReport | null> {
-  const city = requireCity(params);
-  const slugs = parseAutomaticReportSlug(params.get("macrotema"));
+  if (!arquivo) {
+    throw new Error(
+      'Invalid arquivo ""; expected the artifact name from the backend.',
+    );
+  }
+
   const reports = await fetchReportIndex();
   const report = reports.find((entry) => {
     if (!entry.pdf_url) return false;
-    if (arquivo) {
-      if (entry.arquivo_pdf !== arquivo) return false;
-      if (!versaoObsoleta) return true;
+    if (entry.arquivo_pdf !== arquivo) return false;
+    if (!versaoObsoleta) return true;
 
-      return extractVersionFromPdfUrl(entry.pdf_url) !== versaoObsoleta;
-    }
-
-    return (
-      matchesReportCity(entry.cidade, city) &&
-      entryMatchesAnyMacrotheme(entry.arquivo_pdf, slugs)
-    );
+    return extractVersionFromPdfUrl(entry.pdf_url) !== versaoObsoleta;
   });
   if (!report) return null;
 
@@ -81,56 +76,6 @@ export async function findAvailableAutomaticReport(
     fileName: report.arquivo_pdf,
     pdfUrl: new URL(report.pdf_url, getAutomaticReportApiBaseUrl()).toString(),
   };
-}
-
-/**
- * Matches a report filename against any of the requested macrotheme slugs.
- * The backend writes one PDF per macrotheme per city, so "any match" returns
- * the first ready one. This is intentional: when multiple themes are selected,
- * the client polls for whichever becomes available first.
- */
-function entryMatchesAnyMacrotheme(
-  fileName: string,
-  slugs: AutomaticReportMacrothemeSlug[],
-): boolean {
-  const normalizedFileName = normalizeReportLabel(fileName);
-
-  return slugs.some((slug) =>
-    normalizedFileName.includes(normalizeReportLabel(slug)),
-  );
-}
-
-function matchesReportCity(entryCity: string, requestedCity: string): boolean {
-  if (normalizeReportLabel(entryCity) === normalizeReportLabel(requestedCity)) {
-    return true;
-  }
-  if (
-    normalizeReportLabel(entryCity) ===
-    normalizeLegacyReportLabel(requestedCity)
-  ) {
-    return true;
-  }
-
-  const cityWithoutState = removeStateSuffix(requestedCity);
-  if (
-    normalizeReportLabel(entryCity) === normalizeReportLabel(cityWithoutState)
-  ) {
-    return true;
-  }
-
-  // LEGACY: Automatic-Reporting used to replace accented characters with "_"
-  // in filenames. Keep matching "Bel M Al" to "Belém (AL)" until old PDFs
-  // have been regenerated with accent-aware slugs.
-  return (
-    normalizeReportLabel(entryCity) ===
-    normalizeLegacyReportLabel(cityWithoutState)
-  );
-}
-
-function removeStateSuffix(city: string): string {
-  // LEGACY: `/cities` includes the state, but `/relatorios` derives `cidade`
-  // from filenames that contain only the municipality name.
-  return city.replace(/\s+\([A-Z]{2}\)\s*$/, "").trim();
 }
 
 function requireCity(params: URLSearchParams): string {
@@ -151,16 +96,4 @@ async function fetchReportIndex(): Promise<AutomaticReportEntry[]> {
   }
 
   return (await response.json()) as AutomaticReportEntry[];
-}
-
-function normalizeLegacyReportLabel(value: string): string {
-  return value.replaceAll(/[^a-zA-Z0-9]/g, "").toLowerCase();
-}
-
-function normalizeReportLabel(value: string): string {
-  return value
-    .normalize("NFD")
-    .replaceAll(/[\u0300-\u036f]/g, "")
-    .replaceAll(/[^a-zA-Z0-9]/g, "")
-    .toLowerCase();
 }
