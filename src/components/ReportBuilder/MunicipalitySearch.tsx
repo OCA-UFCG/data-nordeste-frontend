@@ -24,6 +24,7 @@ export function MunicipalitySearch({
 }: MunicipalitySearchProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [hasNavigated, setHasNavigated] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const suggestions = useMemo(
@@ -37,12 +38,14 @@ export function MunicipalitySearch({
     onChange(city);
     setOpen(false);
     setHighlightedIndex(0);
+    setHasNavigated(false);
     inputRef.current?.focus();
   };
 
   const handleChange = (nextValue: string): void => {
     onChange(nextValue);
     setHighlightedIndex(0);
+    setHasNavigated(false);
     setOpen(true);
   };
 
@@ -51,13 +54,25 @@ export function MunicipalitySearch({
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
+      setHasNavigated(true);
       setHighlightedIndex((index) => (index + 1) % suggestions.length);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
+      setHasNavigated(true);
       setHighlightedIndex(
         (index) => (index - 1 + suggestions.length) % suggestions.length,
       );
     } else if (event.key === "Enter") {
+      // IMPORTANT: with an ambiguous query (e.g. "Presidente Dutra" matching
+      // both "(BA)" and "(MA)"), Enter must not silently commit to
+      // suggestions[0] just because the user hasn't arrowed to a choice yet —
+      // that picked the wrong municipality's report. Only auto-select when
+      // there's one candidate, or the user explicitly navigated to one.
+      if (suggestions.length > 1 && !hasNavigated) {
+        event.preventDefault();
+
+        return;
+      }
       const city = suggestions[activeIndex];
       if (city) {
         event.preventDefault();
