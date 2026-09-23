@@ -60,8 +60,13 @@ jobs:
       - name: Stop existing container
         run: sudo docker rm -f ${{ vars.CONTAINER_NAME_PROD }} || true
 
+      # Prod usa o próprio backend (automatic-reporting-prod, mesma VM e mesma
+      # datane-network): AUTOMATIC_REPORT_API_URL é lida em runtime pelas rotas
+      # /api/reports/* e tem precedência sobre a NEXT_PUBLIC_ (automaticReport.ts).
+      # O browser nunca chama o backend, então o nome interno basta. Só neste
+      # job: o host do push-failover não tem esse container e segue no beta.
       - name: Run new container
-        run: sudo docker run --name ${{ vars.CONTAINER_NAME_PROD }} --restart unless-stopped -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
+        run: sudo docker run --name ${{ vars.CONTAINER_NAME_PROD }} --restart unless-stopped -e AUTOMATIC_REPORT_API_URL="${{ vars.AUTOMATIC_REPORT_API_URL_PROD }}" -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
 
       - name: Connect to network
         run: docker network connect ${{ vars.NETWORK_NAME }} ${{ vars.CONTAINER_NAME_PROD }}
