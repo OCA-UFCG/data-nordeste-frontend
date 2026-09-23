@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { requestReportPreview } from "./requestReportPreview";
+import { ReportBusyError } from "./reportBusyError";
 
 const REQUEST = { city: "Recife (PE)", macrotheme: "saude" };
 const READY = {
@@ -33,6 +34,50 @@ describe("automatic report preview request", () => {
 
     expect(preview).toEqual({ fileName: READY.fileName, url: READY.url });
     expect(methods).toEqual(["POST"]);
+  });
+
+  it("polls using the artifact identity the POST response carried", async () => {
+    // The client stops stamping its own clock: once the backend names the
+    // artifact (even mid-processing), the poll asks for that exact name and
+    // version instead of a fresh city+macrotheme lookup.
+    const urls: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        urls.push(url);
+        if (init?.method === "POST") {
+          return Response.json(
+            {
+              status: "processing",
+              arquivo: "relatorio_saude__recife.pdf",
+              versaoObsoleta: "111",
+            },
+            { status: 202 },
+          );
+        }
+
+        return Response.json(READY);
+      }),
+    );
+
+    const preview = await requestReportPreview(REQUEST);
+
+    expect(preview).toEqual({ fileName: READY.fileName, url: READY.url });
+    expect(urls[1]).toContain("arquivo=relatorio_saude__recife.pdf");
+    expect(urls[1]).toContain("versao_obsoleta=111");
+  });
+
+  it("throws a typed error when the POST answers 503 instead of matching on message text", async () => {
+    // Matching on error.message.includes("503") would also trip for a city or
+    // file name that happens to contain "503" — the typed error can't do that.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 503 })),
+    );
+
+    await expect(requestReportPreview(REQUEST)).rejects.toBeInstanceOf(
+      ReportBusyError,
+    );
   });
 
   it("falls back to polling while the POST answers processing", async () => {

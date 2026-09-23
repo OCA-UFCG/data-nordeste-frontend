@@ -37,17 +37,18 @@ describe("automatic report proxy URL", () => {
     );
   });
 
-  it("includes the gerado_apos freshness cursor when provided", () => {
-    vi.spyOn(Date, "now").mockReturnValue(1_000);
+  it("monta a URL do proxy com arquivo e versao obsoleta", () => {
+    vi.spyOn(Date, "now").mockReturnValue(1000);
 
-    const url = buildReportProxyUrl({
-      city: "Recife (PE)",
-      macrotheme: "demografia",
-      geradoApos: "2026-08-04T17:01:17.000Z",
-    });
-
-    expect(url).toBe(
-      "/api/reports/generate?city=Recife+%28PE%29&macrotema=demografia&_=1000&gerado_apos=2026-08-04T17%3A01%3A17.000Z",
+    expect(
+      buildReportProxyUrl({
+        city: "Recife (PE)",
+        macrotheme: "demografia",
+        arquivo: "relatorio_demografia__recife_pe_.pdf",
+        versaoObsoleta: "111",
+      }),
+    ).toBe(
+      "/api/reports/generate?city=Recife+%28PE%29&macrotema=demografia&_=1000&arquivo=relatorio_demografia__recife_pe_.pdf&versao_obsoleta=111",
     );
   });
 });

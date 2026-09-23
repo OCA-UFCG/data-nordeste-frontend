@@ -27,6 +27,7 @@ import {
   type AutomaticReportMacrothemeSlug,
 } from "@/features/reports/automaticReport";
 import { requestReportPreview } from "@/features/reports/requestReportPreview";
+import { ReportBusyError } from "@/features/reports/reportBusyError";
 import { resolveMunicipality } from "@/features/reports/municipalitySearch";
 import type { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
 import { normalizeKey, sortContentByDesiredOrder } from "@/utils/functions";
@@ -110,7 +111,14 @@ export function ReportBuilder({
       const preview = await requestReportPreview(request);
       setReportPreview(preview);
       setActiveTab("report");
-    } catch {
+    } catch (error) {
+      if (error instanceof ReportBusyError) {
+        setErrorMessage(
+          "O gerador está ocupado no momento. Tente novamente em instantes.",
+        );
+
+        return;
+      }
       setErrorMessage(
         "O relatório demorou mais que o esperado. Tente novamente.",
       );

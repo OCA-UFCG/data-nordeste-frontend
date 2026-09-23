@@ -12,7 +12,8 @@ export type AutomaticReportMacrothemeSlug =
 export type AutomaticReportRequest = {
   city: string;
   macrotheme: string;
-  geradoApos?: string;
+  arquivo?: string;
+  versaoObsoleta?: string;
 };
 
 const AUTOMATIC_REPORT_SLUGS = new Set<AutomaticReportMacrothemeSlug>([
@@ -90,14 +91,30 @@ export function joinReportSlugs(
 /** Response header where Automatic-Reporting names the artifact it just served. */
 export const REPORT_ARTIFACT_HEADER = "X-Relatorio-Arquivo";
 
+/**
+ * Response header carrying the artifact's version (`st_mtime_ns`). The artifact
+ * name alone is not enough once the backend can answer before overwriting the
+ * file in place — this is what distinguishes a fresh artifact from a stale one
+ * at the same name.
+ */
+export const REPORT_VERSION_HEADER = "X-Relatorio-Versao";
+
+/**
+ * Response header carrying the artifact's stale version on a 202 ("still
+ * generating") answer — the marker the poll must forward as `versao_obsoleta`
+ * so it never accepts the older artifact already on disk under the same name.
+ */
+export const REPORT_STALE_VERSION_HEADER = "X-Relatorio-Versao-Obsoleta";
+
 export function buildReportProxyUrl(request: AutomaticReportRequest): string {
   const params = new URLSearchParams({
     city: request.city,
     macrotema: request.macrotheme,
     _: Date.now().toString(),
   });
-  if (request.geradoApos) {
-    params.set("gerado_apos", request.geradoApos);
+  if (request.arquivo) params.set("arquivo", request.arquivo);
+  if (request.versaoObsoleta) {
+    params.set("versao_obsoleta", request.versaoObsoleta);
   }
 
   return `/api/reports/generate?${params.toString()}`;

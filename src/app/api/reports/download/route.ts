@@ -1,23 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { buildReportFileName } from "@/features/reports/automaticReport";
-import {
-  findAutomaticReportByFileName,
-  findAvailableAutomaticReport,
-} from "@/features/reports/reportGateway";
+import { findAvailableAutomaticReport } from "@/features/reports/reportGateway";
 
 /** Streams a ready report through the same origin used by pdf.js. */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // `arquivo` carries the exact name the generation route got from the backend.
-    // The name is only ever resolved against the backend index, so it cannot point
-    // anywhere else. Without it we fall back to matching by city + macrotheme.
+    // The name is only ever resolved against the backend index, so it cannot
+    // point anywhere else, and it is required — there is no more city +
+    // macrotheme fallback. `versao_obsoleta` rejects a match while its version
+    // is still the one marked stale — see findAvailableAutomaticReport.
     const artifactName = request.nextUrl.searchParams.get("arquivo");
-    const report = artifactName
-      ? await findAutomaticReportByFileName(artifactName)
-      : await findAvailableAutomaticReport(
-          request.nextUrl.searchParams,
-          request.nextUrl.searchParams.get("gerado_apos"),
-        );
+    const staleVersion = request.nextUrl.searchParams.get("versao_obsoleta");
+    const report = await findAvailableAutomaticReport(
+      artifactName,
+      staleVersion,
+    );
     if (!report) {
       return NextResponse.json(
         { error: "O relatório ainda não está disponível." },
