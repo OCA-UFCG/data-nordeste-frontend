@@ -10,6 +10,7 @@
 
 .pdf-viewer--empty {
   background: #dcdbdc;
+  border-radius: 8px;
   height: 100%;
   min-height: 400px;
 }
@@ -38,16 +39,6 @@
   background: #f8f7f8;
   border-bottom: 1px solid #efefef;
   min-height: 72px;
-}
-
-.pdf-toolbar--empty {
-  pointer-events: none;
-}
-
-.pdf-toolbar--empty .pdf-toolbar-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .pdf-toolbar-left {
@@ -209,12 +200,6 @@
 
 .pdf-toolbar-download:hover {
   background: #017032;
-}
-
-.pdf-toolbar-download--empty {
-  cursor: not-allowed;
-  background: #bab8ba;
-  pointer-events: none;
 }
 
 .pdf-viewer-overlay {
