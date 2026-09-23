@@ -1,5 +1,5 @@
 /**
- * GraphQL query used by the report page (`/reports`).
+ * GraphQL query used by the report page (`/relatorio`).
  * Mirrors the shape used by `about.ts`, `connections.ts`, etc.: page‑level
  * banner + copy live in their own collection (`reportCollection`), while the
  * macrotemes used by the form come from `themeCollection`.
