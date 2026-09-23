@@ -4,7 +4,7 @@ const REPORT_NAVIGATION_LINK: ISection = {
   appears: true,
   id: "reports",
   name: "Relatório",
-  path: "/reports",
+  path: "/relatorio",
 };
 
 /** Adds the reports page after catalog navigation. Example: `withReportsNavigation(content)`. */

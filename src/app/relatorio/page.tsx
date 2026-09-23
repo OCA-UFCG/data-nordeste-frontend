@@ -11,7 +11,7 @@ export const metadata: Metadata = buildMetadata({
   title: "Relatório personalizado",
   description:
     "Gere relatórios personalizados do Data Nordeste por município e macrotema.",
-  path: "/reports",
+  path: "/relatorio",
 });
 
 export default async function ReportsPage(): Promise<ReactElement> {
