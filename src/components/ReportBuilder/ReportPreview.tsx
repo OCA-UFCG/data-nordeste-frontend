@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon/Icon";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
@@ -107,40 +107,42 @@ function LoadingPreviewState({ percent }: { percent: number }): ReactElement {
     PROGRESS_RING_CIRCUMFERENCE * (1 - Math.min(percent, 100) / 100);
 
   return (
-    <div
-      aria-label={`Carregando o seu relatório: ${percent}%`}
-      aria-live="polite"
-      className="report-preview-loading"
-      role="status"
-    >
-      <div className="report-preview-loading-ring">
-        <svg height="124" viewBox="0 0 124 124" width="124">
-          <circle
-            className="report-preview-loading-ring-track"
-            cx="62"
-            cy="62"
-            fill="none"
-            r={PROGRESS_RING_RADIUS}
-            strokeWidth="14"
-          />
-          <circle
-            className="report-preview-loading-ring-progress"
-            cx="62"
-            cy="62"
-            fill="none"
-            r={PROGRESS_RING_RADIUS}
-            strokeDasharray={PROGRESS_RING_CIRCUMFERENCE}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            strokeWidth="14"
-          />
-        </svg>
-        <span aria-hidden="true" className="report-preview-loading-percent">
-          {percent}%
-        </span>
+    <ReportPreviewSkeleton>
+      <div
+        aria-label={`Carregando o seu relatório: ${percent}%`}
+        aria-live="polite"
+        className="pdf-viewer-empty-card"
+        role="status"
+      >
+        <div className="report-preview-loading-ring">
+          <svg height="124" viewBox="0 0 124 124" width="124">
+            <circle
+              className="report-preview-loading-ring-track"
+              cx="62"
+              cy="62"
+              fill="none"
+              r={PROGRESS_RING_RADIUS}
+              strokeWidth="14"
+            />
+            <circle
+              className="report-preview-loading-ring-progress"
+              cx="62"
+              cy="62"
+              fill="none"
+              r={PROGRESS_RING_RADIUS}
+              strokeDasharray={PROGRESS_RING_CIRCUMFERENCE}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              strokeWidth="14"
+            />
+          </svg>
+          <span aria-hidden="true" className="report-preview-loading-percent">
+            {percent}%
+          </span>
+        </div>
+        <p className="report-preview-loading-label">Carregando seu Relatório</p>
       </div>
-      <p>Carregando seu Relatório</p>
-    </div>
+    </ReportPreviewSkeleton>
   );
 }
 
@@ -167,11 +169,65 @@ function ReportDownloadButton({
 
 function EmptyPreviewCard(): ReactElement {
   return (
-    <div className="pdf-viewer-empty-card">
-      <Icon id="info" size={20} className="pdf-viewer-empty-icon" />
-      <p className="pdf-viewer-empty-text">
-        Selecione as informações ao lado primeiro para gerar um relatório
-      </p>
+    <ReportPreviewSkeleton>
+      <div className="pdf-viewer-empty-card">
+        <div className="pdf-viewer-empty-icon">
+          <Icon id="file-text" size={20} />
+        </div>
+        <p className="pdf-viewer-empty-title">Seu relatório aparece aqui</p>
+        <p className="pdf-viewer-empty-text">
+          Comece preenchendo as informações à esquerda
+        </p>
+      </div>
+    </ReportPreviewSkeleton>
+  );
+}
+
+const REPORT_SKELETON_CHART_BAR_HEIGHTS = [
+  "35%",
+  "60%",
+  "45%",
+  "85%",
+  "55%",
+  "30%",
+];
+
+// Shared mock-page background behind the empty/loading floating card, so both
+// states read as the same report skeleton instead of two different layouts.
+function ReportPreviewSkeleton({
+  children,
+}: {
+  children: ReactNode;
+}): ReactElement {
+  return (
+    <div className="pdf-viewer-empty-skeleton">
+      <SkeletonLines lines={["wide", "narrow"]} />
+      <div className="pdf-viewer-empty-skeleton-box" aria-hidden="true" />
+      <SkeletonLines lines={["wide", "medium"]} />
+      <div className="pdf-viewer-empty-skeleton-chart" aria-hidden="true">
+        {REPORT_SKELETON_CHART_BAR_HEIGHTS.map((height, index) => (
+          <span key={index} style={{ height }} />
+        ))}
+      </div>
+      <SkeletonLines lines={["wide", "narrow"]} />
+      {children}
+    </div>
+  );
+}
+
+function SkeletonLines({
+  lines,
+}: {
+  lines: Array<"wide" | "medium" | "narrow">;
+}): ReactElement {
+  return (
+    <div className="pdf-viewer-empty-skeleton-lines" aria-hidden="true">
+      {lines.map((width, index) => (
+        <span
+          key={index}
+          className={`pdf-viewer-empty-skeleton-line pdf-viewer-empty-skeleton-line--${width}`}
+        />
+      ))}
     </div>
   );
 }
