@@ -14,6 +14,15 @@ ARG NEXT_PUBLIC_RECAPTCHA_KEY
 ARG NEXT_PUBLIC_APP_ENV
 ARG NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL
 
+# Bundler do `next build`: vazio = Turbopack (padrão do Next 16, usado no beta,
+# amd64, sem problema). No arm64 (gamma e o leg failover do prod) o Turbopack
+# falha resolvendo next/font/google (`Can't resolve '@vercel/turbopack-next/...'`,
+# não é pacote instalável, é módulo interno do bundler) — deploy-gamma.yml e
+# deploy-prod.yml passam --webpack. Prod builda amd64+arm64 numa imagem só
+# (build multi-arch), então a flag vale pros dois legs ali; sem custo real,
+# webpack é o bundler mais maduro do Next.
+ARG NEXT_BUILD_FLAGS=""
+
 # Set the environment variables
 ENV NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID
 ENV NEXT_PUBLIC_HOST_URL=$NEXT_PUBLIC_HOST_URL
@@ -45,7 +54,7 @@ COPY . .
 EXPOSE 3000
 
 # Build the Next.js projectdock
-RUN npm run build
+RUN npm run build -- $NEXT_BUILD_FLAGS
 
 # Start the Next.js project in development mode
 CMD ["npm", "start"]
