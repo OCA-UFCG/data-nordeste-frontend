@@ -101,24 +101,11 @@ export const PdfViewer = ({ pdfUrl, fileName, emptyState }: PdfViewerProps) => {
     setCurrentPage(pageNum);
   }, []);
 
+  // INTENTIONAL: no toolbar while there is no document — page navigation,
+  // zoom and "Baixar PDF" only make sense once a real PDF is loaded.
   if (emptyState) {
     return (
-      <div className="pdf-viewer pdf-viewer--empty" ref={containerRef}>
-        <div className="hidden sm:block">
-          <PdfToolbar
-            fileName={fileName}
-            currentPage={1}
-            totalPages={null}
-            zoom={0.75}
-            pdfUrl=""
-            onPreviousPage={noop}
-            onNextPage={noop}
-            onZoomIn={noop}
-            onZoomOut={noop}
-            onToggleFullscreen={noop}
-            disabled
-          />
-        </div>
+      <div className="pdf-viewer pdf-viewer--empty">
         <div className="pdf-viewer-empty-body">{emptyState}</div>
       </div>
     );
@@ -205,11 +192,7 @@ type PdfToolbarProps = {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onToggleFullscreen: () => void;
-
-  disabled?: boolean;
 };
-
-const noop = (): void => undefined;
 
 const PdfToolbar = ({
   fileName,
@@ -222,9 +205,8 @@ const PdfToolbar = ({
   onZoomIn,
   onZoomOut,
   onToggleFullscreen,
-  disabled = false,
 }: PdfToolbarProps) => (
-  <div className={`pdf-toolbar${disabled ? " pdf-toolbar--empty" : ""}`}>
+  <div className="pdf-toolbar">
     <div className="pdf-toolbar-left">
       <span className="pdf-toolbar-filename" title={fileName}>
         {fileName}
@@ -235,7 +217,7 @@ const PdfToolbar = ({
       <div className="pdf-toolbar-page-indicator">
         <button
           onClick={onPreviousPage}
-          disabled={disabled || currentPage <= 1}
+          disabled={currentPage <= 1}
           aria-label="Página anterior"
           className="pdf-toolbar-btn-page"
         >
@@ -248,9 +230,7 @@ const PdfToolbar = ({
         </div>
         <button
           onClick={onNextPage}
-          disabled={
-            disabled || totalPages === null || currentPage >= totalPages
-          }
+          disabled={totalPages === null || currentPage >= totalPages}
           aria-label="Próxima página"
           className="pdf-toolbar-btn-page"
         >
@@ -261,7 +241,7 @@ const PdfToolbar = ({
       <div className="pdf-toolbar-zoom">
         <button
           onClick={onZoomOut}
-          disabled={disabled || zoom <= MIN_ZOOM}
+          disabled={zoom <= MIN_ZOOM}
           aria-label="Diminuir zoom"
           className="pdf-toolbar-btn-icon"
         >
@@ -274,7 +254,7 @@ const PdfToolbar = ({
         </div>
         <button
           onClick={onZoomIn}
-          disabled={disabled || zoom >= MAX_ZOOM}
+          disabled={zoom >= MAX_ZOOM}
           aria-label="Aumentar zoom"
           className="pdf-toolbar-btn-icon"
         >
@@ -284,7 +264,6 @@ const PdfToolbar = ({
 
       <button
         onClick={onToggleFullscreen}
-        disabled={disabled}
         aria-label="Tela cheia"
         className="pdf-toolbar-btn-icon"
         title="Tela cheia"
@@ -294,27 +273,16 @@ const PdfToolbar = ({
     </div>
 
     <div className="pdf-toolbar-right">
-      {disabled ? (
-        <button
-          className="pdf-toolbar-download pdf-toolbar-download--empty"
-          disabled
-          type="button"
-        >
-          <Icon id="download" size={11} />
-          <span>Baixar PDF</span>
-        </button>
-      ) : (
-        <a
-          href={pdfUrl}
-          download={fileName}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="pdf-toolbar-download"
-        >
-          <Icon id="download" size={11} />
-          <span>Baixar PDF</span>
-        </a>
-      )}
+      <a
+        href={pdfUrl}
+        download={fileName}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pdf-toolbar-download"
+      >
+        <Icon id="download" size={11} />
+        <span>Baixar PDF</span>
+      </a>
     </div>
   </div>
 );
