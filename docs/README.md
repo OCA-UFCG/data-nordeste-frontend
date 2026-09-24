@@ -103,12 +103,18 @@ outside the repository and rendered through frontend route/component logic.
 - Power BI and ArcGIS content are embedded through external URLs configured in
   Contentful or built from route IDs.
 - The deploy `failover-runner` (`aws-datane-failover`) is arm64/Graviton. That
-  is why `deploy-gamma.yml` and `deploy-prod.yml` build
-  `linux/amd64,linux/arm64` while `deploy-beta.yml` does not. Dropping
-  `linux/arm64` breaks the deploy with `no matching manifest for
+  is why `deploy-gamma.yml` builds `linux/arm64` and `deploy-prod.yml` builds
+  both `linux/amd64` and `linux/arm64`, while `deploy-beta.yml` builds amd64
+  only. Dropping `linux/arm64` breaks the deploy with `no matching manifest for
   linux/arm64/v8`. Consequence: `package-lock.json` must keep its
   `*-linux-arm64-*` entries, or the arm64 build fails resolving native
   binaries.
+- arm64 images are built on native `ubuntu-24.04-arm` runners, never under
+  QEMU. Emulated, `npm ci` takes ~250s and registry connections drop midway
+  (`ECONNRESET`), consistently rather than intermittently. Prod builds each
+  architecture in its own job, pushes by digest, and `merge-image` publishes
+  `:latest` plus the release tag as one multi-arch manifest, because
+  `push-prod` (amd64) and `push-failover` (arm64) pull the same tag.
 - Do not document secrets or concrete environment values here. Use
   `.env.sample` for variable names and the project root `README.md` for local
   setup flow.
