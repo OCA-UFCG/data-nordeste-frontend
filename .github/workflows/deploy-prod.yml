@@ -6,9 +6,31 @@ on:
 
 jobs:
   build-image:
-    runs-on: ubuntu-latest
+    # Um job por arquitetura, cada um em runner nativo. Antes o arm64 saía de
+    # QEMU num runner amd64: o `npm ci` emulado levava ~250s e as conexões com o
+    # registry caíam no meio (ECONNRESET/ETIMEDOUT), sempre no mesmo ponto. O
+    # gamma já trocou para runner arm nativo pelo mesmo motivo. O prod não pode
+    # servir só arm64 como o gamma: push-prod (amd64) e push-failover (arm64)
+    # puxam a mesma tag, então merge-image junta os dois digests num manifesto.
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
+
+      # Falhar aqui custa 5s e aponta a causa: um package-lock.json regenerado
+      # com node_modules presente perde os binários nativos de outras
+      # plataformas. Ver CONTRIBUTING.md.
+      - name: Lockfile cobre arm64
+        if: matrix.arch == 'arm64'
+        run: grep -q '"node_modules/lightningcss-linux-arm64-gnu"' package-lock.json
 
       - name: Update docker metadata with the tag
         uses: docker/metadata-action@v4
@@ -25,17 +47,17 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # Envia só por digest, sem tag: quem publica :latest e a tag do release
+      # é merge-image, depois que as duas arquiteturas existirem.
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
+        id: build
         with:
           context: .
-          push: true
           file: Dockerfile.production
           labels: ${{ steps.meta.outputs.labels }}
-          tags: |
-            ${{ vars.DOCKER_IMAGE_PROD }}:latest
-            ${{ steps.meta.outputs.tags }}
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ vars.DOCKER_IMAGE_PROD }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
             NEXT_PUBLIC_CONTENTFUL_SPACE=${{ secrets.NEXT_PUBLIC_CONTENTFUL_SPACE  }}
             NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN=${{ secrets.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN }}
@@ -47,11 +69,65 @@ jobs:
             NEXT_PUBLIC_RECAPTCHA_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_KEY }}
             NEXT_PUBLIC_SURVEY_FEEDBACK_URL=${{ secrets.NEXT_PUBLIC_SURVEY_FEEDBACK_URL }}
             NEXT_PUBLIC_APP_ENV=prod
-            NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL=${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}
             NEXT_BUILD_FLAGS=--webpack
 
-  push-prod:
+      - name: Export digest
+        run: |
+          mkdir -p "${{ runner.temp }}/digests"
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge-image:
     needs: build-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Update docker metadata with the tag
+        uses: docker/metadata-action@v4
+        id: meta
+        with:
+          images: ${{ vars.DOCKER_IMAGE_PROD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Publica :latest e as tags do metadata apontando para um manifesto com
+      # amd64 + arm64. Até aqui nenhuma tag mudou, então uma falha num dos
+      # builds deixa prod e failover na imagem anterior.
+      - name: Create multi-arch manifest
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          IMAGE: ${{ vars.DOCKER_IMAGE_PROD }}
+          META_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          tags=$(printf '%s\n' "$IMAGE:latest" "$META_TAGS" | sort -u | sed '/^$/d; s/^/-t /')
+          docker buildx imagetools create $tags $(printf "$IMAGE@sha256:%s " *)
+
+      - name: Inspect manifest
+        run: docker buildx imagetools inspect ${{ vars.DOCKER_IMAGE_PROD }}:latest
+
+  push-prod:
+    needs: merge-image
     runs-on: prod-runner
     steps:
       - name: Pull the latest image
@@ -60,13 +136,8 @@ jobs:
       - name: Stop existing container
         run: sudo docker rm -f ${{ vars.CONTAINER_NAME_PROD }} || true
 
-      # Prod usa o próprio backend (automatic-reporting-prod, mesma VM e mesma
-      # datane-network): AUTOMATIC_REPORT_API_URL é lida em runtime pelas rotas
-      # /api/reports/* e tem precedência sobre a NEXT_PUBLIC_ (automaticReport.ts).
-      # O browser nunca chama o backend, então o nome interno basta. Só neste
-      # job: o host do push-failover não tem esse container e segue no beta.
       - name: Run new container
-        run: sudo docker run --name ${{ vars.CONTAINER_NAME_PROD }} --restart unless-stopped -e AUTOMATIC_REPORT_API_URL="${{ vars.AUTOMATIC_REPORT_API_URL_PROD }}" -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
+        run: sudo docker run --name ${{ vars.CONTAINER_NAME_PROD }} --restart unless-stopped -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
 
       - name: Connect to network
         run: docker network connect ${{ vars.NETWORK_NAME }} ${{ vars.CONTAINER_NAME_PROD }}
@@ -75,7 +146,7 @@ jobs:
         run: sudo docker system prune -f
 
   push-failover:
-    needs: build-image
+    needs: merge-image
     runs-on: failover-runner
     steps:
       - name: Pull the latest image
@@ -85,7 +156,7 @@ jobs:
         run: sudo docker rm -f ${{ vars.CONTAINER_NAME_PROD }} || true
 
       - name: Run new container
-        run: sudo docker run --restart unless-stopped --name ${{ vars.CONTAINER_NAME_PROD }} -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
+        run: sudo docker run --restart unless-stopped --name ${{ vars.CONTAINER_NAME_PROD }} -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
 
       - name: Connect to network
         run: docker network connect ${{ vars.NETWORK_NAME }} ${{ vars.CONTAINER_NAME_PROD }}

@@ -57,7 +57,6 @@ jobs:
             NEXT_PUBLIC_RECAPTCHA_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_KEY }}
             NEXT_PUBLIC_SURVEY_FEEDBACK_URL=${{ secrets.NEXT_PUBLIC_SURVEY_FEEDBACK_URL }}
             NEXT_PUBLIC_APP_ENV=beta
-            NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL=${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}
             NEXT_BUILD_FLAGS=--webpack
 
   push-gamma:
@@ -76,7 +75,6 @@ jobs:
           sudo docker run \
             --name ${{ vars.CONTAINER_NAME_GAMMA }} \
             --restart unless-stopped \
-            -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" \
             -p ${{ vars.HOST_PORT_GAMMA }}:${{ vars.CONTAINER_PORT }} \
             -d \
             ${{ vars.DOCKER_IMAGE_GAMMA }}:latest

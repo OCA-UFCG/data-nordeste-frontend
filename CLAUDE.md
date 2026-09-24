@@ -5,11 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project
 
 Data Nordeste is SUDENE's public data portal: regional indicators, publications,
-datasets, Power BI dashboards, ArcGIS datastories, automatic municipal reports and
-institutional content. Next.js App Router, TypeScript, Tailwind v4.
+datasets, Power BI dashboards, ArcGIS datastories and institutional content. Next.js App Router, TypeScript, Tailwind v4.
 
-Almost nothing visible is hardcoded here — Contentful, Zenodo, Power BI, ArcGIS,
-Firebase and the sibling Automatic-Reporting FastAPI service supply the content.
+Almost nothing visible is hardcoded here — Contentful, Zenodo, Power BI, ArcGIS
+and Firebase supply the content.
 
 Companion docs, read them instead of re-deriving their content:
 
@@ -46,7 +45,7 @@ Other moments that are worth one focused question:
 - **Copy-paste is the tempting fix** — name the abstraction and where it belongs
   (`src/features/<domain>`), explain the rule, and only then extract it.
 - **Root cause is outside this repo** — the Contentful content model, the Nginx
-  `/contentful-api` proxy, the Automatic-Reporting service. Say it plainly: no
+  `/contentful-api` proxy. Say it plainly: no
   frontend edit will fix it. Knowing that boundary is half the lesson.
 - **Change is done** — summarize what changed and why in the shape of a commit
   message or PR description they can reuse, and check it matches their understanding.
@@ -73,8 +72,8 @@ npm run build            # also validates types and Next.js routes
 Single test file / single case:
 
 ```bash
-npx vitest run src/features/reports/reportGateway.test.ts
-npx vitest run src/features/reports -t "finds a backend report"
+npx vitest run src/features/catalog/filters.test.ts
+npx vitest run src/features/catalog -t "parses public URL params"
 ```
 
 Validation policy before finishing a change:
@@ -95,16 +94,13 @@ Layers, from outside in. Business rules belong in `src/features`, never inline i
 page or component.
 
 - `src/app/**/page.tsx` — server components. They validate route params, fetch
-  content, then delegate. All 14 pages wrap `HubTemplate` (`src/templates`) and
+  content, then delegate. All 13 pages wrap `HubTemplate` (`src/templates`) and
   export metadata (static `metadata` or `generateMetadata`) built with
   `buildMetadata` from `@/config/seo` — keep both when adding a route.
-- `src/app/api/**` — server-side proxies, not a public API: report generation and
-  city list against Automatic-Reporting, `pdf-proxy`, `explore`. They read
-  `AUTOMATIC_REPORT_API_URL ?? NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL`
-  (`src/features/reports/automaticReport.ts`).
+- `src/app/api/**` — server-side proxies, not a public API: `pdf-proxy`, `explore`.
 - `src/features/<domain>/` — framework-free, pure TypeScript domain logic with
   co-located `*.test.ts`: catalog filters, embed URL builders, explore/search,
-  posts filters, report gateway, feedback storage. Start here before writing new
+  posts filters, feedback storage. Start here before writing new
   logic; most rules already exist.
 - `src/components/<Name>/<Name>.tsx` — presentation and interaction only.
   `src/components/ui/` is shadcn/Radix primitives (`components.json`) — regenerate
@@ -158,8 +154,6 @@ styled-components.
 
 - Functions: 4-20 lines. Split if longer.
 - Files: under 500 lines. Split by responsibility.
-  `src/components/ReportBuilder/ReportBuilder.tsx` (600) is a known outlier — split
-  it when you touch it.
 - One thing per function, one responsibility per module (SRP).
 - Names: specific and unique. Avoid `data`, `handler`, `Manager`. Prefer names that
   return <5 grep hits in the codebase.
@@ -198,8 +192,7 @@ styled-components.
 - Never touch the network. Inject the seam instead: `fetcher` on
   `createContentfulClient`, `ZenodoRecordsFetcher` on the Zenodo helpers, or
   `vi.stubGlobal("fetch", fake.fetch)` plus `vi.stubEnv` for route handlers.
-- Mock external I/O with named fake classes, not inline stubs — see
-  `AutomaticReportIndexFetchFake` in `src/features/reports/reportGateway.test.ts`.
+- Mock external I/O with named fake classes, not inline stubs.
 - Tests must be F.I.R.S.T: fast, independent, repeatable, self-validating, timely.
 
 ## Dependencies
