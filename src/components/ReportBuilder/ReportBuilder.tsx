@@ -378,16 +378,16 @@ function ReportThemesField({
           ? documentToReactComponents(themeText.json)
           : "Escolha um ou mais macrotemas para compor o relatório."}
       </div>
-      <ReportThemeActions onClear={onClear} />
+      <SelectAllThemesButton
+        allThemesSelected={allThemesSelected}
+        onClick={onSelectAll}
+      />
       <ReportThemeList
         onToggleTheme={onToggleTheme}
         selectedThemeIds={selectedThemeIds}
         themes={themes}
       />
-      <SelectAllThemesButton
-        allThemesSelected={allThemesSelected}
-        onClick={onSelectAll}
-      />
+      <ReportThemeActions onClear={onClear} />
     </div>
   );
 }
