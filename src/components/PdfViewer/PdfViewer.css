@@ -297,6 +297,21 @@
   max-height: 80vh;
 }
 
+/* Report builder: stretch to the bottom of the form column instead of
+   stopping at 80vh. Desktop only — on mobile there is no sibling column to
+   align with, so the 80vh cap stays. */
+@media (min-width: 1024px) {
+  .pdf-viewer--fill {
+    height: 100%;
+  }
+
+  .pdf-viewer--fill .pdf-viewer-canvas-wrapper {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+  }
+}
+
 .pdf-viewer-canvas {
   display: block;
   max-width: 100%;

@@ -87,13 +87,19 @@ export function ReportPreview({
     );
   }
 
+  // INTENTIONAL: absolute on desktop so the PDF's pages don't grow the grid
+  // row; the row height comes from the form column and the viewer fills it.
   return (
-    <div className="min-w-0 h-full">
+    <div className="min-w-0 h-full lg:absolute lg:inset-0">
       <div className="mt-4 lg:mt-0 flex px-6 lg:hidden">
         <ReportDownloadButton fileName={preview.fileName} url={preview.url} />
       </div>
       <div className="mt-4 mb-6 lg:mt-0 lg:mb-0 h-full">
-        <PdfViewer fileName={preview.fileName} pdfUrl={preview.url} />
+        <PdfViewer
+          fillHeight
+          fileName={preview.fileName}
+          pdfUrl={preview.url}
+        />
       </div>
     </div>
   );

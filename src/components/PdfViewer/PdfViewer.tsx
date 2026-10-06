@@ -25,6 +25,10 @@ type PdfViewerProps = {
   pdfUrl: string;
   fileName: string;
   emptyState?: ReactNode;
+
+  // Fill the parent's height on desktop instead of capping at 80vh. The parent
+  // must have a definite height (e.g. the report builder's grid column).
+  fillHeight?: boolean;
 };
 
 const ZOOM_STEP = 0.25;
@@ -32,7 +36,12 @@ const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
 const INITIAL_ZOOM = 1;
 
-export const PdfViewer = ({ pdfUrl, fileName, emptyState }: PdfViewerProps) => {
+export const PdfViewer = ({
+  pdfUrl,
+  fileName,
+  emptyState,
+  fillHeight = false,
+}: PdfViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -129,7 +138,10 @@ export const PdfViewer = ({ pdfUrl, fileName, emptyState }: PdfViewerProps) => {
   }
 
   return (
-    <div className="pdf-viewer" ref={containerRef}>
+    <div
+      className={fillHeight ? "pdf-viewer pdf-viewer--fill" : "pdf-viewer"}
+      ref={containerRef}
+    >
       <div className="hidden sm:block">
         <PdfToolbar
           fileName={fileName}
