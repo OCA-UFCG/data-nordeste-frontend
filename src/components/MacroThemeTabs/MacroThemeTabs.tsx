@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { IPublication, IPageHeader } from "@/utils/interfaces";
 import ContentPost from "../ContentPost/ContentPost";
@@ -35,6 +34,8 @@ type MacroThemeTabsProps = {
 
 export type TabType = "paineis" | "datastories" | "boletins";
 
+const TAB_KEYS: TabType[] = ["paineis", "datastories", "boletins"];
+
 export function MacroThemeTabs({
   dashboards,
   datastories,
@@ -65,8 +66,12 @@ export function MacroThemeTabs({
           ? "boletins"
           : "paineis";
 
-  const [internalActiveTab, setInternalActiveTab] =
-    useState<TabType>("paineis");
+  // Uncontrolled mode (macrotheme page) keeps the tab in `?tab=` so that
+  // returning from a post with the browser's back button restores it.
+  const rawTab = params.get("tab");
+  const internalActiveTab: TabType = TAB_KEYS.includes(rawTab as TabType)
+    ? (rawTab as TabType)
+    : "paineis";
   const activeTab = tabsOnly
     ? deriveTabFromUrl()
     : controlledActiveTab ?? internalActiveTab;
@@ -89,7 +94,16 @@ export function MacroThemeTabs({
     } else if (onTabChange) {
       onTabChange(tab);
     } else {
-      setInternalActiveTab(tab);
+      const newParams = new URLSearchParams(params.toString());
+      newParams.set("tab", tab);
+
+      // Native history API: Next syncs useSearchParams without refetching
+      // the server component or scrolling to the top.
+      window.history.replaceState(
+        null,
+        "",
+        pathname + "?" + newParams.toString(),
+      );
     }
   };
 
@@ -190,10 +204,8 @@ export function MacroThemeTabs({
               role="tab"
               aria-selected={activeTab === key}
               onClick={() => handleTabClick(key)}
-              
               style={{ padding: "18px 12px" }}
               className={`h-full flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] cursor-pointer ${
-
                 activeTab === key
                   ? "border-[#018F39] text-[#018F39]"
                   : "border-transparent text-[#7E797B] hover:text-[#292829] hover:border-gray-300"
