@@ -72,6 +72,7 @@ export function useLocalExploreIndex(
 
   return {
     activeTab: selection?.activeTab,
+    analysesOptions: selection?.analysesOptions ?? { panels: [], years: [] },
     currentPage: selection?.currentPage,
     error: indexState.error,
     results: selection?.results ?? initialResults,

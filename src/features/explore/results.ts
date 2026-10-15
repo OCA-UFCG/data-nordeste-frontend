@@ -9,6 +9,7 @@ import {
   parsePostsQueryState,
   type PostsFilterForm,
 } from "@/features/posts/filters";
+import { ANALYSES_TAB_POST_TYPES } from "@/features/posts/postTypes";
 import {
   resolveExploreTab,
   type ExploreResults,
@@ -34,7 +35,7 @@ const TYPE_BY_TAB: Record<ExploreTab, string | string[]> = {
   paineis: "data-panel",
   datastories: "data-story",
   boletins: ["newsletter", "additional-content"],
-  analises: "analysis",
+  analises: ANALYSES_TAB_POST_TYPES,
 };
 
 function normalizeExploreParams(params: URLSearchParams): URLSearchParams {

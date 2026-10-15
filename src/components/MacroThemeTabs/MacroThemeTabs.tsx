@@ -105,7 +105,12 @@ export function MacroThemeTabs({
         analises: "analysis",
       };
       if (clientSideNavigation) {
-        pushQuery({ type_in: typeInMap[tab], page: null });
+        pushQuery({
+          type_in: typeInMap[tab],
+          page: null,
+          panel: null,
+          year: null,
+        });
       } else {
         const newParams = new URLSearchParams(params.toString());
         newParams.set("type_in", typeInMap[tab]);
@@ -287,7 +292,9 @@ export function MacroThemeTabs({
             <section className="animate-in fade-in duration-300 flex flex-col gap-6">
               {renderHeader(headers.analyses, "Análises")}
               <AnalysesFilterBar
-                panels={dashboards}
+                panels={dashboards.flatMap((panel) =>
+                  panel.sys ? [{ id: panel.sys.id, title: panel.title }] : [],
+                )}
                 years={listAnalysesYears(analyses)}
                 value={analysesFilter}
                 onChange={setAnalysesFilter}

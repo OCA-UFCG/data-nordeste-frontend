@@ -3,7 +3,10 @@ import type { IPublication } from "@/utils/interfaces";
 import { normalizeSearchText } from "@/features/search/search";
 import type { SearchIndexItem } from "@/features/search/types";
 import { plainTextToRichText } from "@/utils/richText";
-import type { PostType } from "@/features/posts/postTypes";
+import {
+  ANALYSES_TAB_POST_TYPES,
+  type PostType,
+} from "@/features/posts/postTypes";
 import {
   resolveExploreTab,
   type ExploreResults,
@@ -15,13 +18,19 @@ const TYPES_BY_TAB: Record<ExploreTab, SearchIndexItem["type"][]> = {
   paineis: ["data-panel"],
   datastories: ["data-story"],
   boletins: ["newsletter", "additional-content"],
-  analises: ["analysis"],
+  analises: ANALYSES_TAB_POST_TYPES,
+};
+
+export type AnalysesFilterOptions = {
+  panels: { id: string; title: string }[];
+  years: string[];
 };
 
 export type LocalExploreSelection = {
   activeTab: ExploreTab;
   currentPage: number;
   results: ExploreResults;
+  analysesOptions: AnalysesFilterOptions;
 };
 
 function isExplorePost(item: SearchIndexItem): boolean {
@@ -144,6 +153,42 @@ function buildTabTotals(items: SearchIndexItem[]): ExploreTabTotals {
   };
 }
 
+// The Análises tab adds `panel` (Contentful post id) and `year` params on top
+// of the shared explore filters.
+function matchesAnalysesFilters(
+  item: SearchIndexItem,
+  params: URLSearchParams,
+): boolean {
+  const panel = params.get("panel");
+  const year = params.get("year");
+
+  return (
+    (!panel || item.explorePost?.contentfulId === panel) &&
+    (!year || Boolean(item.date?.startsWith(year)))
+  );
+}
+
+function buildAnalysesOptions(items: SearchIndexItem[]): AnalysesFilterOptions {
+  const analyses = items.filter((item) =>
+    TYPES_BY_TAB.analises.includes(item.type),
+  );
+
+  return {
+    panels: analyses
+      .filter((item) => item.type === "data-panel" && item.explorePost)
+      .map((item) => ({
+        id: item.explorePost!.contentfulId,
+        title: item.title,
+      }))
+      .sort((left, right) => left.title.localeCompare(right.title, "pt-BR")),
+    years: Array.from(
+      new Set(analyses.map((item) => item.date?.slice(0, 4)).filter(Boolean)),
+    )
+      .map(String)
+      .sort((left, right) => right.localeCompare(left)),
+  };
+}
+
 /** Derives the complete explore view from the cached index and URL. Example: `selectLocalExploreResults(items, params)`. */
 export function selectLocalExploreResults(
   items: SearchIndexItem[],
@@ -153,7 +198,11 @@ export function selectLocalExploreResults(
   const requestedTab = resolveExploreTab(params.get("type_in"));
   const activeTab = resolveAvailableTab(sharedItems, requestedTab);
   const activeItems = sortExploreItems(
-    sharedItems.filter((item) => TYPES_BY_TAB[activeTab].includes(item.type)),
+    sharedItems.filter(
+      (item) =>
+        TYPES_BY_TAB[activeTab].includes(item.type) &&
+        (activeTab !== "analises" || matchesAnalysesFilters(item, params)),
+    ),
     params.get("sort"),
   );
   const totalPages = Math.ceil(activeItems.length / POSTS_PER_PAGE);
@@ -171,5 +220,6 @@ export function selectLocalExploreResults(
       totalPages,
       tabTotals: buildTabTotals(sharedItems),
     },
+    analysesOptions: buildAnalysesOptions(sharedItems),
   };
 }
