@@ -16,6 +16,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
+import { ANALYSES_TAB_POST_TYPES } from "@/features/posts/postTypes";
 
 interface IMacroThemePageContent {
   themeCollection: { items: MacroTheme[] };
@@ -29,6 +30,7 @@ const SECTION_HEADER_IDS = {
   dashboards: "dataPanels",
   datastories: "dataNarrative",
   publications: "publications",
+  analyses: "analyses",
 } as const;
 
 export async function generateMetadata({
@@ -101,6 +103,10 @@ export default async function MacroThemePage({
     (post) => post.type === "data-story",
   );
 
+  const analyses = postCollection.items.filter((post) =>
+    ANALYSES_TAB_POST_TYPES.includes(post.type),
+  );
+
   const pageHeadersById = new Map(
     pageHeadersCollection.items
       .filter((item): item is IPageHeader & { id: string } => Boolean(item?.id))
@@ -112,6 +118,7 @@ export default async function MacroThemePage({
   const publicationsHeader = pageHeadersById.get(
     SECTION_HEADER_IDS.publications,
   );
+  const analysesHeader = pageHeadersById.get(SECTION_HEADER_IDS.analyses);
 
   return (
     <HubTemplate>
@@ -151,10 +158,12 @@ export default async function MacroThemePage({
           dashboards={dashboards}
           datastories={datastories}
           publicacoes={publicacoes}
+          analyses={analyses}
           headers={{
             dashboards: dashboardsHeader,
             datastories: datastoriesHeader,
             publications: publicationsHeader,
+            analyses: analysesHeader,
           }}
           urls={{
             dashboardsHref,

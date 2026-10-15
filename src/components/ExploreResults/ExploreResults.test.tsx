@@ -44,7 +44,7 @@ const initialResults: ExploreResultsState = {
   ],
   total: 1,
   totalPages: 1,
-  tabTotals: { dashboards: 1, datastories: 1, publications: 1 },
+  tabTotals: { dashboards: 1, datastories: 1, publications: 1, analyses: 0 },
 };
 
 const localPost: SearchIndexItem = {

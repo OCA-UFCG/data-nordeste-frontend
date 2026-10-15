@@ -65,7 +65,37 @@ describe("selectLocalExploreResults", () => {
       dashboards: 2,
       datastories: 1,
       publications: 0,
+      analyses: 2,
     });
+  });
+
+  it("filters the analyses tab by panel and year", () => {
+    const byPanel = selectLocalExploreResults(
+      items,
+      new URLSearchParams("type_in=analysis&panel=painel-2"),
+    );
+    const byYear = selectLocalExploreResults(
+      items,
+      new URLSearchParams("type_in=analysis&year=2025"),
+    );
+
+    expect(byPanel.results.items.map((item) => item.title)).toEqual([
+      "Água potável",
+    ]);
+    expect(byYear.results.items.map((item) => item.title)).toEqual([
+      "Água regional",
+    ]);
+    expect(byPanel.analysesOptions.years).toEqual(["2026", "2025"]);
+  });
+
+  it("keeps the analyses tab selected even without analyses", () => {
+    const selection = selectLocalExploreResults(
+      items.filter((item) => item.type === "newsletter"),
+      new URLSearchParams("type_in=analysis&page=1"),
+    );
+
+    expect(selection.activeTab).toBe("analises");
+    expect(selection.results.items).toEqual([]);
   });
 
   it("selects the first available tab and clamps an invalid page", () => {

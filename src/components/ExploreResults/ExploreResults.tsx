@@ -12,17 +12,22 @@ import { useExploreNavigation } from "@/features/explore/navigation";
 import { useLocalExploreIndex } from "@/features/explore/useLocalExploreIndex";
 import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
 import { PostsGrid } from "@/components/PostsGrid/PostsGrid";
+import { AnalysesFilterBar } from "@/components/MacroThemeTabs/AnalysesFilterBar";
+import { ALL_OPTION } from "@/components/MacroThemeTabs/analysesFilters";
+import type { AnalysesFilterOptions } from "@/features/explore/localResults";
 
 type ExploreHeaders = {
   dashboards?: IPageHeader;
   datastories?: IPageHeader;
   publications?: IPageHeader;
+  analyses?: IPageHeader;
 };
 
 const TYPE_BY_TAB: Record<ExploreTab, string> = {
   paineis: "data-panel",
   datastories: "data-story",
   boletins: "newsletter,additional-content",
+  analises: "analysis",
 };
 
 function ResultsTabs({
@@ -51,7 +56,39 @@ function ResultsTabs({
   );
 }
 
+function ExploreAnalysesFilters({
+  options,
+}: {
+  options: AnalysesFilterOptions;
+}) {
+  const params = useSearchParams();
+  const { replaceQuery } = useExploreNavigation();
+
+  return (
+    <div className="w-full">
+      <AnalysesFilterBar
+        panels={options.panels}
+        years={options.years}
+        showSort={false}
+        value={{
+          panelId: params.get("panel") ?? ALL_OPTION,
+          year: params.get("year") ?? ALL_OPTION,
+          sort: "date_DESC",
+        }}
+        onChange={({ panelId, year }) =>
+          replaceQuery({
+            panel: panelId === ALL_OPTION ? null : panelId,
+            year: year === ALL_OPTION ? null : year,
+            page: "1",
+          })
+        }
+      />
+    </div>
+  );
+}
+
 function ResultsGrid({
+  analysesOptions,
   currentPage,
   error,
   loading,
@@ -59,6 +96,7 @@ function ResultsGrid({
   results,
   searchQuery,
 }: {
+  analysesOptions?: AnalysesFilterOptions;
   currentPage: number;
   error: boolean;
   loading: boolean;
@@ -69,6 +107,9 @@ function ResultsGrid({
   return (
     <section className="w-full bg-[#F8F7F8] py-9">
       <div className="flex w-full max-w-[1440px] flex-col items-center gap-4 px-4 mx-auto sm:px-20">
+        {analysesOptions && (
+          <ExploreAnalysesFilters options={analysesOptions} />
+        )}
         {error && (
           <div
             role="alert"
@@ -131,6 +172,9 @@ export function ExploreResults({
         results={state.results}
       />
       <ResultsGrid
+        analysesOptions={
+          activeTab === "analises" ? state.analysesOptions : undefined
+        }
         currentPage={currentPage}
         error={state.error}
         loading={false}

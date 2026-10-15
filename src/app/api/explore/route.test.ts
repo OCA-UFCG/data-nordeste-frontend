@@ -15,7 +15,12 @@ describe("GET /api/explore", () => {
       items: [],
       total: 0,
       totalPages: 0,
-      tabTotals: { dashboards: 1, datastories: 0, publications: 2 },
+      tabTotals: {
+        dashboards: 1,
+        datastories: 0,
+        publications: 2,
+        analyses: 0,
+      },
     });
 
     const response = await GET(

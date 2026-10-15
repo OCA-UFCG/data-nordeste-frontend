@@ -3,6 +3,7 @@ export const POST_TYPE_VALUES = [
   "data-panel",
   "newsletter",
   "data-story",
+  "analysis",
 ] as const;
 
 export type PostType = (typeof POST_TYPE_VALUES)[number];
@@ -12,6 +13,7 @@ export const POST_TYPE_LABELS: { [key in PostType]: string } = {
   "data-panel": "Painel de dados",
   "newsletter": "Boletim",
   "data-story": "Datastory",
+  "analysis": "Análise",
 };
 
 export const POSTS_ROUTE_POST_TYPES: PostType[] = [
@@ -25,7 +27,12 @@ export const EXPLORE_ROUTE_POST_TYPES: PostType[] = [
   "newsletter",
   "additional-content",
   "data-story",
+  "analysis",
 ];
+
+// TEMPORARY: until analyses are published the Análises tab also lists the
+// data panels, as in the Figma. Drop "data-panel" once real analyses exist.
+export const ANALYSES_TAB_POST_TYPES: PostType[] = ["analysis", "data-panel"];
 
 export const RECENT_SECTION_POST_TYPES: PostType[] = [
   "data-panel",

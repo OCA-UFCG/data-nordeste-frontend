@@ -9,15 +9,24 @@ import { Icon } from "@/components/Icon/Icon";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { useExploreNavigation } from "@/features/explore/navigation";
 import type { ExploreTabTotals } from "@/features/explore/contract";
+import { AnalysesFilterBar } from "./AnalysesFilterBar";
+import {
+  ALL_OPTION,
+  filterAnalyses,
+  listAnalysesYears,
+  type AnalysesFilterState,
+} from "./analysesFilters";
 
 type MacroThemeTabsProps = {
   dashboards: IPublication[];
   datastories: IPublication[];
   publicacoes: IPublication[];
+  analyses?: IPublication[];
   headers: {
     dashboards?: IPageHeader;
     datastories?: IPageHeader;
     publications?: IPageHeader;
+    analyses?: IPageHeader;
   };
   urls: {
     dashboardsHref: string;
@@ -33,12 +42,15 @@ type MacroThemeTabsProps = {
   clientSideNavigation?: boolean;
 };
 
-export type TabType = "paineis" | "datastories" | "boletins";
+export type TabType = "paineis" | "datastories" | "boletins" | "analises";
+
+const TAB_KEYS: TabType[] = ["paineis", "datastories", "boletins", "analises"];
 
 export function MacroThemeTabs({
   dashboards,
   datastories,
   publicacoes,
+  analyses = [],
   headers,
   urls,
   showViewAll = true,
@@ -54,6 +66,13 @@ export function MacroThemeTabs({
   const pathname = usePathname();
   const { pushQuery } = useExploreNavigation();
 
+  const [analysesFilter, setAnalysesFilter] = useState<AnalysesFilterState>({
+    panelId: ALL_OPTION,
+    year: ALL_OPTION,
+    sort: "date_DESC",
+  });
+  const visibleAnalyses = filterAnalyses(analyses, analysesFilter);
+
   const rawTypeIn = params.get("type_in") ?? "";
 
   const deriveTabFromUrl = (): TabType =>
@@ -61,12 +80,18 @@ export function MacroThemeTabs({
       ? "paineis"
       : rawTypeIn === "data-story"
         ? "datastories"
-        : rawTypeIn.includes(",")
-          ? "boletins"
-          : "paineis";
+        : rawTypeIn === "analysis"
+          ? "analises"
+          : rawTypeIn.includes(",")
+            ? "boletins"
+            : "paineis";
 
-  const [internalActiveTab, setInternalActiveTab] =
-    useState<TabType>("paineis");
+  // Uncontrolled mode (macrotheme page) keeps the tab in `?tab=` so that
+  // returning from a post with the browser's back button restores it.
+  const rawTab = params.get("tab");
+  const internalActiveTab: TabType = TAB_KEYS.includes(rawTab as TabType)
+    ? (rawTab as TabType)
+    : "paineis";
   const activeTab = tabsOnly
     ? deriveTabFromUrl()
     : controlledActiveTab ?? internalActiveTab;
@@ -77,9 +102,15 @@ export function MacroThemeTabs({
         paineis: "data-panel",
         datastories: "data-story",
         boletins: "newsletter,additional-content",
+        analises: "analysis",
       };
       if (clientSideNavigation) {
-        pushQuery({ type_in: typeInMap[tab], page: null });
+        pushQuery({
+          type_in: typeInMap[tab],
+          page: null,
+          panel: null,
+          year: null,
+        });
       } else {
         const newParams = new URLSearchParams(params.toString());
         newParams.set("type_in", typeInMap[tab]);
@@ -89,7 +120,16 @@ export function MacroThemeTabs({
     } else if (onTabChange) {
       onTabChange(tab);
     } else {
-      setInternalActiveTab(tab);
+      const newParams = new URLSearchParams(params.toString());
+      newParams.set("tab", tab);
+
+      // Native history API: Next syncs useSearchParams without refetching
+      // the server component or scrolling to the top.
+      window.history.replaceState(
+        null,
+        "",
+        pathname + "?" + newParams.toString(),
+      );
     }
   };
 
@@ -153,6 +193,7 @@ export function MacroThemeTabs({
     { key: "paineis", label: "Painéis" },
     { key: "datastories", label: "Narrativas" },
     { key: "boletins", label: "Boletins" },
+    { key: "analises", label: "Análises" },
   ];
 
   // Tabs are hidden when their content array is empty. On the explore page
@@ -168,6 +209,10 @@ export function MacroThemeTabs({
     if (tab.key === "boletins") {
       return tabTotals ? tabTotals.publications > 0 : publicacoes.length > 0;
     }
+
+    // INTENTIONAL: Análises stays visible while there is no content yet, so
+    // the section is announced before the first analysis is published.
+    if (tab.key === "analises") return true;
 
     return false;
   });
@@ -190,10 +235,8 @@ export function MacroThemeTabs({
               role="tab"
               aria-selected={activeTab === key}
               onClick={() => handleTabClick(key)}
-              
               style={{ padding: "18px 12px" }}
               className={`h-full flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] cursor-pointer ${
-
                 activeTab === key
                   ? "border-[#018F39] text-[#018F39]"
                   : "border-transparent text-[#7E797B] hover:text-[#292829] hover:border-gray-300"
@@ -213,6 +256,8 @@ export function MacroThemeTabs({
             renderHeader(headers.datastories, "Narrativa de Dados")}
           {activeTab === "boletins" &&
             renderHeader(headers.publications, "Publicações")}
+          {activeTab === "analises" &&
+            renderHeader(headers.analyses, "Análises")}
         </div>
       )}
 
@@ -243,6 +288,32 @@ export function MacroThemeTabs({
               "Publicações",
               urls.postsByThemeHref,
             )}
+          {activeTab === "analises" && (
+            <section className="animate-in fade-in duration-300 flex flex-col gap-6">
+              {renderHeader(headers.analyses, "Análises")}
+              <AnalysesFilterBar
+                panels={dashboards.flatMap((panel) =>
+                  panel.sys ? [{ id: panel.sys.id, title: panel.title }] : [],
+                )}
+                years={listAnalysesYears(analyses)}
+                value={analysesFilter}
+                onChange={setAnalysesFilter}
+              />
+              {visibleAnalyses.length > 0 ? (
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {visibleAnalyses.map((post, i) => (
+                    <ContentPost content={post} key={i} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[16px] text-[#7E797B]">
+                  {analyses.length > 0
+                    ? "Nenhuma análise encontrada para esses filtros."
+                    : "Nenhuma análise publicada ainda."}
+                </p>
+              )}
+            </section>
+          )}
         </div>
       )}
     </div>

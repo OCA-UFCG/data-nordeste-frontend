@@ -9,6 +9,7 @@ import {
   parsePostsQueryState,
   type PostsFilterForm,
 } from "@/features/posts/filters";
+import { ANALYSES_TAB_POST_TYPES } from "@/features/posts/postTypes";
 import {
   resolveExploreTab,
   type ExploreResults,
@@ -20,6 +21,7 @@ type ExploreQueryResponse = {
   dashboards: { total: number };
   datastories: { total: number };
   publications: { total: number };
+  analyses: { total: number };
 };
 
 type ExploreContentfulRequest = <T>(
@@ -33,6 +35,7 @@ const TYPE_BY_TAB: Record<ExploreTab, string | string[]> = {
   paineis: "data-panel",
   datastories: "data-story",
   boletins: ["newsletter", "additional-content"],
+  analises: ANALYSES_TAB_POST_TYPES,
 };
 
 function normalizeExploreParams(params: URLSearchParams): URLSearchParams {
@@ -73,6 +76,7 @@ function buildExploreQueryVariables(
     dashboardsFilter: tabFilter("paineis"),
     datastoriesFilter: tabFilter("datastories"),
     publicationsFilter: tabFilter("boletins"),
+    analysesFilter: tabFilter("analises"),
   };
 }
 
@@ -85,6 +89,7 @@ function mapExploreResponse(response: ExploreQueryResponse): ExploreResults {
       dashboards: response.dashboards.total,
       datastories: response.datastories.total,
       publications: response.publications.total,
+      analyses: response.analyses.total,
     },
   };
 }
