@@ -21,6 +21,7 @@ const TAB_HEADERS_IDS: Record<string, string> = {
   dataPanels: "dashboards",
   dataNarrative: "datastories",
   publications: "publications",
+  analyses: "analyses",
 };
 
 interface IPostsContent {
@@ -131,6 +132,7 @@ export default async function ExplorePage({
               dashboards: tabHeadersById.get("dashboards"),
               datastories: tabHeadersById.get("datastories"),
               publications: tabHeadersById.get("publications"),
+              analyses: tabHeadersById.get("analyses"),
             }}
             initialResults={initialResults}
           />

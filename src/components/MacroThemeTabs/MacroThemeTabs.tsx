@@ -13,15 +13,18 @@ type MacroThemeTabsProps = {
   dashboards: IPublication[];
   datastories: IPublication[];
   publicacoes: IPublication[];
+  analyses?: IPublication[];
   headers: {
     dashboards?: IPageHeader;
     datastories?: IPageHeader;
     publications?: IPageHeader;
+    analyses?: IPageHeader;
   };
   urls: {
     dashboardsHref: string;
     datastoriesHref: string;
     postsByThemeHref: string;
+    analysesHref?: string;
   };
   showViewAll?: boolean;
   tabsOnly?: boolean;
@@ -32,14 +35,15 @@ type MacroThemeTabsProps = {
   clientSideNavigation?: boolean;
 };
 
-export type TabType = "paineis" | "datastories" | "boletins";
+export type TabType = "paineis" | "datastories" | "boletins" | "analises";
 
-const TAB_KEYS: TabType[] = ["paineis", "datastories", "boletins"];
+const TAB_KEYS: TabType[] = ["paineis", "datastories", "boletins", "analises"];
 
 export function MacroThemeTabs({
   dashboards,
   datastories,
   publicacoes,
+  analyses = [],
   headers,
   urls,
   showViewAll = true,
@@ -62,9 +66,11 @@ export function MacroThemeTabs({
       ? "paineis"
       : rawTypeIn === "data-story"
         ? "datastories"
-        : rawTypeIn.includes(",")
-          ? "boletins"
-          : "paineis";
+        : rawTypeIn === "analysis"
+          ? "analises"
+          : rawTypeIn.includes(",")
+            ? "boletins"
+            : "paineis";
 
   // Uncontrolled mode (macrotheme page) keeps the tab in `?tab=` so that
   // returning from a post with the browser's back button restores it.
@@ -82,6 +88,7 @@ export function MacroThemeTabs({
         paineis: "data-panel",
         datastories: "data-story",
         boletins: "newsletter,additional-content",
+        analises: "analysis",
       };
       if (clientSideNavigation) {
         pushQuery({ type_in: typeInMap[tab], page: null });
@@ -167,6 +174,7 @@ export function MacroThemeTabs({
     { key: "paineis", label: "Painéis" },
     { key: "datastories", label: "Narrativas" },
     { key: "boletins", label: "Boletins" },
+    { key: "analises", label: "Análises" },
   ];
 
   // Tabs are hidden when their content array is empty. On the explore page
@@ -182,6 +190,10 @@ export function MacroThemeTabs({
     if (tab.key === "boletins") {
       return tabTotals ? tabTotals.publications > 0 : publicacoes.length > 0;
     }
+
+    // INTENTIONAL: Análises stays visible while there is no content yet, so
+    // the section is announced before the first analysis is published.
+    if (tab.key === "analises") return true;
 
     return false;
   });
@@ -225,6 +237,8 @@ export function MacroThemeTabs({
             renderHeader(headers.datastories, "Narrativa de Dados")}
           {activeTab === "boletins" &&
             renderHeader(headers.publications, "Publicações")}
+          {activeTab === "analises" &&
+            renderHeader(headers.analyses, "Análises")}
         </div>
       )}
 
@@ -255,6 +269,22 @@ export function MacroThemeTabs({
               "Publicações",
               urls.postsByThemeHref,
             )}
+          {activeTab === "analises" &&
+            (analyses.length > 0 ? (
+              renderTabSection(
+                analyses,
+                headers.analyses,
+                "Análises",
+                urls.analysesHref ?? "",
+              )
+            ) : (
+              <section className="animate-in fade-in duration-300 flex flex-col gap-6">
+                {renderHeader(headers.analyses, "Análises")}
+                <p className="text-[16px] text-[#7E797B]">
+                  Nenhuma análise publicada ainda.
+                </p>
+              </section>
+            ))}
         </div>
       )}
     </div>

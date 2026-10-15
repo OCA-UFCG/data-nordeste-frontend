@@ -7,6 +7,7 @@ export type SearchItemType =
   | "data-story"
   | "data-story-detail"
   | "newsletter"
+  | "analysis"
   | "theme";
 
 export type SearchIndexItem = {

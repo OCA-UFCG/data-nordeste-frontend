@@ -48,6 +48,8 @@ export const getSearchTypeLabel = (item: Pick<SearchIndexItem, "type">) => {
       return "Boletim";
     case "additional-content":
       return "Notícia";
+    case "analysis":
+      return "Análise";
     case "theme":
       return "Macrotema";
     default:

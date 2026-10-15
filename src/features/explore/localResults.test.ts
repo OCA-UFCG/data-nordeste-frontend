@@ -65,7 +65,18 @@ describe("selectLocalExploreResults", () => {
       dashboards: 2,
       datastories: 1,
       publications: 0,
+      analyses: 0,
     });
+  });
+
+  it("keeps the analyses tab selected even without analyses", () => {
+    const selection = selectLocalExploreResults(
+      items,
+      new URLSearchParams("type_in=analysis&page=1"),
+    );
+
+    expect(selection.activeTab).toBe("analises");
+    expect(selection.results.items).toEqual([]);
   });
 
   it("selects the first available tab and clamps an invalid page", () => {

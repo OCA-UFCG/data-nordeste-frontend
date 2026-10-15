@@ -127,8 +127,8 @@ export const MACROTHEME_PAGE_QUERY = `
     }
 
     pageHeadersCollection(
-      where: { id_in: ["dataPanels", "dataNarrative", "publications"] }
-      limit: 3
+      where: { id_in: ["dataPanels", "dataNarrative", "publications", "analyses"] }
+      limit: 4
       preview: $preview
     ) {
       items {
