@@ -174,7 +174,8 @@ function buildAnalysesOptions(items: SearchIndexItem[]): AnalysesFilterOptions {
   );
 
   return {
-    panels: analyses
+    // The Painel filter lists the theme's panels, not analyses.
+    panels: items
       .filter((item) => item.type === "data-panel" && item.explorePost)
       .map((item) => ({
         id: item.explorePost!.contentfulId,
