@@ -41,7 +41,9 @@ const TYPE_BY_TAB: Record<ExploreTab, string | string[]> = {
 function normalizeExploreParams(params: URLSearchParams): URLSearchParams {
   const normalized = new URLSearchParams(params);
   const requestedPage = Number(normalized.get("page"));
-  const validSorts = Object.values(sortingTypes) as string[];
+
+  // "date_ASC" (Mais antigas) is only offered by the Análises filter bar.
+  const validSorts = [...Object.values(sortingTypes), "date_ASC"] as string[];
 
   if (!Number.isInteger(requestedPage) || requestedPage < 1) {
     normalized.set("page", "1");

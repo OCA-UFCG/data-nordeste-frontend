@@ -13,7 +13,11 @@ import { useLocalExploreIndex } from "@/features/explore/useLocalExploreIndex";
 import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
 import { PostsGrid } from "@/components/PostsGrid/PostsGrid";
 import { AnalysesFilterBar } from "@/components/MacroThemeTabs/AnalysesFilterBar";
-import { ALL_OPTION } from "@/components/MacroThemeTabs/analysesFilters";
+import {
+  ALL_OPTION,
+  ANALYSES_SORT_OPTIONS,
+  type AnalysesSort,
+} from "@/components/MacroThemeTabs/analysesFilters";
 import type { AnalysesFilterOptions } from "@/features/explore/localResults";
 
 type ExploreHeaders = {
@@ -56,6 +60,10 @@ function ResultsTabs({
   );
 }
 
+const resolveAnalysesSort = (sort: string | null): AnalysesSort =>
+  ANALYSES_SORT_OPTIONS.find((option) => option.value === sort)?.value ??
+  "date_DESC";
+
 function ExploreAnalysesFilters({
   options,
 }: {
@@ -69,16 +77,16 @@ function ExploreAnalysesFilters({
       <AnalysesFilterBar
         panels={options.panels}
         years={options.years}
-        showSort={false}
         value={{
           panelId: params.get("panel") ?? ALL_OPTION,
           year: params.get("year") ?? ALL_OPTION,
-          sort: "date_DESC",
+          sort: resolveAnalysesSort(params.get("sort")),
         }}
-        onChange={({ panelId, year }) =>
+        onChange={({ panelId, year, sort }) =>
           replaceQuery({
             panel: panelId === ALL_OPTION ? null : panelId,
             year: year === ALL_OPTION ? null : year,
+            sort: sort === "date_DESC" ? null : sort,
             page: "1",
           })
         }

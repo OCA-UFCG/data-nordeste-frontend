@@ -21,9 +21,6 @@ type AnalysesFilterBarProps = {
   years: string[];
   value: AnalysesFilterState;
   onChange: (value: AnalysesFilterState) => void;
-
-  // /explore already has its own ordering control next to the search bar.
-  showSort?: boolean;
 };
 
 // The trigger ships with an up/down icon; the field selects use a single
@@ -37,7 +34,6 @@ export function AnalysesFilterBar({
   years,
   value,
   onChange,
-  showSort = true,
 }: AnalysesFilterBarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
@@ -93,30 +89,28 @@ export function AnalysesFilterBar({
         </Select>
       </div>
 
-      {showSort && (
-        <Select
-          value={value.sort}
-          onValueChange={(sort) =>
-            onChange({ ...value, sort: sort as AnalysesSort })
-          }
+      <Select
+        value={value.sort}
+        onValueChange={(sort) =>
+          onChange({ ...value, sort: sort as AnalysesSort })
+        }
+      >
+        <SelectTrigger
+          aria-label="Ordenar"
+          className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 cursor-pointer gap-1 text-xs font-medium text-[#292829] shadow-none focus-visible:ring-0 sm:ml-4"
         >
-          <SelectTrigger
-            aria-label="Ordenar"
-            className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 cursor-pointer gap-1 text-xs font-medium text-[#292829] shadow-none focus-visible:ring-0 sm:ml-4"
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {ANALYSES_SORT_OPTIONS.map(({ value: sort, label }) => (
-                <SelectItem key={sort} value={sort} className="cursor-pointer">
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      )}
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {ANALYSES_SORT_OPTIONS.map(({ value: sort, label }) => (
+              <SelectItem key={sort} value={sort} className="cursor-pointer">
+                {label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
