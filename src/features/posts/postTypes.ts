@@ -30,6 +30,10 @@ export const EXPLORE_ROUTE_POST_TYPES: PostType[] = [
   "analysis",
 ];
 
+// TEMPORARY: until analyses are published the Análises tab also lists the
+// data panels, as in the Figma. Drop "data-panel" once real analyses exist.
+export const ANALYSES_TAB_POST_TYPES: PostType[] = ["analysis", "data-panel"];
+
 export const RECENT_SECTION_POST_TYPES: PostType[] = [
   "data-panel",
   "newsletter",

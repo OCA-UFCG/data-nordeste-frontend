@@ -32,7 +32,9 @@ export function filterAnalyses(
 ): IPublication[] {
   const filtered = posts.filter(
     (post) =>
-      (panelId === ALL_OPTION || post.panel?.sys.id === panelId) &&
+      (panelId === ALL_OPTION ||
+        post.sys?.id === panelId ||
+        post.panel?.sys.id === panelId) &&
       (year === ALL_OPTION || yearOf(post) === year),
   );
 

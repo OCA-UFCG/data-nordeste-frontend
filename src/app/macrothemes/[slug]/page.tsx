@@ -16,6 +16,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
+import { ANALYSES_TAB_POST_TYPES } from "@/features/posts/postTypes";
 
 interface IMacroThemePageContent {
   themeCollection: { items: MacroTheme[] };
@@ -102,8 +103,8 @@ export default async function MacroThemePage({
     (post) => post.type === "data-story",
   );
 
-  const analyses = postCollection.items.filter(
-    (post) => post.type === "analysis",
+  const analyses = postCollection.items.filter((post) =>
+    ANALYSES_TAB_POST_TYPES.includes(post.type),
   );
 
   const pageHeadersById = new Map(
