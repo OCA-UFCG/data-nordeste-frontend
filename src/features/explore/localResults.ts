@@ -73,7 +73,7 @@ function sortExploreItems(
     const leftDate = left.date ? Date.parse(left.date) : 0;
     const rightDate = right.date ? Date.parse(right.date) : 0;
 
-    return rightDate - leftDate;
+    return sorting === "date_ASC" ? leftDate - rightDate : rightDate - leftDate;
   });
 }
 

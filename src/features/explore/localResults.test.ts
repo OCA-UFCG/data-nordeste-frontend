@@ -86,6 +86,12 @@ describe("selectLocalExploreResults", () => {
       "Água regional",
     ]);
     expect(byPanel.analysesOptions.years).toEqual(["2026", "2025"]);
+    expect(
+      selectLocalExploreResults(
+        items,
+        new URLSearchParams("type_in=analysis&sort=date_ASC"),
+      ).results.items.map((item) => item.title),
+    ).toEqual(["Água regional", "Água potável"]);
   });
 
   it("keeps the analyses tab selected even without analyses", () => {
