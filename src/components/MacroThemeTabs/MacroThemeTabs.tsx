@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { IPublication, IPageHeader } from "@/utils/interfaces";
 import ContentPost from "../ContentPost/ContentPost";
@@ -36,6 +36,9 @@ type MacroThemeTabsProps = {
   showViewAll?: boolean;
   tabsOnly?: boolean;
   showHeaderInTabsOnly?: boolean;
+
+  // Rendered on the title row of the active tab (the Análises filters).
+  headerActions?: ReactNode;
   activeTab?: TabType;
   onTabChange?: (tab: TabType) => void;
   tabTotals?: ExploreTabTotals;
@@ -56,6 +59,7 @@ export function MacroThemeTabs({
   showViewAll = true,
   tabsOnly = false,
   showHeaderInTabsOnly = false,
+  headerActions,
   activeTab: controlledActiveTab,
   onTabChange,
   tabTotals,
@@ -133,22 +137,28 @@ export function MacroThemeTabs({
     }
   };
 
+  // Figma: actions sit on the title row on desktop; on mobile they drop
+  // below the subtitle so the title and its description stay together.
   const renderHeader = (
     header: IPageHeader | undefined,
     defaultTitle: string,
+    actions?: ReactNode,
   ) => (
-    <div className="flex flex-col gap-2">
+    <div className="grid grid-cols-1 gap-2 lg:grid-cols-[auto_1fr] lg:gap-x-4">
       <h2 className="text-[30px] font-semibold leading-[36px] tracking-[-0.0075em] text-[#292829]">
         {header?.title || defaultTitle}
       </h2>
+      {actions && (
+        <div className="order-last mt-2 lg:order-none lg:mt-0">{actions}</div>
+      )}
       {header && (
         <>
           {header.richSubtitle?.json ? (
-            <div className="text-[18px] font-normal leading-6 text-[#292829] [&_a]:font-medium [&_a]:text-[#077432] [&_a]:underline-offset-2 [&_a:hover]:underline [&_p]:mb-0 [&_p]:mt-0">
+            <div className="lg:col-span-2 text-[18px] font-normal leading-6 text-[#292829] [&_a]:font-medium [&_a]:text-[#077432] [&_a]:underline-offset-2 [&_a:hover]:underline [&_p]:mb-0 [&_p]:mt-0">
               {documentToReactComponents(header.richSubtitle.json)}
             </div>
           ) : header.subtitle ? (
-            <p className="text-[18px] font-normal leading-6 text-[#292829]">
+            <p className="lg:col-span-2 text-[18px] font-normal leading-6 text-[#292829]">
               {header.subtitle}
             </p>
           ) : null}
@@ -257,7 +267,7 @@ export function MacroThemeTabs({
           {activeTab === "boletins" &&
             renderHeader(headers.publications, "Publicações")}
           {activeTab === "analises" &&
-            renderHeader(headers.analyses, "Análises")}
+            renderHeader(headers.analyses, "Análises", headerActions)}
         </div>
       )}
 
@@ -290,15 +300,18 @@ export function MacroThemeTabs({
             )}
           {activeTab === "analises" && (
             <section className="animate-in fade-in duration-300 flex flex-col gap-6">
-              {renderHeader(headers.analyses, "Análises")}
-              <AnalysesFilterBar
-                panels={dashboards.flatMap((panel) =>
-                  panel.sys ? [{ id: panel.sys.id, title: panel.title }] : [],
-                )}
-                years={listAnalysesYears(analyses)}
-                value={analysesFilter}
-                onChange={setAnalysesFilter}
-              />
+              {renderHeader(
+                headers.analyses,
+                "Análises",
+                <AnalysesFilterBar
+                  panels={dashboards.flatMap((panel) =>
+                    panel.sys ? [{ id: panel.sys.id, title: panel.title }] : [],
+                  )}
+                  years={listAnalysesYears(analyses)}
+                  value={analysesFilter}
+                  onChange={setAnalysesFilter}
+                />,
+              )}
               {visibleAnalyses.length > 0 ? (
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {visibleAnalyses.map((post, i) => (
