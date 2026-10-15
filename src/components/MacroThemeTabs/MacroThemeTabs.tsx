@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { IPublication, IPageHeader } from "@/utils/interfaces";
 import ContentPost from "../ContentPost/ContentPost";
@@ -8,6 +9,13 @@ import { Icon } from "@/components/Icon/Icon";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { useExploreNavigation } from "@/features/explore/navigation";
 import type { ExploreTabTotals } from "@/features/explore/contract";
+import { AnalysesFilterBar } from "./AnalysesFilterBar";
+import {
+  ALL_OPTION,
+  filterAnalyses,
+  listAnalysesYears,
+  type AnalysesFilterState,
+} from "./analysesFilters";
 
 type MacroThemeTabsProps = {
   dashboards: IPublication[];
@@ -24,7 +32,6 @@ type MacroThemeTabsProps = {
     dashboardsHref: string;
     datastoriesHref: string;
     postsByThemeHref: string;
-    analysesHref?: string;
   };
   showViewAll?: boolean;
   tabsOnly?: boolean;
@@ -58,6 +65,13 @@ export function MacroThemeTabs({
   const router = useRouter();
   const pathname = usePathname();
   const { pushQuery } = useExploreNavigation();
+
+  const [analysesFilter, setAnalysesFilter] = useState<AnalysesFilterState>({
+    panelId: ALL_OPTION,
+    year: ALL_OPTION,
+    sort: "date_DESC",
+  });
+  const visibleAnalyses = filterAnalyses(analyses, analysesFilter);
 
   const rawTypeIn = params.get("type_in") ?? "";
 
@@ -269,22 +283,30 @@ export function MacroThemeTabs({
               "Publicações",
               urls.postsByThemeHref,
             )}
-          {activeTab === "analises" &&
-            (analyses.length > 0 ? (
-              renderTabSection(
-                analyses,
-                headers.analyses,
-                "Análises",
-                urls.analysesHref ?? "",
-              )
-            ) : (
-              <section className="animate-in fade-in duration-300 flex flex-col gap-6">
-                {renderHeader(headers.analyses, "Análises")}
+          {activeTab === "analises" && (
+            <section className="animate-in fade-in duration-300 flex flex-col gap-6">
+              {renderHeader(headers.analyses, "Análises")}
+              <AnalysesFilterBar
+                panels={dashboards}
+                years={listAnalysesYears(analyses)}
+                value={analysesFilter}
+                onChange={setAnalysesFilter}
+              />
+              {visibleAnalyses.length > 0 ? (
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {visibleAnalyses.map((post, i) => (
+                    <ContentPost content={post} key={i} />
+                  ))}
+                </div>
+              ) : (
                 <p className="text-[16px] text-[#7E797B]">
-                  Nenhuma análise publicada ainda.
+                  {analyses.length > 0
+                    ? "Nenhuma análise encontrada para esses filtros."
+                    : "Nenhuma análise publicada ainda."}
                 </p>
-              </section>
-            ))}
+              )}
+            </section>
+          )}
         </div>
       )}
     </div>

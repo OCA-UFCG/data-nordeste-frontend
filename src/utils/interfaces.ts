@@ -79,6 +79,9 @@ export interface IPublication {
   type: PostType;
   date: string;
   description?: ContentfulRichTextField;
+
+  // Only analyses use it: the data panel the analysis is about.
+  panel?: { sys: { id: string } } | null;
 }
 
 export interface ReportData {
