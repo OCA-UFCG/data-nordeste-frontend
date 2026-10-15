@@ -13,6 +13,7 @@ class FakeExploreContentfulClient {
       dashboards: { total: 13 },
       datastories: { total: 2 },
       publications: { total: 4 },
+      analyses: { total: 0 },
     } as T;
   };
 }
@@ -38,6 +39,7 @@ describe("fetchExploreResults", () => {
       dashboards: 13,
       datastories: 2,
       publications: 4,
+      analyses: 0,
     });
   });
 

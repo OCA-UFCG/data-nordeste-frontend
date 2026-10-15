@@ -29,6 +29,7 @@ const SECTION_HEADER_IDS = {
   dashboards: "dataPanels",
   datastories: "dataNarrative",
   publications: "publications",
+  analyses: "analyses",
 } as const;
 
 export async function generateMetadata({
@@ -88,6 +89,7 @@ export default async function MacroThemePage({
   const postsByThemeHref = `/explore?category=${encodeURIComponent(theme.sys.id)}&type_in=newsletter,additional-content&page=1`;
   const dashboardsHref = `/explore?category=${encodeURIComponent(theme.sys.id)}&page=1`;
   const datastoriesHref = `/explore?category=${encodeURIComponent(theme.sys.id)}&type_in=data-story&page=1`;
+  const analysesHref = `/explore?category=${encodeURIComponent(theme.sys.id)}&type_in=analysis&page=1`;
 
   const publicacoes = postCollection.items.filter(
     (post) => post.type === "newsletter" || post.type === "additional-content",
@@ -101,6 +103,10 @@ export default async function MacroThemePage({
     (post) => post.type === "data-story",
   );
 
+  const analyses = postCollection.items.filter(
+    (post) => post.type === "analysis",
+  );
+
   const pageHeadersById = new Map(
     pageHeadersCollection.items
       .filter((item): item is IPageHeader & { id: string } => Boolean(item?.id))
@@ -112,6 +118,7 @@ export default async function MacroThemePage({
   const publicationsHeader = pageHeadersById.get(
     SECTION_HEADER_IDS.publications,
   );
+  const analysesHeader = pageHeadersById.get(SECTION_HEADER_IDS.analyses);
 
   return (
     <HubTemplate>
@@ -151,15 +158,18 @@ export default async function MacroThemePage({
           dashboards={dashboards}
           datastories={datastories}
           publicacoes={publicacoes}
+          analyses={analyses}
           headers={{
             dashboards: dashboardsHeader,
             datastories: datastoriesHeader,
             publications: publicationsHeader,
+            analyses: analysesHeader,
           }}
           urls={{
             dashboardsHref,
             datastoriesHref,
             postsByThemeHref,
+            analysesHref,
           }}
         />
       </section>

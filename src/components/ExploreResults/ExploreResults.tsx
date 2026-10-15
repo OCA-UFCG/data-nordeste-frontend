@@ -17,12 +17,14 @@ type ExploreHeaders = {
   dashboards?: IPageHeader;
   datastories?: IPageHeader;
   publications?: IPageHeader;
+  analyses?: IPageHeader;
 };
 
 const TYPE_BY_TAB: Record<ExploreTab, string> = {
   paineis: "data-panel",
   datastories: "data-story",
   boletins: "newsletter,additional-content",
+  analises: "analysis",
 };
 
 function ResultsTabs({

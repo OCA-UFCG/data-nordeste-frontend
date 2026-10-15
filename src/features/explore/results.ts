@@ -20,6 +20,7 @@ type ExploreQueryResponse = {
   dashboards: { total: number };
   datastories: { total: number };
   publications: { total: number };
+  analyses: { total: number };
 };
 
 type ExploreContentfulRequest = <T>(
@@ -33,6 +34,7 @@ const TYPE_BY_TAB: Record<ExploreTab, string | string[]> = {
   paineis: "data-panel",
   datastories: "data-story",
   boletins: ["newsletter", "additional-content"],
+  analises: "analysis",
 };
 
 function normalizeExploreParams(params: URLSearchParams): URLSearchParams {
@@ -73,6 +75,7 @@ function buildExploreQueryVariables(
     dashboardsFilter: tabFilter("paineis"),
     datastoriesFilter: tabFilter("datastories"),
     publicationsFilter: tabFilter("boletins"),
+    analysesFilter: tabFilter("analises"),
   };
 }
 
@@ -85,6 +88,7 @@ function mapExploreResponse(response: ExploreQueryResponse): ExploreResults {
       dashboards: response.dashboards.total,
       datastories: response.datastories.total,
       publications: response.publications.total,
+      analyses: response.analyses.total,
     },
   };
 }

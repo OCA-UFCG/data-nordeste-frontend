@@ -15,6 +15,7 @@ const TYPES_BY_TAB: Record<ExploreTab, SearchIndexItem["type"][]> = {
   paineis: ["data-panel"],
   datastories: ["data-story"],
   boletins: ["newsletter", "additional-content"],
+  analises: ["analysis"],
 };
 
 export type LocalExploreSelection = {
@@ -33,6 +34,7 @@ function isPostType(type: SearchIndexItem["type"]): type is PostType {
     "data-panel",
     "newsletter",
     "data-story",
+    "analysis",
   ].includes(type);
 }
 
@@ -114,6 +116,9 @@ function resolveAvailableTab(
   items: SearchIndexItem[],
   requestedTab: ExploreTab,
 ): ExploreTab {
+  // INTENTIONAL: Análises is always visible, even before any analysis is
+  // published, so an empty selection must not bounce to another tab.
+  if (requestedTab === "analises") return requestedTab;
   if (totalForTab(items, requestedTab) > 0) return requestedTab;
 
   return firstAvailableTab(items) ?? requestedTab;
@@ -135,6 +140,7 @@ function buildTabTotals(items: SearchIndexItem[]): ExploreTabTotals {
     dashboards: totalForTab(items, "paineis"),
     datastories: totalForTab(items, "datastories"),
     publications: totalForTab(items, "boletins"),
+    analyses: totalForTab(items, "analises"),
   };
 }
 

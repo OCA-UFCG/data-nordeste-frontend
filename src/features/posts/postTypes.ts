@@ -3,6 +3,7 @@ export const POST_TYPE_VALUES = [
   "data-panel",
   "newsletter",
   "data-story",
+  "analysis",
 ] as const;
 
 export type PostType = (typeof POST_TYPE_VALUES)[number];
@@ -12,6 +13,7 @@ export const POST_TYPE_LABELS: { [key in PostType]: string } = {
   "data-panel": "Painel de dados",
   "newsletter": "Boletim",
   "data-story": "Datastory",
+  "analysis": "Análise",
 };
 
 export const POSTS_ROUTE_POST_TYPES: PostType[] = [
@@ -25,6 +27,7 @@ export const EXPLORE_ROUTE_POST_TYPES: PostType[] = [
   "newsletter",
   "additional-content",
   "data-story",
+  "analysis",
 ];
 
 export const RECENT_SECTION_POST_TYPES: PostType[] = [

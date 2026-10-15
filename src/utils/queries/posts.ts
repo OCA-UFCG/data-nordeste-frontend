@@ -69,6 +69,7 @@ export const EXPLORE_RESULTS_QUERY = `
     $dashboardsFilter: PostFilter
     $datastoriesFilter: PostFilter
     $publicationsFilter: PostFilter
+    $analysesFilter: PostFilter
     $skip: Int!
     $preview: Boolean
   ) {
@@ -97,6 +98,9 @@ export const EXPLORE_RESULTS_QUERY = `
       total
     }
     publications: postCollection(limit: 1, where: $publicationsFilter, preview: $preview) {
+      total
+    }
+    analyses: postCollection(limit: 1, where: $analysesFilter, preview: $preview) {
       total
     }
   }
@@ -128,8 +132,8 @@ export const EXPLORE_PAGE_QUERY = `
     }
 
     tabHeadersCollection: pageHeadersCollection(
-      where: { id_in: ["dataPanels", "dataNarrative", "publications"] }
-      limit: 3
+      where: { id_in: ["dataPanels", "dataNarrative", "publications", "analyses"] }
+      limit: 4
       preview: $preview
     ) {
       items {
