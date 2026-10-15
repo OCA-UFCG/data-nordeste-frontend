@@ -36,10 +36,12 @@ const TYPE_BY_TAB: Record<ExploreTab, string> = {
 
 function ResultsTabs({
   activeTab,
+  analysesOptions,
   headers,
   results,
 }: {
   activeTab: ExploreTab;
+  analysesOptions: AnalysesFilterOptions;
   headers: ExploreHeaders;
   results: ExploreResultsState;
 }) {
@@ -56,6 +58,11 @@ function ResultsTabs({
       activeTab={activeTab}
       tabTotals={results.tabTotals}
       clientSideNavigation
+      headerActions={
+        activeTab === "analises" && (
+          <ExploreAnalysesFilters options={analysesOptions} />
+        )
+      }
     />
   );
 }
@@ -73,30 +80,27 @@ function ExploreAnalysesFilters({
   const { replaceQuery } = useExploreNavigation();
 
   return (
-    <div className="w-full">
-      <AnalysesFilterBar
-        panels={options.panels}
-        years={options.years}
-        value={{
-          panelId: params.get("panel") ?? ALL_OPTION,
-          year: params.get("year") ?? ALL_OPTION,
-          sort: resolveAnalysesSort(params.get("sort")),
-        }}
-        onChange={({ panelId, year, sort }) =>
-          replaceQuery({
-            panel: panelId === ALL_OPTION ? null : panelId,
-            year: year === ALL_OPTION ? null : year,
-            sort: sort === "date_DESC" ? null : sort,
-            page: "1",
-          })
-        }
-      />
-    </div>
+    <AnalysesFilterBar
+      panels={options.panels}
+      years={options.years}
+      value={{
+        panelId: params.get("panel") ?? ALL_OPTION,
+        year: params.get("year") ?? ALL_OPTION,
+        sort: resolveAnalysesSort(params.get("sort")),
+      }}
+      onChange={({ panelId, year, sort }) =>
+        replaceQuery({
+          panel: panelId === ALL_OPTION ? null : panelId,
+          year: year === ALL_OPTION ? null : year,
+          sort: sort === "date_DESC" ? null : sort,
+          page: "1",
+        })
+      }
+    />
   );
 }
 
 function ResultsGrid({
-  analysesOptions,
   currentPage,
   error,
   loading,
@@ -104,7 +108,6 @@ function ResultsGrid({
   results,
   searchQuery,
 }: {
-  analysesOptions?: AnalysesFilterOptions;
   currentPage: number;
   error: boolean;
   loading: boolean;
@@ -115,9 +118,6 @@ function ResultsGrid({
   return (
     <section className="w-full bg-[#F8F7F8] py-9">
       <div className="flex w-full max-w-[1440px] flex-col items-center gap-4 px-4 mx-auto sm:px-20">
-        {analysesOptions && (
-          <ExploreAnalysesFilters options={analysesOptions} />
-        )}
         {error && (
           <div
             role="alert"
@@ -176,13 +176,11 @@ export function ExploreResults({
     <>
       <ResultsTabs
         activeTab={activeTab}
+        analysesOptions={state.analysesOptions}
         headers={headers}
         results={state.results}
       />
       <ResultsGrid
-        analysesOptions={
-          activeTab === "analises" ? state.analysesOptions : undefined
-        }
         currentPage={currentPage}
         error={state.error}
         loading={false}
