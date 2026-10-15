@@ -6,7 +6,7 @@ import { selectLocalExploreResults } from "./localResults";
 function post(
   id: string,
   title: string,
-  type: "data-panel" | "data-story" | "newsletter",
+  type: "data-panel" | "data-story" | "newsletter" | "analysis",
   date: string,
   themeId: string,
 ): SearchIndexItem {
@@ -65,33 +65,46 @@ describe("selectLocalExploreResults", () => {
       dashboards: 2,
       datastories: 1,
       publications: 0,
-      analyses: 2,
+      analyses: 0,
     });
   });
 
-  it("filters the analyses tab by panel and year", () => {
-    const byPanel = selectLocalExploreResults(
+  it("lists only analyses in the analyses tab, never panels", () => {
+    const selection = selectLocalExploreResults(
       items,
-      new URLSearchParams("type_in=analysis&panel=painel-2"),
-    );
-    const byYear = selectLocalExploreResults(
-      items,
-      new URLSearchParams("type_in=analysis&year=2025"),
+      new URLSearchParams("type_in=analysis"),
     );
 
-    expect(byPanel.results.items.map((item) => item.title)).toEqual([
+    expect(selection.results.items).toEqual([]);
+    expect(selection.analysesOptions.panels.map((p) => p.title)).toEqual([
       "Água potável",
-    ]);
-    expect(byYear.results.items.map((item) => item.title)).toEqual([
       "Água regional",
     ]);
-    expect(byPanel.analysesOptions.years).toEqual(["2026", "2025"]);
-    expect(
-      selectLocalExploreResults(
-        items,
-        new URLSearchParams("type_in=analysis&sort=date_ASC"),
-      ).results.items.map((item) => item.title),
-    ).toEqual(["Água regional", "Água potável"]);
+  });
+
+  it("filters analyses by year and sorts them", () => {
+    const withAnalyses = [
+      ...items,
+      post("analise-1", "Seca 2025", "analysis", "2025-02-01", "agua"),
+      post("analise-2", "Seca 2026", "analysis", "2026-02-01", "agua"),
+    ];
+    const byYear = selectLocalExploreResults(
+      withAnalyses,
+      new URLSearchParams("type_in=analysis&year=2025"),
+    );
+    const oldestFirst = selectLocalExploreResults(
+      withAnalyses,
+      new URLSearchParams("type_in=analysis&sort=date_ASC"),
+    );
+
+    expect(byYear.results.items.map((item) => item.title)).toEqual([
+      "Seca 2025",
+    ]);
+    expect(oldestFirst.results.items.map((item) => item.title)).toEqual([
+      "Seca 2025",
+      "Seca 2026",
+    ]);
+    expect(byYear.analysesOptions.years).toEqual(["2026", "2025"]);
   });
 
   it("keeps the analyses tab selected even without analyses", () => {
