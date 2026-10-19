@@ -295,7 +295,7 @@ export const SearchBar = ({
                 <div className="max-h-[360px] overflow-auto px-1">
                   {suggestions.map((item) => (
                     <Link
-                      className="flex h-8 min-w-32 items-center gap-2 px-2 py-1.5 text-left transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
+                      className="flex h-8 min-w-32 items-center gap-2 px-2 py-1.5 text-left transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] focus-visible:ring-inset"
                       href={item.href}
                       key={item.id}
                       onMouseDown={(e) => e.preventDefault()}
@@ -328,7 +328,7 @@ export const SearchBar = ({
 
               {!hideViewAll && (
                 <Link
-                  className="flex h-9 items-center justify-between border-t border-[#EDEDED] px-4 py-2 text-sm font-normal leading-5 text-[#018F39] transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none"
+                  className="flex h-9 items-center justify-between border-t border-[#EDEDED] px-4 py-2 text-sm font-normal leading-5 text-[#018F39] transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] focus-visible:ring-inset"
                   href={buildExploreSearchHref(query)}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {

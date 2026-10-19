@@ -249,7 +249,7 @@ export function ExploreFilters({
                 >
                   <SelectTrigger
                     aria-label="Ordenar por"
-                    className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-0"
+                    className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-2 focus-visible:ring-[#018F39]"
                   >
                     <SelectValue placeholder="Mais recentes" />
                   </SelectTrigger>
@@ -368,7 +368,7 @@ export function ExploreFilters({
           >
             <SelectTrigger
               aria-label="Ordenar por"
-              className="flex-1 h-10 border border-[#EFEFEF] !bg-grey-100 !px-4 text-xs font-medium text-[#292829] shadow-none hover:!bg-grey-200 focus-visible:ring-0 data-[state=open]:!bg-grey-200"
+              className="flex-1 h-10 border border-[#EFEFEF] !bg-grey-100 !px-4 text-xs font-medium text-[#292829] shadow-none hover:!bg-grey-200 focus-visible:ring-2 focus-visible:ring-[#018F39] data-[state=open]:!bg-grey-200"
             >
               <span className="text-xs font-medium text-[#292829]" />
               <SelectValue placeholder="Ordenar por" />
