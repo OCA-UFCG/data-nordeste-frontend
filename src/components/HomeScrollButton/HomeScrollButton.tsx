@@ -2,9 +2,10 @@
 
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
+import { MAIN_CONTENT_ID } from "@/components/SkipLink/SkipLink";
 
 function getHomeSections(): HTMLElement[] {
-  const root = document.getElementById("root");
+  const root = document.getElementById(MAIN_CONTENT_ID);
 
   if (!root) return [];
 

@@ -12,9 +12,9 @@ const HeaderSection = ({ content }: { content: ISection[] }) => {
   );
 
   return (
-    <div className="sticky top-0 left-0 z-50 bg-white">
+    <header className="sticky top-0 left-0 z-50 bg-white">
       <ResponsiveHeader content={orderedContent} />
-    </div>
+    </header>
   );
 };
 
