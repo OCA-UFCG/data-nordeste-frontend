@@ -8,9 +8,9 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Conexoes",
+  title: "Conexões",
   description:
-    "Rede de parceiros e iniciativas conectadas ao Data Nordeste e a producao de dados para o desenvolvimento regional.",
+    "Rede de parceiros e iniciativas conectadas ao Data Nordeste e à produção de dados para o desenvolvimento regional.",
   path: "/connections",
 });
 

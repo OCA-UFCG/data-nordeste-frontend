@@ -26,7 +26,7 @@ const BANNER_LIMIT = process.env.NEXT_PUBLIC_APP_ENV === "beta" ? 4 : 6;
 
 export const metadata: Metadata = buildMetadata({
   description:
-    "Consulte dados, indicadores, paineis interativos, datastories e publicacoes sobre desenvolvimento regional no Nordeste brasileiro.",
+    "Consulte dados, indicadores, painéis interativos, datastories e publicações sobre desenvolvimento regional no Nordeste brasileiro.",
   path: "/",
 });
 
