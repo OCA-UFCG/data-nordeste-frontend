@@ -41,7 +41,10 @@ const PreviewContent = ({ header, cards }: PreviewContentProps) => {
       <div className="flex flex-col gap-2 lg:flex-row lg:gap-3 justify-between w-full">
         <h2 className="text-xl lg:text-3xl font-semibold">{header?.title}</h2>
         <Select onValueChange={handleFilterChange}>
-          <SelectTrigger className="w-full lg:w-[180px] min-h-[36px]">
+          <SelectTrigger
+            aria-label="Filtrar por estado"
+            className="w-full lg:w-[180px] min-h-[36px]"
+          >
             <SelectValue placeholder="Nordeste" />
           </SelectTrigger>
           <SelectContent>

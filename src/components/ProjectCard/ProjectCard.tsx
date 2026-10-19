@@ -7,7 +7,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
 
   return (
     <div className="flex flex-col md:flex-row gap-4 justify-between items-center w-full bg-white border border-grey-200 rounded-md hover:scale-[1.01] transition-transform duration-300">
-      <a href={link} className="w-full h-full">
+      <a href={link} className="w-full h-full" aria-label={name}>
         <ContentfulImage
           className="w-full h-full object-cover rounded-t-md md:rounded-l-md md:rounded-tr-none"
           src={thumb?.url || ""}

@@ -16,6 +16,7 @@ export const STORAGE_KEY = "datane@feedback_submitted";
 export const channels: ISudeneChannel[] = [
   {
     name: "@sudenebr",
+    label: "SUDENE no YouTube",
     href: "https://www.youtube.com/sudenebr",
     icon: "youtube",
     size: 32,
@@ -23,6 +24,7 @@ export const channels: ISudeneChannel[] = [
 
   {
     name: "@sudenebr",
+    label: "SUDENE no Facebook",
     href: "https://www.facebook.com/sudenebr",
     icon: "facebook",
     size: 32,
@@ -30,6 +32,7 @@ export const channels: ISudeneChannel[] = [
 
   {
     name: "@sudenebr",
+    label: "SUDENE no Instagram",
     href: "https://www.instagram.com/sudenebr",
     icon: "instagram",
     size: 32,
@@ -37,6 +40,7 @@ export const channels: ISudeneChannel[] = [
 
   {
     name: "@sudenebr",
+    label: "SUDENE no LinkedIn",
     href: "https://br.linkedin.com/company/superintend-ncia-do-desenvolvimento-do-nordeste",
     icon: "linkedin",
     size: 32,

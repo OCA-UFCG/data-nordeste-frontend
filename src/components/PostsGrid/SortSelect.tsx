@@ -21,7 +21,10 @@ export const SortSelect = ({
 
   return (
     <Select value={defaultValue} onValueChange={onChange}>
-      <SelectTrigger className="w-full lg:w-fit hover:bg-grey-100 cursor-pointer">
+      <SelectTrigger
+        aria-label="Ordenar por"
+        className="w-full lg:w-fit hover:bg-grey-100 cursor-pointer"
+      >
         <SelectValue placeholder="Ordenar por" defaultValue={defaultValue} />
       </SelectTrigger>
       <SelectContent>

@@ -9,6 +9,10 @@ export type ContentfulRichTextField = {
 
 export interface ISudeneChannel {
   name: string;
+
+  // Accessible name for the icon-only link: the four channels share the same
+  // handle, so `name` alone would not tell a screen reader which network it is.
+  label: string;
   href: string;
   icon: string;
   size?: number;
