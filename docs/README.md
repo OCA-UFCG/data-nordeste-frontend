@@ -86,6 +86,10 @@ outside the repository and rendered through frontend route/component logic.
   - beta or Contentful preview: 60 seconds
   - production/default: 3600 seconds
 - Beta disables search indexing through Next.js metadata robots settings.
+- Google snippets (`<meta name="description">`) for `/data-panel/[id]` and
+  `/boletim/[id]` come from the short-text Contentful field `seoDescription`
+  on `panels` and `post`. Empty field falls back to the page's rich-text
+  description. `buildMetadata` still truncates to 155 characters.
 
 ## Integrations And Environment
 

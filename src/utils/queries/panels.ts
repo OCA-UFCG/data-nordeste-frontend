@@ -8,6 +8,9 @@ export const DATA_PANEL_QUERY = `
         macroTheme
         abovePanelDescription
         descriptionTitle
+        # IMPORTANT: seoDescription must exist on the panels content type in every
+        # Contentful environment before this ships; an unknown field fails the query.
+        seoDescription
         description {
           json
         }

@@ -8,6 +8,7 @@ import type { BoletimDetail, RelatedBoletim } from "@/features/boletim/types";
 import { extractPdfFileName } from "@/features/boletim/types";
 import { BoletimContent } from "./BoletimContent";
 import { richTextToPlainText } from "@/utils/richText";
+import { pickSearchSnippet } from "@/features/seo/searchSnippet";
 
 type BoletimDetailResponse = {
   postCollection: { items: BoletimDetail[] };
@@ -35,7 +36,10 @@ export async function generateMetadata({
 
   return buildMetadata({
     title: boletim.title,
-    description: richTextToPlainText(boletim.description),
+    description: pickSearchSnippet(
+      boletim.seoDescription,
+      richTextToPlainText(boletim.description),
+    ),
     path: `/boletim/${id}`,
     images: boletim.thumb?.url ? [boletim.thumb.url] : ["/banner.png"],
   });

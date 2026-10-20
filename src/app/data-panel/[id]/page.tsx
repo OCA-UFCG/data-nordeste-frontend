@@ -14,6 +14,7 @@ import { getRelatedPanelItems } from "@/features/search/relatedPanels";
 import Link from "next/link";
 import { Icon } from "@/components/Icon/Icon";
 import { MACROTHEME_ROUTE_BY_NAME } from "@/features/macrothemes/constants";
+import { pickSearchSnippet } from "@/features/seo/searchSnippet";
 
 interface IDataPanelContent {
   panelsCollection: { items: ReportData[] };
@@ -38,7 +39,10 @@ export async function generateMetadata({
     });
   }
 
-  const description = getPanelDescriptionText(panel) || panel.source;
+  const description = pickSearchSnippet(
+    panel.seoDescription,
+    getPanelDescriptionText(panel) || panel.source,
+  );
 
   return buildMetadata({
     title: panel.title,
