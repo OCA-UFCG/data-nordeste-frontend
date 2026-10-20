@@ -92,6 +92,7 @@ export interface ReportData {
   abovePanelDescription?: string;
   description?: ContentfulRichTextField;
   descriptionTitle?: string;
+  seoDescription?: string | null;
 }
 
 export interface MacroTheme {

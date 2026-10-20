@@ -10,6 +10,7 @@ export type BoletimDetail = {
   thumb: { url: string };
   date: string;
   description?: ContentfulRichTextField;
+  seoDescription?: string | null;
   categoryCollection: {
     items: { name: string; sys: { id: string } }[];
   };

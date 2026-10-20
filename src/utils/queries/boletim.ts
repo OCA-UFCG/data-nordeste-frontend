@@ -15,6 +15,9 @@ export const BOLETIM_DETAIL_QUERY = `
         thumb { url }
         date
         description: descriptionNew { json }
+        # IMPORTANT: seoDescription must exist on the post content type in every
+        # Contentful environment before this ships; an unknown field fails the query.
+        seoDescription
         categoryCollection(limit: 5) {
           items {
             name
