@@ -1,120 +1,92 @@
 import { describe, expect, it } from "vitest";
 import {
-  findPibRecord,
-  getPibRanking,
-  getPibSeries,
-  getPibYearOverYear,
+  findPibPoint,
+  getActivitiesOfYear,
+  getLatestPibYear,
+  getSelectionLabel,
   getVabShares,
   parsePibPanel,
+  resolveBreakdownYear,
 } from "./pibPanel";
 import {
   formatCompactBrl,
+  formatPercent,
   formatSignedPercent,
   formatWholeBrl,
 } from "./pibFormat";
-
-const EMPTY_VAB = {
-  agropecuaria: null,
-  industria: null,
-  servicos: null,
-  adm_publica: null,
-};
-
-const PAYLOAD = {
-  fonte: "IBGE",
-  unidade: "R$",
-  anos: [2022, 2023],
-  ufs: ["AL", "PB"],
-  registros: [
-    {
-      uf: "PB",
-      ano: 2023,
-      pib_total: 90e9,
-      pib_per_capita: 22_000,
-      vab: EMPTY_VAB,
-      impostos_liquidos: null,
-    },
-    {
-      uf: "PB",
-      ano: 2022,
-      pib_total: 80e9,
-      pib_per_capita: 20_000,
-      vab: {
-        agropecuaria: 5e9,
-        industria: 15e9,
-        servicos: 60e9,
-        adm_publica: null,
-      },
-      impostos_liquidos: 8e9,
-    },
-    {
-      uf: "AL",
-      ano: 2023,
-      pib_total: 100e9,
-      pib_per_capita: null,
-      vab: EMPTY_VAB,
-      impostos_liquidos: null,
-    },
-  ],
-};
+import { PIB_PANEL_PAYLOAD } from "./pibPanelFixtures";
 
 describe("parsePibPanel", () => {
   it("maps the backend payload to the panel model", () => {
-    const panel = parsePibPanel(PAYLOAD);
+    const panel = parsePibPanel(PIB_PANEL_PAYLOAD);
 
-    expect(panel.source).toBe("IBGE");
-    expect(panel.years).toEqual([2022, 2023]);
-    expect(panel.records[0]).toMatchObject({ uf: "PB", pibTotal: 90e9 });
+    expect(panel.selection).toEqual({ area: "ne", uf: "PB", municipio: null });
+    expect(panel.options.municipalities).toEqual([
+      { code: 2504009, name: "Campina Grande" },
+    ]);
+    expect(panel.vab[1].sectors.servicos).toBe(6e9);
+    expect(panel.activities[0]).toMatchObject({
+      municipalities: 8,
+      pibShare: 0.5,
+    });
   });
 
-  it("rejects a payload without registros, naming the expected shape", () => {
+  it("rejects a payload without serie, naming the expected shape", () => {
     expect(() => parsePibPanel({ fonte: "IBGE" })).toThrow(
-      "expected { fonte, anos[], ufs[], registros[] }",
+      "expected { fonte, recorte, opcoes, serie[], vab[], atividades[] }",
     );
   });
 });
 
 describe("PIB selectors", () => {
-  const panel = parsePibPanel(PAYLOAD);
+  const panel = parsePibPanel(PIB_PANEL_PAYLOAD);
 
-  it("orders one UF's series by year", () => {
-    expect(getPibSeries(panel, "PB").map((point) => point.ano)).toEqual([
-      2022, 2023,
-    ]);
+  it("finds the latest year and one year's point", () => {
+    expect(getLatestPibYear(panel)).toBe(2023);
+    expect(findPibPoint(panel, 2022)?.pibTotal).toBe(80e9);
   });
 
-  it("ranks UFs and drops those without the metric", () => {
-    expect(getPibRanking(panel, 2023, "pibTotal")).toEqual([
-      { uf: "AL", value: 100e9 },
-      { uf: "PB", value: 90e9 },
-    ]);
-    expect(getPibRanking(panel, 2023, "pibPerCapita")).toEqual([
-      { uf: "PB", value: 22_000 },
-    ]);
+  it("falls back to the latest earlier year for VAB and activities", () => {
+    expect(resolveBreakdownYear([2020, 2021], 2023)).toBe(2021);
+    expect(resolveBreakdownYear([2020, 2021], 2020)).toBe(2020);
+    expect(resolveBreakdownYear([2021], 2019)).toBeNull();
   });
 
   it("computes VAB shares over the sectors that have data", () => {
-    const shares = getVabShares(findPibRecord(panel, "PB", 2022)!);
+    const shares = getVabShares(panel.vab[1]);
 
-    expect(shares.map((item) => item.label)).toEqual([
-      "Serviços",
-      "Indústria",
-      "Agropecuária",
-    ]);
-    expect(shares[0].share).toBeCloseTo(0.75);
+    expect(shares[0]).toMatchObject({ label: "Serviços", share: 0.6 });
   });
 
-  it("computes year-over-year change only when both years exist", () => {
-    expect(getPibYearOverYear(panel, "PB", 2023)).toBeCloseTo(0.125);
-    expect(getPibYearOverYear(panel, "AL", 2023)).toBeNull();
+  it("orders a year's activities by number of municipalities", () => {
+    expect(
+      getActivitiesOfYear(panel, 2021).map((item) => item.municipalities),
+    ).toEqual([208, 8]);
+  });
+
+  it("names the selection by municipality, then state, then area", () => {
+    expect(getSelectionLabel(panel)).toBe("PB");
+    expect(
+      getSelectionLabel({
+        ...panel,
+        selection: { area: "ne", uf: null, municipio: null },
+      }),
+    ).toBe("Nordeste");
+    expect(
+      getSelectionLabel({
+        ...panel,
+        selection: { area: "ne", uf: "PB", municipio: 2504009 },
+      }),
+    ).toBe("Campina Grande (PB)");
   });
 });
 
 describe("PIB formatting", () => {
-  it("formats money and change in pt-BR", () => {
+  it("formats money and shares in pt-BR", () => {
     expect(formatCompactBrl(80e9)).toMatch(/^R\$\s80\sbi$/);
     expect(formatWholeBrl(20_000)).toMatch(/^R\$\s20\.000$/);
     expect(formatSignedPercent(0.125)).toBe("+12,5%");
+    expect(formatPercent(0.461)).toBe("46,1%");
     expect(formatCompactBrl(null)).toBe("—");
   });
 });

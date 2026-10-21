@@ -34,3 +34,13 @@ export function formatWholeBrl(value: number | null): string {
 export function formatSignedPercent(value: number | null): string {
   return value === null ? NO_VALUE : signedPercent.format(value);
 }
+
+const plainPercent = new Intl.NumberFormat("pt-BR", {
+  style: "percent",
+  maximumFractionDigits: 1,
+});
+
+/** Share as percent. Example: `formatPercent(0.461) === "46,1%"`. */
+export function formatPercent(value: number | null): string {
+  return value === null ? NO_VALUE : plainPercent.format(value);
+}

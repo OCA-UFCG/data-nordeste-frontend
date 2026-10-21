@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PibMobilePanel from "./PibMobilePanel";
-import type { PibPanel } from "@/features/panels/pibPanel";
+import { parsePibPanel, type PibPanel } from "@/features/panels/pibPanel";
+import { PIB_PANEL_PAYLOAD } from "@/features/panels/pibPanelFixtures";
 
 // Recharts' ResponsiveContainer measures its parent; jsdom has no layout engine.
 class ResizeObserverFake {
@@ -11,96 +12,98 @@ class ResizeObserverFake {
   disconnect(): void {}
 }
 
-const vab = (servicos: number) => ({
-  agropecuaria: 1e9,
-  industria: 2e9,
-  servicos,
-  adm_publica: 1e9,
-});
+/** Stands in for /api/paineis/pib: answers every request with one panel. */
+class PibPanelProxyFake {
+  readonly requested: string[] = [];
 
-const PANEL: PibPanel = {
-  source: "IBGE",
-  years: [2022, 2023],
-  ufs: ["BA", "PB"],
-  records: [
-    {
-      uf: "BA",
-      ano: 2022,
-      pibTotal: 400e9,
-      pibPerCapita: 27_000,
-      vab: vab(6e9),
-    },
-    {
-      uf: "BA",
-      ano: 2023,
-      pibTotal: 440e9,
-      pibPerCapita: 29_000,
-      vab: vab(6e9),
-    },
-    {
-      uf: "PB",
-      ano: 2022,
-      pibTotal: 80e9,
-      pibPerCapita: 20_000,
-      vab: vab(6e9),
-    },
-    {
-      uf: "PB",
-      ano: 2023,
-      pibTotal: 90e9,
-      pibPerCapita: 22_000,
-      vab: vab(16e9),
-    },
-  ],
+  constructor(private readonly panel: PibPanel) {}
+
+  readonly fetch = vi.fn(async (input: string): Promise<Response> => {
+    this.requested.push(input);
+
+    return Response.json(this.panel);
+  });
+}
+
+const PANEL = parsePibPanel(PIB_PANEL_PAYLOAD);
+
+const MUNICIPALITY_PANEL: PibPanel = {
+  ...PANEL,
+  selection: { area: "ne", uf: "PB", municipio: 2504009 },
+  series: [{ ano: 2022, pibTotal: 12e9, pibPerCapita: 30_000 }],
 };
 
 beforeEach(() => {
   vi.stubGlobal("ResizeObserver", ResizeObserverFake);
 });
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe("PibMobilePanel", () => {
-  it("opens on the latest year and the largest economy", () => {
-    render(<PibMobilePanel panel={PANEL} />);
+  it("opens on the latest year with the Power BI blocks in order", () => {
+    render(<PibMobilePanel initialPanel={PANEL} />);
 
-    expect(screen.getByLabelText("Estado")).toHaveValue("BA");
     expect(screen.getByLabelText("Ano")).toHaveValue("2023");
-    expect(screen.getByText("PIB 2023")).toBeInTheDocument();
-    expect(screen.getByText("+10%")).toBeInTheDocument();
-  });
-
-  it("updates the highlights and sector shares when the state changes", async () => {
-    render(<PibMobilePanel panel={PANEL} />);
-
-    await userEvent.selectOptions(screen.getByLabelText("Estado"), "PB");
-
-    expect(screen.getByText("+12,5%")).toBeInTheDocument();
+    expect(screen.getByText("PIB · 2023")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", {
-        name: "Valor adicionado por setor · PB · 2023",
-      }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/80% ·/)).toBeInTheDocument();
+      screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent),
+    ).toEqual([
+      "Evolução anual",
+      "Valor Adicionado Bruto (VAB) por setor",
+      "Atividade com maior VAB",
+    ]);
   });
 
-  it("switches the ranking metric", async () => {
-    render(<PibMobilePanel panel={PANEL} />);
+  it("explains that VAB falls back to the latest published year", () => {
+    render(<PibMobilePanel initialPanel={PANEL} />);
+
+    expect(
+      screen.getAllByText(
+        "Os dados de 2023 ainda não foram disponibilizados pelo IBGE. Mostrando 2021.",
+      ),
+    ).toHaveLength(2);
+    expect(screen.getByText("208 municípios · 29% do PIB")).toBeInTheDocument();
+  });
+
+  it("refetches through the proxy when a municipality is picked", async () => {
+    const proxy = new PibPanelProxyFake(MUNICIPALITY_PANEL);
+    vi.stubGlobal("fetch", proxy.fetch);
+    render(<PibMobilePanel initialPanel={PANEL} />);
+
+    await userEvent.selectOptions(
+      screen.getByLabelText("Município"),
+      "2504009",
+    );
+
+    expect(proxy.requested).toEqual([
+      "/api/paineis/pib?area=ne&uf=PB&municipio=2504009",
+    ]);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: "Campina Grande (PB)" }),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText("Ano")).toHaveValue("2022");
+  });
+
+  it("clears the municipality when the state changes", async () => {
+    const proxy = new PibPanelProxyFake(PANEL);
+    vi.stubGlobal("fetch", proxy.fetch);
+    render(<PibMobilePanel initialPanel={PANEL} />);
+
+    await userEvent.selectOptions(screen.getByLabelText("Estado"), "PE");
+
+    expect(proxy.requested).toEqual(["/api/paineis/pib?area=ne&uf=PE"]);
+  });
+
+  it("switches the trend metric", async () => {
+    render(<PibMobilePanel initialPanel={PANEL} />);
     const perCapita = screen.getByRole("button", { name: "PIB per capita" });
 
     await userEvent.click(perCapita);
 
     expect(perCapita).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "PIB total" })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
-  });
-
-  it("shows the selected state's series as a table", async () => {
-    render(<PibMobilePanel panel={PANEL} />);
-
-    await userEvent.selectOptions(screen.getByLabelText("Ano"), "2022");
-
-    expect(screen.getByText("PIB 2022")).toBeInTheDocument();
-    expect(screen.getAllByRole("row")).toHaveLength(3);
   });
 });

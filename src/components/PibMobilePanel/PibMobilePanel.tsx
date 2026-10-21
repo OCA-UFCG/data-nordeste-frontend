@@ -1,241 +1,219 @@
 "use client";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
-  findPibRecord,
-  getPibRanking,
-  getPibSeries,
-  getPibYearOverYear,
+  findPibPoint,
+  getActivitiesOfYear,
+  getLatestPibYear,
+  getSelectionLabel,
   getVabShares,
-  type PibMetric,
+  resolveBreakdownYear,
   type PibPanel,
 } from "@/features/panels/pibPanel";
+import { formatCompactBrl, formatWholeBrl } from "@/features/panels/pibFormat";
+import PibFilters from "@/components/PibMobilePanel/PibFilters";
 import {
-  formatCompactBrl,
-  formatSignedPercent,
-  formatWholeBrl,
-} from "@/features/panels/pibFormat";
-import {
-  PibRankingChart,
+  ActivitiesList,
   PibTrendChart,
   VabSharesList,
+  type PibTrendMetric,
 } from "@/components/PibMobilePanel/PibCharts";
+import { usePibPanel } from "@/components/PibMobilePanel/usePibPanel";
 
-const METRIC_OPTIONS: { value: PibMetric; label: string }[] = [
+const TREND_TABS: { value: PibTrendMetric; label: string }[] = [
   { value: "pibTotal", label: "PIB total" },
   { value: "pibPerCapita", label: "PIB per capita" },
 ];
 
-const METRIC_FORMATTERS: { [metric in PibMetric]: (value: number) => string } =
-  {
-    pibTotal: formatCompactBrl,
-    pibPerCapita: formatWholeBrl,
-  };
-
 /**
- * Native mobile version of the Power BI PIB panel: same indicators, as tappable
- * charts. Example: `<PibMobilePanel panel={await fetchPibPanel(...)} />`.
+ * Mobile version of the Power BI PIB panel, one block under the other in the
+ * same order: filters, headline numbers, yearly trend, VAB by sector and main
+ * activity. Example: `<PibMobilePanel initialPanel={await fetchPibPanel(...)} />`.
  */
-const PibMobilePanel = ({ panel }: { panel: PibPanel }) => {
-  const latestYear = panel.years.at(-1) ?? 0;
-  const [year, setYear] = useState(latestYear);
-  const [uf, setUf] = useState(
-    () =>
-      getPibRanking(panel, latestYear, "pibTotal")[0]?.uf ?? panel.ufs[0] ?? "",
+const PibMobilePanel = ({ initialPanel }: { initialPanel: PibPanel }) => {
+  const { panel, isLoading, hasError, select } = usePibPanel(initialPanel);
+  const [requestedYear, setYear] = useState(
+    getLatestPibYear(initialPanel) ?? 0,
   );
-  const [metric, setMetric] = useState<PibMetric>("pibTotal");
+
+  // A new selection may not cover the year picked before; show its latest one.
+  const year = findPibPoint(panel, requestedYear)
+    ? requestedYear
+    : getLatestPibYear(panel) ?? requestedYear;
 
   return (
-    <div className="flex w-full flex-col gap-6 bg-white p-4">
+    <div className="flex w-full flex-col gap-6 bg-white px-4 pb-6">
       <PibFilters
         panel={panel}
-        uf={uf}
         year={year}
-        onUfChange={setUf}
         onYearChange={setYear}
+        onSelect={select}
       />
-      <PibHighlights panel={panel} uf={uf} year={year} />
-      <PanelCard
-        title={`Evolução do PIB · ${uf}`}
-        hint="Toque em um ano para selecioná-lo."
+      {hasError && <LoadError />}
+      <div
+        aria-busy={isLoading}
+        className={`flex flex-col gap-8 transition-opacity ${isLoading ? "opacity-50" : ""}`}
       >
-        <PibTrendChart
-          series={getPibSeries(panel, uf)}
-          selectedYear={year}
-          onSelectYear={setYear}
-        />
-      </PanelCard>
-      <PibRankingCard
-        panel={panel}
-        uf={uf}
-        year={year}
-        metric={metric}
-        onMetricChange={setMetric}
-        onSelectUf={setUf}
-      />
-      <PanelCard title={`Valor adicionado por setor · ${uf} · ${year}`}>
-        <VabSharesList shares={getVabSharesFor(panel, uf, year)} />
-      </PanelCard>
-      <PibSeriesTable panel={panel} uf={uf} />
-      <p className="text-xs text-[#5b5b5b]">Fonte: {panel.source}.</p>
+        <PibHighlights panel={panel} year={year} />
+        <PibTrendSection panel={panel} year={year} onSelectYear={setYear} />
+        <VabSection panel={panel} year={year} />
+        <ActivitySection panel={panel} year={year} />
+        <PibSeriesTable panel={panel} />
+        <p className="text-xs text-[#5b5b5b]">Fonte: {panel.source}.</p>
+      </div>
     </div>
   );
 };
 
-const getVabSharesFor = (panel: PibPanel, uf: string, year: number) => {
-  const record = findPibRecord(panel, uf, year);
-
-  return record ? getVabShares(record) : [];
-};
-
-const PibFilters = ({
-  panel,
-  uf,
-  year,
-  onUfChange,
-  onYearChange,
-}: {
-  panel: PibPanel;
-  uf: string;
-  year: number;
-  onUfChange: (uf: string) => void;
-  onYearChange: (year: number) => void;
-}) => (
-  <div className="sticky top-0 z-10 grid grid-cols-2 gap-3 bg-white py-2">
-    <FilterSelect
-      label="Estado"
-      value={uf}
-      options={panel.ufs.map(String)}
-      onChange={onUfChange}
-    />
-    <FilterSelect
-      label="Ano"
-      value={String(year)}
-      options={[...panel.years].reverse().map(String)}
-      onChange={(value) => onYearChange(Number(value))}
-    />
-  </div>
+const LoadError = () => (
+  <p
+    role="alert"
+    className="rounded-md bg-orange-100 p-3 text-sm text-orange-800"
+  >
+    Não foi possível atualizar o painel. Mostrando o último recorte carregado.
+  </p>
 );
 
-const FilterSelect = ({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (value: string) => void;
-}) => (
-  <label className="flex flex-col gap-1 text-sm font-medium text-[#292829]">
-    {label}
-    <select
-      className="h-10 rounded-md border border-[#d0d0d0] bg-white px-3 text-base"
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-    >
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  </label>
-);
-
-const PibHighlights = ({
-  panel,
-  uf,
-  year,
-}: {
-  panel: PibPanel;
-  uf: string;
-  year: number;
-}) => {
-  const record = findPibRecord(panel, uf, year);
+const PibHighlights = ({ panel, year }: { panel: PibPanel; year: number }) => {
+  const point = findPibPoint(panel, year);
 
   return (
-    <dl className="grid grid-cols-2 gap-3">
-      <StatTile
-        label={`PIB ${year}`}
-        value={formatCompactBrl(record?.pibTotal ?? null)}
-      />
-      <StatTile
-        label="PIB per capita"
-        value={formatWholeBrl(record?.pibPerCapita ?? null)}
-      />
-      <StatTile
-        className="col-span-2"
-        label={`Variação sobre ${year - 1}`}
-        value={formatSignedPercent(getPibYearOverYear(panel, uf, year))}
-      />
-    </dl>
+    <div className="flex flex-col gap-3">
+      <h2 className="text-xl font-semibold text-[#292829]">
+        {getSelectionLabel(panel)}
+      </h2>
+      <dl className="grid grid-cols-2 gap-3">
+        <StatTile
+          label={`PIB · ${year}`}
+          value={formatCompactBrl(point?.pibTotal ?? null)}
+        />
+        <StatTile
+          label={`PIB per capita · ${year}`}
+          value={formatWholeBrl(point?.pibPerCapita ?? null)}
+        />
+      </dl>
+    </div>
   );
 };
 
-const StatTile = ({
-  label,
-  value,
-  className = "",
-}: {
-  label: string;
-  value: string;
-  className?: string;
-}) => (
-  <div
-    className={`flex flex-col gap-1 rounded-md bg-[#f5f7f5] p-3 ${className}`}
-  >
+const StatTile = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex flex-col gap-1 rounded-md border-l-4 border-orange-600 bg-orange-100 p-3">
     <dt className="text-xs font-medium text-[#5b5b5b]">{label}</dt>
     <dd className="text-xl font-semibold text-[#292829]">{value}</dd>
   </div>
 );
 
-const PibRankingCard = ({
+const PibTrendSection = ({
   panel,
-  uf,
   year,
-  metric,
-  onMetricChange,
-  onSelectUf,
+  onSelectYear,
 }: {
   panel: PibPanel;
-  uf: string;
   year: number;
-  metric: PibMetric;
-  onMetricChange: (metric: PibMetric) => void;
-  onSelectUf: (uf: string) => void;
-}) => (
-  <PanelCard
-    title={`Ranking dos estados · ${year}`}
-    hint="Toque em uma barra para ver o estado."
-  >
-    <div className="flex gap-2" role="group" aria-label="Indicador do ranking">
-      {METRIC_OPTIONS.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          aria-pressed={metric === option.value}
-          onClick={() => onMetricChange(option.value)}
-          className="h-9 rounded-full border border-green-800 px-4 text-sm font-medium text-green-900 aria-pressed:bg-green-800 aria-pressed:text-white"
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
-    <PibRankingChart
-      ranking={getPibRanking(panel, year, metric)}
-      selectedUf={uf}
-      valueFormatter={METRIC_FORMATTERS[metric]}
-      onSelectUf={onSelectUf}
-    />
-  </PanelCard>
+  onSelectYear: (year: number) => void;
+}) => {
+  const [metric, setMetric] = useState<PibTrendMetric>("pibTotal");
+
+  return (
+    <PanelSection
+      title="Evolução anual"
+      hint="Toque em um ano para selecioná-lo."
+    >
+      <div
+        className="flex gap-2"
+        role="group"
+        aria-label="Indicador da evolução anual"
+      >
+        {TREND_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            type="button"
+            aria-pressed={metric === tab.value}
+            onClick={() => setMetric(tab.value)}
+            className="h-9 rounded-full border border-orange-700 px-4 text-sm font-medium text-orange-800 aria-pressed:bg-orange-800 aria-pressed:text-white"
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <PibTrendChart
+        series={panel.series}
+        metric={metric}
+        selectedYear={year}
+        onSelectYear={onSelectYear}
+      />
+    </PanelSection>
+  );
+};
+
+const VabSection = ({ panel, year }: { panel: PibPanel; year: number }) => {
+  const vabYear = resolveBreakdownYear(
+    panel.vab.map(({ ano }) => ano),
+    year,
+  );
+  const vab = panel.vab.find(({ ano }) => ano === vabYear);
+
+  return (
+    <PanelSection title="Valor Adicionado Bruto (VAB) por setor">
+      <BreakdownYearNote requestedYear={year} shownYear={vabYear} />
+      {vab ? <VabSharesList shares={getVabShares(vab)} /> : <NoBreakdownData />}
+    </PanelSection>
+  );
+};
+
+const ActivitySection = ({
+  panel,
+  year,
+}: {
+  panel: PibPanel;
+  year: number;
+}) => {
+  const activityYear = resolveBreakdownYear(
+    panel.activities.map(({ ano }) => ano),
+    year,
+  );
+  const activities = activityYear
+    ? getActivitiesOfYear(panel, activityYear)
+    : [];
+
+  return (
+    <PanelSection title="Atividade com maior VAB">
+      <BreakdownYearNote requestedYear={year} shownYear={activityYear} />
+      {activities.length ? (
+        <ActivitiesList activities={activities} />
+      ) : (
+        <NoBreakdownData />
+      )}
+    </PanelSection>
+  );
+};
+
+/** Same notice as the Power BI panel: IBGE releases VAB later than PIB. */
+const BreakdownYearNote = ({
+  requestedYear,
+  shownYear,
+}: {
+  requestedYear: number;
+  shownYear: number | null;
+}) => {
+  if (shownYear === null || shownYear === requestedYear) return null;
+
+  return (
+    <p className="rounded-md bg-orange-100 p-3 text-xs text-orange-800">
+      Os dados de {requestedYear} ainda não foram disponibilizados pelo IBGE.
+      Mostrando {shownYear}.
+    </p>
+  );
+};
+
+const NoBreakdownData = () => (
+  <p className="text-sm text-[#5b5b5b]">Sem dados para este recorte.</p>
 );
 
 /** Table view of the trend chart, so the numbers never depend on the chart alone. */
-const PibSeriesTable = ({ panel, uf }: { panel: PibPanel; uf: string }) => (
-  <details className="rounded-md border border-[#e3e3e3] p-3">
-    <summary className="cursor-pointer text-sm font-medium text-green-900">
-      Ver dados em tabela · {uf}
+const PibSeriesTable = ({ panel }: { panel: PibPanel }) => (
+  <details className="rounded-md border border-orange-200 p-3">
+    <summary className="cursor-pointer text-sm font-medium text-orange-800">
+      Ver dados em tabela
     </summary>
     <table className="mt-3 w-full text-left text-sm">
       <thead>
@@ -246,8 +224,8 @@ const PibSeriesTable = ({ panel, uf }: { panel: PibPanel; uf: string }) => (
         </tr>
       </thead>
       <tbody>
-        {getPibSeries(panel, uf).map((point) => (
-          <tr key={point.ano} className="border-t border-[#efefef]">
+        {[...panel.series].reverse().map((point) => (
+          <tr key={point.ano} className="border-t border-orange-100">
             <td className="py-1">{point.ano}</td>
             <td className="py-1">{formatCompactBrl(point.pibTotal)}</td>
             <td className="py-1">{formatWholeBrl(point.pibPerCapita)}</td>
@@ -258,17 +236,17 @@ const PibSeriesTable = ({ panel, uf }: { panel: PibPanel; uf: string }) => (
   </details>
 );
 
-const PanelCard = ({
+const PanelSection = ({
   title,
   hint,
   children,
 }: {
   title: string;
   hint?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) => (
   <section className="flex flex-col gap-3">
-    <div>
+    <div className="border-l-4 border-orange-600 pl-3">
       <h3 className="text-lg font-semibold text-[#292829]">{title}</h3>
       {hint && <p className="text-xs text-[#5b5b5b]">{hint}</p>}
     </div>

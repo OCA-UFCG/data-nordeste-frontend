@@ -124,7 +124,7 @@ const PanelEmbed = ({
 
   return (
     <ResponsivePanel
-      mobile={<PibMobilePanel panel={mobilePibPanel} />}
+      mobile={<PibMobilePanel initialPanel={mobilePibPanel} />}
       desktop={powerBi}
     />
   );

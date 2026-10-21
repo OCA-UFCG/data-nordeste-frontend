@@ -1,4 +1,10 @@
-import { parsePibPanel, type PibPanel } from "@/features/panels/pibPanel";
+import {
+  DEFAULT_PIB_SELECTION,
+  parsePibPanel,
+  type PibPanel,
+  type PibPanelSelection,
+} from "@/features/panels/pibPanel";
+import { toPibSelectionQuery } from "@/features/panels/pibSelection";
 
 // Contentful panel ids are titles (`title_in` in DATA_PANEL_QUERY), so the PIB
 // panel lives at `/data-panel/pib`. Only this panel has a mobile version so far.
@@ -15,6 +21,7 @@ export type FetchPibPanelOptions = {
   getBaseUrl: () => string;
   fetcher?: PibPanelFetcher;
   revalidate: number;
+  selection?: PibPanelSelection;
 };
 
 /** True when the panel has a native mobile version. Example: `hasMobilePibPanel("PIB") === true`. */
@@ -23,19 +30,20 @@ export function hasMobilePibPanel(panelId: string): boolean {
 }
 
 /**
- * Loads the PIB panel from Automatic-Reporting `GET /paineis/pib`.
- * Returns null on any failure so the page falls back to the Power BI iframe.
+ * Loads one selection of the PIB panel from Automatic-Reporting `GET /paineis/pib`.
+ * Returns null on any failure so callers can fall back (Power BI iframe, 502).
  * Example: `await fetchPibPanel({ getBaseUrl: () => "http://127.0.0.1:8000", revalidate: 3600 })`.
  */
 export async function fetchPibPanel({
   getBaseUrl,
   fetcher = fetch,
   revalidate,
+  selection = DEFAULT_PIB_SELECTION,
 }: FetchPibPanelOptions): Promise<PibPanel | null> {
   let endpoint = "/paineis/pib";
 
   try {
-    endpoint = `${getBaseUrl()}/paineis/pib`;
+    endpoint = `${getBaseUrl()}/paineis/pib?${toPibSelectionQuery(selection)}`;
     const response = await fetcher(endpoint, { next: { revalidate } });
 
     return await readPibPanelResponse(endpoint, response);

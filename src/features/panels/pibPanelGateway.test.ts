@@ -1,19 +1,23 @@
 import { describe, expect, it, vi } from "vitest";
 import { fetchPibPanel, hasMobilePibPanel } from "./pibPanelGateway";
+import { PIB_PANEL_PAYLOAD } from "./pibPanelFixtures";
 
 const API_URL = "http://automatic-report.test";
-
-const PANEL_PAYLOAD = {
-  fonte: "IBGE",
-  anos: [2023],
-  ufs: ["PB"],
-  registros: [],
-};
 
 class PibPanelFetchFake {
   constructor(private readonly response: Response) {}
 
-  readonly fetch = vi.fn(async (): Promise<Response> => this.response);
+  readonly requested: string[] = [];
+
+  readonly fetch = vi.fn(
+    async (input: string): Promise<Response> => this.respondTo(input),
+  );
+
+  private respondTo(input: string): Response {
+    this.requested.push(input);
+
+    return this.response;
+  }
 }
 
 describe("hasMobilePibPanel", () => {
@@ -24,8 +28,8 @@ describe("hasMobilePibPanel", () => {
 });
 
 describe("fetchPibPanel", () => {
-  it("requests /paineis/pib with the revalidate window", async () => {
-    const backend = new PibPanelFetchFake(Response.json(PANEL_PAYLOAD));
+  it("requests the default selection with the revalidate window", async () => {
+    const backend = new PibPanelFetchFake(Response.json(PIB_PANEL_PAYLOAD));
 
     const panel = await fetchPibPanel({
       getBaseUrl: () => API_URL,
@@ -33,10 +37,26 @@ describe("fetchPibPanel", () => {
       revalidate: 3600,
     });
 
-    expect(panel?.years).toEqual([2023]);
-    expect(backend.fetch).toHaveBeenCalledWith(`${API_URL}/paineis/pib`, {
-      next: { revalidate: 3600 },
+    expect(panel?.series).toHaveLength(3);
+    expect(backend.fetch).toHaveBeenCalledWith(
+      `${API_URL}/paineis/pib?area=aas_21`,
+      { next: { revalidate: 3600 } },
+    );
+  });
+
+  it("forwards the selection as query params", async () => {
+    const backend = new PibPanelFetchFake(Response.json(PIB_PANEL_PAYLOAD));
+
+    await fetchPibPanel({
+      getBaseUrl: () => API_URL,
+      fetcher: backend.fetch,
+      revalidate: 60,
+      selection: { area: "ne", uf: "PB", municipio: 2504009 },
     });
+
+    expect(backend.requested[0]).toBe(
+      `${API_URL}/paineis/pib?area=ne&uf=PB&municipio=2504009`,
+    );
   });
 
   it("returns null and logs when the backend answers 503", async () => {
