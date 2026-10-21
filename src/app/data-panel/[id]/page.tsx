@@ -14,6 +14,15 @@ import { getRelatedPanelItems } from "@/features/search/relatedPanels";
 import Link from "next/link";
 import { Icon } from "@/components/Icon/Icon";
 import { MACROTHEME_ROUTE_BY_NAME } from "@/features/macrothemes/constants";
+import {
+  fetchPibPanel,
+  hasMobilePibPanel,
+} from "@/features/panels/pibPanelGateway";
+import { getAutomaticReportApiBaseUrl } from "@/features/reports/automaticReport";
+import { CONTENT_REVALIDATE_SECONDS } from "@/config/revalidation";
+import type { PibPanel } from "@/features/panels/pibPanel";
+import PibMobilePanel from "@/components/PibMobilePanel/PibMobilePanel";
+import ResponsivePanel from "@/components/ResponsivePanel/ResponsivePanel";
 
 interface IDataPanelContent {
   panelsCollection: { items: ReportData[] };
@@ -56,9 +65,10 @@ export default async function DataPanel({
 }) {
   const [{ id }, { pageName }] = await Promise.all([params, searchParams]);
 
-  const [content, searchIndex] = await Promise.all([
+  const [content, searchIndex, mobilePibPanel] = await Promise.all([
     getContent<IDataPanelContent>(DATA_PANEL_QUERY, { id }),
     getSearchIndex(),
+    loadMobilePibPanel(id),
   ]);
   const panels = content.panelsCollection;
 
@@ -80,7 +90,11 @@ export default async function DataPanel({
     <HubTemplate>
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">
         <div className="flex justify-center w-full items-center overflow-hidden">
-          <PowerBIContainer panel={panel} pageName={pageName} />
+          <PanelEmbed
+            panel={panel}
+            pageName={pageName}
+            mobilePibPanel={mobilePibPanel}
+          />
         </div>
       </div>
 
@@ -92,6 +106,38 @@ export default async function DataPanel({
     </HubTemplate>
   );
 }
+
+// Panels without a mobile version (or whose data failed to load) keep the Power
+// BI iframe on every viewport, exactly as before.
+const PanelEmbed = ({
+  panel,
+  pageName,
+  mobilePibPanel,
+}: {
+  panel: ReportData;
+  pageName?: string;
+  mobilePibPanel: PibPanel | null;
+}) => {
+  const powerBi = <PowerBIContainer panel={panel} pageName={pageName} />;
+
+  if (!mobilePibPanel) return powerBi;
+
+  return (
+    <ResponsivePanel
+      mobile={<PibMobilePanel panel={mobilePibPanel} />}
+      desktop={powerBi}
+    />
+  );
+};
+
+const loadMobilePibPanel = (id: string): Promise<PibPanel | null> => {
+  if (!hasMobilePibPanel(id)) return Promise.resolve(null);
+
+  return fetchPibPanel({
+    getBaseUrl: getAutomaticReportApiBaseUrl,
+    revalidate: CONTENT_REVALIDATE_SECONDS,
+  });
+};
 
 const PanelDescriptionSection = ({ panel }: { panel: ReportData }) => {
   if (!panel.descriptionTitle && !panel.description?.json) return null;
