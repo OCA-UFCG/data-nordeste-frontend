@@ -114,11 +114,15 @@ export const buildTrendOption = (
   };
 };
 
-const barSeries = (points: ChartPoint[], formatValue: ValueFormatter) => ({
+const barSeries = (
+  points: ChartPoint[],
+  formatValue: ValueFormatter,
+  color: string,
+) => ({
   type: "bar",
   data: points.map((point) => point.value),
   barMaxWidth: 36,
-  itemStyle: { color: ACCENT, borderRadius: [0, 4, 4, 0] },
+  itemStyle: { color, borderRadius: [0, 4, 4, 0] },
   label: {
     show: true,
     position: "right",
@@ -132,6 +136,7 @@ export const buildHorizontalBarOption = (
   points: ChartPoint[],
   formatValue: ValueFormatter,
   width: number,
+  color = ACCENT,
 ): ChartOption => ({
   ...baseOption(),
   grid: { left: 8, right: 96, top: 8, bottom: 8, containLabel: true },
@@ -155,7 +160,73 @@ export const buildHorizontalBarOption = (
       lineHeight: 18,
     },
   },
-  series: [barSeries(points, formatValue)],
+  series: [barSeries(points, formatValue, color)],
+});
+
+export type ColumnSeries = { name: string; color: string; values: number[] };
+
+export type ColumnConfig = {
+  categories: string[];
+  series: ColumnSeries[];
+  formatLabel: ValueFormatter;
+  formatValue: ValueFormatter;
+};
+
+const columnSeries = (series: ColumnSeries, formatLabel: ValueFormatter) => ({
+  type: "bar",
+  name: series.name,
+  data: series.values,
+  barMaxWidth: 36,
+  itemStyle: { color: series.color },
+  label: {
+    show: true,
+    position: "top",
+    fontSize: FONT_SIZE,
+    color: TEXT_COLOR,
+    formatter: ({ value }: { value: number }) => formatLabel(value),
+  },
+  labelLayout: { hideOverlap: true },
+});
+
+const columnLegend = (series: ColumnSeries[]) =>
+  series.length > 1
+    ? {
+        legend: {
+          bottom: 0,
+          icon: "circle",
+          itemWidth: 14,
+          itemHeight: 14,
+          textStyle: { fontSize: 12, fontWeight: 600, color: TEXT_COLOR },
+        },
+      }
+    : {};
+
+export const buildColumnOption = (config: ColumnConfig): ChartOption => ({
+  ...baseOption(),
+  ...columnLegend(config.series),
+  grid: {
+    left: 8,
+    right: 8,
+    top: 28,
+    bottom: config.series.length > 1 ? 32 : 8,
+    containLabel: true,
+  },
+  tooltip: {
+    ...TOOLTIP_BASE,
+    trigger: "axis",
+    axisPointer: { type: "shadow" },
+    valueFormatter: config.formatValue,
+  },
+  xAxis: {
+    type: "category",
+    data: config.categories,
+    axisTick: { show: false },
+    axisLabel: { fontSize: FONT_SIZE, fontWeight: 500, color: TEXT_COLOR },
+  },
+  yAxis: { type: "value", show: false },
+  series: config.series.map((series) =>
+    columnSeries(series, config.formatLabel),
+  ),
 });
 
 export type ChoroplethRegion = {

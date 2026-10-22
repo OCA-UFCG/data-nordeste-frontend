@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildChoroplethOption,
+  buildColumnOption,
   buildTrendOption,
 } from "@/features/panels/chartOptions";
 import { formatReaisAxis, formatReaisCompact } from "@/features/panels/format";
@@ -89,5 +90,35 @@ describe("buildChoroplethOption", () => {
 
     expect(roam(1200)).toBe(true);
     expect(roam(360)).toBe("scale");
+  });
+});
+
+describe("buildColumnOption", () => {
+  const config = {
+    categories: ["2012", "2021"],
+    formatLabel: (value: number) => value.toFixed(3),
+    formatValue: (value: number) => value.toFixed(3),
+  };
+  type ColumnOption = {
+    legend?: object;
+    series: { label: { formatter: (params: { value: number }) => string } }[];
+  };
+
+  it("shows a legend only when there is more than one series", () => {
+    const single = buildColumnOption({
+      ...config,
+      series: [{ name: "IDH", color: "#f5791a", values: [0.675, 0.702] }],
+    }) as ColumnOption;
+    const grouped = buildColumnOption({
+      ...config,
+      series: [
+        { name: "IDH", color: "#f5791a", values: [0.675, 0.702] },
+        { name: "IDH ajustado", color: "#fabd77", values: [0.493, 0.518] },
+      ],
+    }) as ColumnOption;
+
+    expect(single.legend).toBeUndefined();
+    expect(grouped.legend).toBeDefined();
+    expect(grouped.series[1].label.formatter({ value: 0.493 })).toBe("0.493");
   });
 });

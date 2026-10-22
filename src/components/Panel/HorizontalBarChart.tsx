@@ -12,14 +12,17 @@ export const HorizontalBarChart = ({
   points,
   formatValue,
   label,
+  color,
 }: {
   points: ChartPoint[];
   formatValue: ValueFormatter;
   label: string;
+  color?: string;
 }) => {
   const buildOption = useCallback(
-    (width: number) => buildHorizontalBarOption(points, formatValue, width),
-    [points, formatValue],
+    (width: number) =>
+      buildHorizontalBarOption(points, formatValue, width, color),
+    [points, formatValue, color],
   );
 
   return (

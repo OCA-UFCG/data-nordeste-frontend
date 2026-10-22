@@ -19,6 +19,12 @@ export const formatReaisCompact = (value: number, digits = 2): string => {
   return `R$ ${decimal(digits).format(value / scale.limit)} ${scale.suffix}`;
 };
 
+export const formatNumber = (value: number, digits = 0): string =>
+  decimal(digits).format(value);
+
+export const formatReais = (value: number): string =>
+  `R$ ${decimal(2).format(value)}`;
+
 export const formatPercent = (value: number, digits = 1): string =>
   `${decimal(digits).format(value)}%`;
 

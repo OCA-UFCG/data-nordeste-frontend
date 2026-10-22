@@ -1,19 +1,31 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
+// Cor do macrotema: faixa do painel e cabeçalho dos cards de destaque.
+export const PANEL_TONES = {
+  orange: { shell: "bg-orange-500", card: "bg-orange-900" },
+  pink: { shell: "bg-pink-600", card: "bg-pink-800" },
+} as const;
+
+export type PanelTone = keyof typeof PANEL_TONES;
+
 export const PanelShell = ({
   theme,
   icon: ThemeIcon,
   source,
+  tone = "orange",
   children,
 }: {
   theme: string;
   icon: LucideIcon;
   source: string;
+  tone?: PanelTone;
   children: ReactNode;
 }) => (
   <div className="mx-auto flex w-full max-w-[1440px] flex-col px-4 py-6 sm:px-6 lg:px-20">
-    <div className="flex w-full items-center justify-end gap-2 rounded-t-lg bg-orange-500 px-4 py-3 text-lg font-semibold text-white sm:px-6">
+    <div
+      className={`flex w-full items-center justify-end gap-2 rounded-t-lg px-4 py-3 text-lg font-semibold text-white sm:px-6 ${PANEL_TONES[tone].shell}`}
+    >
       <ThemeIcon aria-hidden size={22} />
       {theme}
     </div>
