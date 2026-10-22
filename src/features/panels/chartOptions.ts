@@ -188,7 +188,7 @@ const columnSeries = (series: ColumnSeries, formatLabel: ValueFormatter) => ({
   labelLayout: { hideOverlap: true },
 });
 
-const columnLegend = (series: ColumnSeries[]) =>
+const columnLegend = (series: { name: string }[]) =>
   series.length > 1
     ? {
         legend: {
@@ -317,4 +317,93 @@ export const buildChoroplethOption = (
       data: choroplethRegions(config),
     },
   ],
+});
+
+export type PieSlice = ChartPoint & { color: string };
+
+const percentLabel = new Intl.NumberFormat("pt-BR", {
+  maximumFractionDigits: 1,
+});
+
+const pieLabel = {
+  show: true,
+  position: "inside",
+  fontSize: 20,
+  fontWeight: "bold",
+  color: "#ffffff",
+  formatter: ({ percent }: { percent: number }) =>
+    `${percentLabel.format(percent)}%`,
+};
+
+export const buildPieOption = (
+  slices: PieSlice[],
+  formatValue: ValueFormatter,
+): ChartOption => ({
+  ...baseOption(),
+  ...columnLegend(slices.map((slice) => ({ name: slice.label }))),
+  tooltip: { ...TOOLTIP_BASE, trigger: "item", valueFormatter: formatValue },
+  series: [
+    {
+      type: "pie",
+      radius: "75%",
+      center: ["50%", "45%"],
+      label: pieLabel,
+      labelLine: { show: false },
+      data: slices.map((slice) => ({
+        name: slice.label,
+        value: slice.value,
+        itemStyle: { color: slice.color },
+      })),
+    },
+  ],
+});
+
+export type PyramidConfig = {
+  categories: string[];
+
+  // A série da esquerda é desenhada com valores negativos.
+  left: ColumnSeries;
+  right: ColumnSeries;
+  formatValue: ValueFormatter;
+  formatAxis: ValueFormatter;
+};
+
+const pyramidSeries = (series: ColumnSeries, sign: 1 | -1) => ({
+  type: "bar",
+  name: series.name,
+  stack: "piramide",
+  barCategoryGap: "20%",
+  data: series.values.map((value) => sign * value),
+  itemStyle: { color: series.color },
+});
+
+export const buildPyramidOption = (
+  config: PyramidConfig,
+  width: number,
+): ChartOption => ({
+  ...baseOption(),
+  ...columnLegend([config.left, config.right]),
+  grid: { left: 8, right: 16, top: 8, bottom: 32, containLabel: true },
+  tooltip: {
+    ...TOOLTIP_BASE,
+    trigger: "axis",
+    axisPointer: { type: "shadow" },
+    valueFormatter: (value: number) => config.formatValue(Math.abs(value)),
+  },
+  xAxis: {
+    type: "value",
+    splitNumber: isCompactChart(width) ? 2 : 4,
+    axisLabel: {
+      fontSize: 12,
+      color: MUTED_COLOR,
+      formatter: (value: number) => config.formatAxis(Math.abs(value)),
+    },
+  },
+  yAxis: {
+    type: "category",
+    data: config.categories,
+    axisTick: { show: false },
+    axisLabel: { fontSize: 12, color: TEXT_COLOR },
+  },
+  series: [pyramidSeries(config.left, -1), pyramidSeries(config.right, 1)],
 });

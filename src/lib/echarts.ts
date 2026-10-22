@@ -1,5 +1,5 @@
 import * as echarts from "echarts/core";
-import { BarChart, LineChart, MapChart } from "echarts/charts";
+import { BarChart, LineChart, MapChart, PieChart } from "echarts/charts";
 import {
   AriaComponent,
   GridComponent,
@@ -15,6 +15,7 @@ echarts.use([
   LegendComponent,
   LineChart,
   MapChart,
+  PieChart,
   SVGRenderer,
   TooltipComponent,
 ]);
