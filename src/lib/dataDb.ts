@@ -15,6 +15,7 @@ const getPool = (connectionString: string | undefined): Pool => {
   pool = new Pool({
     connectionString,
     max: 4,
+    connectionTimeoutMillis: 5000,
     statement_timeout: 15000,
     options: "-c default_transaction_read_only=on",
   });

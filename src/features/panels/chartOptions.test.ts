@@ -71,4 +71,23 @@ describe("buildChoroplethOption", () => {
       "&lt;b&gt;Recife&lt;/b&gt; (PE)",
     );
   });
+
+  it("enables zoom, keeping one-finger drag for page scroll on phones", () => {
+    const config = {
+      regions: [],
+      buckets: PIB_MAP_BUCKETS,
+      mapName: "test",
+      valueLabel: "PIB",
+      formatValue: (value: number) => formatReaisCompact(value),
+    };
+    const roam = (width: number) =>
+      (
+        buildChoroplethOption({ ...config, width }) as {
+          series: { roam: boolean | string }[];
+        }
+      ).series[0].roam;
+
+    expect(roam(1200)).toBe(true);
+    expect(roam(360)).toBe("scale");
+  });
 });

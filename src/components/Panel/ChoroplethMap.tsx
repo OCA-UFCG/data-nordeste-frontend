@@ -107,7 +107,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
     [visible, selectedCode, areaBounds],
   );
   const buildOption = useCallback(
-    () =>
+    (width: number) =>
       buildChoroplethOption({
         regions,
         buckets,
@@ -116,6 +116,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
         selectedCode,
         mapName,
         bounds,
+        width,
       }),
     [regions, buckets, valueLabel, formatValue, selectedCode, mapName, bounds],
   );
