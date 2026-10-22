@@ -79,7 +79,7 @@ export const IdhGroupView = ({
           <HighlightCard key={item.label} tone="orange" {...item} />
         ))}
       </PanelCarousel>
-      <div className="grid grid-cols-1 gap-6 2xl:grid-cols-2">
+      <div className="flex flex-col gap-6">
         <ChartCard title={`Evolução anual do IDH ${dimension}`}>
           <ColumnChart
             label={`Gráfico de colunas do IDH ${dimension} por ano`}
@@ -88,7 +88,7 @@ export const IdhGroupView = ({
             formatValue={formatIdh}
           />
         </ChartCard>
-        <ChartCard title={`Rendimento médio dos ocupados ${dimension}`}>
+        <ChartCard title={`Rendimento médio dos ocupados ${dimension} (R$)`}>
           <ColumnChart
             label={`Gráfico de colunas do rendimento médio ${dimension} por ano`}
             {...rendimento}

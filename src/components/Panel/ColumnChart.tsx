@@ -8,8 +8,9 @@ import {
   type ColumnSeries,
 } from "@/features/panels/chartOptions";
 
-// Largura mínima por categoria; abaixo disso o gráfico rola na horizontal.
-const SLOT_PER_BAR = 34;
+// Largura mínima por barra: cabe um rótulo de 5 caracteres ("0,655", "1.140")
+// sem encostar no vizinho. Abaixo disso o gráfico rola na horizontal.
+const SLOT_PER_BAR = 42;
 const SLOT_GAP = 24;
 
 // Legenda em HTML, fora da área que rola: no celular a do ECharts ficava no

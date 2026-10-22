@@ -177,11 +177,12 @@ const columnSeries = (series: ColumnSeries, formatLabel: ValueFormatter) => ({
   name: series.name,
   data: series.values,
   barMaxWidth: 36,
+  barGap: "12%",
   itemStyle: { color: series.color },
   label: {
     show: true,
     position: "top",
-    fontSize: FONT_SIZE,
+    fontSize: 12,
     color: TEXT_COLOR,
     formatter: ({ value }: { value: number }) => formatLabel(value),
   },
