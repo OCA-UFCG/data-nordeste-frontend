@@ -1,6 +1,9 @@
 import type { ChartPoint } from "@/features/panels/chartOptions";
 import {
+  firstValue,
   listYears,
+  UF_PATTERN,
+  type SearchParams,
   type YearRange,
 } from "@/features/panels/territorialFilters";
 import type { UfOption } from "@/features/panels/territorialOptions";
@@ -41,11 +44,6 @@ export const DEFAULT_IDH_FILTERS: IdhFilters = {
   visao: "geral",
 };
 
-type SearchParams = Record<string, string | string[] | undefined>;
-
-const firstValue = (value: string | string[] | undefined) =>
-  Array.isArray(value) ? value[0] : value;
-
 const isRecorte = (value?: string): value is IdhRecorte =>
   IDH_RECORTES.some((recorte) => recorte.value === value);
 
@@ -64,7 +62,7 @@ export const parseIdhFilters = (params: SearchParams): IdhFilters => {
       : DEFAULT_IDH_FILTERS.ano,
     recorte: isRecorte(recorte) ? recorte : DEFAULT_IDH_FILTERS.recorte,
     visao: isVisao(visao) ? visao : DEFAULT_IDH_FILTERS.visao,
-    ...(uf && /^[A-Z]{2}$/.test(uf) ? { uf } : {}),
+    ...(uf && UF_PATTERN.test(uf) ? { uf } : {}),
   };
 };
 
@@ -118,8 +116,9 @@ export type IdhPanelData = {
 
 const GERAL_VIEW = "des_idh.idh_geral_novo_view";
 
-// As views de sexo e cor trazem sigla_uf e agregacao em colunas trocadas;
-// regiao_metropolitana e o sufixo de estado_uf ("... - PE") são iguais nas três.
+// Nas views de sexo e cor a sigla está em estado_rm, não em sigla_uf (e a de
+// sexo também troca agregacao com estado_1). regiao_metropolitana e o sufixo
+// de estado_uf ("... - PE") são iguais nas três, por isso o filtro usa esses.
 const GROUPS = {
   sexo: {
     view: "des_idh.idh_sexo_novo_view",

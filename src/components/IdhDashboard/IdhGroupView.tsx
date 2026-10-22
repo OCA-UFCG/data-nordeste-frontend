@@ -4,10 +4,8 @@ import { ChartColumnIncreasing, Wallet } from "lucide-react";
 import { useMemo } from "react";
 import { ChartCard } from "@/components/Panel/ChartCard";
 import { ColumnChart } from "@/components/Panel/ColumnChart";
-import {
-  HighlightCard,
-  type HighlightItem,
-} from "@/components/Panel/HighlightCards";
+import { HighlightCard } from "@/components/Panel/HighlightCards";
+import type { KpiItem } from "@/components/Panel/KpiCards";
 import { SwipeRow } from "@/components/Panel/SwipeRow";
 import type {
   IdhGroupPoint,
@@ -20,7 +18,7 @@ import {
   IDH_COLORS,
   NO_DATA,
   yearLabels,
-} from "@/components/IdhDashboard/idhFormat";
+} from "@/features/panels/idh/idhFormat";
 
 type GroupMetric = "idh" | "rendimento";
 
@@ -35,7 +33,7 @@ const cardValue = (
   return point ? format(point[metric]) : NO_DATA;
 };
 
-const groupCards = (groups: IdhGroupSerie[], ano: number): HighlightItem[] => [
+const groupCards = (groups: IdhGroupSerie[], ano: number): KpiItem[] => [
   ...groups.map((group) => ({
     icon: ChartColumnIncreasing,
     label: `IDH · ${group.label}`,

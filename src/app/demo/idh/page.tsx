@@ -49,6 +49,8 @@ export default async function IdhDemoPage({
 }) {
   const panel = await loadPanel(parseIdhFilters(await searchParams));
 
+  // A key remonta as abas quando um link muda ?visao= sem trocar de página.
+
   return (
     <HubTemplate>
       <PanelShell
@@ -57,7 +59,7 @@ export default async function IdhDemoPage({
         source={SOURCE}
       >
         {panel ? (
-          <IdhDashboard data={panel} />
+          <IdhDashboard key={panel.filters.visao} data={panel} />
         ) : (
           <PanelMessage>
             Não foi possível consultar o banco de dados. Confira se o túnel para

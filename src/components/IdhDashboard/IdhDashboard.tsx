@@ -1,12 +1,12 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useId, useState, useTransition } from "react";
+import { useCallback, useId, useState } from "react";
 import { IdhFilterBar } from "@/components/IdhDashboard/IdhFilterBar";
 import { IdhGroupView } from "@/components/IdhDashboard/IdhGroupView";
 import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
 import { PanelHeader } from "@/components/Panel/PanelShell";
 import { PanelTabs } from "@/components/Panel/PanelTabs";
+import { usePanelNavigation } from "@/components/Panel/useTerritorialNavigation";
 import {
   buildIdhSearch,
   describeIdhSelection,
@@ -16,21 +16,10 @@ import {
   type IdhVisao,
 } from "@/features/panels/idh/idhPanel";
 
+// Trocar de aba não consulta o banco de novo: só atualiza a URL.
 const useIdhNavigation = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
-  const applyFilters = useCallback(
-    (next: IdhFilters) =>
-      startTransition(() =>
-        router.replace(`${pathname}${buildIdhSearch(next)}`, {
-          scroll: false,
-        }),
-      ),
-    [pathname, router],
-  );
-
-  // Trocar de aba não consulta o banco de novo: só atualiza a URL.
+  const { isPending, pathname, applyFilters } =
+    usePanelNavigation(buildIdhSearch);
   const showVisao = useCallback(
     (filters: IdhFilters) =>
       window.history.replaceState(

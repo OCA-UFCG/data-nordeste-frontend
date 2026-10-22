@@ -10,10 +10,8 @@ import {
 import { useMemo } from "react";
 import { ChartCard } from "@/components/Panel/ChartCard";
 import { ColumnChart } from "@/components/Panel/ColumnChart";
-import {
-  HighlightCard,
-  type HighlightItem,
-} from "@/components/Panel/HighlightCards";
+import { HighlightCard } from "@/components/Panel/HighlightCards";
+import type { KpiItem } from "@/components/Panel/KpiCards";
 import { HorizontalBarChart } from "@/components/Panel/HorizontalBarChart";
 import { RankedBars } from "@/components/Panel/RankedBars";
 import { SwipeRow } from "@/components/Panel/SwipeRow";
@@ -27,9 +25,9 @@ import {
   IDH_COLORS,
   NO_DATA,
   yearLabels,
-} from "@/components/IdhDashboard/idhFormat";
+} from "@/features/panels/idh/idhFormat";
 
-const overviewCards = (point?: IdhYearPoint): HighlightItem[] => {
+const overviewCards = (point?: IdhYearPoint): KpiItem[] => {
   const show = (format: (value: number) => string, key: keyof IdhYearPoint) =>
     point ? format(point[key]) : NO_DATA;
 
