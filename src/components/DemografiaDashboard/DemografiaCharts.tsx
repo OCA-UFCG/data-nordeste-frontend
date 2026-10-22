@@ -12,15 +12,15 @@ import {
   type DemografiaPanelData,
 } from "@/features/panels/demografia/demografiaPanel";
 import {
-  formatNumber,
   formatNumberAxis,
   formatNumberCompact,
+  formatPessoas,
 } from "@/features/panels/format";
 
 const MULHER_COLOR = "#c53d69";
 const HOMEM_COLOR = "#97b42e";
 const BAR_COLOR = "#e482a9";
-const pessoas = (value: number) => formatNumber(value);
+const formatSerieLabel = (value: number) => formatNumberCompact(value, 1);
 
 const SexoCharts = ({ data }: { data: DemografiaPanelData }) => {
   const slices = useMemo(
@@ -52,7 +52,7 @@ const SexoCharts = ({ data }: { data: DemografiaPanelData }) => {
       <ChartCard title="População por sexo">
         <PieChart
           slices={slices}
-          formatValue={pessoas}
+          formatValue={formatPessoas}
           label="Gráfico de pizza da população por sexo"
         />
       </ChartCard>
@@ -60,7 +60,7 @@ const SexoCharts = ({ data }: { data: DemografiaPanelData }) => {
         <PyramidChart
           label="Pirâmide etária da população por sexo"
           {...piramide}
-          formatValue={pessoas}
+          formatValue={formatPessoas}
           formatAxis={formatNumberAxis}
         />
       </ChartCard>
@@ -90,7 +90,7 @@ export const DemografiaCharts = ({ data }: { data: DemografiaPanelData }) => {
       <ChartCard title="Top 5 municípios mais populosos">
         <HorizontalBarChart
           points={top}
-          formatValue={pessoas}
+          formatValue={formatPessoas}
           color={BAR_COLOR}
           label="Gráfico de barras dos municípios mais populosos"
         />
@@ -98,7 +98,7 @@ export const DemografiaCharts = ({ data }: { data: DemografiaPanelData }) => {
       <ChartCard title="População por cor ou raça">
         <HorizontalBarChart
           points={data.corRaca}
-          formatValue={pessoas}
+          formatValue={formatPessoas}
           color={BAR_COLOR}
           label="Gráfico de barras da população por cor ou raça"
         />
@@ -107,8 +107,8 @@ export const DemografiaCharts = ({ data }: { data: DemografiaPanelData }) => {
         <ColumnChart
           label="Gráfico de colunas da população por censo"
           {...serie}
-          formatLabel={(value) => formatNumberCompact(value, 1)}
-          formatValue={pessoas}
+          formatLabel={formatSerieLabel}
+          formatValue={formatPessoas}
         />
       </ChartCard>
     </>

@@ -12,7 +12,7 @@ import {
   POPULACAO_MAP_BUCKETS,
   type DemografiaPanelData,
 } from "@/features/panels/demografia/demografiaPanel";
-import { formatNumber } from "@/features/panels/format";
+import { formatPessoas } from "@/features/panels/format";
 import {
   defaultTerritorialFilters,
   listYears,
@@ -22,7 +22,6 @@ import { describeTerritorialSelection } from "@/features/panels/territorialOptio
 const MESH_URL = "/maps/municipios-sudene.json";
 const YEARS = listYears(DEMOGRAFIA_YEAR_RANGE);
 const DEFAULTS = defaultTerritorialFilters(DEMOGRAFIA_YEAR_RANGE);
-const pessoas = (value: number) => formatNumber(value);
 
 export const DemografiaDashboard = ({
   data,
@@ -60,7 +59,7 @@ export const DemografiaDashboard = ({
             tone="pink"
             icon={Users}
             label="População residente"
-            value={populacao ? pessoas(populacao.value) : "Sem dados"}
+            value={populacao ? formatPessoas(populacao.value) : "Sem dados"}
           />
           <ChoroplethMap
             title="População por município"
@@ -68,7 +67,7 @@ export const DemografiaDashboard = ({
             regions={data.mapa}
             buckets={POPULACAO_MAP_BUCKETS}
             valueLabel="População"
-            formatValue={pessoas}
+            formatValue={formatPessoas}
             selectedCode={filters.mun}
             onSelectRegion={selectMunicipality}
           />

@@ -25,6 +25,10 @@ export const formatReaisCompact = (value: number, digits = 2): string =>
 export const formatNumber = (value: number, digits = 0): string =>
   decimal(digits).format(value);
 
+// Contagem de pessoas. Wrapper de um argumento: o ECharts passa o índice como
+// segundo, que formatNumber leria como casas decimais.
+export const formatPessoas = (value: number): string => formatNumber(value);
+
 export const formatReais = (value: number): string =>
   `R$ ${decimal(2).format(value)}`;
 
