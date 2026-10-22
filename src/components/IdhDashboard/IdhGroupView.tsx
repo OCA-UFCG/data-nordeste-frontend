@@ -6,13 +6,14 @@ import { ChartCard } from "@/components/Panel/ChartCard";
 import { ColumnChart } from "@/components/Panel/ColumnChart";
 import { HighlightCard } from "@/components/Panel/HighlightCards";
 import type { KpiItem } from "@/components/Panel/KpiCards";
-import { SwipeRow } from "@/components/Panel/SwipeRow";
+import { PanelCarousel } from "@/components/Panel/PanelCarousel";
 import type {
   IdhGroupPoint,
   IdhGroupSerie,
 } from "@/features/panels/idh/idhPanel";
 import {
   formatIdh,
+  formatIdhCard,
   formatRenda,
   formatRendaLabel,
   IDH_COLORS,
@@ -37,7 +38,7 @@ const groupCards = (groups: IdhGroupSerie[], ano: number): KpiItem[] => [
   ...groups.map((group) => ({
     icon: ChartColumnIncreasing,
     label: `IDH · ${group.label}`,
-    value: cardValue(group, ano, "idh", formatIdh),
+    value: cardValue(group, ano, "idh", formatIdhCard),
   })),
   ...groups.map((group) => ({
     icon: Wallet,
@@ -73,11 +74,11 @@ export const IdhGroupView = ({
 
   return (
     <div className="flex flex-col gap-6">
-      <SwipeRow label="Indicadores" columns="lg:grid-cols-4">
+      <PanelCarousel label="Indicadores" columns="lg:grid-cols-4">
         {groupCards(groups, ano).map((item) => (
           <HighlightCard key={item.label} tone="orange" {...item} />
         ))}
-      </SwipeRow>
+      </PanelCarousel>
       <div className="grid grid-cols-1 gap-6 2xl:grid-cols-2">
         <ChartCard title={`Evolução anual do IDH ${dimension}`}>
           <ColumnChart

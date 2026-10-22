@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { CircleDollarSign } from "lucide-react";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
-import { PanelMessage, PanelShell } from "@/components/Panel/PanelShell";
+import { IDH_ICON, IDH_TITLE } from "@/components/IdhDashboard/idhTheme";
+import { PanelPage } from "@/components/Panel/PanelPage";
+import { PanelMessage } from "@/components/Panel/PanelShell";
 import { buildMetadata } from "@/config/seo";
 import {
   loadIdhPanel,
@@ -53,20 +54,21 @@ export default async function IdhDemoPage({
 
   return (
     <HubTemplate>
-      <PanelShell
-        theme="Painel de Economia e Renda"
-        icon={CircleDollarSign}
-        source={SOURCE}
-      >
-        {panel ? (
-          <IdhDashboard key={panel.filters.visao} data={panel} />
-        ) : (
+      {panel ? (
+        <IdhDashboard key={panel.filters.visao} data={panel} source={SOURCE} />
+      ) : (
+        <PanelPage
+          title={IDH_TITLE}
+          icon={IDH_ICON}
+          tone="orange"
+          source={SOURCE}
+        >
           <PanelMessage>
             Não foi possível consultar o banco de dados. Confira se o túnel para
             o banco está ativo e se <code>DATA_DB_URL</code> está configurada.
           </PanelMessage>
-        )}
-      </PanelShell>
+        </PanelPage>
+      )}
     </HubTemplate>
   );
 }

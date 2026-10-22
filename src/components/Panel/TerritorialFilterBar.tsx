@@ -68,19 +68,21 @@ export type TerritorialFilterBarProps = {
   onChange: (next: TerritorialFilters) => void;
 };
 
-export const TerritorialFilterBar = ({
+type TerritorialSelectsProps = Omit<TerritorialFilterBarProps, "defaults">;
+
+// Só os quatro selects, para quem monta o próprio layout (ex.: PanelFilters).
+export const TerritorialSelects = ({
   filters,
-  defaults,
   years,
   ufs,
   municipios,
   onChange,
-}: TerritorialFilterBarProps) => {
+}: TerritorialSelectsProps) => {
   const id = useId();
   const { ano, area } = filters;
 
   return (
-    <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-[repeat(4,minmax(0,1fr))_auto] md:items-end">
+    <>
       <FilterSelect
         id={`${id}-ano`}
         label="Ano"
@@ -118,7 +120,16 @@ export const TerritorialFilterBar = ({
         ]}
         onChange={(value) => onChange({ ...filters, mun: value || undefined })}
       />
-      <ClearFiltersButton onClick={() => onChange(defaults)} />
-    </div>
+    </>
   );
 };
+
+export const TerritorialFilterBar = ({
+  defaults,
+  ...selects
+}: TerritorialFilterBarProps) => (
+  <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-[repeat(4,minmax(0,1fr))_auto] md:items-end">
+    <TerritorialSelects {...selects} />
+    <ClearFiltersButton onClick={() => selects.onChange(defaults)} />
+  </div>
+);

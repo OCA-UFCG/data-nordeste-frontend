@@ -3,11 +3,9 @@
 import { useId } from "react";
 import {
   ALL_OPTION,
-  ClearFiltersButton,
   FilterSelect,
 } from "@/components/Panel/TerritorialFilterBar";
 import {
-  DEFAULT_IDH_FILTERS,
   IDH_RECORTES,
   IDH_YEAR_RANGE,
   type IdhFilters,
@@ -21,7 +19,7 @@ const YEARS = listYears(IDH_YEAR_RANGE).map((year) => ({
   label: String(year),
 }));
 
-export const IdhFilterBar = ({
+export const IdhSelects = ({
   filters,
   ufs,
   onChange,
@@ -33,7 +31,7 @@ export const IdhFilterBar = ({
   const id = useId();
 
   return (
-    <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))_auto] md:items-end">
+    <>
       <FilterSelect
         id={`${id}-ano`}
         label="Ano"
@@ -60,7 +58,6 @@ export const IdhFilterBar = ({
         ]}
         onChange={(value) => onChange({ ...filters, uf: value || undefined })}
       />
-      <ClearFiltersButton onClick={() => onChange(DEFAULT_IDH_FILTERS)} />
-    </div>
+    </>
   );
 };

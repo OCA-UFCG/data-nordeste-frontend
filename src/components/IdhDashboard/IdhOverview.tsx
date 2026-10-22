@@ -14,13 +14,14 @@ import { HighlightCard } from "@/components/Panel/HighlightCards";
 import type { KpiItem } from "@/components/Panel/KpiCards";
 import { HorizontalBarChart } from "@/components/Panel/HorizontalBarChart";
 import { RankedBars } from "@/components/Panel/RankedBars";
-import { SwipeRow } from "@/components/Panel/SwipeRow";
+import { PanelCarousel } from "@/components/Panel/PanelCarousel";
 import type {
   IdhPanelData,
   IdhYearPoint,
 } from "@/features/panels/idh/idhPanel";
 import {
   formatIdh,
+  formatIdhCard,
   formatRenda,
   IDH_COLORS,
   NO_DATA,
@@ -35,17 +36,17 @@ const overviewCards = (point?: IdhYearPoint): KpiItem[] => {
     {
       icon: ChartColumnIncreasing,
       label: "IDH",
-      value: show(formatIdh, "idh"),
+      value: show(formatIdhCard, "idh"),
     },
     {
       icon: ChartBar,
       label: "IDH ajustado à desigualdade",
-      value: show(formatIdh, "idhAjustado"),
+      value: show(formatIdhCard, "idhAjustado"),
     },
     {
       icon: ChartArea,
       label: "Índice de Gini",
-      value: show(formatIdh, "gini"),
+      value: show(formatIdhCard, "gini"),
     },
     {
       icon: CircleDollarSign,
@@ -107,11 +108,14 @@ export const IdhOverview = ({ data }: { data: IdhPanelData }) => {
 
   return (
     <div className="flex flex-col gap-6">
-      <SwipeRow label="Indicadores" columns="lg:grid-cols-3 xl:grid-cols-5">
+      <PanelCarousel
+        label="Indicadores"
+        columns="lg:grid-cols-3 xl:grid-cols-5"
+      >
         {overviewCards(selected).map((item) => (
           <HighlightCard key={item.label} tone="orange" {...item} />
         ))}
-      </SwipeRow>
+      </PanelCarousel>
       <ChartCard title="Evolução anual do IDH e IDH ajustado à desigualdade">
         <ColumnChart
           label="Gráfico de colunas do IDH e do IDH ajustado por ano"
@@ -120,7 +124,7 @@ export const IdhOverview = ({ data }: { data: IdhPanelData }) => {
           formatValue={formatIdh}
         />
       </ChartCard>
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+      <div className="hidden items-start gap-6 lg:grid lg:grid-cols-2">
         <ChartCard title="IDH por dimensão">
           <HorizontalBarChart
             points={dimensions(selected)}

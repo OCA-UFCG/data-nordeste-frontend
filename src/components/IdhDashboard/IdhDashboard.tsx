@@ -1,14 +1,17 @@
 "use client";
 
 import { useCallback, useId, useState } from "react";
-import { IdhFilterBar } from "@/components/IdhDashboard/IdhFilterBar";
 import { IdhGroupView } from "@/components/IdhDashboard/IdhGroupView";
 import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
-import { PanelHeader } from "@/components/Panel/PanelShell";
+import { IdhSelects } from "@/components/IdhDashboard/IdhSelects";
+import { IDH_ICON, IDH_TITLE } from "@/components/IdhDashboard/idhTheme";
+import { PanelFilters } from "@/components/Panel/PanelFilters";
+import { PanelPage } from "@/components/Panel/PanelPage";
 import { PanelTabs } from "@/components/Panel/PanelTabs";
 import { usePanelNavigation } from "@/components/Panel/useTerritorialNavigation";
 import {
   buildIdhSearch,
+  DEFAULT_IDH_FILTERS,
   describeIdhSelection,
   IDH_VISOES,
   type IdhFilters,
@@ -62,7 +65,13 @@ const IdhTabContent = ({
   return <IdhOverview data={data} />;
 };
 
-export const IdhDashboard = ({ data }: { data: IdhPanelData }) => {
+export const IdhDashboard = ({
+  data,
+  source,
+}: {
+  data: IdhPanelData;
+  source: string;
+}) => {
   const idPrefix = useId();
   const [tab, setTab] = useState<IdhVisao>(data.filters.visao);
   const { isPending, applyFilters, showVisao } = useIdhNavigation();
@@ -70,25 +79,34 @@ export const IdhDashboard = ({ data }: { data: IdhPanelData }) => {
     setTab(visao);
     showVisao({ ...data.filters, visao });
   };
+  const changeFilters = (next: IdhFilters) =>
+    applyFilters({ ...next, visao: tab });
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <PanelHeader
-        title="Índice de Desenvolvimento Humano (IDH)"
-        subtitle={describeIdhSelection(data)}
+    <PanelPage
+      title={IDH_TITLE}
+      icon={IDH_ICON}
+      tone="orange"
+      source={source}
+      top={
+        <PanelTabs
+          tabs={IDH_VISOES}
+          activeKey={tab}
+          idPrefix={idPrefix}
+          onSelect={(key) => selectTab(key as IdhVisao)}
+        />
+      }
+    >
+      <PanelFilters
+        summary={describeIdhSelection(data)}
+        onClear={() => changeFilters(DEFAULT_IDH_FILTERS)}
       >
-        <IdhFilterBar
+        <IdhSelects
           filters={data.filters}
           ufs={data.ufs}
-          onChange={(next) => applyFilters({ ...next, visao: tab })}
+          onChange={changeFilters}
         />
-      </PanelHeader>
-      <PanelTabs
-        tabs={IDH_VISOES}
-        activeKey={tab}
-        idPrefix={idPrefix}
-        onSelect={(key) => selectTab(key as IdhVisao)}
-      />
+      </PanelFilters>
       <div
         id={`${idPrefix}-panel`}
         role="tabpanel"
@@ -98,6 +116,6 @@ export const IdhDashboard = ({ data }: { data: IdhPanelData }) => {
       >
         <IdhTabContent tab={tab} data={data} />
       </div>
-    </div>
+    </PanelPage>
   );
 };
