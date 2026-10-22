@@ -16,7 +16,7 @@ export type TerritorialFilters = {
 
 export type YearRange = { first: number; last: number };
 
-type SearchParams = Record<string, string | string[] | undefined>;
+export type SearchParams = Record<string, string | string[] | undefined>;
 
 export const listYears = ({ first, last }: YearRange): number[] =>
   Array.from({ length: last - first + 1 }, (_, index) => last - index);
@@ -25,8 +25,10 @@ export const defaultTerritorialFilters = (
   range: YearRange,
 ): TerritorialFilters => ({ ano: range.last, area: "nordeste" });
 
-const firstValue = (value: string | string[] | undefined) =>
+export const firstValue = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
+
+export const UF_PATTERN = /^[A-Z]{2}$/;
 
 const isTerritorialArea = (value?: string): value is TerritorialArea =>
   TERRITORIAL_AREAS.some((area) => area.value === value);
@@ -44,7 +46,7 @@ export const parseTerritorialFilters = (
   return {
     ano: listYears(range).includes(ano) ? ano : defaults.ano,
     area: isTerritorialArea(area) ? area : defaults.area,
-    ...(uf && /^[A-Z]{2}$/.test(uf) ? { uf } : {}),
+    ...(uf && UF_PATTERN.test(uf) ? { uf } : {}),
     ...(mun && /^\d{7}$/.test(mun) ? { mun } : {}),
   };
 };
