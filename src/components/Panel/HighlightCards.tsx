@@ -9,7 +9,7 @@ export const HighlightCard = ({
   value,
   tone,
 }: HighlightItem & { tone: PanelTone }) => (
-  <div className="flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-grey-200 bg-white shadow-sm">
+  <div className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-grey-200 bg-white shadow-sm">
     <div
       className={`flex min-h-16 items-center justify-center gap-4 px-4 py-3 text-white ${PANEL_TONES[tone].card}`}
     >
