@@ -1,11 +1,15 @@
 "use client";
 
-import { Users } from "lucide-react";
 import { DemografiaCharts } from "@/components/DemografiaDashboard/DemografiaCharts";
+import {
+  DEMOGRAFIA_ICON,
+  DEMOGRAFIA_TITLE,
+} from "@/components/DemografiaDashboard/demografiaTheme";
 import { ChoroplethMap } from "@/components/Panel/ChoroplethMap";
 import { HighlightCard } from "@/components/Panel/HighlightCards";
-import { PanelHeader } from "@/components/Panel/PanelShell";
-import { TerritorialFilterBar } from "@/components/Panel/TerritorialFilterBar";
+import { PanelFilters } from "@/components/Panel/PanelFilters";
+import { PanelPage } from "@/components/Panel/PanelPage";
+import { TerritorialSelects } from "@/components/Panel/TerritorialFilterBar";
 import { useTerritorialNavigation } from "@/components/Panel/useTerritorialNavigation";
 import {
   DEMOGRAFIA_YEAR_RANGE,
@@ -25,8 +29,10 @@ const DEFAULTS = defaultTerritorialFilters(DEMOGRAFIA_YEAR_RANGE);
 
 export const DemografiaDashboard = ({
   data,
+  source,
 }: {
   data: DemografiaPanelData;
+  source: string;
 }) => {
   const { filters } = data;
   const { isPending, applyFilters, selectMunicipality } =
@@ -36,20 +42,24 @@ export const DemografiaDashboard = ({
   );
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <PanelHeader
-        title="Perfil demográfico"
-        subtitle={describeTerritorialSelection(data)}
+    <PanelPage
+      title={DEMOGRAFIA_TITLE}
+      icon={DEMOGRAFIA_ICON}
+      tone="pink"
+      source={source}
+    >
+      <PanelFilters
+        summary={describeTerritorialSelection(data)}
+        onClear={() => applyFilters(DEFAULTS)}
       >
-        <TerritorialFilterBar
+        <TerritorialSelects
           filters={filters}
           ufs={data.ufs}
           municipios={data.municipios}
-          defaults={DEFAULTS}
           years={YEARS}
           onChange={applyFilters}
         />
-      </PanelHeader>
+      </PanelFilters>
       <div
         aria-busy={isPending}
         className="grid grid-cols-1 gap-6 transition-opacity aria-busy:opacity-60 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
@@ -57,25 +67,27 @@ export const DemografiaDashboard = ({
         <div className="flex min-w-0 flex-col gap-6">
           <HighlightCard
             tone="pink"
-            icon={Users}
+            icon={DEMOGRAFIA_ICON}
             label="População residente"
             value={populacao ? formatPessoas(populacao.value) : "Sem dados"}
           />
-          <ChoroplethMap
-            title="População por município"
-            meshUrl={MESH_URL}
-            regions={data.mapa}
-            buckets={POPULACAO_MAP_BUCKETS}
-            valueLabel="População"
-            formatValue={formatPessoas}
-            selectedCode={filters.mun}
-            onSelectRegion={selectMunicipality}
-          />
+          <div className="hidden lg:block">
+            <ChoroplethMap
+              title="População por município"
+              meshUrl={MESH_URL}
+              regions={data.mapa}
+              buckets={POPULACAO_MAP_BUCKETS}
+              valueLabel="População"
+              formatValue={formatPessoas}
+              selectedCode={filters.mun}
+              onSelectRegion={selectMunicipality}
+            />
+          </div>
         </div>
         <div className="flex min-w-0 flex-col gap-6">
           <DemografiaCharts data={data} />
         </div>
       </div>
-    </div>
+    </PanelPage>
   );
 };

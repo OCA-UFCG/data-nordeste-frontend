@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
-import { Users } from "lucide-react";
 import { DemografiaDashboard } from "@/components/DemografiaDashboard/DemografiaDashboard";
-import { PanelMessage, PanelShell } from "@/components/Panel/PanelShell";
+import {
+  DEMOGRAFIA_ICON,
+  DEMOGRAFIA_TITLE,
+} from "@/components/DemografiaDashboard/demografiaTheme";
+import { PanelPage } from "@/components/Panel/PanelPage";
+import { PanelMessage } from "@/components/Panel/PanelShell";
 import { buildMetadata } from "@/config/seo";
 import {
   DEMOGRAFIA_YEAR_RANGE,
@@ -58,21 +62,21 @@ export default async function PerfilDemograficoDemoPage({
 
   return (
     <HubTemplate>
-      <PanelShell
-        theme="Painel de Demografia"
-        icon={Users}
-        source={SOURCE}
-        tone="pink"
-      >
-        {panel ? (
-          <DemografiaDashboard data={panel} />
-        ) : (
+      {panel ? (
+        <DemografiaDashboard data={panel} source={SOURCE} />
+      ) : (
+        <PanelPage
+          title={DEMOGRAFIA_TITLE}
+          icon={DEMOGRAFIA_ICON}
+          tone="pink"
+          source={SOURCE}
+        >
           <PanelMessage>
             Não foi possível consultar o banco de dados. Confira se o túnel para
             o banco está ativo e se <code>DATA_DB_URL</code> está configurada.
           </PanelMessage>
-        )}
-      </PanelShell>
+        </PanelPage>
+      )}
     </HubTemplate>
   );
 }

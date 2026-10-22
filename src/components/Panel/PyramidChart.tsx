@@ -11,14 +11,14 @@ export const PyramidChart = ({
   label,
   ...config
 }: PyramidConfig & { label: string }) => {
-  const { categories, left, right, formatValue, formatAxis } = config;
+  const { categories, left, right, formatValue, formatShort } = config;
   const buildOption = useCallback(
     (width: number) =>
       buildPyramidOption(
-        { categories, left, right, formatValue, formatAxis },
+        { categories, left, right, formatValue, formatShort },
         width,
       ),
-    [categories, left, right, formatValue, formatAxis],
+    [categories, left, right, formatValue, formatShort],
   );
 
   return (

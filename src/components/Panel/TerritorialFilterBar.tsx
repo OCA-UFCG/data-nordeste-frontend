@@ -12,9 +12,9 @@ import type {
   UfOption,
 } from "@/features/panels/territorialOptions";
 
-type SelectOption = { value: string; label: string };
+export type SelectOption = { value: string; label: string };
 
-const FilterSelect = ({
+export const FilterSelect = ({
   id,
   label,
   value,
@@ -46,7 +46,18 @@ const FilterSelect = ({
   </div>
 );
 
-const ALL = { value: "", label: "Todos" };
+export const ClearFiltersButton = ({ onClick }: { onClick: () => void }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="col-span-2 inline-flex h-11 items-center justify-center gap-2 rounded-md border border-grey-300 bg-white px-4 text-base font-medium text-green-900 transition hover:bg-green-neutro md:col-span-1"
+  >
+    Limpar filtros
+    <FilterX aria-hidden size={18} />
+  </button>
+);
+
+export const ALL_OPTION = { value: "", label: "Todos" };
 
 export type TerritorialFilterBarProps = {
   filters: TerritorialFilters;
@@ -57,19 +68,21 @@ export type TerritorialFilterBarProps = {
   onChange: (next: TerritorialFilters) => void;
 };
 
-export const TerritorialFilterBar = ({
+type TerritorialSelectsProps = Omit<TerritorialFilterBarProps, "defaults">;
+
+// Só os quatro selects, para quem monta o próprio layout (ex.: PanelFilters).
+export const TerritorialSelects = ({
   filters,
-  defaults,
   years,
   ufs,
   municipios,
   onChange,
-}: TerritorialFilterBarProps) => {
+}: TerritorialSelectsProps) => {
   const id = useId();
   const { ano, area } = filters;
 
   return (
-    <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-[repeat(4,minmax(0,1fr))_auto] md:items-end">
+    <>
       <FilterSelect
         id={`${id}-ano`}
         label="Ano"
@@ -92,7 +105,7 @@ export const TerritorialFilterBar = ({
         label="Estado"
         value={filters.uf ?? ""}
         options={[
-          ALL,
+          ALL_OPTION,
           ...ufs.map((uf) => ({ value: uf.sigla, label: uf.nome })),
         ]}
         onChange={(value) => onChange({ ano, area, uf: value || undefined })}
@@ -102,19 +115,21 @@ export const TerritorialFilterBar = ({
         label="Município"
         value={filters.mun ?? ""}
         options={[
-          ALL,
+          ALL_OPTION,
           ...municipios.map((mun) => ({ value: mun.cdMun, label: mun.nome })),
         ]}
         onChange={(value) => onChange({ ...filters, mun: value || undefined })}
       />
-      <button
-        type="button"
-        onClick={() => onChange(defaults)}
-        className="col-span-2 inline-flex h-11 items-center justify-center gap-2 rounded-md border border-grey-300 bg-white px-4 text-base font-medium text-green-900 transition hover:bg-green-neutro md:col-span-1"
-      >
-        Limpar filtros
-        <FilterX aria-hidden size={18} />
-      </button>
-    </div>
+    </>
   );
 };
+
+export const TerritorialFilterBar = ({
+  defaults,
+  ...selects
+}: TerritorialFilterBarProps) => (
+  <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-[repeat(4,minmax(0,1fr))_auto] md:items-end">
+    <TerritorialSelects {...selects} />
+    <ClearFiltersButton onClick={() => selects.onChange(defaults)} />
+  </div>
+);

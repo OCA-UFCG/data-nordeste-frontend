@@ -114,24 +114,41 @@ const loadComposicao = async (query: SqlQuery, filters: TerritorialFilters) => {
   };
 };
 
+// O Figma agrupa a pirâmide por décadas; a tabela tem 12 faixas
+// (0-4, 5-9, ..., 25-29 de 5 em 5 anos, depois 30-39 ... 70-79 e 80+).
+const FAIXAS_DECENAIS = [
+  "0 a 9 anos",
+  "10 a 19 anos",
+  "20 a 29 anos",
+  "30 a 39 anos",
+  "40 a 49 anos",
+  "50 a 59 anos",
+  "60 a 69 anos",
+  "70 a 79 anos",
+  "80+ anos",
+] as const;
+
+const DECADA_SQL = `CASE WHEN classificador_idade <= 6
+    THEN (classificador_idade + 1) / 2 ELSE classificador_idade - 3 END`;
+
 const loadPiramide = async (query: SqlQuery, filters: TerritorialFilters) => {
   const where = buildTerritorialWhere(filters, {
     byYear: true,
     byMunicipality: true,
   });
   const rows = await query<{
-    faixa: string;
+    decada: number;
     mulheres: NumericCell;
     homens: NumericCell;
   }>(
-    `SELECT idade_agrupada AS faixa, SUM(mulher) AS mulheres, SUM(homem) AS homens
+    `SELECT ${DECADA_SQL} AS decada, SUM(mulher) AS mulheres, SUM(homem) AS homens
      FROM ${DEMOGRAFIA_ROWS} WHERE ${where.sql}
-     GROUP BY classificador_idade, idade_agrupada ORDER BY classificador_idade`,
+     GROUP BY 1 ORDER BY 1`,
     where.params,
   );
 
   return rows.map((row) => ({
-    faixa: row.faixa,
+    faixa: FAIXAS_DECENAIS[row.decada - 1],
     mulheres: toNumber(row.mulheres),
     homens: toNumber(row.homens),
   }));
