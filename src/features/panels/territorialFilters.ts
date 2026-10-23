@@ -14,12 +14,19 @@ export type TerritorialFilters = {
   mun?: string;
 };
 
-export type YearRange = { first: number; last: number };
+// `available` lista anos não contíguos (ex.: censos), do mais recente ao mais antigo.
+export type YearRange = {
+  first: number;
+  last: number;
+  available?: readonly number[];
+};
 
 export type SearchParams = Record<string, string | string[] | undefined>;
 
-export const listYears = ({ first, last }: YearRange): number[] =>
-  Array.from({ length: last - first + 1 }, (_, index) => last - index);
+export const listYears = ({ first, last, available }: YearRange): number[] =>
+  available
+    ? [...available]
+    : Array.from({ length: last - first + 1 }, (_, index) => last - index);
 
 export const defaultTerritorialFilters = (
   range: YearRange,

@@ -189,7 +189,7 @@ const columnSeries = (series: ColumnSeries, formatLabel: ValueFormatter) => ({
   labelLayout: { hideOverlap: true },
 });
 
-const columnLegend = (series: ColumnSeries[]) =>
+const columnLegend = (series: { name: string }[]) =>
   series.length > 1
     ? {
         legend: {
@@ -319,3 +319,186 @@ export const buildChoroplethOption = (
     },
   ],
 });
+
+export type PieSlice = ChartPoint & { color: string };
+
+// Inteiro, como no Figma ("45%"); o valor exato fica no tooltip.
+const percentLabel = new Intl.NumberFormat("pt-BR", {
+  maximumFractionDigits: 0,
+});
+
+const pieLabel = {
+  show: true,
+  position: "inside",
+  fontSize: 20,
+  fontWeight: "bold",
+  color: "#ffffff",
+  formatter: ({ percent }: { percent: number }) =>
+    `${percentLabel.format(percent)}%`,
+};
+
+export const buildPieOption = (
+  slices: PieSlice[],
+  formatValue: ValueFormatter,
+): ChartOption => ({
+  ...baseOption(),
+  ...columnLegend(slices.map((slice) => ({ name: slice.label }))),
+  tooltip: { ...TOOLTIP_BASE, trigger: "item", valueFormatter: formatValue },
+  series: [
+    {
+      type: "pie",
+      radius: "75%",
+
+      // Anti-horário: a primeira fatia (Mulher) fica à esquerda, como no Figma.
+      clockwise: false,
+      center: ["50%", "45%"],
+      label: pieLabel,
+      labelLine: { show: false },
+      data: slices.map((slice) => ({
+        name: slice.label,
+        value: slice.value,
+        itemStyle: { color: slice.color },
+      })),
+    },
+  ],
+});
+
+export type PyramidConfig = {
+  categories: string[];
+
+  // A série da esquerda é desenhada com valores negativos.
+  left: ColumnSeries;
+  right: ColumnSeries;
+  formatValue: ValueFormatter;
+  formatShort: ValueFormatter;
+};
+
+// ponytail: larguras estimadas (rótulo do eixo ~80 px, dígito ~7 px a 12 px);
+// medir o texto no canvas se a fonte mudar muito.
+const PYRAMID_AXIS_LABEL_WIDTH = 76;
+const PYRAMID_CHAR_WIDTH = 7;
+
+// Espaço guardado após a maior barra para um número de fora: completo
+// ("2.291.237") ou curto ("2,3 mi"). Abaixo de MIN_BAR_AREA, só tooltip.
+const PYRAMID_LABEL_ROOM = 72;
+const PYRAMID_SHORT_LABEL_ROOM = 52;
+const PYRAMID_MIN_BAR_AREA = 48;
+const CENTER_LINE_COLOR = "#7e797b";
+
+// O número só vai dentro da barra se couber nela; senão, fica após a ponta.
+const pyramidLabel = (
+  value: number,
+  barPx: number,
+  side: "left" | "right",
+  scale: PyramidScale,
+) => {
+  const text = scale.formatValue(value);
+  const fits = barPx >= text.length * PYRAMID_CHAR_WIDTH + 8;
+
+  return {
+    show: scale.showLabels,
+    position: fits ? "inside" : side,
+    fontSize: 12,
+    color: TEXT_COLOR,
+    formatter: () => text,
+  };
+};
+
+type PyramidScale = {
+  pxPerUnit: number;
+  axisMax: number;
+  showLabels: boolean;
+  formatValue: ValueFormatter;
+};
+
+const labelRoom = (halfWidth: number, config: PyramidConfig) => {
+  if (halfWidth - PYRAMID_LABEL_ROOM >= PYRAMID_MIN_BAR_AREA) {
+    return { room: PYRAMID_LABEL_ROOM, formatValue: config.formatValue };
+  }
+  if (halfWidth - PYRAMID_SHORT_LABEL_ROOM >= PYRAMID_MIN_BAR_AREA) {
+    return { room: PYRAMID_SHORT_LABEL_ROOM, formatValue: config.formatShort };
+  }
+
+  return null;
+};
+
+const pyramidScale = (config: PyramidConfig, width: number): PyramidScale => {
+  const largest =
+    Math.max(...config.left.values, ...config.right.values, 0) || 1;
+  const halfWidth = Math.max(width - 16 - PYRAMID_AXIS_LABEL_WIDTH, 0) / 2;
+  const labels = labelRoom(halfWidth, config);
+  const barArea = Math.max(halfWidth - (labels?.room ?? 0), 1);
+
+  return {
+    pxPerUnit: barArea / largest,
+    axisMax: (largest * Math.max(halfWidth, 1)) / barArea,
+    showLabels: labels !== null,
+    formatValue: labels?.formatValue ?? config.formatValue,
+  };
+};
+
+const pyramidSeries = (
+  series: ColumnSeries,
+  side: "left" | "right",
+  scale: PyramidScale,
+) => ({
+  type: "bar",
+  name: series.name,
+  stack: "piramide",
+  barCategoryGap: "12%",
+  itemStyle: { color: series.color },
+  data: series.values.map((value) => ({
+    value: side === "left" ? -value : value,
+    label: pyramidLabel(value, value * scale.pxPerUnit, side, scale),
+  })),
+});
+
+const centerLine = {
+  type: "bar",
+  stack: "piramide",
+  data: [],
+  markLine: {
+    silent: true,
+    symbol: "none",
+    label: { show: false },
+    lineStyle: { color: CENTER_LINE_COLOR, type: "solid", width: 1 },
+    data: [{ xAxis: 0 }],
+  },
+};
+
+export const buildPyramidOption = (
+  config: PyramidConfig,
+  width: number,
+): ChartOption => {
+  const scale = pyramidScale(config, width);
+
+  return {
+    ...baseOption(),
+    ...columnLegend([config.left, config.right]),
+    grid: { left: 8, right: 8, top: 8, bottom: 32, containLabel: true },
+    tooltip: {
+      ...TOOLTIP_BASE,
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      valueFormatter: (value: number) => config.formatValue(Math.abs(value)),
+    },
+    xAxis: {
+      type: "value",
+      show: false,
+      max: scale.axisMax,
+      min: -scale.axisMax,
+    },
+    yAxis: {
+      type: "category",
+      data: config.categories,
+      axisTick: { show: false },
+      axisLine: { show: false, onZero: false },
+      axisLabel: { fontSize: 12, color: TEXT_COLOR },
+    },
+    series: [
+      pyramidSeries(config.left, "left", scale),
+      pyramidSeries(config.right, "right", scale),
+      centerLine,
+    ],
+  };
+};
