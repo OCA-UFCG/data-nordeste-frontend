@@ -21,6 +21,25 @@ import { registerChartMapFeatures } from "@/lib/echarts";
 
 type MeshStatus = "loading" | "ready" | "error";
 
+// Pelo ponteiro, não pela largura: no desktop o mapa fica numa coluna estreita.
+const MOUSE_MEDIA_QUERY = "(hover: hover) and (pointer: fine)";
+
+const useMousePointer = () => {
+  const [hasMouse, setHasMouse] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOUSE_MEDIA_QUERY);
+    const updatePointer = () => setHasMouse(mediaQuery.matches);
+
+    updatePointer();
+    mediaQuery.addEventListener("change", updatePointer);
+
+    return () => mediaQuery.removeEventListener("change", updatePointer);
+  }, []);
+
+  return hasMouse;
+};
+
 const useMesh = (meshUrl: string) => {
   const [status, setStatus] = useState<MeshStatus>("loading");
   const [features, setFeatures] = useState<MapFeature[]>([]);
@@ -99,6 +118,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
     features,
     props.regions,
   );
+  const canPan = useMousePointer();
   const { selectedCode, regions, buckets, valueLabel, formatValue } = props;
   const bounds = useMemo(
     () =>
@@ -107,7 +127,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
     [visible, selectedCode, areaBounds],
   );
   const buildOption = useCallback(
-    (width: number) =>
+    () =>
       buildChoroplethOption({
         regions,
         buckets,
@@ -116,9 +136,18 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
         selectedCode,
         mapName,
         bounds,
-        width,
+        canPan,
       }),
-    [regions, buckets, valueLabel, formatValue, selectedCode, mapName, bounds],
+    [
+      regions,
+      buckets,
+      valueLabel,
+      formatValue,
+      selectedCode,
+      mapName,
+      bounds,
+      canPan,
+    ],
   );
 
   return (
