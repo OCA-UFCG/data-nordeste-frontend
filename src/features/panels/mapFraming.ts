@@ -84,43 +84,97 @@ export const getMunicipalityFocusBounds = (
   ];
 };
 
-export const MAX_MAP_ZOOM = 40;
+// Menor vista permitida, em graus: o mesmo fundo de zoom de antes desta regra.
+const MIN_VIEW_SPAN = 0.02;
 
 export type MapFocus = { center: LonLat; zoom: number };
+export type MapFraming = {
+  bounds: MapBounds;
+  maxZoom: number;
+  focus?: MapFocus;
+};
+type ViewSpan = { lon: number; lat: number };
 
 const spanWidth = ([[west], [east]]: MapBounds) => east - west;
 const spanHeight = ([[, north], [, south]]: MapBounds) => north - south;
+const centreOf = ([[west, north], [east, south]]: MapBounds): LonLat => [
+  (west + east) / 2,
+  (north + south) / 2,
+];
 
+// O que o quadro mostra no zoom 1: a área encaixada (contain) no formato dele.
+const getViewSpan = (area: MapBounds, boxRatio: number): ViewSpan => {
+  const scale = getAspectScale(area);
+  const lon = spanWidth(area);
+  const lat = spanHeight(area);
+
+  return (lon * scale) / lat > boxRatio
+    ? { lon, lat: (lon * scale) / boxRatio }
+    : { lon: (lat * boxRatio) / scale, lat };
+};
+
+const getMaxZoom = (area: MapBounds, view: ViewSpan) =>
+  Math.max(
+    1,
+    Math.min(view.lon * getAspectScale(area), view.lat) / MIN_VIEW_SPAN,
+  );
+
+const isInside = (
+  [lon, lat]: LonLat,
+  [[west, north], [east, south]]: MapBounds,
+) => lon >= west && lon <= east && lat >= south && lat <= north;
+
+// Vista maior que a área nesse eixo: fica no meio, como no zoom 1.
 const clampCentre = (value: number, min: number, max: number, half: number) =>
-  Math.min(max - half, Math.max(min + half, value));
+  2 * half >= max - min
+    ? (min + max) / 2
+    : Math.min(max - half, Math.max(min + half, value));
+
+const clampToArea = (
+  [lon, lat]: LonLat,
+  [[west, north], [east, south]]: MapBounds,
+  view: ViewSpan,
+  zoom: number,
+): LonLat => [
+  clampCentre(lon, west, east, view.lon / (2 * zoom)),
+  clampCentre(lat, south, north, view.lat / (2 * zoom)),
+];
+
+const getMapFocus = (
+  area: MapBounds,
+  view: ViewSpan,
+  maxZoom: number,
+  focus: MapBounds,
+): MapFocus => {
+  const fit = Math.min(
+    view.lon / spanWidth(focus),
+    view.lat / spanHeight(focus),
+  );
+  const zoom = Math.min(maxZoom, Math.max(1, fit));
+  const centre = centreOf(focus);
+
+  // Foco fora da área (Fernando de Noronha) não é preso, senão some da vista.
+  return {
+    center: isInside(centre, area)
+      ? clampToArea(centre, area, view, zoom)
+      : centre,
+    zoom,
+  };
+};
 
 // Zoom sobre a área inteira, para o zoom-out continuar chegando até ela.
-export const getMapFocus = (area: MapBounds, focus: MapBounds): MapFocus => {
-  const fit = Math.min(
-    spanWidth(area) / spanWidth(focus),
-    spanHeight(area) / spanHeight(focus),
-  );
-  const zoom = Math.min(MAX_MAP_ZOOM, Math.max(1, fit));
-  const [[west, north], [east, south]] = focus;
-  const [[areaWest, areaNorth], [areaEast, areaSouth]] = area;
+export const getMapFraming = (
+  area: MapBounds,
+  boxRatio: number,
+  focus?: MapBounds,
+): MapFraming => {
+  const view = getViewSpan(area, boxRatio);
+  const maxZoom = getMaxZoom(area, view);
 
-  // Centro preso para a vista inicial não sair da área (corte ou mar vazio).
   return {
-    center: [
-      clampCentre(
-        (west + east) / 2,
-        areaWest,
-        areaEast,
-        spanWidth(area) / (2 * zoom),
-      ),
-      clampCentre(
-        (north + south) / 2,
-        areaSouth,
-        areaNorth,
-        spanHeight(area) / (2 * zoom),
-      ),
-    ],
-    zoom,
+    bounds: area,
+    maxZoom,
+    ...(focus ? { focus: getMapFocus(area, view, maxZoom, focus) } : {}),
   };
 };
 

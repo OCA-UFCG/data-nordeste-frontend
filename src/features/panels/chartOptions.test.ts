@@ -107,8 +107,11 @@ describe("buildChoroplethOption", () => {
         mapName: "test",
         valueLabel: "PIB",
         formatValue: (value: number) => formatReaisCompact(value),
-        bounds: area,
-        focus: { center: [-39.5, -10.5], zoom: 8 },
+        framing: {
+          bounds: area,
+          maxZoom: 500,
+          focus: { center: [-39.5, -10.5], zoom: 8 },
+        },
       }) as { series: Record<string, unknown>[] }
     ).series;
 
@@ -116,7 +119,7 @@ describe("buildChoroplethOption", () => {
       boundingCoords: area,
       center: [-39.5, -10.5],
       zoom: 8,
-      scaleLimit: { min: 1 },
+      scaleLimit: { min: 1, max: 500 },
     });
   });
 });

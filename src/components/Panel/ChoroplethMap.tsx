@@ -12,7 +12,7 @@ import type { ChoroplethBucket } from "@/features/panels/choropleth";
 import {
   getMapAspectRatio,
   getMapBounds,
-  getMapFocus,
+  getMapFraming,
   getMunicipalityFocusBounds,
   mapNameFor,
   selectMapFeatures,
@@ -130,14 +130,15 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
   );
   const canPan = useMousePointer();
   const { selectedCode, regions, buckets, valueLabel, formatValue } = props;
-  const focus = useMemo(() => {
-    const focusBounds =
-      selectedCode && getMunicipalityFocusBounds(visible, selectedCode);
-
-    return areaBounds && focusBounds
-      ? getMapFocus(areaBounds, focusBounds)
+  const framing = useMemo(() => {
+    const focusBounds = selectedCode
+      ? getMunicipalityFocusBounds(visible, selectedCode)
       : undefined;
-  }, [visible, selectedCode, areaBounds]);
+
+    return areaBounds
+      ? getMapFraming(areaBounds, aspectRatio, focusBounds)
+      : undefined;
+  }, [visible, selectedCode, areaBounds, aspectRatio]);
   const buildOption = useCallback(
     () =>
       buildChoroplethOption({
@@ -147,8 +148,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
         formatValue,
         selectedCode,
         mapName,
-        bounds: areaBounds,
-        focus,
+        framing,
         canPan,
       }),
     [
@@ -158,8 +158,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
       formatValue,
       selectedCode,
       mapName,
-      areaBounds,
-      focus,
+      framing,
       canPan,
     ],
   );

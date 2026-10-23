@@ -2,14 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   getAspectScale,
   getMapAspectRatio,
-  getMapFocus,
+  getMapFraming,
   getMunicipalityFocusBounds,
   getMapBounds,
   mapNameFor,
-  MAX_MAP_ZOOM,
   selectMapFeatures,
   type MapBounds,
   type MapFeature,
+  type MapFocus,
+  type MapFraming,
 } from "@/features/panels/mapFraming";
 
 const square = (
@@ -107,50 +108,82 @@ describe("getMunicipalityFocusBounds", () => {
   });
 });
 
-describe("getMapFocus", () => {
-  const AREA: MapBounds = [
+describe("getMapFraming", () => {
+  const BOX_RATIO = 0.75;
+  const TALL: MapBounds = [
     [-46, -3],
     [-35, -18],
   ];
+  const WIDE: MapBounds = [
+    [-41, -7],
+    [-35, -9],
+  ];
+  const focusOf = (framing: MapFraming): MapFocus => {
+    if (!framing.focus) throw new Error("Expected a focus, got undefined.");
 
-  it("zooms in over the whole area so zoom-out can return to it", () => {
-    const focus = getMapFocus(AREA, [
-      [-40, -10],
-      [-39, -11],
-    ]);
+    return framing.focus;
+  };
 
-    expect(focus.center).toEqual([-39.5, -10.5]);
-    expect(focus.zoom).toBe(11);
+  it("keeps the whole area as the frame and has no focus by default", () => {
+    expect(getMapFraming(TALL, BOX_RATIO)).toMatchObject({ bounds: TALL });
+    expect(getMapFraming(TALL, BOX_RATIO).focus).toBeUndefined();
   });
 
   it("shows the whole area when the focus is as large as it", () => {
-    const focus = getMapFocus(AREA, [
-      [-50, -10],
-      [-30, -30],
-    ]);
+    const focus = focusOf(
+      getMapFraming(TALL, BOX_RATIO, [
+        [-50, -5],
+        [-30, -25],
+      ]),
+    );
 
     expect(focus).toEqual({ center: [-40.5, -10.5], zoom: 1 });
   });
 
-  it("pulls a focus at the edge back so the view stays inside the area", () => {
-    const focus = getMapFocus(AREA, [
-      [-35.5, -17.5],
-      [-34.5, -18.5],
-    ]);
-    const [lon, lat] = focus.center;
+  it("fits the focus against what a wide area shows in the box", () => {
+    const focus = focusOf(
+      getMapFraming(WIDE, BOX_RATIO, [
+        [-38.3, -7.7],
+        [-37.7, -8.3],
+      ]),
+    );
 
-    expect(focus.zoom).toBe(11);
-    expect(lon).toBeCloseTo(-35 - 11 / 22);
-    expect(lat).toBeCloseTo(-18 + 15 / 22);
+    expect(focus.zoom).toBeCloseTo(10);
+    expect(focus.center[0]).toBeCloseTo(-38);
+    expect(focus.center[1]).toBeCloseTo(-8);
   });
 
-  it("keeps the zoom between the whole area and the zoom limit", () => {
-    expect(getMapFocus(AREA, AREA).zoom).toBe(1);
-    expect(
-      getMapFocus(AREA, [
-        [-40, -10],
-        [-39.99, -10.01],
-      ]).zoom,
-    ).toBe(MAX_MAP_ZOOM);
+  it("pulls a focus at the edge back so the view stays inside the area", () => {
+    const { zoom, center } = focusOf(
+      getMapFraming(TALL, BOX_RATIO, [
+        [-35.5, -17.5],
+        [-34.5, -18.5],
+      ]),
+    );
+
+    expect(center[0]).toBeCloseTo(-35.5);
+    expect(center[1]).toBeCloseTo(-18 + 15 / (2 * zoom));
+  });
+
+  it("does not pull back a focus outside the area, like Fernando de Noronha", () => {
+    const focus = focusOf(
+      getMapFraming(WIDE, BOX_RATIO, [
+        [-32.7, -3.55],
+        [-32.1, -4.15],
+      ]),
+    );
+
+    expect(focus.center[0]).toBeCloseTo(-32.4);
+    expect(focus.center[1]).toBeCloseTo(-3.85);
+  });
+
+  it("lets a small municipality zoom well past the old 40x cap", () => {
+    const framing = getMapFraming(TALL, BOX_RATIO, [
+      [-40, -10],
+      [-39.99, -10.01],
+    ]);
+
+    expect(framing.maxZoom).toBeGreaterThan(40);
+    expect(focusOf(framing).zoom).toBe(framing.maxZoom);
   });
 });
