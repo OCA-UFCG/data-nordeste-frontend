@@ -156,18 +156,22 @@ outside the repository and rendered through frontend route/component logic.
 
 ## Panel Data Cache
 
-- `queryDataDb` (`src/lib/dataDb.ts`) sits behind an in-memory cache
-  (`createQueryCache`, `src/lib/queryCache.ts`) keyed by SQL and parameters,
-  valid for 24 h (`DATA_DB_CACHE_SECONDS`) and capped at 500 entries, least
-  recently used dropped first. It serves every native panel demo.
-- The source data (IBGE, PNUD) changes at most monthly, so a day-old
-  answer is fine. A data update shows up within 24 h, or at once after the
-  container restarts, since the cache lives in the Node process.
-- Identical queries running at the same time share one round trip, and failed
-  queries are not kept. Every caller gets the same rows array: loaders must map
-  or copy rows, never sort or edit them in place.
+- `queryDataDb` (`src/lib/dataDb.ts`) is wrapped in `unstable_cache`, the same
+  mechanism as `src/features/navigation/content.ts` and
+  `src/features/reports/content.ts`. The key includes the SQL and parameters;
+  results are valid for 24 h (`DATA_DB_CACHE_SECONDS`) and tagged
+  `DATA_DB_CACHE_TAG` (`"data-db"`). It serves every native panel demo.
+- The source data (IBGE, PNUD) changes at most monthly, so a day-old answer is
+  fine. Next stores the entries on disk (`.next/cache`), so a `docker restart`
+  keeps them; a new container (every deploy) starts empty. Clearing without a
+  deploy needs a server-side `revalidateTag(DATA_DB_CACHE_TAG)`, which no route
+  calls yet.
+- Results are stored as JSON and parsed on each read, so callers get their own
+  rows. Failed queries throw and are not stored.
 - The pages stay `force-dynamic`: the route still renders per request, only
   the database round trips are cached.
+- `unstable_cache` is superseded by `"use cache"` in Next 16; moving to it
+  needs `cacheComponents`, so migrate the three uses together.
 
 ## Native Panel Maps
 
