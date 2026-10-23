@@ -1,5 +1,10 @@
 import { getBucket, type ChoroplethBucket } from "@/features/panels/choropleth";
-import { getAspectScale, type MapBounds } from "@/features/panels/mapFraming";
+import {
+  getAspectScale,
+  MAX_MAP_ZOOM,
+  type MapBounds,
+  type MapFocus,
+} from "@/features/panels/mapFraming";
 import type { ChartOption } from "@/lib/echarts";
 
 export type ValueFormatter = (value: number) => string;
@@ -245,6 +250,7 @@ export type ChoroplethConfig = {
   formatValue: ValueFormatter;
   selectedCode?: string;
   bounds?: MapBounds;
+  focus?: MapFocus;
   canPan?: boolean;
 };
 
@@ -281,8 +287,12 @@ const choroplethRegions = (config: ChoroplethConfig) =>
     },
   }));
 
-const choroplethFraming = (bounds: MapBounds | undefined) =>
-  bounds ? { boundingCoords: bounds, aspectScale: getAspectScale(bounds) } : {};
+const choroplethFraming = ({ bounds, focus }: ChoroplethConfig) => ({
+  ...(bounds
+    ? { boundingCoords: bounds, aspectScale: getAspectScale(bounds) }
+    : {}),
+  ...(focus ? { center: focus.center, zoom: focus.zoom } : {}),
+});
 
 export const buildChoroplethOption = (
   config: ChoroplethConfig,
@@ -300,7 +310,7 @@ export const buildChoroplethOption = (
 
       // Em tela de toque, arrastar com um dedo rola a página, não o mapa.
       roam: config.canPan ? true : "scale",
-      scaleLimit: { min: 1, max: 40 },
+      scaleLimit: { min: 1, max: MAX_MAP_ZOOM },
       selectedMode: false,
       left: 4,
       right: 4,
@@ -309,7 +319,7 @@ export const buildChoroplethOption = (
 
       // Sem isso o ECharts 6 estica a região para preencher a caixa.
       preserveAspect: "contain",
-      ...choroplethFraming(config.bounds),
+      ...choroplethFraming(config),
       itemStyle: { borderColor: "#ffffff", borderWidth: 0.3 },
       emphasis: {
         label: { show: false },

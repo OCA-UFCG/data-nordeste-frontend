@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   getAspectScale,
   getMapAspectRatio,
+  getMapFocus,
   getMunicipalityFocusBounds,
   getMapBounds,
   mapNameFor,
+  MAX_MAP_ZOOM,
   selectMapFeatures,
+  type MapBounds,
   type MapFeature,
 } from "@/features/panels/mapFraming";
 
@@ -101,5 +104,53 @@ describe("getMunicipalityFocusBounds", () => {
 
   it("returns undefined for a municipality outside the mesh", () => {
     expect(getMunicipalityFocusBounds(FEATURES, "0000000")).toBeUndefined();
+  });
+});
+
+describe("getMapFocus", () => {
+  const AREA: MapBounds = [
+    [-46, -3],
+    [-35, -18],
+  ];
+
+  it("zooms in over the whole area so zoom-out can return to it", () => {
+    const focus = getMapFocus(AREA, [
+      [-40, -10],
+      [-39, -11],
+    ]);
+
+    expect(focus.center).toEqual([-39.5, -10.5]);
+    expect(focus.zoom).toBe(11);
+  });
+
+  it("shows the whole area when the focus is as large as it", () => {
+    const focus = getMapFocus(AREA, [
+      [-50, -10],
+      [-30, -30],
+    ]);
+
+    expect(focus).toEqual({ center: [-40.5, -10.5], zoom: 1 });
+  });
+
+  it("pulls a focus at the edge back so the view stays inside the area", () => {
+    const focus = getMapFocus(AREA, [
+      [-35.5, -17.5],
+      [-34.5, -18.5],
+    ]);
+    const [lon, lat] = focus.center;
+
+    expect(focus.zoom).toBe(11);
+    expect(lon).toBeCloseTo(-35 - 11 / 22);
+    expect(lat).toBeCloseTo(-18 + 15 / 22);
+  });
+
+  it("keeps the zoom between the whole area and the zoom limit", () => {
+    expect(getMapFocus(AREA, AREA).zoom).toBe(1);
+    expect(
+      getMapFocus(AREA, [
+        [-40, -10],
+        [-39.99, -10.01],
+      ]).zoom,
+    ).toBe(MAX_MAP_ZOOM);
   });
 });

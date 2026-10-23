@@ -6,6 +6,7 @@ import {
   buildTrendOption,
 } from "@/features/panels/chartOptions";
 import { formatReaisAxis, formatReaisCompact } from "@/features/panels/format";
+import type { MapBounds } from "@/features/panels/mapFraming";
 import { PIB_MAP_BUCKETS } from "@/features/panels/pib/pibPanel";
 
 const POINTS = [
@@ -92,6 +93,31 @@ describe("buildChoroplethOption", () => {
     expect(roam(true)).toBe(true);
     expect(roam(false)).toBe("scale");
     expect(roam()).toBe("scale");
+  });
+
+  it("keeps the whole area as the frame when a municipality is focused", () => {
+    const area: MapBounds = [
+      [-46, -3],
+      [-35, -18],
+    ];
+    const [series] = (
+      buildChoroplethOption({
+        regions: [],
+        buckets: PIB_MAP_BUCKETS,
+        mapName: "test",
+        valueLabel: "PIB",
+        formatValue: (value: number) => formatReaisCompact(value),
+        bounds: area,
+        focus: { center: [-39.5, -10.5], zoom: 8 },
+      }) as { series: Record<string, unknown>[] }
+    ).series;
+
+    expect(series).toMatchObject({
+      boundingCoords: area,
+      center: [-39.5, -10.5],
+      zoom: 8,
+      scaleLimit: { min: 1 },
+    });
   });
 });
 

@@ -11,6 +11,7 @@ import {
   createChart,
   type ChartInstance,
   type ChartOption,
+  type ChartRenderer,
 } from "@/lib/echarts";
 
 type EChartProps = {
@@ -19,11 +20,12 @@ type EChartProps = {
   className?: string;
   style?: CSSProperties;
   onItemClick?: (name: string) => void;
+  renderer?: ChartRenderer;
 };
 
 const WIDTH_STEP = 40;
 
-const useChartInstance = () => {
+const useChartInstance = (renderer?: ChartRenderer) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [chart, setChart] = useState<ChartInstance | null>(null);
   const [width, setWidth] = useState(0);
@@ -32,7 +34,7 @@ const useChartInstance = () => {
     const element = containerRef.current;
 
     if (!element) return;
-    const instance = createChart(element);
+    const instance = createChart(element, renderer);
     const observer = new ResizeObserver(([entry]) => {
       instance.resize();
       setWidth(Math.round(entry.contentRect.width / WIDTH_STEP) * WIDTH_STEP);
@@ -45,7 +47,7 @@ const useChartInstance = () => {
       observer.disconnect();
       instance.dispose();
     };
-  }, []);
+  }, [renderer]);
 
   return { containerRef, chart, width };
 };
@@ -78,8 +80,9 @@ export const EChart = ({
   className,
   style,
   onItemClick,
+  renderer,
 }: EChartProps) => {
-  const { containerRef, chart, width } = useChartInstance();
+  const { containerRef, chart, width } = useChartInstance(renderer);
 
   const fontFamily = usePageFont(containerRef);
 

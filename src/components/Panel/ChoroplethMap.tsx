@@ -12,6 +12,7 @@ import type { ChoroplethBucket } from "@/features/panels/choropleth";
 import {
   getMapAspectRatio,
   getMapBounds,
+  getMapFocus,
   getMunicipalityFocusBounds,
   mapNameFor,
   selectMapFeatures,
@@ -20,6 +21,9 @@ import {
 import { registerChartMapFeatures } from "@/lib/echarts";
 
 type MeshStatus = "loading" | "ready" | "error";
+
+// PERF: em SVG, cada passo do arrasto mexe em ~1.800 <path>; canvas é um bitmap só.
+const MAP_RENDERER = "canvas";
 
 // Pelo ponteiro, não pela largura: no desktop o mapa fica numa coluna estreita.
 const MOUSE_MEDIA_QUERY = "(hover: hover) and (pointer: fine)";
@@ -113,6 +117,12 @@ const MeshFallback = ({ status }: { status: MeshStatus }) => (
 
 export const ChoroplethMap = (props: ChoroplethMapProps) => {
   const { status, features } = useMesh(props.meshUrl);
+
+  // Formato da malha inteira: o card não muda de altura ao trocar de estado.
+  const aspectRatio = useMemo(
+    () => getMapAspectRatio(getMapBounds(features)),
+    [features],
+  );
   const { mapName, visible, areaBounds } = useRegionMap(
     props.meshUrl,
     features,
@@ -120,12 +130,14 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
   );
   const canPan = useMousePointer();
   const { selectedCode, regions, buckets, valueLabel, formatValue } = props;
-  const bounds = useMemo(
-    () =>
-      (selectedCode && getMunicipalityFocusBounds(visible, selectedCode)) ||
-      areaBounds,
-    [visible, selectedCode, areaBounds],
-  );
+  const focus = useMemo(() => {
+    const focusBounds =
+      selectedCode && getMunicipalityFocusBounds(visible, selectedCode);
+
+    return areaBounds && focusBounds
+      ? getMapFocus(areaBounds, focusBounds)
+      : undefined;
+  }, [visible, selectedCode, areaBounds]);
   const buildOption = useCallback(
     () =>
       buildChoroplethOption({
@@ -135,7 +147,8 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
         formatValue,
         selectedCode,
         mapName,
-        bounds,
+        bounds: areaBounds,
+        focus,
         canPan,
       }),
     [
@@ -145,19 +158,21 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
       formatValue,
       selectedCode,
       mapName,
-      bounds,
+      areaBounds,
+      focus,
       canPan,
     ],
   );
 
   return (
     <ChartCard title={props.title}>
-      {status === "ready" && bounds ? (
+      {status === "ready" && areaBounds ? (
         <EChart
           buildOption={buildOption}
           label={`Mapa coroplético: ${props.title}`}
           className="w-full"
-          style={{ aspectRatio: getMapAspectRatio(bounds) }}
+          style={{ aspectRatio }}
+          renderer={MAP_RENDERER}
           onItemClick={props.onSelectRegion}
         />
       ) : (

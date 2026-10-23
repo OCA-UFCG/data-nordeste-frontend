@@ -84,6 +84,46 @@ export const getMunicipalityFocusBounds = (
   ];
 };
 
+export const MAX_MAP_ZOOM = 40;
+
+export type MapFocus = { center: LonLat; zoom: number };
+
+const spanWidth = ([[west], [east]]: MapBounds) => east - west;
+const spanHeight = ([[, north], [, south]]: MapBounds) => north - south;
+
+const clampCentre = (value: number, min: number, max: number, half: number) =>
+  Math.min(max - half, Math.max(min + half, value));
+
+// Zoom sobre a área inteira, para o zoom-out continuar chegando até ela.
+export const getMapFocus = (area: MapBounds, focus: MapBounds): MapFocus => {
+  const fit = Math.min(
+    spanWidth(area) / spanWidth(focus),
+    spanHeight(area) / spanHeight(focus),
+  );
+  const zoom = Math.min(MAX_MAP_ZOOM, Math.max(1, fit));
+  const [[west, north], [east, south]] = focus;
+  const [[areaWest, areaNorth], [areaEast, areaSouth]] = area;
+
+  // Centro preso para a vista inicial não sair da área (corte ou mar vazio).
+  return {
+    center: [
+      clampCentre(
+        (west + east) / 2,
+        areaWest,
+        areaEast,
+        spanWidth(area) / (2 * zoom),
+      ),
+      clampCentre(
+        (north + south) / 2,
+        areaSouth,
+        areaNorth,
+        spanHeight(area) / (2 * zoom),
+      ),
+    ],
+    zoom,
+  };
+};
+
 export const getAspectScale = (bounds: MapBounds): number => {
   const centreLat = (bounds[0][1] + bounds[1][1]) / 2;
 
