@@ -154,6 +154,21 @@ outside the repository and rendered through frontend route/component logic.
 - For docs-only changes, no application test is normally required. If the change
   touches code, follow the validation guidance in `CLAUDE.md`.
 
+## Panel Data Cache
+
+- `queryDataDb` (`src/lib/dataDb.ts`) sits behind an in-memory cache
+  (`createQueryCache`, `src/lib/queryCache.ts`) keyed by SQL and parameters,
+  valid for 24 h (`DATA_DB_CACHE_SECONDS`) and capped at 500 entries, least
+  recently used dropped first. It serves every native panel demo.
+- The source data (IBGE, PNUD) changes at most monthly, so a day-old
+  answer is fine. A data update shows up within 24 h, or at once after the
+  container restarts, since the cache lives in the Node process.
+- Identical queries running at the same time share one round trip, and failed
+  queries are not kept. Every caller gets the same rows array: loaders must map
+  or copy rows, never sort or edit them in place.
+- The pages stay `force-dynamic`: the route still renders per request, only
+  the database round trips are cached.
+
 ## Native Panel Maps
 
 - `ChoroplethMap` reads GeoJSON meshes from `public/maps/`, built from IBGE

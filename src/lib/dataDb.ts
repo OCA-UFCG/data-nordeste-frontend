@@ -1,5 +1,7 @@
 import { Pool } from "pg";
+import { DATA_DB_CACHE_SECONDS } from "@/config/revalidation";
 import type { SqlQuery } from "@/features/panels/territorialSql";
+import { createQueryCache } from "@/lib/queryCache";
 
 let pool: Pool | undefined;
 
@@ -33,8 +35,15 @@ const getPool = (connectionString: string | undefined): Pool => {
   return pool;
 };
 
-export const queryDataDb: SqlQuery = async (sql, params) => {
+const runDataDbQuery: SqlQuery = async (sql, params) => {
   const result = await getPool(process.env.DATA_DB_URL).query(sql, params);
 
   return result.rows;
 };
+
+// PERF: cada visualização de painel roda ~14 consultas; sem cache, todas iam ao banco.
+export const queryDataDb = createQueryCache({
+  query: runDataDbQuery,
+  ttlMs: DATA_DB_CACHE_SECONDS * 1000,
+  maxEntries: 500,
+});
