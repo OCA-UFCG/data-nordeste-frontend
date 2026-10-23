@@ -239,6 +239,13 @@ body {
   }
 }
 
+/* CardCarousel hides its arrows below lg, so it needs no arrow gutter there. */
+.content-carousel.content-carousel-lg-arrows {
+  @media (max-width: 1023px) {
+    width: 100%;
+  }
+}
+
 .content-carousel::-webkit-scrollbar {
   display: none;
 }

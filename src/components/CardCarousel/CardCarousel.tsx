@@ -38,15 +38,18 @@ export function CardCarousel({ variant, items }: Props) {
   const itemClassName =
     variant === "post"
       ? "basis-[274px] shrink-0 grow-0 pl-0 md:basis-[298px] md:p-3 md:shrink-0 md:grow-0"
-      : "basis-auto md:basis-1/2 lg:basis-1/4 p-1 md:p-2";
+      : "basis-auto md:basis-1/2 lg:basis-1/3 xl:basis-1/4 p-1 md:p-2";
 
   const contentClassName =
     variant === "post"
       ? "ml-0 pl-6 md:ml-[-3px] md:pl-0 gap-6 md:gap-0"
-      : "-ml-1 md:-ml-2";
+      : "-mx-1 md:-mx-2";
 
+  // The extra padding keeps the edge cards' shadows inside the clipping box.
   const contentWrapperClassName =
-    variant === "post" ? "overflow-visible md:overflow-hidden" : "";
+    variant === "post"
+      ? "overflow-visible md:overflow-hidden"
+      : "-mx-1 px-1 md:-mx-2 md:px-2";
 
   const isPost = variant === "post";
 
@@ -62,7 +65,7 @@ export function CardCarousel({ variant, items }: Props) {
             delay: 10000,
           }),
         ]}
-        className="flex flex-col gap-4 content-carousel w-full"
+        className="flex flex-col gap-4 content-carousel content-carousel-lg-arrows w-full"
       >
         <CarouselContent
           className={contentClassName}
@@ -85,8 +88,9 @@ export function CardCarousel({ variant, items }: Props) {
           ))}
         </div>
 
-        <CarouselPrevious className="hidden md:flex" />
-        <CarouselNext className="hidden md:flex" />
+        {/* Below lg the section gutter is narrower than the arrows' 48 px offset. */}
+        <CarouselPrevious className="hidden lg:flex" />
+        <CarouselNext className="hidden lg:flex" />
       </Carousel>
     </div>
   );

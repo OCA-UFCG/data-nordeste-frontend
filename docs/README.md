@@ -172,3 +172,27 @@ outside the repository and rendered through frontend route/component logic.
   as PE is drawn centred with blank space above and below.
 - The map uses the canvas renderer; the other charts stay on SVG. Panning
   ~1,800 SVG paths was sluggish.
+
+## Responsive Layout
+
+Fixes from the October 2026 responsiveness study (P1 and P2).
+
+- **P1, header:** the full header (logo, search, six menu items) needs about
+  1,400 px, so `ResponsiveHeader` switches to it only from 1440 px; below that
+  the compact (hamburger) header is used. The search box can shrink to 200 px
+  and the menu items sit 8 px apart. New or longer menu labels in Contentful eat
+  into that margin: check the header at 1440 px after adding one.
+- **P2, carousels:** the `CardCarousel` arrows sit 48 px outside the carousel,
+  which only fits the section gutters from `lg` (1024 px). Below that, swipe and
+  the dots are the navigation.
+- **Tablets (744–1194 px):** `.content-carousel` reserves 6rem for arrows.
+  `CardCarousel` adds `content-carousel-lg-arrows` so that reserve only applies
+  from `lg`; below it the 6rem showed as a gap where a card was cut in half.
+  `GalleryCarousel` (about page) is centred and shows arrows from `md`, so it
+  keeps the reserve. Indicator cards go 2 → 3 → 4 per view (`md`/`lg`/`xl`)
+  and the home theme grid 2 → 3 → 4 columns, because at 4 columns below `xl`
+  long names such as "Desenvolvimento Social" ran under the card's arrow.
+- **Indicator card edges:** the items pad 8 px on both sides, so the strip
+  offsets both sides (`-mx-2`) and the clipping viewport gets 8 px of padding
+  back (`-mx-2 px-2`). Without that, the first and last cards sat on the
+  `overflow-hidden` edge and lost their shadow.

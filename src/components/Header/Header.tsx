@@ -45,7 +45,7 @@ const Header = ({ content }: { content: ISection[] }) => {
         </Link>
 
         <SearchBar
-          className="peer flex-1"
+          className="peer min-w-[200px] flex-1"
           variant="header"
           initialQuery={
             mergedExploreSearch.active ? mergedExploreSearch.query : ""
@@ -61,7 +61,7 @@ const Header = ({ content }: { content: ISection[] }) => {
         />
 
         <NavigationMenu className="flex-none peer-focus-within:hidden">
-          <NavigationMenuList className="flex items-center gap-6 h-10">
+          <NavigationMenuList className="flex items-center gap-2 h-10">
             {navigationSections
               .filter((item) => item.appears)
               .map((item, idx) => (
