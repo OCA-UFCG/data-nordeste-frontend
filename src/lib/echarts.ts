@@ -1,8 +1,9 @@
 import * as echarts from "echarts/core";
-import { BarChart, LineChart, MapChart } from "echarts/charts";
+import { BarChart, LineChart, MapChart, PieChart } from "echarts/charts";
 import {
   AriaComponent,
   GridComponent,
+  LegendComponent,
   TooltipComponent,
 } from "echarts/components";
 import { SVGRenderer } from "echarts/renderers";
@@ -11,8 +12,10 @@ echarts.use([
   AriaComponent,
   BarChart,
   GridComponent,
+  LegendComponent,
   LineChart,
   MapChart,
+  PieChart,
   SVGRenderer,
   TooltipComponent,
 ]);

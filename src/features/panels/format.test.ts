@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatNumber,
   formatPercent,
+  formatReais,
   formatReaisAxis,
   formatReaisCompact,
 } from "@/features/panels/format";
@@ -33,5 +35,13 @@ describe("formatReaisAxis", () => {
 describe("formatPercent", () => {
   it("uses a decimal comma", () => {
     expect(formatPercent(31.949, 2)).toBe("31,95%");
+  });
+});
+
+describe("formatNumber and formatReais", () => {
+  it("use pt-BR separators", () => {
+    expect(formatNumber(54_658_515)).toBe("54.658.515");
+    expect(formatNumber(0.7021, 3)).toBe("0,702");
+    expect(formatReais(467.43)).toBe("R$ 467,43");
   });
 });
