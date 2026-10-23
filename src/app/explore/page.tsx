@@ -13,7 +13,7 @@ import { fetchExploreResults } from "@/features/explore/results";
 export const metadata: Metadata = buildMetadata({
   title: "Explorar",
   description:
-    "Explore paineis interativos, datastories e experiencias de dados sobre desenvolvimento regional no Nordeste.",
+    "Explore painéis interativos, datastories e experiências de dados sobre desenvolvimento regional no Nordeste.",
   path: "/explore",
 });
 

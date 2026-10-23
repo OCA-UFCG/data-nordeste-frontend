@@ -36,8 +36,12 @@ const Header = ({ content }: { content: ISection[] }) => {
   return (
     <div className="w-full border-b-2 border-grey-200 bg-white" ref={headerRef}>
       <div className="flex w-full max-w-[1440px] items-center justify-between gap-6 px-20 py-[18px] mx-auto">
-        <Link href="/" className="flex items-center gap-2">
-          <Icon id="logo-DNE" width={99} height={47} />
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          aria-label="Data Nordeste, página inicial"
+        >
+          <Icon id="logo-DNE" width={99} height={47} aria-hidden="true" />
         </Link>
 
         <SearchBar

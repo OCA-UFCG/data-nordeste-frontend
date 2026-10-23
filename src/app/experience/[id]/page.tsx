@@ -16,9 +16,9 @@ export async function generateMetadata({
   const { id } = await params;
 
   return buildMetadata({
-    title: "Experiencia de dados",
+    title: "Experiência de dados",
     description:
-      "Experiencia interativa do Data Nordeste para exploracao visual de dados e indicadores regionais.",
+      "Experiência interativa do Data Nordeste para exploração visual de dados e indicadores regionais.",
     path: `/experience/${id}`,
   });
 }

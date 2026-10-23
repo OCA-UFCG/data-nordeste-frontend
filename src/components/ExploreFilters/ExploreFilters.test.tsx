@@ -49,6 +49,17 @@ describe("ExploreFilters", () => {
     expect(screen.getByText("Economia e Renda")).toBeInTheDocument();
   });
 
+  it("gives the sort selector and theme checkboxes an accessible name", () => {
+    render(<ExploreFilters themes={themes} />);
+
+    expect(
+      screen.getAllByRole("combobox", { name: "Ordenar por" }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByRole("checkbox", { name: "Economia e Renda" }).length,
+    ).toBeGreaterThan(0);
+  });
+
   it("fills search fields from the q URL parameter", () => {
     searchParams.value = new URLSearchParams("q=pib");
 

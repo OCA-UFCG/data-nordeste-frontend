@@ -22,7 +22,7 @@ import { buildMetadata } from "@/config/seo";
 export const metadata: Metadata = buildMetadata({
   title: "Sobre",
   description:
-    "Conheca o Data Nordeste, suas formas de contato, rede de colaboracao, historia e compromisso com dados para o desenvolvimento regional.",
+    "Conheça o Data Nordeste, suas formas de contato, rede de colaboração, história e compromisso com dados para o desenvolvimento regional.",
   path: "/about",
 });
 

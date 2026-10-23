@@ -173,9 +173,14 @@ export const PdfViewer = ({
           <Icon id="fullscreen" size={18} />
         </button>
       </div>
+      {/* Focusable so keyboard users can scroll the pages with the arrow keys;
+          the pages are canvases, so nothing inside can take focus. */}
       <div
         className="pdf-viewer-canvas-wrapper"
         style={{ scrollBehavior: "smooth" }}
+        tabIndex={0}
+        role="region"
+        aria-label={`Páginas de ${fileName}`}
       >
         <div className="pdf-viewer-pages-column">
           {pages.map((pageNum) => (

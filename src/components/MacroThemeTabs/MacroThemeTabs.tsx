@@ -275,7 +275,7 @@ export function MacroThemeTabs({
         <div
           role="tabpanel"
           tabIndex={0}
-          className="outline-none w-full max-w-[1440px] mx-auto px-20 pt-8 pb-10"
+          className="outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] rounded-md w-full max-w-[1440px] mx-auto px-20 pt-8 pb-10"
         >
           {activeTab === "paineis" &&
             renderTabSection(

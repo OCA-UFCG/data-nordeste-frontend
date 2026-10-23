@@ -224,7 +224,7 @@ function CarouselPrevious({
         size={8}
         className="cursor-pointer size-2 rotate-[-135deg]"
       />
-      <span className="sr-only">Previous slide</span>
+      <span className="sr-only">Slide anterior</span>
     </Button>
   );
 }
@@ -254,7 +254,7 @@ function CarouselNext({
       {...props}
     >
       <Icon id="arrow" size={8} className="size-2 rotate-45" />
-      <span className="sr-only">Next slide</span>
+      <span className="sr-only">Próximo slide</span>
     </Button>
   );
 }
@@ -267,10 +267,13 @@ function DotButton({
   ...props
 }: ComponentProps<typeof Button>) {
   const { scrollTo, currentItem } = useCarousel();
+  const slideIndex = tabIndex || 0;
 
   return (
     <Button
       data-slot="carousel-dots"
+      aria-label={`Ir para o slide ${slideIndex + 1}`}
+      aria-current={currentItem == tabIndex ? "true" : undefined}
       variant={variant}
       size={size}
       className={cn(
@@ -279,7 +282,7 @@ function DotButton({
         className,
       )}
       disabled={false}
-      onClick={() => scrollTo(tabIndex || 0)}
+      onClick={() => scrollTo(slideIndex)}
       {...props}
     />
   );

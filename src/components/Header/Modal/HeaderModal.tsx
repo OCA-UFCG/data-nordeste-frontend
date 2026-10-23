@@ -34,14 +34,28 @@ const HeaderModal = ({ content }: { content: ISection[] }) => {
   return (
     <div className="flex h-20 w-full justify-between border-b-2 px-4 py-[18px]">
       <Sheet open={open} onOpenChange={setOpen}>
+        {/* A real <button>, not a <div>: Radix's asChild forwards the trigger
+            props but cannot make a div focusable, so keyboard users skipped the
+            menu and focus fell to <body> when the sheet closed. */}
         <SheetTrigger asChild>
-          <div className="flex items-center">
-            <Menu className="h-[40px] w-[40px] text-green-900 hover:bg-green-neutro p-2 box-border cursor-pointer rounded-lg transition duration-300" />
-          </div>
+          <button
+            type="button"
+            aria-label="Abrir menu de navegação"
+            className="flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-800"
+          >
+            <Menu
+              aria-hidden="true"
+              className="h-[40px] w-[40px] text-green-900 hover:bg-green-neutro p-2 box-border cursor-pointer rounded-lg transition duration-300"
+            />
+          </button>
         </SheetTrigger>
 
-        <Link href="/" className="flex items-center gap-2">
-          <Icon id="logo-DNE" width={99} height={47} />
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          aria-label="Data Nordeste, página inicial"
+        >
+          <Icon id="logo-DNE" width={99} height={47} aria-hidden="true" />
         </Link>
 
         <SheetContent

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { VLibras } from "@/components/VLibras/VLibras";
 import {
   buildMetadata,
   SITE_DESCRIPTION,
@@ -64,7 +65,10 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <link rel="icon" href="/favicon.ico" sizes="any" />
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {children}
+        <VLibras />
+      </body>
 
       <GoogleAnalytics gaId={NEXT_PUBLIC_GA_ID} />
     </html>

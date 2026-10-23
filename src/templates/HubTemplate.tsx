@@ -1,6 +1,7 @@
 import HeaderSection from "@/components/Header/Section/HeaderSection";
 import React, { ReactNode, Suspense } from "react";
 import Footer from "@/components/Footer/Footer";
+import { MAIN_CONTENT_ID, SkipLink } from "@/components/SkipLink/SkipLink";
 
 import "../app/globals.css";
 import { getNavigationSections } from "@/features/navigation/content";
@@ -13,12 +14,15 @@ type HubTemplateProps = {
 const HubTemplate = ({ children, showFooter = true }: HubTemplateProps) => {
   return (
     <>
+      <SkipLink />
       <Suspense fallback={<HeaderPlaceholder />}>
         <NavigationHeader />
       </Suspense>
+      {/* tabIndex -1 lets the skip link move focus here, not only scroll. */}
       <main
-        id="root"
-        className="flex flex-col items-center flex-1 min-h-0 w-full border-box"
+        id={MAIN_CONTENT_ID}
+        tabIndex={-1}
+        className="flex flex-col items-center flex-1 min-h-0 w-full border-box focus:outline-none"
       >
         {children}
       </main>

@@ -54,6 +54,7 @@ function SeeThemesModal({
                     <div className="flex items-center justify-center h-full w-10 rounded-l-lg hover:bg-[#DDEADF] transition-colors">
                       <Checkbox
                         checked={isChecked}
+                        aria-label={theme.name}
                         onCheckedChange={() => onToggleCategory(theme.sys.id)}
                         className="w-5 h-5 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
                         onClick={(e) => e.stopPropagation()}

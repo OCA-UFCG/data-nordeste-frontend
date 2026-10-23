@@ -16,9 +16,9 @@ import {
 } from "@/features/posts/filters";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Publicacoes",
+  title: "Publicações",
   description:
-    "Publicacoes, noticias, boletins e conteudos tecnicos sobre dados e indicadores do Nordeste brasileiro.",
+    "Publicações, notícias, boletins e conteúdos técnicos sobre dados e indicadores do Nordeste brasileiro.",
   path: "/posts",
 });
 

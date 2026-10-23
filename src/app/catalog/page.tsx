@@ -25,9 +25,9 @@ import { ExploreFilters } from "@/components/ExploreFilters/ExploreFilters";
 import { normalizeKey } from "@/utils/functions";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Catalogo de dados",
+  title: "Catálogo de dados",
   description:
-    "Catalogo de datasets abertos do Data Nordeste com arquivos, licencas, fontes e registros publicados no Zenodo.",
+    "Catálogo de datasets abertos do Data Nordeste com arquivos, licenças, fontes e registros publicados no Zenodo.",
   path: "/catalog",
 });
 

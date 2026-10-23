@@ -30,6 +30,7 @@ function ThemeFilterCard({
         <Checkbox
           checked={checked}
           onCheckedChange={onCheckedChange}
+          aria-label={name}
           className="w-4 h-4 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
           onClick={(e) => e.stopPropagation()}
           disabled={disabled}
@@ -46,6 +47,7 @@ function ThemeFilterCard({
         <Link
           href={href}
           title="Acesse o tema"
+          aria-label={`Acesse o tema ${name}`}
           className="group/tooltip relative flex items-center justify-center w-12 h-full shrink-0 transition-colors hover:bg-[#DDEADF] bg-[#F8F7F8]"
           onClick={(e) => e.stopPropagation()}
         >
