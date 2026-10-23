@@ -245,7 +245,7 @@ export type ChoroplethConfig = {
   formatValue: ValueFormatter;
   selectedCode?: string;
   bounds?: MapBounds;
-  width?: number;
+  canPan?: boolean;
 };
 
 const HTML_ESCAPES: Record<string, string> = {
@@ -281,8 +281,6 @@ const choroplethRegions = (config: ChoroplethConfig) =>
     },
   }));
 
-const MAP_PAN_MIN_WIDTH = 640;
-
 const choroplethFraming = (bounds: MapBounds | undefined) =>
   bounds ? { boundingCoords: bounds, aspectScale: getAspectScale(bounds) } : {};
 
@@ -299,7 +297,9 @@ export const buildChoroplethOption = (
     {
       type: "map",
       map: config.mapName,
-      roam: (config.width ?? Infinity) < MAP_PAN_MIN_WIDTH ? "scale" : true,
+
+      // Em tela de toque, arrastar com um dedo rola a página, não o mapa.
+      roam: config.canPan ? true : "scale",
       scaleLimit: { min: 1, max: 40 },
       selectedMode: false,
       left: 4,

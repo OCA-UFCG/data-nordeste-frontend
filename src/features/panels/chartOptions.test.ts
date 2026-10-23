@@ -74,7 +74,7 @@ describe("buildChoroplethOption", () => {
     );
   });
 
-  it("enables zoom, keeping one-finger drag for page scroll on phones", () => {
+  it("pans only with a mouse, keeping one-finger drag for page scroll", () => {
     const config = {
       regions: [],
       buckets: PIB_MAP_BUCKETS,
@@ -82,15 +82,16 @@ describe("buildChoroplethOption", () => {
       valueLabel: "PIB",
       formatValue: (value: number) => formatReaisCompact(value),
     };
-    const roam = (width: number) =>
+    const roam = (canPan?: boolean) =>
       (
-        buildChoroplethOption({ ...config, width }) as {
+        buildChoroplethOption({ ...config, canPan }) as {
           series: { roam: boolean | string }[];
         }
       ).series[0].roam;
 
-    expect(roam(1200)).toBe(true);
-    expect(roam(360)).toBe("scale");
+    expect(roam(true)).toBe(true);
+    expect(roam(false)).toBe("scale");
+    expect(roam()).toBe("scale");
   });
 });
 
