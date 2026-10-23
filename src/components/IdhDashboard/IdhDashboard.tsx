@@ -39,9 +39,11 @@ const useIdhNavigation = () => {
 const IdhTabContent = ({
   tab,
   data,
+  onSelectUf,
 }: {
   tab: IdhVisao;
   data: IdhPanelData;
+  onSelectUf: (uf: string) => void;
 }) => {
   if (tab === "sexo") {
     return (
@@ -62,7 +64,7 @@ const IdhTabContent = ({
     );
   }
 
-  return <IdhOverview data={data} />;
+  return <IdhOverview data={data} onSelectUf={onSelectUf} />;
 };
 
 export const IdhDashboard = ({
@@ -114,7 +116,11 @@ export const IdhDashboard = ({
         aria-busy={isPending}
         className="transition-opacity aria-busy:opacity-60"
       >
-        <IdhTabContent tab={tab} data={data} />
+        <IdhTabContent
+          tab={tab}
+          data={data}
+          onSelectUf={(uf) => changeFilters({ ...data.filters, uf })}
+        />
       </div>
     </PanelPage>
   );

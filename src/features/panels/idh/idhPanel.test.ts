@@ -32,6 +32,15 @@ class IdhDatabaseFake {
     if (sql.includes("AVG(idh_ad)")) {
       return [{ ano: 2021, idh: "0.702", idh_ad: "0.518", rdpct: "467.43" }];
     }
+    if (sql.includes("estado_rm AS lugar")) {
+      return [
+        {
+          lugar: "Região Metropolitana de Recife",
+          uf: "PE",
+          idh: "0.746",
+        },
+      ];
+    }
     if (sql.includes("sexo AS grupo")) {
       return [
         { ano: 2021, grupo: "MULHER", idh: "0.735", renocup: "845.27" },
@@ -77,6 +86,27 @@ describe("loadIdhPanel", () => {
 
     expect(db.callFor("AVG(idh_ad)").params).toEqual(["Sim", "PE"]);
     expect(db.callFor("estado_rm AS lugar").params).toEqual(["Sim", 2021]);
+  });
+
+  it("keys the map by UF so it matches the state mesh", async () => {
+    const db = new IdhDatabaseFake();
+    const panel = await loadIdhPanel(db.query, {
+      ano: 2021,
+      recorte: "rm",
+      visao: "geral",
+    });
+
+    expect(panel.mapa).toEqual([
+      {
+        code: "PE",
+        name: "Região Metropolitana de Recife",
+        uf: "PE",
+        value: 0.746,
+      },
+    ]);
+    expect(panel.ranking).toEqual([
+      { label: "Região Metropolitana de Recife", value: 0.746 },
+    ]);
   });
 
   it("drops a UF that is not in the data", async () => {

@@ -9,15 +9,17 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 import { ChartCard } from "@/components/Panel/ChartCard";
+import { ChoroplethMap } from "@/components/Panel/ChoroplethMap";
 import { ColumnChart } from "@/components/Panel/ColumnChart";
 import { HighlightCard } from "@/components/Panel/HighlightCards";
 import type { KpiItem } from "@/components/Panel/KpiCards";
 import { HorizontalBarChart } from "@/components/Panel/HorizontalBarChart";
 import { RankedBars } from "@/components/Panel/RankedBars";
 import { PanelCarousel } from "@/components/Panel/PanelCarousel";
-import type {
-  IdhPanelData,
-  IdhYearPoint,
+import {
+  IDH_MAP_BUCKETS,
+  type IdhPanelData,
+  type IdhYearPoint,
 } from "@/features/panels/idh/idhPanel";
 import {
   formatIdh,
@@ -27,6 +29,8 @@ import {
   NO_DATA,
   yearLabels,
 } from "@/features/panels/idh/idhFormat";
+
+const MESH_URL = "/maps/estados-nordeste.json";
 
 const overviewCards = (point?: IdhYearPoint): KpiItem[] => {
   const show = (format: (value: number) => string, key: keyof IdhYearPoint) =>
@@ -90,19 +94,47 @@ const useEvolutionSeries = (serie: IdhYearPoint[]) =>
     [serie],
   );
 
+const isRm = (data: IdhPanelData) => data.filters.recorte === "rm";
+
 const RankingCard = ({ data }: { data: IdhPanelData }) => (
   <ChartCard
-    title={
-      data.filters.recorte === "rm"
-        ? "IDH por região metropolitana"
-        : "IDH por estado"
-    }
+    title={isRm(data) ? "IDH por região metropolitana" : "IDH por estado"}
   >
     <RankedBars points={data.ranking} formatValue={formatIdh} />
   </ChartCard>
 );
 
-export const IdhOverview = ({ data }: { data: IdhPanelData }) => {
+const IdhMap = ({
+  data,
+  onSelectUf,
+}: {
+  data: IdhPanelData;
+  onSelectUf: (uf: string) => void;
+}) => (
+  <ChoroplethMap
+    title={
+      isRm(data)
+        ? "IDH da região metropolitana de cada estado"
+        : "IDH por estado"
+    }
+    meshUrl={MESH_URL}
+    regions={data.mapa}
+    buckets={IDH_MAP_BUCKETS}
+    valueLabel="IDH"
+    formatValue={formatIdh}
+    selectedCode={data.filters.uf}
+    onSelectRegion={onSelectUf}
+  />
+);
+
+// Evolução fora da grade: 10 anos × 2 séries não cabem numa coluna sem rolar.
+export const IdhOverview = ({
+  data,
+  onSelectUf,
+}: {
+  data: IdhPanelData;
+  onSelectUf: (uf: string) => void;
+}) => {
   const selected = data.serie.find((point) => point.ano === data.filters.ano);
   const evolution = useEvolutionSeries(data.serie);
 
@@ -124,15 +156,20 @@ export const IdhOverview = ({ data }: { data: IdhPanelData }) => {
           formatValue={formatIdh}
         />
       </ChartCard>
-      <div className="hidden items-start gap-6 lg:grid lg:grid-cols-2">
-        <ChartCard title="IDH por dimensão">
-          <HorizontalBarChart
-            points={dimensions(selected)}
-            formatValue={formatIdh}
-            label="Gráfico de barras do IDH por dimensão"
-          />
-        </ChartCard>
-        <RankingCard data={data} />
+      <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        <div className="min-w-0">
+          <IdhMap data={data} onSelectUf={onSelectUf} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-6">
+          <ChartCard title="IDH por dimensão">
+            <HorizontalBarChart
+              points={dimensions(selected)}
+              formatValue={formatIdh}
+              label="Gráfico de barras do IDH por dimensão"
+            />
+          </ChartCard>
+          <RankingCard data={data} />
+        </div>
       </div>
     </div>
   );

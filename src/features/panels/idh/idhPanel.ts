@@ -1,4 +1,8 @@
-import type { ChartPoint } from "@/features/panels/chartOptions";
+import type {
+  ChartPoint,
+  ChoroplethRegion,
+} from "@/features/panels/chartOptions";
+import type { ChoroplethBucket } from "@/features/panels/choropleth";
 import {
   firstValue,
   listYears,
@@ -15,6 +19,17 @@ import {
 } from "@/features/panels/territorialSql";
 
 export const IDH_YEAR_RANGE: YearRange = { first: 2012, last: 2021 };
+
+// Faixas do PNUD (0,1) pintariam o Nordeste (0,648 a 0,782) quase de uma cor só.
+export const IDH_MAP_BUCKETS: readonly ChoroplethBucket[] = [
+  { max: 0.65, label: "Até 0,650", color: "#feedde" },
+  { max: 0.675, label: "0,650 a 0,675", color: "#fdd0a2" },
+  { max: 0.7, label: "0,675 a 0,700", color: "#fdae6b" },
+  { max: 0.725, label: "0,700 a 0,725", color: "#fd8d3c" },
+  { max: 0.75, label: "0,725 a 0,750", color: "#f16913" },
+  { max: 0.775, label: "0,750 a 0,775", color: "#d94801" },
+  { max: Infinity, label: "Acima de 0,775", color: "#8c2d04" },
+];
 
 export const IDH_RECORTES = [
   { value: "estado", label: "Estado" },
@@ -110,6 +125,7 @@ export type IdhPanelData = {
   ufs: UfOption[];
   serie: IdhYearPoint[];
   ranking: ChartPoint[];
+  mapa: ChoroplethRegion[];
   sexo: IdhGroupSerie[];
   cor: IdhGroupSerie[];
 };
@@ -184,15 +200,20 @@ const loadSerie = async (query: SqlQuery, filters: IdhFilters) => {
   }));
 };
 
-const loadRanking = async (query: SqlQuery, filters: IdhFilters) => {
+const loadLugares = async (query: SqlQuery, filters: IdhFilters) => {
   const where = buildIdhWhere(filters, { byYear: true, byUf: false });
-  const rows = await query<{ lugar: string; idh: NumericCell }>(
-    `SELECT estado_rm AS lugar, idh FROM ${GERAL_VIEW}
-     WHERE ${where.sql} ORDER BY idh DESC`,
+  const rows = await query<{ lugar: string; uf: string; idh: NumericCell }>(
+    `SELECT estado_rm AS lugar, RIGHT(TRIM(estado_uf), 2) AS uf, idh
+     FROM ${GERAL_VIEW} WHERE ${where.sql} ORDER BY idh DESC`,
     where.params,
   );
 
-  return rows.map((row) => ({ label: row.lugar, value: toNumber(row.idh) }));
+  return rows.map((row) => ({
+    code: row.uf,
+    name: row.lugar,
+    uf: row.uf,
+    value: toNumber(row.idh),
+  }));
 };
 
 const loadGroups = async (
@@ -240,14 +261,16 @@ export const loadIdhPanel = async (
         recorte: requested.recorte,
         visao: requested.visao,
       };
-  const [serie, ranking, sexo, cor] = await Promise.all([
+  const [serie, mapa, sexo, cor] = await Promise.all([
     loadSerie(query, filters),
-    loadRanking(query, filters),
+    loadLugares(query, filters),
     loadGroups(query, filters, GROUPS.sexo),
     loadGroups(query, filters, GROUPS.cor),
   ]);
 
-  return { filters, ufs, serie, ranking, sexo, cor };
+  const ranking = mapa.map(({ name, value }) => ({ label: name, value }));
+
+  return { filters, ufs, serie, ranking, mapa, sexo, cor };
 };
 
 export const describeIdhSelection = ({
