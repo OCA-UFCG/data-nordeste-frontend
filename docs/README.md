@@ -153,3 +153,13 @@ outside the repository and rendered through frontend route/component logic.
   `src/utils/contentful.ts`, `src/lib/zenodo.ts`, and `src/lib/firebase.ts`.
 - For docs-only changes, no application test is normally required. If the change
   touches code, follow the validation guidance in `CLAUDE.md`.
+
+## Native Panel Maps
+
+- `ChoroplethMap` reads GeoJSON meshes from `public/maps/`, built from IBGE
+  shapefiles by the scripts in `scripts/`. Each feature's `properties.name`
+  holds the code the panel data uses as `region.code`.
+- With a mouse (`(hover: hover) and (pointer: fine)`) the map zooms and pans.
+  On touch screens it only zooms (pinch), so a one-finger drag keeps scrolling
+  the page. The rule follows the pointer, not the width: on desktop the map sits
+  in a column of about 300 to 470 px.
