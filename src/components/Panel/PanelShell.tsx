@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 export const PANEL_TONES = {
   orange: { shell: "bg-orange-500", card: "bg-orange-900" },
   pink: { shell: "bg-pink-600", card: "bg-pink-800" },
+  green: { shell: "bg-green-800", card: "bg-green-1000" },
 } as const;
 
 export type PanelTone = keyof typeof PANEL_TONES;
