@@ -163,3 +163,12 @@ outside the repository and rendered through frontend route/component logic.
   On touch screens it only zooms (pinch), so a one-finger drag keeps scrolling
   the page. The rule follows the pointer, not the width: on desktop the map sits
   in a column of about 300 to 470 px.
+- The frame (`boundingCoords`) is always the whole filtered area. Selecting a
+  municipality only sets `center` and `zoom` on top of it, so zooming out
+  (`scaleLimit.min: 1`) goes back to the whole area. Framing the municipality
+  itself used to lock zoom-out at that small box.
+- The map box keeps the aspect ratio of the whole mesh, not of the filtered
+  area, so the card does not change height between states. A wide state such
+  as PE is drawn centred with blank space above and below.
+- The map uses the canvas renderer; the other charts stay on SVG. Panning
+  ~1,800 SVG paths was sluggish.

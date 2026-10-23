@@ -6,11 +6,12 @@ import {
   LegendComponent,
   TooltipComponent,
 } from "echarts/components";
-import { SVGRenderer } from "echarts/renderers";
+import { CanvasRenderer, SVGRenderer } from "echarts/renderers";
 
 echarts.use([
   AriaComponent,
   BarChart,
+  CanvasRenderer,
   GridComponent,
   LegendComponent,
   LineChart,
@@ -24,8 +25,12 @@ export type ChartOption = echarts.EChartsCoreOption;
 export type ChartInstance = echarts.ECharts;
 type MapGeoJson = Parameters<typeof echarts.registerMap>[1];
 
-export const createChart = (element: HTMLElement): ChartInstance =>
-  echarts.init(element, undefined, { renderer: "svg" });
+export type ChartRenderer = "svg" | "canvas";
+
+export const createChart = (
+  element: HTMLElement,
+  renderer: ChartRenderer = "svg",
+): ChartInstance => echarts.init(element, undefined, { renderer });
 
 export const registerChartMapFeatures = (name: string, features: object[]) => {
   if (echarts.getMap(name)) return;
