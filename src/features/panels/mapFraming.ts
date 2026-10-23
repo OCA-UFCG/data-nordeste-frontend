@@ -57,16 +57,21 @@ export const getMapBounds = (features: MapFeature[]): MapBounds | undefined => {
 const FOCUS_ZOOM_OUT = 3;
 const MIN_FOCUS_HALF_SPAN = 0.3;
 
-export const getMunicipalityFocusBounds = (
+/**
+ * Square box around the selected municipalities, zoomed out so their
+ * neighbours stay visible. Codes missing from the mesh are ignored.
+ * @example getSelectionFocusBounds(visible, ["2611606", "2607901"])
+ */
+export const getSelectionFocusBounds = (
   features: MapFeature[],
-  cdMun: string,
+  cdMuns: string[],
 ): MapBounds | undefined => {
-  const feature = features.find((item) => item.properties.name === cdMun);
-
-  if (!feature) return undefined;
   const points: LonLat[] = [];
 
-  collectPoints(feature.geometry.coordinates, points);
+  for (const feature of selectMapFeatures(features, cdMuns)) {
+    collectPoints(feature.geometry.coordinates, points);
+  }
+  if (!points.length) return undefined;
   const [[west, north], [east, south]] = boundsOf(points);
   const scale = getAspectScale([
     [west, north],

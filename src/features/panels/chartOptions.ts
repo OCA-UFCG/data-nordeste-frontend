@@ -10,18 +10,18 @@ const TEXT_COLOR = "#292829";
 const MUTED_COLOR = "#5c5c5c";
 const ACCENT = "#f5791a";
 const ACCENT_DARK = "#be4610";
-const SELECTED_BORDER = "#077432";
+export const SELECTED_BORDER = "#077432";
 const COMPACT_WIDTH = 560;
 const LABEL_SLOT_WIDTH = 96;
 
 export const isCompactChart = (width: number): boolean => width < COMPACT_WIDTH;
 
-const TOOLTIP_BASE = {
+export const TOOLTIP_BASE = {
   confine: true,
   textStyle: { fontSize: FONT_SIZE, color: TEXT_COLOR },
 };
 
-const baseOption = (): ChartOption => ({
+export const baseOption = (): ChartOption => ({
   aria: { enabled: true },
   textStyle: { fontSize: FONT_SIZE, color: TEXT_COLOR },
   tooltip: TOOLTIP_BASE,
@@ -255,7 +255,7 @@ const HTML_ESCAPES: Record<string, string> = {
   '"': "&quot;",
 };
 
-const escapeHtml = (value: string): string =>
+export const escapeHtml = (value: string): string =>
   value.replace(/[&<>"]/g, (char) => HTML_ESCAPES[char]);
 
 const choroplethTooltip =
@@ -291,6 +291,33 @@ const choroplethFraming = (framing: MapFraming | undefined) =>
       }
     : { scaleLimit: { min: 1 } };
 
+export type MapViewport = Pick<
+  ChoroplethConfig,
+  "mapName" | "framing" | "canPan"
+>;
+
+// Comum à série `map` e ao componente `geo` (mapa com camadas).
+export const mapViewportOption = (viewport: MapViewport) => ({
+  map: viewport.mapName,
+
+  // Em tela de toque, arrastar com um dedo rola a página, não o mapa.
+  roam: viewport.canPan ? true : "scale",
+  selectedMode: false,
+  left: 4,
+  right: 4,
+  top: 4,
+  bottom: 4,
+
+  // Sem isso o ECharts 6 estica a região para preencher a caixa.
+  preserveAspect: "contain",
+  ...choroplethFraming(viewport.framing),
+  itemStyle: { borderColor: "#ffffff", borderWidth: 0.3 },
+  emphasis: {
+    label: { show: false },
+    itemStyle: { areaColor: SELECTED_BORDER },
+  },
+});
+
 export const buildChoroplethOption = (
   config: ChoroplethConfig,
 ): ChartOption => ({
@@ -303,24 +330,7 @@ export const buildChoroplethOption = (
   series: [
     {
       type: "map",
-      map: config.mapName,
-
-      // Em tela de toque, arrastar com um dedo rola a página, não o mapa.
-      roam: config.canPan ? true : "scale",
-      selectedMode: false,
-      left: 4,
-      right: 4,
-      top: 4,
-      bottom: 4,
-
-      // Sem isso o ECharts 6 estica a região para preencher a caixa.
-      preserveAspect: "contain",
-      ...choroplethFraming(config.framing),
-      itemStyle: { borderColor: "#ffffff", borderWidth: 0.3 },
-      emphasis: {
-        label: { show: false },
-        itemStyle: { areaColor: SELECTED_BORDER },
-      },
+      ...mapViewportOption(config),
       data: choroplethRegions(config),
     },
   ],
