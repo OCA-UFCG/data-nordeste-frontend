@@ -311,13 +311,17 @@ function useCarouselAutoplay(api: CarouselApi) {
 
     if (window.matchMedia?.(REDUCED_MOTION_QUERY).matches) autoplay.stop();
 
-    const syncPlaying = () => setIsPlaying(autoplay.isPlaying());
+    // WARNING: embla-carousel-autoplay 8.6 emits these events before it flips
+    // its own flag, so isPlaying() read inside the listener is stale. Trust
+    // the event name instead.
+    const markPlaying = () => setIsPlaying(true);
+    const markStopped = () => setIsPlaying(false);
     setHasAutoplay(api.scrollSnapList().length > 1);
-    syncPlaying();
-    api.on("autoplay:play", syncPlaying).on("autoplay:stop", syncPlaying);
+    setIsPlaying(autoplay.isPlaying());
+    api.on("autoplay:play", markPlaying).on("autoplay:stop", markStopped);
 
     return () => {
-      api.off("autoplay:play", syncPlaying).off("autoplay:stop", syncPlaying);
+      api.off("autoplay:play", markPlaying).off("autoplay:stop", markStopped);
     };
   }, [api]);
 

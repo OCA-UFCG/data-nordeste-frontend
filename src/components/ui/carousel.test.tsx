@@ -16,6 +16,10 @@ type EmblaListener = () => void;
 // jsdom has no layout, so the real embla sees zero-width slides, collapses
 // them to one snap and never starts autoplay. This fake exposes only the
 // slice of the embla API that the carousel components call.
+//
+// IMPORTANT: emit before flipping the state, like embla-carousel-autoplay 8.6
+// (startAutoplay/stopAutoplay). Listeners that read isPlaying() inside the
+// event see the stale value; flipping first hid that bug in the toggle.
 class AutoplayPluginFake {
   private playing = true;
 
@@ -24,13 +28,13 @@ class AutoplayPluginFake {
   isPlaying = () => this.playing;
 
   play = () => {
-    this.playing = true;
     this.emit("autoplay:play");
+    this.playing = true;
   };
 
   stop = () => {
-    this.playing = false;
     this.emit("autoplay:stop");
+    this.playing = false;
   };
 }
 
