@@ -15,6 +15,7 @@ import {
   buildZenodoFilesArchiveUrl,
 } from "@/lib/zenodo";
 import { downloadFile } from "@/lib/download";
+import { getReadableTextColor } from "@/features/colors/contrast";
 
 export const DataCard = ({
   post,
@@ -80,7 +81,10 @@ export const DataCard = ({
                   .map(({ key, label, color }) => (
                     <span
                       key={key}
-                      style={{ backgroundColor: color, color: "#ffffff" }}
+                      style={{
+                        backgroundColor: color,
+                        color: getReadableTextColor(color),
+                      }}
                       className="flex items-center justify-center min-h-[20px] min-w-[51px] rounded-full border border-[#E2E8F0] px-[10px] py-[4px] text-xs leading-4 text-center font-semibold"
                     >
                       {label}
@@ -176,7 +180,7 @@ export const DataCard = ({
                   key={file.name}
                   type="button"
                   onClick={() => handleDownload(file.downloadUrl, file.name)}
-                  className="flex min-w-0 items-center justify-center gap-2 rounded-md border border-[#DCDBDC] bg-transparent px-3 text-[12px] font-medium text-[#018F39] transition-colors hover:bg-gray-100"
+                  className="flex min-w-0 items-center justify-center gap-2 rounded-md border border-[#DCDBDC] bg-transparent px-3 text-[12px] font-medium text-green-800 transition-colors hover:bg-gray-100"
                 >
                   <Icon
                     id="icon-download"
@@ -205,7 +209,7 @@ export const DataCard = ({
                   key={file.name}
                   type="button"
                   onClick={() => handleDownload(file.downloadUrl, file.name)}
-                  className="flex items-center gap-2 rounded-full bg-transparent px-3 py-1 md:text-[14px] font-medium text-[#018F39] transition-colors hover:bg-gray-100 cursor-pointer text-[12px]"
+                  className="flex items-center gap-2 rounded-full bg-transparent px-3 py-1 md:text-[14px] font-medium text-green-800 transition-colors hover:bg-gray-100 cursor-pointer text-[12px]"
                 >
                   <Icon
                     id="icon-download"

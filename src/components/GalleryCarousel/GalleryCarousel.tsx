@@ -5,6 +5,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  CarouselAutoplayToggle,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
@@ -46,6 +47,7 @@ const GalleryCarousel = ({
     <section className="flex items-center justify-center w-full">
       <div className="flex justify-center w-full max-w-[1440px]">
         <Carousel
+          aria-label="Galeria de imagens"
           opts={{ align: "start", loop: true }}
           plugins={[Autoplay({ delay: 5000 })]}
           className="flex flex-col gap-4 content-carousel py-4"
@@ -97,6 +99,7 @@ const GalleryCarousel = ({
               );
             })}
           </CarouselContent>
+          <CarouselAutoplayToggle className="self-center text-grey-1100" />
           <CarouselPrevious className="hidden md:flex" />
           <CarouselNext className="hidden md:flex" />
         </Carousel>

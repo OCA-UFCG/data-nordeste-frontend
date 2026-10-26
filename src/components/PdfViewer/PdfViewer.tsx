@@ -12,8 +12,10 @@ import {
   GlobalWorkerOptions,
   type PDFDocumentProxy,
   type PDFPageProxy,
+  type TextLayer,
 } from "pdfjs-dist";
 import { Icon } from "@/components/Icon/Icon";
+import { createPdfTextLayer } from "./pdfTextLayer";
 import "./PdfViewer.css";
 
 // IMPORTANT: pdf.js requires a web worker to parse PDFs off the main thread.
@@ -314,7 +316,9 @@ type PdfPageProps = {
 const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const textLayerDivRef = useRef<HTMLDivElement>(null);
   const renderTaskRef = useRef<ReturnType<PDFPageProxy["render"]> | null>(null);
+  const textLayerRef = useRef<TextLayer | null>(null);
 
   // PERF: Lazy render — the canvas is only drawn when the page enters the
   // pre-load window. Once true, this never reverts to false so that scrolling
@@ -333,6 +337,8 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
         renderTaskRef.current.cancel();
         renderTaskRef.current = null;
       }
+      textLayerRef.current?.cancel();
+      textLayerRef.current = null;
 
       try {
         const page = await pdfDoc.getPage(pageNumber);
@@ -373,6 +379,15 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
         });
         renderTaskRef.current = task;
         await task.promise;
+        if (cancelled || !textLayerDivRef.current) return;
+
+        const textLayer = createPdfTextLayer(
+          page,
+          textLayerDivRef.current,
+          displayViewport,
+        );
+        textLayerRef.current = textLayer;
+        await textLayer.render();
       } catch (err: unknown) {
         if (err instanceof Error && err.message.includes("Rendering cancelled"))
           return;
@@ -386,6 +401,7 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
       if (renderTaskRef.current) {
         renderTaskRef.current.cancel();
       }
+      textLayerRef.current?.cancel();
     };
   }, [pdfDoc, pageNumber, scale, shouldRender]);
 
@@ -435,7 +451,14 @@ const PdfPage = ({ pdfDoc, pageNumber, scale, onVisible }: PdfPageProps) => {
       style={{ width: "100%" }}
     >
       {shouldRender ? (
-        <canvas ref={canvasRef} className="pdf-viewer-canvas" />
+        <div className="pdf-viewer-page-surface">
+          <canvas
+            ref={canvasRef}
+            className="pdf-viewer-canvas"
+            aria-hidden="true"
+          />
+          <div ref={textLayerDivRef} className="textLayer" />
+        </div>
       ) : (
         <>
           {/* Placeholder preserves the approximate page height so the scroll

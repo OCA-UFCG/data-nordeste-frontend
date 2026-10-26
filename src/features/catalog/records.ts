@@ -7,7 +7,9 @@ export type CatalogTagView = {
   color: string;
 };
 
-const DEFAULT_TAG_COLOR = "#018F39";
+// Matches --color-green-800 in globals.css; hex because callers may use it
+// outside CSS. Darkened for WCAG 1.4.3 (white tag text needs 4.5:1).
+const DEFAULT_TAG_COLOR = "#017F35";
 
 export const buildCatalogThemeLookup = (themes: MacroTheme[]) => {
   const themeLookup: { [key: string]: MacroTheme } = {};

@@ -82,6 +82,9 @@ export default async function DataPanel({
 
   return (
     <HubTemplate>
+      {/* The panel title is not shown on screen (the embed carries it), but
+          screen readers navigate by the page's h1. */}
+      <h1 className="sr-only">{panel.title}</h1>
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20">
         <div className="flex justify-center w-full items-center overflow-hidden">
           <PowerBIContainer panel={panel} pageName={pageName} />

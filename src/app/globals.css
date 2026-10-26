@@ -18,7 +18,9 @@ body {
   --color-green-500: #2efa7d;
   --color-green-600: #04e35b;
   --color-green-700: #00bd47;
-  --color-green-800: #018f39;
+  /* WCAG 1.4.3: darkened from #018f39 (4.2:1 on white) to reach 4.5:1 as
+     text and as a background under white text. */
+  --color-green-800: #017f35;
   --color-green-900: #077432;
   --color-green-1000: #085f2d;
   --color-green-1100: #003616;
@@ -104,7 +106,9 @@ body {
   --color-grey-300: #dcdbdc;
   --color-grey-400: #bebbbd;
   --color-grey-500: #9a9698;
-  --color-grey-600: #7e797b;
+  /* WCAG 1.4.3: darkened from #7e797b (4.3:1 on white) so secondary text
+     passes 4.5:1 on white and on grey-100/200 surfaces. */
+  --color-grey-600: #6e696b;
   --color-grey-700: #676264;
   --color-grey-800: #595557;
   --color-grey-900: #484445;
@@ -163,7 +167,8 @@ body {
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  /* WCAG 1.4.3: 0.556 gave 4.4:1 on grey-100 cards; 0.52 reaches 4.5:1. */
+  --muted-foreground: oklch(0.52 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);

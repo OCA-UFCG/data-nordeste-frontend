@@ -259,34 +259,123 @@ function CarouselNext({
   );
 }
 
+type DotButtonProps = ComponentProps<typeof Button> & { slideIndex: number };
+
+// The 24px button meets the WCAG 2.5.8 target size; the visible dot stays 12px.
 function DotButton({
   className,
-  variant = "outline",
+  variant = "ghost",
   size = "icon",
-  tabIndex,
+  slideIndex,
   ...props
-}: ComponentProps<typeof Button>) {
+}: DotButtonProps) {
   const { scrollTo, currentItem } = useCarousel();
-  const slideIndex = tabIndex || 0;
+  const isCurrent = currentItem === slideIndex;
 
   return (
     <Button
       data-slot="carousel-dots"
       aria-label={`Ir para o slide ${slideIndex + 1}`}
-      aria-current={currentItem == tabIndex ? "true" : undefined}
+      aria-current={isCurrent ? "true" : undefined}
       variant={variant}
       size={size}
-      className={cn(
-        "rounded-full w-3 h-3 cursor-pointer hover:bg-grey-300 disabled:cursor-not-allowed",
-        currentItem == tabIndex ? "bg-green-800" : "bg-grey-200",
-        className,
-      )}
-      disabled={false}
+      className={cn("size-6 rounded-full cursor-pointer group", className)}
       onClick={() => scrollTo(slideIndex)}
       {...props}
-    />
+    >
+      <span
+        className={cn(
+          "size-3 rounded-full border border-grey-600 group-hover:bg-grey-300",
+          isCurrent ? "bg-green-800 border-green-800" : "bg-grey-200",
+        )}
+      />
+    </Button>
   );
 }
+
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+/**
+ * Tracks the carousel's Autoplay plugin, starting it paused when the OS asks
+ * for reduced motion. Returns null when the carousel has no running autoplay.
+ *
+ * @example const autoplay = useCarouselAutoplay(api); autoplay?.toggle();
+ */
+function useCarouselAutoplay(api: CarouselApi) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hasAutoplay, setHasAutoplay] = useState(false);
+
+  useEffect(() => {
+    const autoplay = api?.plugins().autoplay;
+    if (!api || !autoplay) return;
+
+    if (window.matchMedia?.(REDUCED_MOTION_QUERY).matches) autoplay.stop();
+
+    const syncPlaying = () => setIsPlaying(autoplay.isPlaying());
+    setHasAutoplay(api.scrollSnapList().length > 1);
+    syncPlaying();
+    api.on("autoplay:play", syncPlaying).on("autoplay:stop", syncPlaying);
+
+    return () => {
+      api.off("autoplay:play", syncPlaying).off("autoplay:stop", syncPlaying);
+    };
+  }, [api]);
+
+  if (!hasAutoplay) return null;
+
+  const toggle = () => {
+    const autoplay = api?.plugins().autoplay;
+    if (isPlaying) autoplay?.stop();
+    else autoplay?.play();
+  };
+
+  return { isPlaying, toggle };
+}
+
+// WCAG 2.2.2: anything that moves on its own for more than 5 seconds must be
+// pausable. Renders nothing when the carousel has no autoplay.
+function CarouselAutoplayToggle({
+  className,
+  variant = "ghost",
+  size = "icon",
+  ...props
+}: ComponentProps<typeof Button>) {
+  const { api } = useCarousel();
+  const autoplay = useCarouselAutoplay(api);
+
+  if (!autoplay) return null;
+
+  return (
+    <Button
+      data-slot="carousel-autoplay-toggle"
+      aria-label={
+        autoplay.isPlaying
+          ? "Pausar troca automática de slides"
+          : "Retomar troca automática de slides"
+      }
+      variant={variant}
+      size={size}
+      className={cn("size-6 rounded-full cursor-pointer", className)}
+      onClick={autoplay.toggle}
+      {...props}
+    >
+      {autoplay.isPlaying ? <PauseGlyph /> : <PlayGlyph />}
+    </Button>
+  );
+}
+
+const PauseGlyph = () => (
+  <svg viewBox="0 0 12 12" className="size-3" aria-hidden="true">
+    <rect x="2" y="1" width="3" height="10" fill="currentColor" />
+    <rect x="7" y="1" width="3" height="10" fill="currentColor" />
+  </svg>
+);
+
+const PlayGlyph = () => (
+  <svg viewBox="0 0 12 12" className="size-3" aria-hidden="true">
+    <path d="M2 1 L11 6 L2 11 Z" fill="currentColor" />
+  </svg>
+);
 
 export {
   type CarouselApi,
@@ -296,5 +385,6 @@ export {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
+  CarouselAutoplayToggle,
   DotButton,
 };

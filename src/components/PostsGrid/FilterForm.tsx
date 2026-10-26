@@ -95,7 +95,7 @@ export function FilterForm({
       </Popover>
       <Button
         variant="secondary"
-        className="text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit"
+        className="text-red-800 hover:bg-grey-100 grow lg:grow-0 lg:w-fit"
         onClick={() => {
           onReset();
           form.reset({});
