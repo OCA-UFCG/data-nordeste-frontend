@@ -400,7 +400,7 @@ function ReportThemeActions({
   return (
     <div className="mt-4 flex items-center gap-4">
       <button
-        className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-[#EFEFEF] bg-white px-4 text-sm font-medium text-[#E5333F] transition-colors hover:bg-[#FFF5F5] lg:w-full lg:flex-none lg:rounded-md"
+        className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-[#EFEFEF] bg-white px-4 text-sm font-medium text-red-800 transition-colors hover:bg-[#FFF5F5] lg:w-full lg:flex-none lg:rounded-md"
         onClick={onClear}
         type="button"
       >
@@ -454,7 +454,7 @@ function SelectAllThemesButton({
 }): ReactElement {
   return (
     <button
-      className="mt-4 flex h-10 w-full items-center justify-center rounded-md text-sm font-medium text-[#018F39] transition-colors hover:bg-[#DDEADF] disabled:opacity-50"
+      className="mt-4 flex h-10 w-full items-center justify-center rounded-md text-sm font-medium text-green-800 transition-colors hover:bg-[#DDEADF] disabled:opacity-50"
       disabled={allThemesSelected}
       onClick={onClick}
       type="button"
@@ -465,7 +465,7 @@ function SelectAllThemesButton({
 }
 
 function ReportErrorMessage({ message }: { message: string }): ReactElement {
-  return <p className="mt-4 text-sm font-medium text-red-700">{message}</p>;
+  return <p className="mt-4 text-sm font-medium text-red-800">{message}</p>;
 }
 
 function ReportSubmitButton({
@@ -479,7 +479,7 @@ function ReportSubmitButton({
 }): ReactElement {
   return (
     <Button
-      className="mt-5 h-10 w-full rounded-md bg-[#018F39] text-[#F8F7F8] hover:bg-[#017032] disabled:bg-[#BEBBBD]"
+      className="mt-5 h-10 w-full rounded-md bg-green-800 text-[#F8F7F8] hover:bg-[#017032] disabled:bg-[#BEBBBD]"
       disabled={disabled || generating}
       onClick={onClick}
       type="button"

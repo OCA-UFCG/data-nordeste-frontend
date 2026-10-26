@@ -203,9 +203,14 @@ export const SearchBar = ({
     setOpen(false);
   };
 
+  // Header and page searches can coexist; distinct names keep the two
+  // search landmarks distinguishable (axe "landmark-unique").
   return (
     <form
       role="search"
+      aria-label={
+        variant === "page" ? "Buscar nesta página" : "Buscar no portal"
+      }
       className={cn(
         "relative",
         variant === "header" &&
@@ -223,7 +228,7 @@ export const SearchBar = ({
         className={cn(
           "flex items-center justify-end h-10 w-full gap-2 rounded-lg bg-[#EFEFEF] px-3 py-[6px] transition-colors focus-within:bg-[#E8E7E8]",
           variant === "header" &&
-            "h-[47px] bg-[#F8F7F8] px-4 focus-within:border focus-within:border-[#018F39] focus-within:bg-[#F8F7F8]",
+            "h-[47px] bg-[#F8F7F8] px-4 focus-within:border focus-within:border-green-800 focus-within:bg-[#F8F7F8]",
           variant === "page" && "h-10",
         )}
       >
@@ -255,7 +260,7 @@ export const SearchBar = ({
         )}
         <button
           aria-label="Buscar"
-          className="flex size-4 shrink-0 items-center justify-center text-[#018F39]"
+          className="flex size-4 shrink-0 items-center justify-center text-green-800"
           type="submit"
         >
           <Icon
@@ -284,7 +289,7 @@ export const SearchBar = ({
           )}
 
           {status === "error" && (
-            <div className="px-4 py-3 text-sm text-red-700">
+            <div className="px-4 py-3 text-sm text-red-800">
               Não foi possível carregar a busca
             </div>
           )}
@@ -295,7 +300,7 @@ export const SearchBar = ({
                 <div className="max-h-[360px] overflow-auto px-1">
                   {suggestions.map((item) => (
                     <Link
-                      className="flex h-8 min-w-32 items-center gap-2 px-2 py-1.5 text-left transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] focus-visible:ring-inset"
+                      className="flex h-8 min-w-32 items-center gap-2 px-2 py-1.5 text-left transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none focus-visible:ring-2 focus-visible:ring-green-800 focus-visible:ring-inset"
                       href={item.href}
                       key={item.id}
                       onMouseDown={(e) => e.preventDefault()}
@@ -328,7 +333,7 @@ export const SearchBar = ({
 
               {!hideViewAll && (
                 <Link
-                  className="flex h-9 items-center justify-between border-t border-[#EDEDED] px-4 py-2 text-sm font-normal leading-5 text-[#018F39] transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] focus-visible:ring-inset"
+                  className="flex h-9 items-center justify-between border-t border-[#EDEDED] px-4 py-2 text-sm font-normal leading-5 text-green-800 transition hover:bg-green-neutro focus:bg-green-neutro focus:outline-none focus-visible:ring-2 focus-visible:ring-green-800 focus-visible:ring-inset"
                   href={buildExploreSearchHref(query)}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {

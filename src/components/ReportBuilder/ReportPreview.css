@@ -85,7 +85,7 @@
   height: 48px;
   margin-bottom: 8px;
   border-radius: 50%;
-  background: #018f39;
+  background: var(--color-green-800);
   color: #f8f7f8;
 }
 
@@ -116,7 +116,7 @@
   font-weight: 600;
   font-size: 16px;
   line-height: 150%;
-  color: #018f39;
+  color: var(--color-green-800);
 }
 
 .report-preview-loading-ring {

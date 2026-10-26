@@ -8,6 +8,8 @@ import {
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 
+const EXPERIENCE_TITLE = "Experiência de dados";
+
 export async function generateMetadata({
   params,
 }: {
@@ -16,7 +18,7 @@ export async function generateMetadata({
   const { id } = await params;
 
   return buildMetadata({
-    title: "Experiência de dados",
+    title: EXPERIENCE_TITLE,
     description:
       "Experiência interativa do Data Nordeste para exploração visual de dados e indicadores regionais.",
     path: `/experience/${id}`,
@@ -35,6 +37,8 @@ export default async function Experience({
 
   return (
     <HubTemplate showFooter={false}>
+      {/* The embed fills the page, so the h1 screen readers expect is hidden. */}
+      <h1 className="sr-only">{EXPERIENCE_TITLE}</h1>
       <ArcGisContainer source={buildExperienceSource(id)} />
     </HubTemplate>
   );

@@ -46,10 +46,10 @@ export const AboutContent = ({
               aria-selected={currentTab === tab.path}
               onClick={() => handleTabClick(tab.path)}
               style={{ padding: "16px 12px", height: "52px" }}
-              className={`flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] cursor-pointer ${
+              className={`flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-green-800 cursor-pointer ${
                 currentTab === tab.path
-                  ? "border-[#018F39] text-[#018F39]"
-                  : "border-transparent text-[#7E797B] hover:text-[#292829] hover:border-gray-300"
+                  ? "border-green-800 text-green-800"
+                  : "border-transparent text-grey-600 hover:text-[#292829] hover:border-gray-300"
               }`}
             >
               {tab.name}

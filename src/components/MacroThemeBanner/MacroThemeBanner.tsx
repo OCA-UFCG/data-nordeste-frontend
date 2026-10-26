@@ -4,6 +4,7 @@ import { MacroTheme } from "@/utils/interfaces";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { cn } from "@/lib/utils";
 import { macroThemes } from "@/utils/constants";
+import { getReadableTextColor } from "@/features/colors/contrast";
 
 type Props = {
   content: MacroTheme;
@@ -116,8 +117,11 @@ export function MacroThemeBanner({
                         {derivedTags.map((tag) => (
                           <span
                             key={tag}
-                            className="flex h-[29px] items-center justify-center rounded-full bg-[#D65384] px-[10px] py-[2px] text-[14px] leading-[16px] font-semibold text-white"
-                            style={{ backgroundColor: content.color }}
+                            className="flex h-[29px] items-center justify-center rounded-full bg-[#D65384] px-[10px] py-[2px] text-[14px] leading-[16px] font-semibold"
+                            style={{
+                              backgroundColor: content.color,
+                              color: getReadableTextColor(content.color),
+                            }}
                           >
                             {tag}
                           </span>

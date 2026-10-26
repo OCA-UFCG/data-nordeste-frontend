@@ -121,7 +121,7 @@ function ResultsGrid({
         {error && (
           <div
             role="alert"
-            className="flex items-center gap-3 self-start text-sm text-red-700"
+            className="flex items-center gap-3 self-start text-sm text-red-800"
           >
             <span>Não foi possível atualizar os resultados.</span>
             <button className="font-medium underline" onClick={onRetry}>

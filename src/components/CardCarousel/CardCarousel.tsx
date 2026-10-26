@@ -6,6 +6,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  CarouselAutoplayToggle,
   DotButton,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
@@ -53,6 +54,7 @@ export function CardCarousel({ variant, items }: Props) {
   return (
     <div className="w-full min-w-0 lg:flex lg:justify-center">
       <Carousel
+        aria-label={isPost ? "Publicações recentes" : "Conteúdos do tema"}
         opts={{
           align: "start",
           loop: true,
@@ -79,9 +81,10 @@ export function CardCarousel({ variant, items }: Props) {
           ))}
         </CarouselContent>
 
-        <div className="flex gap-2 w-full justify-center">
+        <div className="flex items-center gap-1 w-full justify-center text-grey-1100">
+          <CarouselAutoplayToggle />
           {sortedItems.slice(0, 8).map((_, i) => (
-            <DotButton tabIndex={i} key={i} />
+            <DotButton slideIndex={i} key={i} />
           ))}
         </div>
 

@@ -5,6 +5,8 @@ import { buildStoryMapSource, isValidArcGisId } from "@/features/embeds/arcgis";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 
+const DATA_STORY_TITLE = "Datastory";
+
 export async function generateMetadata({
   params,
 }: {
@@ -13,7 +15,7 @@ export async function generateMetadata({
   const { id } = await params;
 
   return buildMetadata({
-    title: "Datastory",
+    title: DATA_STORY_TITLE,
     description:
       "Datastory interativo do Data Nordeste com narrativa visual baseada em dados regionais.",
     path: `/data-stories/${id}`,
@@ -32,6 +34,8 @@ export default async function DataStory({
 
   return (
     <HubTemplate showFooter={false}>
+      {/* The embed fills the page, so the h1 screen readers expect is hidden. */}
+      <h1 className="sr-only">{DATA_STORY_TITLE}</h1>
       <ArcGisContainer source={buildStoryMapSource(id)} />
     </HubTemplate>
   );

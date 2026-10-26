@@ -6,6 +6,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  CarouselAutoplayToggle,
   DotButton,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
@@ -15,19 +16,18 @@ import { ContentfulImage } from "@/components/ContentfulImage/ContentfulImage";
 import { LinkButton } from "../LinkButton/LinkButton";
 
 const MainBanner = ({ content }: { content: IMainBanner[] }) => {
+  // INTENTIONAL: Autoplay keeps the default stopOnInteraction (true). With
+  // false, embla restarts after any drag or focus change, overriding a pause
+  // the visitor chose with CarouselAutoplayToggle (WCAG 2.2.2).
   return (
     <Carousel
+      aria-label="Destaques"
       className="relative w-full"
       opts={{
         align: "center",
         loop: true,
       }}
-      plugins={[
-        Autoplay({
-          delay: 15000,
-          stopOnInteraction: false,
-        }),
-      ]}
+      plugins={[Autoplay({ delay: 15000 })]}
     >
       <CarouselContent>
         {content.map((item, index) => {
@@ -80,9 +80,10 @@ const MainBanner = ({ content }: { content: IMainBanner[] }) => {
 
       <div className="absolute bottom-0 left-0 right-0 w-full z-1 pb-12 lg:pb-[65px]">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 md:px-4 md:py-2 flex gap-2">
+          <div className="bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 md:px-4 md:py-2 flex items-center gap-1 text-grey-1100">
+            <CarouselAutoplayToggle />
             {content.map((_, indexDot) => (
-              <DotButton key={indexDot} tabIndex={indexDot} />
+              <DotButton key={indexDot} slideIndex={indexDot} />
             ))}
           </div>
         </div>

@@ -117,7 +117,7 @@
 .pdf-toolbar-page-current {
   font-size: 16px;
   line-height: 24px;
-  color: #7e797b;
+  color: var(--color-grey-600);
 }
 
 .pdf-toolbar-page-sep {
@@ -147,7 +147,7 @@
   background: #ffffff;
   border: 1px solid #efefef;
   border-radius: 4px;
-  color: #018f39;
+  color: var(--color-green-800);
   cursor: pointer;
   padding: 8px;
   transition: background 150ms ease;
@@ -175,7 +175,7 @@
 .pdf-toolbar-zoom-level {
   font-size: 16px;
   line-height: 24px;
-  color: #7e797b;
+  color: var(--color-grey-600);
   min-width: 32px;
   text-align: center;
 }
@@ -187,7 +187,7 @@
   gap: 8px;
   padding: 8px 16px;
   height: 40px;
-  background: #018f39;
+  background: var(--color-green-800);
   border: 0;
   border-radius: 4px;
   font-size: 14px;
@@ -244,7 +244,7 @@
   font-family: "Inter", sans-serif;
   font-size: 16px;
   line-height: 24px;
-  color: #7e797b;
+  color: var(--color-grey-600);
 }
 
 .pdf-viewer-page-sep {
@@ -270,7 +270,7 @@
   background: #fff;
   border: 1px solid #efefef;
   border-radius: 4px;
-  color: #018f39;
+  color: var(--color-green-800);
   cursor: pointer;
   padding: 8px;
   transition: background 150ms ease;
@@ -316,6 +316,69 @@
   display: block;
   max-width: 100%;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Positions the transparent text layer exactly over its canvas. */
+.pdf-viewer-page-surface {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* Minimal subset of pdfjs-dist/web/pdf_viewer.css (v4.10.38) for the text
+   layer that createPdfTextLayer builds. Importing the whole file would pull in
+   the annotation/editor styles this viewer does not use. */
+.textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  z-index: 0;
+}
+
+.textLayer :is(span, br) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+
+.textLayer span.markedContent {
+  top: 0;
+  height: 0;
+}
+
+.textLayer ::selection {
+  background: rgba(0 0 255 / 0.25);
+}
+
+.textLayer br::selection {
+  background: transparent;
+}
+
+.textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: 0;
+  cursor: default;
+  user-select: none;
+}
+
+/* TextLayer appends this canvas to <body> to measure glyphs; without the
+   upstream rule it is an unlandmarked visible element (axe "region"). */
+.hiddenCanvasElement {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .pdf-viewer-placeholder {

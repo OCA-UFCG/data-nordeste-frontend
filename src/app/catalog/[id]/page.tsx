@@ -70,7 +70,7 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
       />
       <div className="w-full max-w-[1120px] mx-auto px-6 py-12 lg:px-20">
         <nav className="mb-8 text-sm text-grey-600">
-          <Link href="/catalog" className="font-semibold text-[#018F39]">
+          <Link href="/catalog" className="font-semibold text-green-800">
             Catálogo
           </Link>
           <span className="mx-2">/</span>
@@ -79,7 +79,7 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
 
         <section className="flex flex-col gap-8">
           <div className="flex flex-col gap-4">
-            <p className="text-sm font-semibold uppercase text-[#018F39]">
+            <p className="text-sm font-semibold uppercase text-green-800">
               Dataset
             </p>
             <h1 className="text-3xl font-semibold leading-tight text-[#292829] lg:text-5xl">
@@ -129,7 +129,7 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
                 return (
                   <span
                     key={`${key}-${index}`}
-                    className="rounded-full bg-[#018F39] px-3 py-1 text-xs font-semibold text-white"
+                    className="rounded-full bg-green-800 px-3 py-1 text-xs font-semibold text-white"
                   >
                     {label}
                   </span>
@@ -143,7 +143,7 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
               href={record.html}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md border border-[#DCDBDC] px-4 py-2 text-sm font-semibold text-[#018F39]"
+              className="rounded-md border border-[#DCDBDC] px-4 py-2 text-sm font-semibold text-green-800"
             >
               Ver registro no Zenodo
             </Link>
@@ -151,7 +151,7 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
               <Link
                 href={archiveUrl}
                 download={archiveName}
-                className="rounded-md bg-[#018F39] px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-md bg-green-800 px-4 py-2 text-sm font-semibold text-white"
               >
                 Baixar todos os arquivos
               </Link>
@@ -172,7 +172,7 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
                     </span>
                     <Link
                       href={file.downloadUrl}
-                      className="text-sm font-semibold text-[#018F39]"
+                      className="text-sm font-semibold text-green-800"
                     >
                       Baixar arquivo
                     </Link>
