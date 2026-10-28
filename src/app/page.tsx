@@ -17,6 +17,7 @@ import { getContent } from "@/utils/contentful";
 import { MAIN_PAGE_QUERY } from "@/utils/queries";
 import { FeedbackSurvey } from "@/components/FeedbackSurvey/FeedbackSurvey";
 import { findHomeSection } from "@/features/home/content";
+import { fetchRecentPostsByTab } from "@/features/home/recentPosts";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
 import { HomeScrollButton } from "@/components/HomeScrollButton/HomeScrollButton";
@@ -41,15 +42,21 @@ interface IMainContent {
 }
 
 export default async function Home() {
-  const {
-    partnersCollection: partners,
-    postCollection: posts,
-    themeCollection: theme,
-    mainBannerCollection: mainBanner,
-    previewCardsCollection: previewCards,
-    sectionHeadCollection: sectionHead,
-    feedbackCollection: { items: feedbackContent },
-  }: IMainContent = await getContent(MAIN_PAGE_QUERY);
+  const [
+    {
+      partnersCollection: partners,
+      postCollection: posts,
+      themeCollection: theme,
+      mainBannerCollection: mainBanner,
+      previewCardsCollection: previewCards,
+      sectionHeadCollection: sectionHead,
+      feedbackCollection: { items: feedbackContent },
+    },
+    recentPostsByTab,
+  ] = await Promise.all([
+    getContent<IMainContent>(MAIN_PAGE_QUERY),
+    fetchRecentPostsByTab(),
+  ]);
 
   return (
     <HubTemplate>
@@ -64,6 +71,7 @@ export default async function Home() {
       />
       <RecentSection
         content={posts.items}
+        postsByTab={recentPostsByTab}
         header={findHomeSection(sectionHead.items, "new")}
       />
       <CatalogSection

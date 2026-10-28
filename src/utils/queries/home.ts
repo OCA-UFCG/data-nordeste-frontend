@@ -1,3 +1,5 @@
+import { POSTS_PER_PAGE } from "../constants";
+
 export const HEAD_QUERY = `
   query($preview: Boolean) {
     headerCollection(preview: $preview) {
@@ -119,21 +121,45 @@ export const MAIN_PAGE_QUERY = `
   }
 `;
 
-export const POSTS_QUERY = `
-  query ($limit: Int!, $filter: PostFilter, $preview: Boolean) {
-    postCollection(limit: $limit, where: $filter, preview: $preview) {
-      items {
-        sys { id }
-        title
-        thumb {
-          url
-        }
-        link
-        date
-        type
-        description: descriptionNew { json }
-      }
+const RECENT_POST_FIELDS = `
+  items {
+    sys { id }
+    title
+    thumb {
+      url
+    }
+    link
+    date
+    type
+    description: descriptionNew { json }
+  }
+`;
+
+// PERF: every home tab in one operation. The server data cache then holds the
+// whole section as one entry instead of the browser calling Contentful per click.
+export const RECENT_POSTS_BY_TAB_QUERY = `
+  query GetRecentPostsByTab(
+    $allFilter: PostFilter
+    $panelsFilter: PostFilter
+    $storiesFilter: PostFilter
+    $newslettersFilter: PostFilter
+    $publicationsFilter: PostFilter
+    $preview: Boolean
+  ) {
+    all: postCollection(limit: ${POSTS_PER_PAGE}, where: $allFilter, preview: $preview) {
+      ${RECENT_POST_FIELDS}
+    }
+    panels: postCollection(limit: ${POSTS_PER_PAGE}, where: $panelsFilter, preview: $preview) {
+      ${RECENT_POST_FIELDS}
+    }
+    stories: postCollection(limit: ${POSTS_PER_PAGE}, where: $storiesFilter, preview: $preview) {
+      ${RECENT_POST_FIELDS}
+    }
+    newsletters: postCollection(limit: ${POSTS_PER_PAGE}, where: $newslettersFilter, preview: $preview) {
+      ${RECENT_POST_FIELDS}
+    }
+    publications: postCollection(limit: ${POSTS_PER_PAGE}, where: $publicationsFilter, preview: $preview) {
+      ${RECENT_POST_FIELDS}
     }
   }
-
 `;
