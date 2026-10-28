@@ -154,6 +154,25 @@ outside the repository and rendered through frontend route/component logic.
 - For docs-only changes, no application test is normally required. If the change
   touches code, follow the validation guidance in `CLAUDE.md`.
 
+## Panel Data Cache
+
+- `queryDataDb` (`src/lib/dataDb.ts`) is wrapped in `unstable_cache`, the same
+  mechanism as `src/features/navigation/content.ts` and
+  `src/features/reports/content.ts`. The key includes the SQL and parameters;
+  results are valid for 24 h (`DATA_DB_CACHE_SECONDS`) and tagged
+  `DATA_DB_CACHE_TAG` (`"data-db"`). It serves every native panel demo.
+- The source data (IBGE, PNUD) changes at most monthly, so a day-old answer is
+  fine. Next stores the entries on disk (`.next/cache`), so a `docker restart`
+  keeps them; a new container (every deploy) starts empty. Clearing without a
+  deploy needs a server-side `revalidateTag(DATA_DB_CACHE_TAG)`, which no route
+  calls yet.
+- Results are stored as JSON and parsed on each read, so callers get their own
+  rows. Failed queries throw and are not stored.
+- The pages stay `force-dynamic`: the route still renders per request, only
+  the database round trips are cached.
+- `unstable_cache` is superseded by `"use cache"` in Next 16; moving to it
+  needs `cacheComponents`, so migrate the three uses together.
+
 ## Native Panel Maps
 
 - `ChoroplethMap` reads GeoJSON meshes from `public/maps/`, built from IBGE
