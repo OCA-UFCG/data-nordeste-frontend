@@ -82,9 +82,14 @@ outside the repository and rendered through frontend route/component logic.
   missing.
 - Feedback submissions are suppressed locally for 24 hours after a successful
   submit using the `datane@feedback_submitted` localStorage key.
-- Content revalidation depends on environment:
-  - beta or Contentful preview: 1800 seconds (30 minutes)
-  - production/default: 3600 seconds
+- Contentful content is cached with no expiry in every environment
+  (`revalidate: false`, tag `contentful`), so visits do not spend the
+  Contentful API quota. To show a published change, open
+  `/atualizar-conteudo` and enter the password from the
+  `CONTENT_CACHE_PASSWORD` runtime env var; it expires the tag and every
+  route. Without that env var the page refuses to run. Each server keeps its
+  own cache, so production (two origins behind Cloudflare) only refreshes the
+  origin that served the request.
 - Beta disables search indexing through Next.js metadata robots settings.
 
 ## Integrations And Environment
