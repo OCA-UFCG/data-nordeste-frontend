@@ -65,6 +65,7 @@ describe("automatic report macrothemes", () => {
   it.each([
     ["desenvolvimento_social", "desenvolvimento-social"],
     ["meio_ambiente", "meio-ambiente"],
+    ["instrumentos_sudene", "instrumentos-sudene"],
   ])("maps the Contentful id %s to the backend slug", (themeId, slug) => {
     expect(getAutomaticReportSlug(themeId)).toBe(slug);
   });
