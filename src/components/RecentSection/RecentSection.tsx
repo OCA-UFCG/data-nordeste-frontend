@@ -3,41 +3,28 @@
 import { IPublication, SectionHeader } from "@/utils/interfaces";
 import { LinkButton } from "../LinkButton/LinkButton";
 import { Icon } from "../Icon/Icon";
-import { FILTERS, RecentFilterKey, TypeFilter } from "./TypeFilter";
-import { useCallback, useState } from "react";
-import { POSTS_PER_PAGE } from "@/utils/constants";
-import { getContent } from "@/utils/contentful";
-import { POSTS_QUERY } from "@/utils/queries";
+import { RecentFilterKey, TypeFilter } from "./TypeFilter";
+import { useState } from "react";
 import { CardCarousel } from "../CardCarousel/CardCarousel";
+import type { RecentPostsByTab } from "@/features/home/recentPosts";
 
 export const RecentSection = ({
   header,
   content,
+  postsByTab,
 }: {
   header?: SectionHeader;
   content: IPublication[];
+  postsByTab: RecentPostsByTab;
 }) => {
   const [posts, setPosts] = useState(content);
 
-  const fetchPosts = useCallback(async (types: RecentFilterKey) => {
-    const { postCollection: filteredPosts } = await getContent<{
-      postCollection: { items: IPublication[] };
-    }>(POSTS_QUERY, {
-      limit: POSTS_PER_PAGE,
-      filter: {
-        type_in: FILTERS[types].filter,
-      },
-    });
-
-    setPosts(filteredPosts.items);
-  }, []);
+  // PERF: tabs arrive preloaded from the server cache; switching never calls
+  // Contentful from the browser, where no cache sits between us and the quota.
+  const showTab = (tab: RecentFilterKey) => setPosts(postsByTab[tab]);
 
   return (
-    <RecentSectionView
-      header={header}
-      posts={posts}
-      onTypeChange={fetchPosts}
-    />
+    <RecentSectionView header={header} posts={posts} onTypeChange={showTab} />
   );
 };
 
