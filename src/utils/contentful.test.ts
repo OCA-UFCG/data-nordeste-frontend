@@ -65,7 +65,8 @@ describe("Contentful client", () => {
       endpoint: "https://contentful.example.com/graphql",
       fetcher,
       preview: true,
-      revalidate: 60,
+      revalidate: false,
+      tags: ["contentful"],
     });
 
     await expect(client("query Home", { limit: 8 })).resolves.toEqual({
@@ -79,7 +80,7 @@ describe("Contentful client", () => {
           "Content-Type": "application/json",
           "Authorization": "Bearer token",
         },
-        next: { revalidate: 60 },
+        next: { revalidate: false, tags: ["contentful"] },
         body: JSON.stringify({
           query: "query Home",
           variables: { limit: 8, preview: true },
@@ -104,7 +105,8 @@ describe("Contentful client", () => {
         }),
       ) as unknown as typeof fetch,
       preview: true,
-      revalidate: 60,
+      revalidate: false,
+      tags: ["contentful"],
     });
 
     await expect(client("query Home")).resolves.toEqual({
@@ -125,7 +127,8 @@ describe("Contentful client", () => {
         }),
       ) as unknown as typeof fetch,
       preview: false,
-      revalidate: 300,
+      revalidate: false,
+      tags: ["contentful"],
     });
     const graphQlClient = createContentfulClient({
       endpoint: "https://contentful.example.com/graphql",
@@ -133,7 +136,8 @@ describe("Contentful client", () => {
         createResponse({ body: { errors: [{ message: "bad query" }] } }),
       ) as unknown as typeof fetch,
       preview: false,
-      revalidate: 300,
+      revalidate: false,
+      tags: ["contentful"],
     });
 
     await expect(httpClient("query")).rejects.toThrow(
@@ -175,7 +179,8 @@ describe("Contentful client", () => {
         }),
       ) as unknown as typeof fetch,
       preview: false,
-      revalidate: 300,
+      revalidate: false,
+      tags: ["contentful"],
     });
 
     await expect(client("query SearchIndex")).resolves.toEqual(partialData);
@@ -207,7 +212,8 @@ describe("Contentful client", () => {
         }),
       ) as unknown as typeof fetch,
       preview: false,
-      revalidate: 300,
+      revalidate: false,
+      tags: ["contentful"],
     });
 
     await expect(client("query SearchIndex")).rejects.toThrow(
