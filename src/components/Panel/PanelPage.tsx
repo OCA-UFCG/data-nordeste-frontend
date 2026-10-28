@@ -44,12 +44,14 @@ const PanelTitleBar = ({
 
 // Layout do Figma "Explorar dados (Mobile)": faixa do tema, alerta, conteúdo
 // em fundo cinza. `top` fica em faixa branca acima do conteúdo (ex.: abas).
+// `summarized={false}` tira o alerta quando o mobile mostra o painel inteiro.
 export const PanelPage = ({
   title,
   icon,
   tone,
   source,
   top,
+  summarized = true,
   children,
 }: {
   title: string;
@@ -57,6 +59,7 @@ export const PanelPage = ({
   tone: PanelTone;
   source: string;
   top?: ReactNode;
+  summarized?: boolean;
   children: ReactNode;
 }) => (
   <div className="mx-auto flex w-full max-w-[1440px] flex-col lg:px-20 lg:py-6">
@@ -64,14 +67,16 @@ export const PanelPage = ({
     <div className="flex flex-col gap-6 bg-grey-100 pb-9 lg:rounded-b-lg">
       {top ? (
         <div className="flex flex-col gap-6 bg-white pt-6 lg:pt-2">
-          <div className="px-6 lg:hidden">
-            <MobileSummaryAlert />
-          </div>
+          {summarized ? (
+            <div className="px-6 lg:hidden">
+              <MobileSummaryAlert />
+            </div>
+          ) : null}
           {top}
         </div>
       ) : null}
       <div className={`flex flex-col gap-6 px-6 ${top ? "" : "pt-6"}`}>
-        {top ? null : <MobileSummaryAlert />}
+        {!top && summarized ? <MobileSummaryAlert /> : null}
         {children}
         <p className="text-sm leading-relaxed text-grey-900">{source}</p>
       </div>

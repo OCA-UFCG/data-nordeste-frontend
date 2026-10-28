@@ -215,3 +215,33 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   offsets both sides (`-mx-2`) and the clipping viewport gets 8 px of padding
   back (`-mx-2 px-2`). Without that, the first and last cards sat on the
   `overflow-hidden` edge and lost their shadow.
+
+## FNE Panel Demo (`/demo/fne`)
+
+- Rebuilds the ArcGIS Experience of the `fundo_financiamento` panel (the only
+  panel not on Power BI) with native charts. Nothing shown on Beta was dropped:
+  both dashboards (Quantidade / Valor de contratações) became tabs, and the
+  totals, the charts by sector, beneficiary size, PNDR typology, population
+  size, state, Semiárido and RIDE, the top 20 municipalities, the year layers
+  with the state limit, and the "Sobre" and "O que é o FNE?" texts all stay.
+- Data comes from the `instrsudene_fne` schema, which exists only on the
+  **Gamma** database (`10.5.8.137`), not on Beta. Point the tunnel behind
+  `DATA_DB_URL` at Gamma to run the demo locally.
+- `fne_indicadores` (municipality × year) feeds totals, sectors, territorial
+  breakdowns and the map; `fne_programas` (finalidade × setor × programa ×
+  porte) feeds the beneficiary-size chart and the top 20, joined to
+  `fne_indicadores` on `cd_mun` and year for the territorial filters.
+- The ArcGIS pie "Contratações por tipo de porte" counted rows of the source
+  table; the demo sums the tab's metric per size instead, so the chart adds up
+  to the panel total.
+- Map: `LayeredMap` draws municipalities on an ECharts `geo` component, so the
+  state limit can be a `lines` series sharing its zoom and pan. The limit is
+  computed from the municipal mesh (segments used once or shared by two
+  states), which also covers the Sudene part of MG and ES. The class breaks
+  are the ArcGIS ones; only the palette changed to a single green scale.
+- Municipalities are a multi-choice filter (`MultiSelectFilter`, shared in
+  `src/components/Panel/`): the URL keeps them as `?mun=2611606,2304400` (a
+  single code still works), the SQL uses `cd_mun = ANY($n)`, clicking the map
+  adds or removes a municipality, and the map frames the whole selection. The
+  choice is applied when the list closes, so ticking several boxes queries
+  once. The other demos still use a single municipality.

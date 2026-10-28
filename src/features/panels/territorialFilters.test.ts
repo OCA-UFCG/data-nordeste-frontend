@@ -3,7 +3,9 @@ import {
   buildTerritorialSearch,
   defaultTerritorialFilters,
   listYears,
+  parseMunicipalityCodes,
   parseTerritorialFilters,
+  serializeMunicipalityCodes,
 } from "@/features/panels/territorialFilters";
 
 const RANGE = { first: 2010, last: 2023 };
@@ -59,5 +61,27 @@ describe("buildTerritorialSearch", () => {
 describe("listYears", () => {
   it("lists the range from the latest year", () => {
     expect(listYears({ first: 2021, last: 2023 })).toEqual([2023, 2022, 2021]);
+  });
+});
+
+describe("parseMunicipalityCodes", () => {
+  it("keeps valid unique codes in order", () => {
+    expect(parseMunicipalityCodes("2611606,abc,2611606,2304400")).toEqual([
+      "2611606",
+      "2304400",
+    ]);
+  });
+
+  it("accepts a single code and an empty value", () => {
+    expect(parseMunicipalityCodes("2611606")).toEqual(["2611606"]);
+    expect(parseMunicipalityCodes(undefined)).toEqual([]);
+  });
+
+  it("round-trips through serializeMunicipalityCodes", () => {
+    const codes = ["2611606", "2304400"];
+
+    expect(parseMunicipalityCodes(serializeMunicipalityCodes(codes))).toEqual(
+      codes,
+    );
   });
 });
