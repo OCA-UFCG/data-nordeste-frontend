@@ -66,6 +66,7 @@ jobs:
             --name ${{ vars.CONTAINER_NAME_BETA }} \
             --restart unless-stopped \
             -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" \
+            -e CONTENT_CACHE_PASSWORD="${{ secrets.CONTENT_CACHE_PASSWORD }}" \
             -p ${{ vars.HOST_PORT_BETA }}:${{ vars.CONTAINER_PORT }} \
             -d \
             ${{ vars.DOCKER_IMAGE_BETA }}:${{ github.ref_name }}

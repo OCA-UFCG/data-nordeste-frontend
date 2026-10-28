@@ -1,6 +1,6 @@
 import { EntrySys, OrderFilterPaths } from "contentful";
 import { ISudeneChannel } from "./interfaces";
-import { CONTENT_REVALIDATE_SECONDS } from "@/config/revalidation";
+import { CONTENT_REVALIDATE } from "@/config/revalidation";
 import {
   MACROTHEME_ICON_BY_ID,
   MACROTHEME_ROUTE_BY_NAME,
@@ -9,7 +9,7 @@ import {
 import { POST_TYPE_LABELS } from "@/features/posts/postTypes";
 import type { FilterFormValue } from "@/features/filters/form";
 
-export const REVALIDATE = CONTENT_REVALIDATE_SECONDS;
+export const REVALIDATE = CONTENT_REVALIDATE;
 
 export const STORAGE_KEY = "datane@feedback_submitted";
 
