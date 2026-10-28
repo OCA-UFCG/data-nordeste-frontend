@@ -6,7 +6,9 @@ import type { ISection } from "@/utils/interfaces";
 
 const DesktopHeader = dynamic(() => import("./Header"));
 const MobileHeader = dynamic(() => import("./Modal/HeaderModal"));
-const DESKTOP_MEDIA_QUERY = "(min-width: 1280px)";
+
+// The full menu needs ~1400 px; below that it overflows (P1 in docs/README.md).
+const DESKTOP_MEDIA_QUERY = "(min-width: 1440px)";
 
 type HeaderViewport = "desktop" | "mobile" | null;
 

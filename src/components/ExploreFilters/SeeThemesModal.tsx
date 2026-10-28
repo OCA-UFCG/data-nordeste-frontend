@@ -56,7 +56,7 @@ function SeeThemesModal({
                         checked={isChecked}
                         aria-label={theme.name}
                         onCheckedChange={() => onToggleCategory(theme.sys.id)}
-                        className="w-5 h-5 border-[#018F39] data-[state=checked]:bg-[#018F39] flex-shrink-0 rounded"
+                        className="w-5 h-5 border-green-800 data-[state=checked]:bg-green-800 flex-shrink-0 rounded"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
@@ -75,7 +75,7 @@ function SeeThemesModal({
                       </span>
 
                       <Icon
-                        className="flex-shrink-0 rotate-[-90] text-[#018F39]"
+                        className="flex-shrink-0 rotate-[-90] text-green-800"
                         id="expand"
                         size={10}
                       />
@@ -85,7 +85,7 @@ function SeeThemesModal({
               },
             )}
             <button
-              className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#D6E9DB]"
+              className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-green-800 font-medium text-sm cursor-pointer transition-colors hover:bg-[#D6E9DB]"
               onClick={onSelectAll}
             >
               Selecionar todos
@@ -95,13 +95,13 @@ function SeeThemesModal({
           <div className="flex flex-row gap-3 flex-shrink-0">
             <Button
               variant="secondary"
-              className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md text-[#E5333F] hover:bg-grey-100"
+              className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md text-red-800 hover:bg-grey-100"
               onClick={onClose}
             >
               Voltar
             </Button>
             <Button
-              className="flex-1 h-10 bg-[#018F39] hover:bg-[#018F39]/90 text-[#F8F7F8] rounded-md"
+              className="flex-1 h-10 bg-green-800 hover:bg-green-800/90 text-[#F8F7F8] rounded-md"
               onClick={onApply}
             >
               Aplicar

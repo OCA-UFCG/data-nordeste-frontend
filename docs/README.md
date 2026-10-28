@@ -154,6 +154,25 @@ outside the repository and rendered through frontend route/component logic.
 - For docs-only changes, no application test is normally required. If the change
   touches code, follow the validation guidance in `CLAUDE.md`.
 
+## Panel Data Cache
+
+- `queryDataDb` (`src/lib/dataDb.ts`) is wrapped in `unstable_cache`, the same
+  mechanism as `src/features/navigation/content.ts` and
+  `src/features/reports/content.ts`. The key includes the SQL and parameters;
+  results are valid for 24 h (`DATA_DB_CACHE_SECONDS`) and tagged
+  `DATA_DB_CACHE_TAG` (`"data-db"`). It serves every native panel demo.
+- The source data (IBGE, PNUD) changes at most monthly, so a day-old answer is
+  fine. Next stores the entries on disk (`.next/cache`), so a `docker restart`
+  keeps them; a new container (every deploy) starts empty. Clearing without a
+  deploy needs a server-side `revalidateTag(DATA_DB_CACHE_TAG)`, which no route
+  calls yet.
+- Results are stored as JSON and parsed on each read, so callers get their own
+  rows. Failed queries throw and are not stored.
+- The pages stay `force-dynamic`: the route still renders per request, only
+  the database round trips are cached.
+- `unstable_cache` is superseded by `"use cache"` in Next 16; moving to it
+  needs `cacheComponents`, so migrate the three uses together.
+
 ## Native Panel Maps
 
 - `ChoroplethMap` reads GeoJSON meshes from `public/maps/`, built from IBGE
@@ -172,6 +191,30 @@ outside the repository and rendered through frontend route/component logic.
   as PE is drawn centred with blank space above and below.
 - The map uses the canvas renderer; the other charts stay on SVG. Panning
   ~1,800 SVG paths was sluggish.
+
+## Responsive Layout
+
+Fixes from the October 2026 responsiveness study (P1 and P2).
+
+- **P1, header:** the full header (logo, search, six menu items) needs about
+  1,400 px, so `ResponsiveHeader` switches to it only from 1440 px; below that
+  the compact (hamburger) header is used. The search box can shrink to 200 px
+  and the menu items sit 8 px apart. New or longer menu labels in Contentful eat
+  into that margin: check the header at 1440 px after adding one.
+- **P2, carousels:** the `CardCarousel` arrows sit 48 px outside the carousel,
+  which only fits the section gutters from `lg` (1024 px). Below that, swipe and
+  the dots are the navigation.
+- **Tablets (744–1194 px):** `.content-carousel` reserves 6rem for arrows.
+  `CardCarousel` adds `content-carousel-lg-arrows` so that reserve only applies
+  from `lg`; below it the 6rem showed as a gap where a card was cut in half.
+  `GalleryCarousel` (about page) is centred and shows arrows from `md`, so it
+  keeps the reserve. Indicator cards go 2 → 3 → 4 per view (`md`/`lg`/`xl`)
+  and the home theme grid 2 → 3 → 4 columns, because at 4 columns below `xl`
+  long names such as "Desenvolvimento Social" ran under the card's arrow.
+- **Indicator card edges:** the items pad 8 px on both sides, so the strip
+  offsets both sides (`-mx-2`) and the clipping viewport gets 8 px of padding
+  back (`-mx-2 px-2`). Without that, the first and last cards sat on the
+  `overflow-hidden` edge and lost their shadow.
 
 ## FNE Panel Demo (`/demo/fne`)
 

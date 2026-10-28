@@ -218,7 +218,7 @@ export function ExploreFilters({
               <Button
                 variant="secondary"
                 className={cn(
-                  "text-red-600 hover:bg-grey-100 grow lg:grow-0 lg:w-fit",
+                  "text-red-800 hover:bg-grey-100 grow lg:grow-0 lg:w-fit",
                   mobileCatalogLayout && "w-full",
                 )}
                 onClick={() => {
@@ -249,7 +249,7 @@ export function ExploreFilters({
                 >
                   <SelectTrigger
                     aria-label="Ordenar por"
-                    className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-2 focus-visible:ring-[#018F39]"
+                    className="w-fit !h-auto bg-transparent border-0 rounded-none !p-0 hover:bg-transparent cursor-pointer gap-1 text-xs font-medium text-[#292829] leading-5 shadow-none focus-visible:ring-2 focus-visible:ring-green-800"
                   >
                     <SelectValue placeholder="Mais recentes" />
                   </SelectTrigger>
@@ -298,7 +298,7 @@ export function ExploreFilters({
               },
             )}
             <button
-              className="flex items-center justify-center w-[145px] h-12 px-4 py-2 rounded-md text-[#018F39] font-medium text-sm cursor-pointer transition-colors hover:bg-[#D6E9DB]"
+              className="flex items-center justify-center w-[145px] h-12 px-4 py-2 rounded-md text-green-800 font-medium text-sm cursor-pointer transition-colors hover:bg-[#D6E9DB]"
               onClick={toggleAllCategories}
             >
               Selecionar todos
@@ -312,10 +312,10 @@ export function ExploreFilters({
         <div className="flex flex-row items-start gap-3 p-4 bg-white border border-[#35B2DB] rounded-lg">
           <Icon id="info-alert" size={20} className="shrink-0 mt-0.5" />
           <div className="flex flex-col gap-1">
-            <span className="text-base font-medium leading-5 text-[#1995C1]">
+            <span className="text-base font-medium leading-5 text-blue-800">
               Atenção
             </span>
-            <p className="text-sm font-normal leading-6 text-[#1995C1]">
+            <p className="text-sm font-normal leading-6 text-blue-800">
               Para uma melhor experiência, recomendamos visualizar os painéis em
               um computador.
             </p>
@@ -335,7 +335,7 @@ export function ExploreFilters({
         />
 
         <Button
-          className="bg-[#018F39] hover:bg-[#018F39]/90 text-[#F8F7F8] h-10 rounded-md w-full"
+          className="bg-green-800 hover:bg-green-800/90 text-[#F8F7F8] h-10 rounded-md w-full"
           onClick={openSeeThemesModal}
         >
           <Icon id="filter" size={16} className="text-[#F8F7F8]" />
@@ -345,7 +345,7 @@ export function ExploreFilters({
         <div className="flex flex-row items-center gap-3">
           <Button
             variant="secondary"
-            className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md text-[#E5333F] hover:bg-grey-100"
+            className="flex-1 h-10 bg-white border border-[#EFEFEF] rounded-md text-red-800 hover:bg-grey-100"
             onClick={() => {
               if (clientSideNavigation) {
                 replaceQuery(
@@ -368,7 +368,7 @@ export function ExploreFilters({
           >
             <SelectTrigger
               aria-label="Ordenar por"
-              className="flex-1 h-10 border border-[#EFEFEF] !bg-grey-100 !px-4 text-xs font-medium text-[#292829] shadow-none hover:!bg-grey-200 focus-visible:ring-2 focus-visible:ring-[#018F39] data-[state=open]:!bg-grey-200"
+              className="flex-1 h-10 border border-[#EFEFEF] !bg-grey-100 !px-4 text-xs font-medium text-[#292829] shadow-none hover:!bg-grey-200 focus-visible:ring-2 focus-visible:ring-green-800 data-[state=open]:!bg-grey-200"
             >
               <span className="text-xs font-medium text-[#292829]" />
               <SelectValue placeholder="Ordenar por" />

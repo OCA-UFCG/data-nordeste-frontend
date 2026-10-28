@@ -246,10 +246,10 @@ export function MacroThemeTabs({
               aria-selected={activeTab === key}
               onClick={() => handleTabClick(key)}
               style={{ padding: "18px 12px" }}
-              className={`h-full flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] cursor-pointer ${
+              className={`h-full flex items-center justify-center font-medium text-[14px] leading-5 transition-colors border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-green-800 cursor-pointer ${
                 activeTab === key
-                  ? "border-[#018F39] text-[#018F39]"
-                  : "border-transparent text-[#7E797B] hover:text-[#292829] hover:border-gray-300"
+                  ? "border-green-800 text-green-800"
+                  : "border-transparent text-grey-600 hover:text-[#292829] hover:border-gray-300"
               }`}
             >
               {label}
@@ -275,7 +275,7 @@ export function MacroThemeTabs({
         <div
           role="tabpanel"
           tabIndex={0}
-          className="outline-none focus-visible:ring-2 focus-visible:ring-[#018F39] rounded-md w-full max-w-[1440px] mx-auto px-20 pt-8 pb-10"
+          className="outline-none focus-visible:ring-2 focus-visible:ring-green-800 rounded-md w-full max-w-[1440px] mx-auto px-20 pt-8 pb-10"
         >
           {activeTab === "paineis" &&
             renderTabSection(
@@ -319,7 +319,7 @@ export function MacroThemeTabs({
                   ))}
                 </div>
               ) : (
-                <p className="text-[16px] text-[#7E797B]">
+                <p className="text-[16px] text-grey-600">
                   {analyses.length > 0
                     ? "Nenhuma análise encontrada para esses filtros."
                     : "Nenhuma análise publicada ainda."}

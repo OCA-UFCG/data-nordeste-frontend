@@ -1,4 +1,6 @@
+import { unstable_cache } from "next/cache";
 import { Pool } from "pg";
+import { DATA_DB_CACHE_SECONDS } from "@/config/revalidation";
 import type { SqlQuery } from "@/features/panels/territorialSql";
 
 let pool: Pool | undefined;
@@ -33,8 +35,17 @@ const getPool = (connectionString: string | undefined): Pool => {
   return pool;
 };
 
-export const queryDataDb: SqlQuery = async (sql, params) => {
+const runDataDbQuery: SqlQuery = async (sql, params) => {
   const result = await getPool(process.env.DATA_DB_URL).query(sql, params);
 
   return result.rows;
 };
+
+export const DATA_DB_CACHE_TAG = "data-db";
+
+// PERF: cada visualização de painel roda ~14 consultas; sem cache, todas iam ao banco.
+// A chave inclui os argumentos (SQL e parâmetros); a tag permite revalidateTag.
+export const queryDataDb = unstable_cache(runDataDbQuery, ["data-db-query"], {
+  revalidate: DATA_DB_CACHE_SECONDS,
+  tags: [DATA_DB_CACHE_TAG],
+}) as SqlQuery;

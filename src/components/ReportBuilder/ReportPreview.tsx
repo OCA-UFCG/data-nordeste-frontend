@@ -161,7 +161,7 @@ function ReportDownloadButton({
 }): ReactElement {
   return (
     <a
-      className="flex h-10 w-full flex-1 items-center justify-center gap-2 rounded bg-[#018F39] px-4 text-sm font-medium leading-6 text-[#F8F7F8] transition-colors hover:bg-[#077432]"
+      className="flex h-10 w-full flex-1 items-center justify-center gap-2 rounded bg-green-800 px-4 text-sm font-medium leading-6 text-[#F8F7F8] transition-colors hover:bg-[#077432]"
       download={fileName}
       href={url}
       rel="noopener noreferrer"

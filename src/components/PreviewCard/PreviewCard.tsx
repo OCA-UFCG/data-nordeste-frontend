@@ -2,10 +2,15 @@ import { IPreviewCard } from "@/utils/interfaces";
 import { Icon } from "../Icon/Icon";
 import { macroThemes } from "@/utils/constants";
 import Link from "next/link";
+import {
+  darkenForWhiteBackground,
+  MIN_CONTRAST_LARGE_TEXT,
+} from "@/features/colors/contrast";
 
 const PreviewCard = ({ content }: { content: IPreviewCard }) => {
   const { title, subtitle, data, note, link, category, iconsvg } = content;
 
+  // The 32px bold figure counts as large text, so 3:1 is enough (WCAG 1.4.3).
   return (
     <Link href={link || ""} className="flex-none">
       <div className="group w-[268px] md:w-full rounded-lg shadow h-full flex flex-col">
@@ -33,9 +38,7 @@ const PreviewCard = ({ content }: { content: IPreviewCard }) => {
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-            <h3 className="min-h-10 text-sm font-medium leading-5">
-              {title}
-            </h3>
+            <h3 className="min-h-10 text-sm font-medium leading-5">{title}</h3>
             <p className="text-xs text-grey-600">{subtitle}</p>
           </div>
           <Icon className="hidden md:flex" id="expand-black" size={9} />
@@ -43,7 +46,12 @@ const PreviewCard = ({ content }: { content: IPreviewCard }) => {
         <div className="flex flex-col justify-center px-4 py-3 flex-1">
           <p
             className="font-bold text-[32px] leading-6 tracking-[-0.015em]"
-            style={{ color: category.color }}
+            style={{
+              color: darkenForWhiteBackground(
+                category.color,
+                MIN_CONTRAST_LARGE_TEXT,
+              ),
+            }}
           >
             {data}
           </p>

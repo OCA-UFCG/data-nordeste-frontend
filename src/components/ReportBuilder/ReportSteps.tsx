@@ -23,16 +23,21 @@ export function ReportSteps({
   onStepChange,
   openStep,
 }: ReportStepsProps): ReactElement {
+  // Radix renders each step trigger inside an h3; this hidden h2 keeps the
+  // outline h1 → h2 → h3 for screen readers (axe "heading-order").
   return (
-    <Accordion
-      className="flex flex-col gap-6"
-      collapsible
-      onValueChange={(value) => onStepChange(value as ReportStepId | "")}
-      type="single"
-      value={openStep}
-    >
-      {children}
-    </Accordion>
+    <>
+      <h2 className="sr-only">Etapas do relatório</h2>
+      <Accordion
+        className="flex flex-col gap-6"
+        collapsible
+        onValueChange={(value) => onStepChange(value as ReportStepId | "")}
+        type="single"
+        value={openStep}
+      >
+        {children}
+      </Accordion>
+    </>
   );
 }
 
@@ -64,7 +69,7 @@ export function ReportStep({
             className={cn(
               "flex size-12 shrink-0 items-center justify-center rounded-full border-[3px] text-lg font-semibold transition-colors",
               completed
-                ? "border-[#018F39] bg-transparent text-[#018F39]"
+                ? "border-green-800 bg-transparent text-green-800"
                 : "border-[#858284] text-[#737073]",
             )}
           >
