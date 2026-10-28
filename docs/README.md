@@ -83,7 +83,7 @@ outside the repository and rendered through frontend route/component logic.
 - Feedback submissions are suppressed locally for 24 hours after a successful
   submit using the `datane@feedback_submitted` localStorage key.
 - Content revalidation depends on environment:
-  - beta or Contentful preview: 60 seconds
+  - beta or Contentful preview: 1800 seconds (30 minutes)
   - production/default: 3600 seconds
 - Beta disables search indexing through Next.js metadata robots settings.
 
