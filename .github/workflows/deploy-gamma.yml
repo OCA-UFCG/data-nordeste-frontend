@@ -73,6 +73,7 @@ jobs:
             -e AUTOMATIC_REPORT_API_URL="${{ vars.AUTOMATIC_REPORT_API_URL_GAMMA }}" \
             -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" \
             -e DATA_DB_URL="${{ secrets.DATA_DB_URL_GAMMA }}" \
+            -e CONTENT_CACHE_PASSWORD="${{ secrets.CONTENT_CACHE_PASSWORD }}" \
             -p ${{ vars.HOST_PORT_GAMMA }}:${{ vars.CONTAINER_PORT }} \
             -d \
             ${{ vars.DOCKER_IMAGE_GAMMA }}:latest

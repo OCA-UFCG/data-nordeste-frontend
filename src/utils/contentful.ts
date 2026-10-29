@@ -1,4 +1,5 @@
 import { REVALIDATE } from "./constants";
+import { CONTENTFUL_CACHE_TAG } from "@/config/revalidation";
 
 const USE_PREVIEW = process.env.NEXT_PUBLIC_CONTENTFUL_PREVIEW ? true : false;
 const CONTENTFUL_ACCESS_TOKEN = process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN;
@@ -15,7 +16,8 @@ type ContentfulClientConfig = {
   endpoint: string;
   fetcher?: typeof fetch;
   preview: boolean;
-  revalidate: number;
+  revalidate: number | false;
+  tags: string[];
 };
 
 type ContentfulVariable =
@@ -149,6 +151,7 @@ export function createContentfulClient({
   fetcher = fetch,
   preview,
   revalidate,
+  tags,
 }: ContentfulClientConfig) {
   return async function requestContentful<T>(
     query: string,
@@ -164,6 +167,7 @@ export function createContentfulClient({
       },
       next: {
         revalidate,
+        tags,
       },
 
       body: JSON.stringify({
@@ -199,4 +203,5 @@ export const getContent = createContentfulClient({
   endpoint: CONTENTFUL_ENDPOINT,
   preview: USE_PREVIEW,
   revalidate: REVALIDATE,
+  tags: [CONTENTFUL_CACHE_TAG],
 });
