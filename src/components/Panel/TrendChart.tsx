@@ -30,7 +30,11 @@ const TrendTabs = ({
   idPrefix: string;
   onSelect: (metric: TrendMetric) => void;
 }) => (
-  <div role="tablist" aria-label="Indicador" className="flex min-w-0 gap-1">
+  <div
+    role="tablist"
+    aria-label="Indicador"
+    className="flex w-full min-w-0 gap-1 sm:w-auto"
+  >
     {metrics.map((metric) => (
       <button
         key={metric.key}
@@ -40,7 +44,7 @@ const TrendTabs = ({
         aria-selected={active.key === metric.key}
         aria-controls={`${idPrefix}-panel`}
         onClick={() => onSelect(metric)}
-        className="min-h-11 rounded-t-lg px-4 text-base font-semibold text-grey-800 aria-selected:bg-white aria-selected:text-grey-1100 aria-[selected=false]:bg-grey-300"
+        className="min-h-11 flex-1 rounded-t-lg px-2 py-1.5 text-sm font-semibold leading-tight sm:flex-initial sm:px-4 sm:py-0 sm:text-base sm:leading-normal text-grey-800 aria-selected:bg-white aria-selected:text-grey-1100 aria-[selected=false]:bg-grey-300"
       >
         {metric.label}
       </button>
@@ -86,8 +90,6 @@ export const TrendChart = ({
   title?: string; // Sem título, as abas fazem esse papel (como no Power BI do PIB).
   metrics: TrendMetric[];
   selectedLabel: string;
-
-  // Clique num ponto: recebe o rótulo da categoria (ex.: o ano).
   onSelectLabel?: (label: string) => void;
 }) => {
   const idPrefix = useId();
@@ -110,6 +112,16 @@ export const TrendChart = ({
     [active, selectedLabel],
   );
 
+  // A coluna toda do ano é clicável; o clique na bolinha cai aqui também.
+  const selectColumn = useCallback(
+    (index: number) => {
+      const point = active.points[index];
+
+      if (point) onSelectLabel?.(point.label);
+    },
+    [active, onSelectLabel],
+  );
+
   return (
     <section className="flex min-w-0 flex-col">
       {title ? (
@@ -117,17 +129,21 @@ export const TrendChart = ({
           {title}
         </h2>
       ) : null}
-      <div className="flex items-end justify-between gap-2">
+      {/* Abaixo do sm, "Ver tabela" sobe para uma linha própria: ao lado das
+          abas, elas quebravam em 3 linhas a 360 px. */}
+      <div className="flex flex-wrap items-end justify-between gap-x-2 sm:flex-nowrap">
         <TrendTabs
           metrics={metrics}
           active={active}
           idPrefix={idPrefix}
           onSelect={(metric) => setActiveKey(metric.key)}
         />
-        <TableToggle
-          showTable={showTable}
-          onToggle={() => setShowTable((value) => !value)}
-        />
+        <div className="order-first ml-auto shrink-0 sm:order-none sm:ml-0">
+          <TableToggle
+            showTable={showTable}
+            onToggle={() => setShowTable((value) => !value)}
+          />
+        </div>
       </div>
       <div
         id={`${idPrefix}-panel`}
@@ -157,7 +173,7 @@ export const TrendChart = ({
             <EChart
               buildOption={buildOption}
               label={`Gráfico de linha: ${active.label}`}
-              onItemClick={onSelectLabel}
+              onCategoryClick={onSelectLabel ? selectColumn : undefined}
               className="h-72 w-full sm:h-80"
             />
           </>

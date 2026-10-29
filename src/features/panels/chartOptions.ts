@@ -1,135 +1,50 @@
-import { getBucket, type ChoroplethBucket } from "@/features/panels/choropleth";
+import {
+  getBucket,
+  rankRegions,
+  type ChoroplethBucket,
+} from "@/features/panels/choropleth";
 import { getAspectScale, type MapFraming } from "@/features/panels/mapFraming";
 import type { ChartOption } from "@/lib/echarts";
+import {
+  ACCENT,
+  AXIS_COLOR,
+  baseOption,
+  type ChartPoint,
+  FONT_SIZE,
+  isCompactChart,
+  SELECTED_BORDER,
+  TEXT_COLOR,
+  TOOLTIP_BASE,
+  tooltipHtml,
+  type ValueFormatter,
+} from "@/features/panels/chartBase";
 
-export type ValueFormatter = (value: number) => string;
-export type ChartPoint = { label: string; value: number };
-
-const FONT_SIZE = 14;
-const TEXT_COLOR = "#292829";
-const MUTED_COLOR = "#5c5c5c";
-const ACCENT = "#f5791a";
-const ACCENT_DARK = "#be4610";
-const SELECTED_BORDER = "#077432";
-const COMPACT_WIDTH = 560;
-const LABEL_SLOT_WIDTH = 96;
-
-export const isCompactChart = (width: number): boolean => width < COMPACT_WIDTH;
-
-const TOOLTIP_BASE = {
-  confine: true,
-  textStyle: { fontSize: FONT_SIZE, color: TEXT_COLOR },
-};
-
-const baseOption = (): ChartOption => ({
-  aria: { enabled: true },
-  textStyle: { fontSize: FONT_SIZE, color: TEXT_COLOR },
-  tooltip: TOOLTIP_BASE,
-});
-
-export type TrendConfig = {
-  points: ChartPoint[];
-  seriesName: string;
-  selectedIndex: number;
-  formatLabel: ValueFormatter;
-  formatValue: ValueFormatter;
-  formatAxis: ValueFormatter;
-};
-
-const trendLabel = (config: TrendConfig, width: number) => {
-  // Fora do celular, todos os anos têm rótulo, como no Power BI (o hideOverlap
-  // esconde os que colidirem); no celular o valor do ano vai num destaque acima.
-  const showLabels =
-    !isCompactChart(width) || width / config.points.length >= LABEL_SLOT_WIDTH;
-
-  return {
-    show: true,
-    position: "top",
-    distance: 10,
-    fontSize: FONT_SIZE,
-    color: MUTED_COLOR,
-
-    // Contorno branco: o rótulo fica legível onde a linha sobe e cruza o texto.
-    textBorderColor: "#fff",
-    textBorderWidth: 3,
-    formatter: ({ value }: { value: number }) =>
-      showLabels ? config.formatLabel(value) : "",
-  };
-};
-
-const trendSeries = (config: TrendConfig, width: number) => ({
-  type: "line",
-  name: config.seriesName,
-  data: config.points.map((point, index) => ({
-    value: point.value,
-    symbolSize: index === config.selectedIndex ? 14 : 8,
-    itemStyle: {
-      color: index === config.selectedIndex ? ACCENT_DARK : ACCENT,
-    },
-  })),
-  lineStyle: { color: ACCENT, width: 3, type: "dotted" },
-  label: trendLabel(config, width),
-  labelLayout: { hideOverlap: true },
-});
-
-const trendAxes = (config: TrendConfig, compact: boolean) => ({
-  xAxis: {
-    type: "category",
-    data: config.points.map((point) => point.label),
-    axisLabel: {
-      fontSize: FONT_SIZE,
-      color: MUTED_COLOR,
-      interval: compact ? 3 : 0,
-    },
-    axisTick: { show: false },
-  },
-  yAxis: {
-    type: "value",
-    splitNumber: compact ? 3 : 4,
-    axisLabel: {
-      // Evita que o rótulo do primeiro ano encoste nos valores do eixo.
-      margin: compact ? 8 : 40,
-      fontSize: FONT_SIZE,
-      color: MUTED_COLOR,
-      formatter: config.formatAxis,
-    },
-  },
-});
-
-export const buildTrendOption = (
-  config: TrendConfig,
-  width: number,
-): ChartOption => {
-  const compact = isCompactChart(width);
-
-  return {
-    ...baseOption(),
-    grid: {
-      left: 8,
-      right: compact ? 56 : 48,
-      top: 36,
-      bottom: 8,
-      containLabel: true,
-    },
-    tooltip: {
-      ...TOOLTIP_BASE,
-      trigger: "axis",
-      valueFormatter: config.formatValue,
-    },
-    ...trendAxes(config, compact),
-    series: [trendSeries(config, width)],
-  };
-};
+export {
+  isCompactChart,
+  type ChartPoint,
+  type ValueFormatter,
+} from "@/features/panels/chartBase";
+export {
+  buildTrendOption,
+  type TrendConfig,
+} from "@/features/panels/trendOption";
 
 const barSeries = (
   points: ChartPoint[],
   formatValue: ValueFormatter,
   color: string,
 ) => ({
+  // id fixo: na troca de filtro as barras crescem ou encolhem até o valor novo.
+  id: "bars",
   type: "bar",
   data: points.map((point) => point.value),
-  barMaxWidth: 36,
+
+  // A espessura acompanha a altura do card (40% da faixa fica de ar), até 32 px.
+  barCategoryGap: "40%",
+  barMaxWidth: 32,
   itemStyle: { color, borderRadius: [0, 4, 4, 0] },
+  emphasis: { focus: "self" },
+  blur: { itemStyle: { opacity: 0.45 }, label: { opacity: 0.75 } },
   label: {
     show: true,
     position: "right",
@@ -160,6 +75,7 @@ export const buildHorizontalBarOption = (
     inverse: true,
     data: points.map((point) => point.label),
     axisTick: { show: false },
+    axisLine: { lineStyle: { color: AXIS_COLOR } },
     axisLabel: {
       fontSize: FONT_SIZE,
       color: TEXT_COLOR,
@@ -181,6 +97,7 @@ export type ColumnConfig = {
 };
 
 const columnSeries = (series: ColumnSeries, formatLabel: ValueFormatter) => ({
+  id: series.name,
   type: "bar",
   name: series.name,
   data: series.values,
@@ -259,43 +176,64 @@ export type ChoroplethConfig = {
   canPan?: boolean;
 };
 
-const HTML_ESCAPES: Record<string, string> = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-};
+type ChoroplethItem = { nome: string; uf: string; value: number; rank: number };
 
-const escapeHtml = (value: string): string =>
-  value.replace(/[&<>"]/g, (char) => HTML_ESCAPES[char]);
+const rankFormat = new Intl.NumberFormat("pt-BR");
 
 const choroplethTooltip =
   (config: ChoroplethConfig) =>
-  ({ data }: { data?: { nome: string; uf: string; value: number } }) => {
+  ({ data }: { data?: ChoroplethItem }) => {
     if (!data) return "";
-    const place = escapeHtml(`${data.nome} (${data.uf})`);
+    const total = config.regions.length;
+    const rank =
+      total > 1
+        ? [`${rankFormat.format(data.rank)}º de ${rankFormat.format(total)}`]
+        : [];
 
-    return `<strong>${place}</strong><br/>${escapeHtml(config.valueLabel)}: ${config.formatValue(data.value)}`;
+    return tooltipHtml(
+      `${data.nome} (${data.uf})`,
+      `${config.valueLabel}: ${config.formatValue(data.value)}`,
+      rank,
+    );
   };
 
 const DIMMED_AREA = "#e5e5e5";
 
-const choroplethRegions = (config: ChoroplethConfig) =>
-  config.regions.map((region) => ({
-    name: region.code,
-    value: region.value,
-    nome: region.name,
-    uf: region.uf,
-    itemStyle: {
-      areaColor:
-        config.highlightCodes && !config.highlightCodes.has(region.code)
-          ? DIMMED_AREA
-          : getBucket(config.buckets, region.value).color,
-      ...(region.code === config.selectedCode
-        ? { borderColor: SELECTED_BORDER, borderWidth: 3 }
-        : {}),
-    },
-  }));
+const HOVER_BORDER = TEXT_COLOR;
+
+const regionAreaColor = (config: ChoroplethConfig, region: ChoroplethRegion) =>
+  config.highlightCodes && !config.highlightCodes.has(region.code)
+    ? DIMMED_AREA
+    : getBucket(config.buckets, region.value).color;
+
+// No hover a região mantém a cor e ganha contorno; a escolhida segue verde.
+const choroplethRegions = (config: ChoroplethConfig) => {
+  const ranks = rankRegions(config.regions);
+
+  return config.regions.map((region) => {
+    const areaColor = regionAreaColor(config, region);
+    const selected = region.code === config.selectedCode;
+    const border = selected
+      ? { borderColor: SELECTED_BORDER, borderWidth: 3 }
+      : {};
+
+    return {
+      name: region.code,
+      value: region.value,
+      nome: region.name,
+      uf: region.uf,
+      rank: ranks.get(region.code) ?? 0,
+      itemStyle: { areaColor, ...border },
+      emphasis: {
+        itemStyle: {
+          areaColor,
+          borderColor: selected ? SELECTED_BORDER : HOVER_BORDER,
+          borderWidth: selected ? 3 : 1.5,
+        },
+      },
+    };
+  });
+};
 
 const choroplethFraming = (framing: MapFraming | undefined) =>
   framing
@@ -333,10 +271,7 @@ export const buildChoroplethOption = (
       preserveAspect: "contain",
       ...choroplethFraming(config.framing),
       itemStyle: { borderColor: "#ffffff", borderWidth: 0.3 },
-      emphasis: {
-        label: { show: false },
-        itemStyle: { areaColor: SELECTED_BORDER },
-      },
+      emphasis: { label: { show: false } },
       data: choroplethRegions(config),
     },
   ],
@@ -368,6 +303,7 @@ export const buildPieOption = (
   tooltip: { ...TOOLTIP_BASE, trigger: "item", valueFormatter: formatValue },
   series: [
     {
+      id: "pie",
       type: "pie",
       radius: "75%",
 
@@ -464,6 +400,7 @@ const pyramidSeries = (
   side: "left" | "right",
   scale: PyramidScale,
 ) => ({
+  id: `piramide-${side}`,
   type: "bar",
   name: series.name,
   stack: "piramide",
@@ -476,6 +413,7 @@ const pyramidSeries = (
 });
 
 const centerLine = {
+  id: "piramide-centro",
   type: "bar",
   stack: "piramide",
   data: [],

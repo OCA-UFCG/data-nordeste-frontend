@@ -127,7 +127,7 @@ export type ChoroplethMapProps = {
   table?: DataTableContent;
   onSelectRegion: (code: string) => void;
 
-  // No desktop ocupa a altura do pai; no celular segue o formato da malha.
+  // Do xl em diante ocupa a altura do pai; abaixo, segue o formato da malha.
   fill?: boolean;
 };
 
@@ -199,7 +199,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
         label={`Mapa coroplético: ${props.title}`}
         className={
           props.fill
-            ? "aspect-(--map-ratio) w-full lg:aspect-auto lg:min-h-0 lg:flex-1"
+            ? "aspect-(--map-ratio) w-full xl:aspect-auto xl:min-h-0 xl:flex-1"
             : "w-full"
         }
         style={
@@ -208,6 +208,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
             : { aspectRatio }
         }
         renderer={MAP_RENDERER}
+        morph={false}
         onItemClick={props.onSelectRegion}
       />
     ) : (
@@ -219,7 +220,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
       <ChartCard
         title={props.title}
         table={props.table}
-        tableClassName="h-64 sm:h-72 lg:h-auto lg:min-h-0 lg:flex-1"
+        tableClassName="h-64 sm:h-72 xl:h-auto xl:min-h-0 xl:flex-1"
       >
         <div className="relative flex min-h-0 flex-1 flex-col">
           {map}

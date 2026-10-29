@@ -5,6 +5,7 @@ import {
   buildPyramidOption,
   buildTrendOption,
 } from "@/features/panels/chartOptions";
+import { trendLabelIndexes } from "@/features/panels/trendOption";
 import { formatReaisAxis, formatReaisCompact } from "@/features/panels/format";
 import type { MapBounds } from "@/features/panels/mapFraming";
 import { PIB_MAP_BUCKETS } from "@/features/panels/pib/pibPanel";
@@ -37,12 +38,36 @@ const trendLabels = (width: number, selectedIndex = 2): string[] => {
 };
 
 describe("buildTrendOption", () => {
-  it("labels every point on wide screens", () => {
-    expect(trendLabels(900)).toEqual([
+  it("labels only the ends and the selected year on wide screens", () => {
+    expect(trendLabels(900)).toEqual(["R$ 1,24 tri", "", "R$ 1,51 tri"]);
+    expect(trendLabels(900, 1)).toEqual([
       "R$ 1,24 tri",
       "R$ 1,39 tri",
       "R$ 1,51 tri",
     ]);
+  });
+
+  it("shows the change from the previous year in the tooltip", () => {
+    const option = buildTrendOption(
+      {
+        points: POINTS,
+        seriesName: "PIB",
+        selectedIndex: 2,
+        formatLabel: String,
+        formatValue: (value) => formatReaisCompact(value),
+        formatAxis: formatReaisAxis,
+      },
+      900,
+    ) as {
+      tooltip: { formatter: (params: { dataIndex: number }[]) => string };
+    };
+    const html = option.tooltip.formatter([{ dataIndex: 1 }]);
+
+    expect(html).toContain("R$ 1,39 tri");
+    expect(html).toContain("+11,7% em relação a 2021");
+    expect(option.tooltip.formatter([{ dataIndex: 0 }])).not.toContain(
+      "em relação",
+    );
   });
 
   it("drops point labels on narrow screens", () => {
@@ -50,7 +75,89 @@ describe("buildTrendOption", () => {
   });
 });
 
+describe("buildTrendOption on a phone", () => {
+  type AxisOption = {
+    xAxis: { axisLabel: { interval: (index: number) => boolean } };
+    series: { showAllSymbol: boolean }[];
+  };
+  const YEARS = Array.from({ length: 14 }, (_, index) => String(2010 + index));
+  const phoneOption = (selectedIndex: number) =>
+    buildTrendOption(
+      {
+        points: YEARS.map((label) => ({ label, value: 1 })),
+        seriesName: "PIB",
+        selectedIndex,
+        formatLabel: String,
+        formatValue: String,
+        formatAxis: String,
+      },
+      360,
+    ) as AxisOption;
+  const axisYears = (selectedIndex: number) =>
+    YEARS.filter((_, index) =>
+      phoneOption(selectedIndex).xAxis.axisLabel.interval(index),
+    );
+
+  it("counts axis labels from the last year", () => {
+    expect(axisYears(13)).toEqual(["2011", "2015", "2019", "2023"]);
+  });
+
+  it("labels the selected year and hides the labels closer than a step", () => {
+    expect(axisYears(11)).toEqual(["2011", "2015", "2021"]);
+  });
+
+  it("skips every other year on a desktop chart too narrow for all 14", () => {
+    const option = buildTrendOption(
+      {
+        points: YEARS.map((label) => ({ label, value: 1 })),
+        seriesName: "PIB",
+        selectedIndex: 11,
+        formatLabel: String,
+        formatValue: String,
+        formatAxis: String,
+      },
+      571,
+    ) as AxisOption;
+
+    expect(
+      YEARS.filter((_, index) => option.xAxis.axisLabel.interval(index)),
+    ).toEqual(["2011", "2013", "2015", "2017", "2019", "2021", "2023"]);
+  });
+
+  it("draws every point, so the selected year never disappears", () => {
+    expect(phoneOption(13).series[0].showAllSymbol).toBe(true);
+  });
+});
+
+describe("trendLabelIndexes", () => {
+  it("drops an end label too close to the selected year", () => {
+    expect([...trendLabelIndexes(14, 11, 3)]).toEqual([11, 0]);
+    expect([...trendLabelIndexes(14, 6, 3)]).toEqual([6, 0, 13]);
+    expect([...trendLabelIndexes(14, 13, 3)]).toEqual([13, 0]);
+    expect([...trendLabelIndexes(14, -1, 3)]).toEqual([0, 13]);
+  });
+});
+
 describe("buildChoroplethOption", () => {
+  it("shows the position in the ranking in the tooltip", () => {
+    const option = buildChoroplethOption({
+      regions: [
+        { code: "2611606", name: "Recife", uf: "PE", value: 6e10 },
+        { code: "2507507", name: "João Pessoa", uf: "PB", value: 2e10 },
+      ],
+      buckets: PIB_MAP_BUCKETS,
+      mapName: "test",
+      valueLabel: "PIB",
+      formatValue: (value) => formatReaisCompact(value),
+    }) as {
+      tooltip: { formatter: (params: { data?: object }) => string };
+      series: { data: object[] }[];
+    };
+    const [, joaoPessoa] = option.series[0].data;
+
+    expect(option.tooltip.formatter({ data: joaoPessoa })).toContain("2º de 2");
+  });
+
   it("escapes region names in the HTML tooltip", () => {
     const option = buildChoroplethOption({
       regions: [

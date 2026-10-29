@@ -36,4 +36,27 @@ describe("RankedBars", () => {
       screen.getByRole("button", { name: /Demais serviços/ }),
     ).toHaveAttribute("aria-pressed", "true");
   });
+
+  it("previews the row under the mouse, but not under a finger", () => {
+    const onPreview = vi.fn();
+
+    render(
+      <RankedBars
+        points={POINTS}
+        formatValue={String}
+        onSelect={() => undefined}
+        onPreview={onPreview}
+      />,
+    );
+    const row = screen.getByRole("button", { name: /Indústrias/ });
+
+    fireEvent.pointerEnter(row, { pointerType: "touch" });
+    fireEvent.pointerEnter(row, { pointerType: "mouse" });
+    fireEvent.pointerLeave(screen.getByRole("list"), { pointerType: "mouse" });
+
+    expect(onPreview.mock.calls).toEqual([
+      ["Indústrias de transformação"],
+      [null],
+    ]);
+  });
 });

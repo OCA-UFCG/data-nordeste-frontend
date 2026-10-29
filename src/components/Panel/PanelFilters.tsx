@@ -114,7 +114,9 @@ const StickyLocation = ({
         ) : (
           <MapPin aria-hidden className="size-4 shrink-0 text-green-800" />
         )}
-        <span className="truncate">{summary}</span>
+        {/* Até 2 linhas: "Campina Grande (PB) · 2021" não cabe numa ao lado
+            dos botões, e cortado perdia o ano. */}
+        <span className="line-clamp-2 leading-tight">{summary}</span>
       </p>
       <FiltersSheet summary={summary} compact>
         {children}

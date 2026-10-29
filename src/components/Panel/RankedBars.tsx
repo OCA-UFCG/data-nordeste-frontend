@@ -1,3 +1,4 @@
+import type { PointerEvent } from "react";
 import type {
   ChartPoint,
   ValueFormatter,
@@ -17,7 +18,7 @@ const BarRow = ({
     <span className="flex items-center gap-3">
       <span className="h-5 flex-1 rounded-r bg-grey-100">
         <span
-          className="block h-full min-w-1 rounded-r bg-orange-600 transition-[width] duration-500 ease-out motion-reduce:transition-none"
+          className="block h-full min-w-1 rounded-r bg-orange-600 transition-[width,background-color] duration-500 ease-out group-hover:bg-orange-700 motion-reduce:transition-none"
           style={{ width: `${(point.value / largest) * 100}%` }}
         />
       </span>
@@ -28,17 +29,29 @@ const BarRow = ({
   </>
 );
 
-// Com `onSelect`, cada linha vira um botão de alternar (o filtro cruzado do Power BI).
+type PreviewHandler = (label: string | null) => void;
+
+// Só com mouse: no toque, o pointerenter vem junto do toque e o clique já fixa.
+const previewOnMouse =
+  (onPreview: PreviewHandler | undefined, label: string | null) =>
+  (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType === "mouse") onPreview?.(label);
+  };
+
+// Com `onSelect`, cada linha vira um botão de alternar (o filtro cruzado do
+// Power BI); `onPreview` recebe a linha sob o mouse e null ao sair da lista.
 export const RankedBars = ({
   points,
   formatValue,
   selectedLabel,
   onSelect,
+  onPreview,
 }: {
   points: ChartPoint[];
   formatValue: ValueFormatter;
   selectedLabel?: string | null;
   onSelect?: (label: string | null) => void;
+  onPreview?: PreviewHandler;
 }) => {
   const largest = Math.max(...points.map((point) => point.value), 0) || 1;
   const row = (point: ChartPoint) => (
@@ -46,7 +59,10 @@ export const RankedBars = ({
   );
 
   return (
-    <ul className="flex flex-col gap-2">
+    <ul
+      className="flex flex-col gap-2"
+      onPointerLeave={previewOnMouse(onPreview, null)}
+    >
       {points.map((point) => (
         <li key={point.label}>
           {onSelect ? (
@@ -56,7 +72,8 @@ export const RankedBars = ({
               onClick={() =>
                 onSelect(point.label === selectedLabel ? null : point.label)
               }
-              className={`flex w-full flex-col gap-1.5 rounded-md p-1.5 text-left transition-opacity hover:bg-grey-100 focus-visible:outline-2 focus-visible:outline-green-800 aria-pressed:bg-orange-100 motion-reduce:transition-none ${selectedLabel && point.label !== selectedLabel ? "opacity-50" : ""}`}
+              onPointerEnter={previewOnMouse(onPreview, point.label)}
+              className={`group flex w-full cursor-pointer flex-col gap-1.5 rounded-md p-1.5 text-left transition-[opacity,background-color] hover:bg-orange-100/60 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-green-800 aria-pressed:bg-orange-100 motion-reduce:transition-none ${selectedLabel && point.label !== selectedLabel ? "opacity-50" : ""}`}
             >
               {row(point)}
             </button>

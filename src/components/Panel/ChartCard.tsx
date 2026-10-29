@@ -20,21 +20,51 @@ export const TableToggle = ({
   </button>
 );
 
+const CardToolbar = ({
+  table,
+  info,
+  showTable,
+  onToggle,
+}: {
+  table?: DataTableContent;
+  info?: ReactNode;
+  showTable: boolean;
+  onToggle: () => void;
+}) => (
+  <div className="flex shrink-0 items-center">
+    {table ? <TableToggle showTable={showTable} onToggle={onToggle} /> : null}
+    {info}
+  </div>
+);
+
 // `table`: os mesmos números em tabela, como o "Mostrar como tabela" do Power BI.
+// `toolbarInside`: "Ver tabela" e ⓘ no topo do card branco, e o título usa a
+// largura toda (em cards estreitos lado a lado, o título quebrava em 4 linhas).
 export const ChartCard = ({
   title,
   info,
   table,
   tableClassName,
+  toolbarInside = false,
   children,
 }: {
   title: string;
   info?: ReactNode;
   table?: DataTableContent;
   tableClassName?: string;
+  toolbarInside?: boolean;
   children: ReactNode;
 }) => {
   const [showTable, setShowTable] = useState(false);
+  const toolbar =
+    table || info ? (
+      <CardToolbar
+        table={table}
+        info={info}
+        showTable={showTable}
+        onToggle={() => setShowTable((value) => !value)}
+      />
+    ) : null;
 
   return (
     <section className="flex min-h-0 min-w-0 flex-col gap-3">
@@ -42,17 +72,12 @@ export const ChartCard = ({
         <h2 className="text-lg font-semibold text-grey-1100 sm:text-xl">
           {title}
         </h2>
-        <div className="flex shrink-0 items-center">
-          {table ? (
-            <TableToggle
-              showTable={showTable}
-              onToggle={() => setShowTable((value) => !value)}
-            />
-          ) : null}
-          {info}
-        </div>
+        {toolbarInside ? null : toolbar}
       </div>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col rounded-lg bg-white p-3 shadow-sm sm:p-4">
+        {toolbarInside && toolbar ? (
+          <div className="-mr-1 -mt-2 flex justify-end sm:-mr-2">{toolbar}</div>
+        ) : null}
         {table && showTable ? (
           <DataTable content={table} className={tableClassName} />
         ) : (

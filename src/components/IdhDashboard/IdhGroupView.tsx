@@ -4,7 +4,10 @@ import { ChartColumnIncreasing, Wallet } from "lucide-react";
 import { useMemo } from "react";
 import { ChartCard } from "@/components/Panel/ChartCard";
 import { ColumnChart } from "@/components/Panel/ColumnChart";
-import { HighlightCard } from "@/components/Panel/HighlightCards";
+import {
+  HighlightCard,
+  withCommonFit,
+} from "@/components/Panel/HighlightCards";
 import type { KpiItem } from "@/components/Panel/KpiCards";
 import { PanelCarousel } from "@/components/Panel/PanelCarousel";
 import type {
@@ -75,7 +78,7 @@ export const IdhGroupView = ({
   return (
     <div className="flex flex-col gap-6">
       <PanelCarousel label="Indicadores" columns="lg:grid-cols-4">
-        {groupCards(groups, ano).map((item) => (
+        {withCommonFit(groupCards(groups, ano)).map((item) => (
           <HighlightCard key={item.label} tone="orange" {...item} />
         ))}
       </PanelCarousel>

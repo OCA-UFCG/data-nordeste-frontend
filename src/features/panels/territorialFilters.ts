@@ -43,8 +43,8 @@ const isTerritorialArea = (value?: string): value is TerritorialArea =>
 
 const MUNICIPALITY_PATTERN = /^\d{7}$/;
 
-// Corta antes de validar: com limite 1 fica idêntico ao firstValue de antes,
-// e um valor inválido conta no limite em vez de abrir espaço para outro.
+// Corta antes de validar: com limite 1 equivale a firstValue, e um valor
+// inválido conta no limite em vez de abrir espaço para outro.
 const parseCodes = (
   value: string | string[] | undefined,
   pattern: RegExp,

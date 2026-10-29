@@ -7,9 +7,8 @@ import {
 import { ReportData } from "@/utils/interfaces";
 
 // Mesmos textos que /data-panel/[id] mostra em volta do Power BI.
-// INTENTIONAL: a demo recebe os textos prontos e não consulta o Contentful
-// (cota limitada); por isso também não tem "Conteúdos relacionados", que
-// depende do índice de busca.
+// INTENTIONAL: textos prontos, sem consultar o Contentful (cota limitada); por
+// isso não há "Conteúdos relacionados", que depende do índice de busca.
 export const PanelTextsFrame = ({
   panel,
   children,

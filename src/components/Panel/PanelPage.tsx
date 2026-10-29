@@ -21,6 +21,8 @@ export const MobileSummaryAlert = () => (
   </div>
 );
 
+// px-6 e ícone sem recuo lateral: o ícone começa na mesma linha do conteúdo
+// abaixo ("Ano", cards). Sem pb no h1: ícone, título e ⓘ ficam centrados.
 const PanelTitleBar = ({
   title,
   icon: TitleIcon,
@@ -35,9 +37,9 @@ const PanelTitleBar = ({
   compact: boolean;
 }) => (
   <div
-    className={`flex items-center gap-4 px-4 py-3 text-grey-100 lg:rounded-t-lg lg:px-6 ${PANEL_TONES[tone].shell}`}
+    className={`flex items-center gap-4 px-6 py-3 text-grey-100 lg:rounded-t-lg ${PANEL_TONES[tone].shell}`}
   >
-    <span className="flex shrink-0 items-center justify-center p-2">
+    <span className="flex shrink-0 items-center justify-center py-2">
       <TitleIcon
         aria-hidden
         className={compact ? "size-8 lg:size-10" : "size-10"}
@@ -45,7 +47,7 @@ const PanelTitleBar = ({
       />
     </span>
     <h1
-      className={`font-extrabold tracking-[-0.0075em] ${compact ? "text-2xl leading-8 lg:pb-2 lg:text-3xl lg:leading-9" : "pb-2 text-3xl leading-9"}`}
+      className={`min-w-0 font-extrabold tracking-[-0.0075em] ${compact ? "text-2xl leading-8 lg:text-3xl lg:leading-9" : "text-3xl leading-9"}`}
     >
       {title}
     </h1>
