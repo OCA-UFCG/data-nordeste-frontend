@@ -1,7 +1,7 @@
 "use client";
 
-import { FilterX } from "lucide-react";
 import { useId } from "react";
+import { MultiSelectCombobox } from "@/components/Panel/MultiSelectCombobox";
 import {
   TERRITORIAL_AREAS,
   type TerritorialArea,
@@ -46,29 +46,53 @@ export const FilterSelect = ({
   </div>
 );
 
-export const ClearFiltersButton = ({ onClick }: { onClick: () => void }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="col-span-2 inline-flex h-11 items-center justify-center gap-2 rounded-md border border-grey-300 bg-white px-4 text-base font-medium text-green-900 transition hover:bg-green-neutro md:col-span-1"
-  >
-    Limpar filtros
-    <FilterX aria-hidden size={18} />
-  </button>
-);
-
 export const ALL_OPTION = { value: "", label: "Todos" };
 
-export type TerritorialFilterBarProps = {
+type TerritorialSelectsProps = {
   filters: TerritorialFilters;
-  defaults: TerritorialFilters;
   years: number[];
   ufs: UfOption[];
   municipios: MunicipalityOption[];
   onChange: (next: TerritorialFilters) => void;
+
+  // Estado e Município com busca e várias escolhas (PIB). Sem ele, selects nativos.
+  multiple?: boolean;
 };
 
-type TerritorialSelectsProps = Omit<TerritorialFilterBarProps, "defaults">;
+type PlaceFilterProps = {
+  id: string;
+  label: string;
+  plural: string;
+  multiple?: boolean;
+  values?: string[];
+  options: SelectOption[];
+  onChange: (values?: string[]) => void;
+};
+
+// Lista vazia vira undefined: "Todos" não aparece na URL nem no SQL.
+const PlaceFilter = ({
+  multiple,
+  values,
+  options,
+  onChange,
+  ...field
+}: PlaceFilterProps) =>
+  multiple ? (
+    <MultiSelectCombobox
+      {...field}
+      values={values ?? []}
+      options={options}
+      onChange={(next) => onChange(next.length ? next : undefined)}
+    />
+  ) : (
+    <FilterSelect
+      id={field.id}
+      label={field.label}
+      value={values?.[0] ?? ""}
+      options={[ALL_OPTION, ...options]}
+      onChange={(value) => onChange(value ? [value] : undefined)}
+    />
+  );
 
 // Só os quatro selects, para quem monta o próprio layout (ex.: PanelFilters).
 export const TerritorialSelects = ({
@@ -77,6 +101,7 @@ export const TerritorialSelects = ({
   ufs,
   municipios,
   onChange,
+  multiple,
 }: TerritorialSelectsProps) => {
   const id = useId();
   const { ano, area } = filters;
@@ -100,36 +125,31 @@ export const TerritorialSelects = ({
         options={[...TERRITORIAL_AREAS]}
         onChange={(value) => onChange({ ano, area: value as TerritorialArea })}
       />
-      <FilterSelect
+      {/* Select único troca a UF e zera o município; na multisseleção os municípios
+          ficam e o servidor descarta os que saíram das UFs escolhidas. */}
+      <PlaceFilter
         id={`${id}-uf`}
         label="Estado"
-        value={filters.uf ?? ""}
-        options={[
-          ALL_OPTION,
-          ...ufs.map((uf) => ({ value: uf.sigla, label: uf.nome })),
-        ]}
-        onChange={(value) => onChange({ ano, area, uf: value || undefined })}
+        plural="estados"
+        multiple={multiple}
+        values={filters.uf}
+        options={ufs.map((uf) => ({ value: uf.sigla, label: uf.nome }))}
+        onChange={(uf) =>
+          onChange(multiple ? { ...filters, uf } : { ano, area, uf })
+        }
       />
-      <FilterSelect
+      <PlaceFilter
         id={`${id}-mun`}
         label="Município"
-        value={filters.mun ?? ""}
-        options={[
-          ALL_OPTION,
-          ...municipios.map((mun) => ({ value: mun.cdMun, label: mun.nome })),
-        ]}
-        onChange={(value) => onChange({ ...filters, mun: value || undefined })}
+        plural="municípios"
+        multiple={multiple}
+        values={filters.mun}
+        options={municipios.map((mun) => ({
+          value: mun.cdMun,
+          label: mun.nome,
+        }))}
+        onChange={(mun) => onChange({ ...filters, mun })}
       />
     </>
   );
 };
-
-export const TerritorialFilterBar = ({
-  defaults,
-  ...selects
-}: TerritorialFilterBarProps) => (
-  <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-[repeat(4,minmax(0,1fr))_auto] md:items-end">
-    <TerritorialSelects {...selects} />
-    <ClearFiltersButton onClick={() => selects.onChange(defaults)} />
-  </div>
-);

@@ -29,9 +29,18 @@ export const buildTerritorialWhere = (
     conditions.push(`${column} = $${params.length}`);
   };
 
+  // Um valor mantém o `= $n` de sempre (o Perfil Demográfico gera o mesmo SQL);
+  // vários viram `= ANY($n)` com um array, que o pg envia como parâmetro.
+  const addAny = (column: string, values: string[] = []) => {
+    if (values.length === 1) add(column, values[0]);
+    if (values.length < 2) return;
+    params.push(values);
+    conditions.push(`${column} = ANY($${params.length})`);
+  };
+
   if (scope.byYear) add("ano", filters.ano);
-  if (filters.uf) add("sigla_uf", filters.uf);
-  if (scope.byMunicipality && filters.mun) add("cd_mun", filters.mun);
+  addAny("sigla_uf", filters.uf);
+  if (scope.byMunicipality) addAny("cd_mun", filters.mun);
 
   return { sql: conditions.join(" AND "), params };
 };

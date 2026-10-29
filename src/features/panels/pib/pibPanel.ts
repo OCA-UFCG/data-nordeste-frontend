@@ -20,21 +20,30 @@ import {
 
 export const PIB_YEAR_RANGE: YearRange = { first: 2010, last: 2023 };
 
+// Limita o tamanho da URL e do array do `= ANY($n)`.
+export const PIB_MAX_PLACES = 100;
+
+// Último ano com VAB publicado pelo IBGE; o aviso do Power BI cita 2022 e 2023.
+export const PIB_VAB_LAST_YEAR = 2021;
+
+// Faixas, rótulos e cores da legenda do mapa no Power BI.
 export const PIB_MAP_BUCKETS: readonly ChoroplethBucket[] = [
-  { max: 5e8, label: "Até R$ 500 mi", color: "#feeed6" },
-  { max: 1e9, label: "R$ 500 mi a 1 bi", color: "#fabd77" },
-  { max: 5e9, label: "R$ 1 a 5 bi", color: "#f79339" },
-  { max: 1e10, label: "R$ 5 a 10 bi", color: "#f5791a" },
-  { max: 2e10, label: "R$ 10 a 20 bi", color: "#e65e10" },
-  { max: 3.5e10, label: "R$ 20 a 35 bi", color: "#973815" },
-  { max: Infinity, label: "Acima de R$ 35 bi", color: "#421608" },
+  { max: 5e8, label: "< 500 Mi", color: "#fff7ed" },
+  { max: 1e9, label: "500 Mi - 1 Bi", color: "#fcd9ac" },
+  { max: 5e9, label: "1 Bi - 5 Bi", color: "#f79339" },
+  { max: 1e10, label: "5 Bi - 10 Bi", color: "#e65e10" },
+  { max: 2e10, label: "10 Bi - 20 Bi", color: "#be4610" },
+  { max: 3.5e10, label: "20 Bi - 35 Bi", color: "#7a3014" },
+  { max: Infinity, label: "> 35 Bi", color: "#421608" },
 ];
 
 export type PibYearPoint = { ano: number; pib: number; perCapita: number };
 
+export type PibMapRegion = ChoroplethRegion & { atividade?: string };
+
 export type PibPanelData = TerritorialSelection & {
   serie: PibYearPoint[];
-  mapa: ChoroplethRegion[];
+  mapa: PibMapRegion[];
   vab: ChartPoint[] | null;
   atividades: ChartPoint[];
 };
@@ -76,8 +85,10 @@ const loadMapa = async (query: SqlQuery, filters: TerritorialFilters) => {
     nome_municipio: string;
     sigla_uf: string;
     pib_total: NumericCell;
+    atividade_maior_vab: string | null;
   }>(
-    `SELECT TRIM(cd_mun) AS cd_mun, nome_municipio, sigla_uf, pib_total
+    `SELECT TRIM(cd_mun) AS cd_mun, nome_municipio, sigla_uf, pib_total,
+       atividade_maior_vab
      FROM ${PIB_VIEW} WHERE ${where.sql}`,
     where.params,
   );
@@ -87,13 +98,14 @@ const loadMapa = async (query: SqlQuery, filters: TerritorialFilters) => {
     name: row.nome_municipio,
     uf: row.sigla_uf,
     value: toNumber(row.pib_total),
+    atividade: row.atividade_maior_vab ?? undefined,
   }));
 };
 
 const VAB_SECTORS = [
   { column: "vab_agropecuaria", label: "Agropecuária" },
   { column: "vab_industria", label: "Indústria" },
-  { column: "vab_adm_publica", label: "Administração pública" },
+  { column: "vab_adm_publica", label: "Administração Pública" },
   { column: "vab_servicos", label: "Serviços" },
 ] as const;
 

@@ -3,6 +3,25 @@ import { loadPibPanel } from "@/features/panels/pib/pibPanel";
 
 type RecordedQuery = { sql: string; params: unknown[] };
 
+const MUNICIPIOS = [
+  { cd_mun: "2507507", municipio_uf: "João Pessoa (PB)" },
+  { cd_mun: "2611606", municipio_uf: "Recife (PE)" },
+];
+
+// Imita o WHERE do banco: só devolve municípios das UFs passadas como parâmetro.
+const municipiosIn = (params: unknown[]) => {
+  const ufs = params
+    .flat()
+    .map(String)
+    .filter((param) => /^[A-Z]{2}$/.test(param));
+
+  return ufs.length
+    ? MUNICIPIOS.filter((row) =>
+        ufs.some((uf) => row.municipio_uf.includes(uf)),
+      )
+    : MUNICIPIOS;
+};
+
 class PibDatabaseFake {
   readonly calls: RecordedQuery[] = [];
 
@@ -11,7 +30,7 @@ class PibDatabaseFake {
   readonly query = async <Row>(sql: string, params: unknown[]) => {
     this.calls.push({ sql, params });
 
-    return this.rowsFor(sql) as Row[];
+    return this.rowsFor(sql, params) as Row[];
   };
 
   callFor(fragment: string): RecordedQuery {
@@ -22,13 +41,14 @@ class PibDatabaseFake {
     return call;
   }
 
-  private rowsFor(sql: string): object[] {
+  private rowsFor(sql: string, params: unknown[]): object[] {
     if (sql.includes("DISTINCT sigla_uf")) {
-      return [{ sigla_uf: "PE", estado_uf: "Pernambuco" }];
+      return [
+        { sigla_uf: "PB", estado_uf: "Paraíba" },
+        { sigla_uf: "PE", estado_uf: "Pernambuco" },
+      ];
     }
-    if (sql.includes("municipio_uf FROM")) {
-      return [{ cd_mun: "2611606", municipio_uf: "Recife (PE)" }];
-    }
+    if (sql.includes("municipio_uf FROM")) return municipiosIn(params);
     if (sql.includes("GROUP BY ano")) {
       return [{ ano: 2017, pib: "953430000000", per_capita: "16652.57" }];
     }
@@ -86,8 +106,8 @@ describe("loadPibPanel", () => {
     await loadPibPanel(db.query, {
       ano: 2017,
       area: "semiarido",
-      uf: "PE",
-      mun: "2611606",
+      uf: ["PE"],
+      mun: ["2611606"],
     });
 
     const serie = db.callFor("GROUP BY ano");
@@ -103,8 +123,8 @@ describe("loadPibPanel", () => {
     await loadPibPanel(db.query, {
       ano: 2017,
       area: "nordeste",
-      uf: "PE",
-      mun: "2611606",
+      uf: ["PE"],
+      mun: ["2611606"],
     });
 
     expect(db.callFor("nome_municipio, sigla_uf, pib_total").params).toEqual([
@@ -118,11 +138,50 @@ describe("loadPibPanel", () => {
     const panel = await loadPibPanel(db.query, {
       ano: 2017,
       area: "nordeste",
-      uf: "SP",
-      mun: "3550308",
+      uf: ["SP"],
+      mun: ["3550308"],
     });
 
     expect(panel.filters).toEqual({ ano: 2017, area: "nordeste" });
     expect(db.callFor("GROUP BY ano").params).toEqual([]);
+  });
+
+  it("filters several states and municipalities with array parameters", async () => {
+    const db = new PibDatabaseFake();
+    const panel = await loadPibPanel(db.query, {
+      ano: 2017,
+      area: "nordeste",
+      uf: ["PB", "PE", "SP"],
+      mun: ["2611606", "2507507", "3550308"],
+    });
+
+    expect(panel.filters).toMatchObject({
+      uf: ["PB", "PE"],
+      mun: ["2611606", "2507507"],
+    });
+    const serie = db.callFor("GROUP BY ano");
+
+    expect(serie.sql).toContain("sigla_uf = ANY($1) AND cd_mun = ANY($2)");
+    expect(serie.params).toEqual([
+      ["PB", "PE"],
+      ["2611606", "2507507"],
+    ]);
+    expect(db.callFor("nome_municipio, sigla_uf, pib_total").params).toEqual([
+      2017,
+      ["PB", "PE"],
+    ]);
+  });
+
+  it("drops municipalities outside the selected states", async () => {
+    const db = new PibDatabaseFake();
+    const panel = await loadPibPanel(db.query, {
+      ano: 2017,
+      area: "nordeste",
+      uf: ["PB"],
+      mun: ["2611606", "2507507"],
+    });
+
+    expect(panel.municipios.map((item) => item.cdMun)).toEqual(["2507507"]);
+    expect(panel.filters.mun).toEqual(["2507507"]);
   });
 });

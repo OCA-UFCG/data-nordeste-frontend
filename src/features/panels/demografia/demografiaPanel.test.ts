@@ -74,8 +74,8 @@ describe("loadDemografiaPanel", () => {
     await loadDemografiaPanel(db.query, {
       ano: 2010,
       area: "semiarido",
-      uf: "CE",
-      mun: "2304400",
+      uf: ["CE"],
+      mun: ["2304400"],
     });
     const serie = db.callFor("GROUP BY ano");
 

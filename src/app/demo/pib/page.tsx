@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
-import { CircleDollarSign } from "lucide-react";
-import { PanelMessage, PanelShell } from "@/components/Panel/PanelShell";
+import { PanelPage } from "@/components/Panel/PanelPage";
+import { PanelMessage } from "@/components/Panel/PanelShell";
+import { PanelTextsFrame } from "@/components/Panel/PanelTextsFrame";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
+import {
+  PIB_ICON,
+  PIB_PANEL_TEXTS,
+  PIB_TITLE,
+} from "@/components/PibDashboard/pibTheme";
 import { buildMetadata } from "@/config/seo";
-import { loadPibPanel, PIB_YEAR_RANGE } from "@/features/panels/pib/pibPanel";
+import {
+  loadPibPanel,
+  PIB_MAX_PLACES,
+  PIB_YEAR_RANGE,
+} from "@/features/panels/pib/pibPanel";
 import {
   parseTerritorialFilters,
   type TerritorialFilters,
@@ -23,8 +33,9 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+// Texto do rodapé do Power BI, sem alterações.
 const SOURCE =
-  "Fonte dos dados: Instituto Brasileiro de Geografia e Estatística (IBGE), Secretaria do Tesouro Nacional (STN) Finanças do Brasil (FINBRA) e Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (SICONFI). Consultado ao vivo no banco do Data Nordeste.";
+  "Fonte dos dados: Instituto Brasileiro de Geografia e Estatística (IBGE) e Secretaria do Tesouro Nacional (STN) Finanças do Brasil (FINBRA) e Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (SICONFI).";
 
 const loadPanel = async (filters: TerritorialFilters) => {
   try {
@@ -47,25 +58,33 @@ export default async function PibDemoPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const filters = parseTerritorialFilters(await searchParams, PIB_YEAR_RANGE);
+  const filters = parseTerritorialFilters(
+    await searchParams,
+    PIB_YEAR_RANGE,
+    PIB_MAX_PLACES,
+  );
   const panel = await loadPanel(filters);
 
   return (
     <HubTemplate>
-      <PanelShell
-        theme="Painel de Economia e Renda"
-        icon={CircleDollarSign}
-        source={SOURCE}
-      >
+      <PanelTextsFrame panel={PIB_PANEL_TEXTS}>
         {panel ? (
-          <PibDashboard data={panel} />
+          <PibDashboard data={panel} source={SOURCE} />
         ) : (
-          <PanelMessage>
-            Não foi possível consultar o banco de dados. Confira se o túnel para
-            o banco está ativo e se <code>DATA_DB_URL</code> está configurada.
-          </PanelMessage>
+          <PanelPage
+            title={PIB_TITLE}
+            icon={PIB_ICON}
+            tone="orange"
+            source={SOURCE}
+          >
+            <PanelMessage>
+              Não foi possível consultar o banco de dados. Confira se o túnel
+              para o banco está ativo e se <code>DATA_DB_URL</code> está
+              configurada.
+            </PanelMessage>
+          </PanelPage>
         )}
-      </PanelShell>
+      </PanelTextsFrame>
     </HubTemplate>
   );
 }

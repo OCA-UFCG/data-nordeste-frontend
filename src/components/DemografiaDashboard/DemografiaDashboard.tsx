@@ -79,7 +79,7 @@ export const DemografiaDashboard = ({
               buckets={POPULACAO_MAP_BUCKETS}
               valueLabel="População"
               formatValue={formatPessoas}
-              selectedCode={filters.mun}
+              selectedCode={filters.mun?.[0]}
               onSelectRegion={selectMunicipality}
             />
           </div>

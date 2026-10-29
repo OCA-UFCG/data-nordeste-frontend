@@ -1,18 +1,20 @@
 "use client";
 
-import { CircleDollarSign, Wallet } from "lucide-react";
-import { useMemo } from "react";
-import { ChartCard, ChartNotice } from "@/components/Panel/ChartCard";
+import { Wallet, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { ChoroplethMap } from "@/components/Panel/ChoroplethMap";
-import { HorizontalBarChart } from "@/components/Panel/HorizontalBarChart";
-import { KpiCards } from "@/components/Panel/KpiCards";
-import { PanelHeader } from "@/components/Panel/PanelShell";
-import { RankedBars } from "@/components/Panel/RankedBars";
-import { TerritorialFilterBar } from "@/components/Panel/TerritorialFilterBar";
+import type { DataTableContent } from "@/components/Panel/DataTable";
+import { HighlightCard } from "@/components/Panel/HighlightCards";
+import { PanelFilters } from "@/components/Panel/PanelFilters";
+import { PanelPage } from "@/components/Panel/PanelPage";
+import { TerritorialSelects } from "@/components/Panel/TerritorialFilterBar";
 import { TrendChart, type TrendMetric } from "@/components/Panel/TrendChart";
 import { useTerritorialNavigation } from "@/components/Panel/useTerritorialNavigation";
+import { PibSaibaMais } from "@/components/PibDashboard/PibSaibaMais";
+import { PibSectorCharts } from "@/components/PibDashboard/PibSectorCharts";
+import { PIB_ICON, PIB_TITLE } from "@/components/PibDashboard/pibTheme";
 import {
-  formatPercent,
+  capitalizeScale,
   formatReaisAxis,
   formatReaisCompact,
 } from "@/features/panels/format";
@@ -31,125 +33,214 @@ import { describeTerritorialSelection } from "@/features/panels/territorialOptio
 const MESH_URL = "/maps/municipios-sudene.json";
 const YEARS = listYears(PIB_YEAR_RANGE);
 const DEFAULTS = defaultTerritorialFilters(PIB_YEAR_RANGE);
-const reais = (value: number) => formatReaisCompact(value);
-const percent = (value: number) => formatPercent(value, 2);
 
-const trendMetrics = (serie: PibYearPoint[]): TrendMetric[] => [
-  {
-    key: "pib",
-    label: "PIB total",
-    points: serie.map((point) => ({
-      label: String(point.ano),
-      value: point.pib,
-    })),
-    formatLabel: (value) => formatReaisCompact(value, 2),
-    formatValue: reais,
-    formatAxis: formatReaisAxis,
-  },
-  {
-    key: "perCapita",
-    label: "PIB per capita",
-    points: serie.map((point) => ({
-      label: String(point.ano),
-      value: point.perCapita,
-    })),
-    formatLabel: (value) => formatReaisCompact(value, 1),
-    formatValue: reais,
-    formatAxis: formatReaisAxis,
-  },
-];
+// Unidades com inicial maiúscula, como no Power BI ("R$ 1,51 Tri").
+const reais = (value: number) => capitalizeScale(formatReaisCompact(value));
+const reaisAxis = (value: number) => capitalizeScale(formatReaisAxis(value));
+const reaisIn = (reference: number) => (value: number) =>
+  capitalizeScale(formatReaisCompact(value, 2, reference));
 
-const kpis = (point?: PibYearPoint) => [
-  {
-    icon: CircleDollarSign,
-    label: "PIB",
-    value: point ? reais(point.pib) : "Sem dados",
-  },
-  {
-    icon: Wallet,
-    label: "PIB per capita",
-    value: point ? reais(point.perCapita) : "Sem dados",
-  },
-];
+const maxOf = (values: number[]) => Math.max(...values.map(Math.abs));
 
-const VabNotice = ({ ano }: { ano: number }) => (
-  <ChartNotice>
-    O IBGE ainda não divulgou o Valor Adicionado Bruto de {ano}. Os dados de
-    2022 e 2023 entram aqui assim que forem publicados.
-  </ChartNotice>
+// Abas e rótulos como no Power BI: a série inteira na unidade do maior valor.
+const trendMetrics = (serie: PibYearPoint[]): TrendMetric[] => {
+  const maxPib = maxOf(serie.map((point) => point.pib));
+  const maxPerCapita = maxOf(serie.map((point) => point.perCapita));
+
+  return [
+    {
+      key: "pib",
+      label: "Evolução anual do PIB Total",
+      points: serie.map((point) => ({
+        label: String(point.ano),
+        value: point.pib,
+      })),
+      formatLabel: reaisIn(maxPib),
+      formatValue: reais,
+      formatAxis: reaisAxis,
+    },
+    {
+      key: "perCapita",
+      label: "Evolução anual do PIB per capita",
+      points: serie.map((point) => ({
+        label: String(point.ano),
+        value: point.perCapita,
+      })),
+      formatLabel: reaisIn(maxPerCapita),
+      formatValue: reais,
+      formatAxis: reaisAxis,
+    },
+  ];
+};
+
+const PibCards = ({ point }: { point?: PibYearPoint }) => (
+  <div className="grid grid-cols-2 gap-3 lg:gap-6">
+    <HighlightCard
+      tone="orange"
+      icon={PIB_ICON}
+      label="PIB"
+      value={point ? reais(point.pib) : "Sem dados"}
+      compact
+    />
+    <HighlightCard
+      tone="orange"
+      icon={Wallet}
+      label="PIB per capita"
+      value={point ? reais(point.perCapita) : "Sem dados"}
+      compact
+    />
+  </div>
 );
 
-const PibSectorCharts = ({ data }: { data: PibPanelData }) => (
-  <>
-    <ChartCard title="Valor Adicionado Bruto (VAB) por setor">
-      {data.vab ? (
-        <HorizontalBarChart
-          points={data.vab}
-          formatValue={reais}
-          label="Gráfico de barras do VAB por setor"
-        />
-      ) : (
-        <VabNotice ano={data.filters.ano} />
-      )}
-    </ChartCard>
-    <ChartCard title="Participação da atividade com maior VAB no PIB">
-      {data.atividades.length ? (
-        <RankedBars points={data.atividades} formatValue={percent} />
-      ) : (
-        <VabNotice ano={data.filters.ano} />
-      )}
-    </ChartCard>
-  </>
+// Atividade escolhida na lista de participação; some se o novo filtro não a tiver.
+const useAtividadeHighlight = (data: PibPanelData) => {
+  const [chosen, setChosen] = useState<string | null>(null);
+  const atividade = data.atividades.some((point) => point.label === chosen)
+    ? chosen
+    : null;
+  const highlightCodes = useMemo(
+    () =>
+      atividade
+        ? new Set(
+            data.mapa
+              .filter((region) => region.atividade === atividade)
+              .map((region) => region.code),
+          )
+        : undefined,
+    [atividade, data.mapa],
+  );
+
+  return { atividade, setAtividade: setChosen, highlightCodes };
+};
+
+const toMapTable = (mapa: PibPanelData["mapa"]): DataTableContent => ({
+  caption: "PIB Total por município",
+  columns: ["Município", "PIB"],
+  rows: [...mapa]
+    .sort((a, b) => b.value - a.value)
+    .map((region) => [`${region.name} (${region.uf})`, reais(region.value)]),
+});
+
+const HighlightChip = ({
+  atividade,
+  onClear,
+}: {
+  atividade: string;
+  onClear: () => void;
+}) => (
+  <p
+    aria-live="polite"
+    className="flex items-center gap-2 rounded-md bg-orange-100 py-1 pl-3 pr-1 text-sm text-grey-1100"
+  >
+    <span className="min-w-0 flex-1">
+      Destacando no mapa: <strong>{atividade}</strong>
+    </span>
+    <button
+      type="button"
+      onClick={onClear}
+      aria-label="Limpar destaque"
+      title="Limpar destaque"
+      className="inline-flex size-11 shrink-0 items-center justify-center rounded-md hover:bg-orange-200"
+    >
+      <X aria-hidden className="size-4" />
+    </button>
+  </p>
 );
 
-export const PibDashboard = ({ data }: { data: PibPanelData }) => {
+export const PibDashboard = ({
+  data,
+  source,
+}: {
+  data: PibPanelData;
+  source: string;
+}) => {
   const { filters } = data;
   const { isPending, applyFilters, selectMunicipality } =
     useTerritorialNavigation(filters, PIB_YEAR_RANGE);
   const selected = data.serie.find((point) => point.ano === filters.ano);
   const metrics = useMemo(() => trendMetrics(data.serie), [data.serie]);
+  const showYear = (ano: number) => applyFilters({ ...filters, ano });
+  const summary = describeTerritorialSelection(data, true);
+  const { atividade, setAtividade, highlightCodes } =
+    useAtividadeHighlight(data);
+  const mapTable = useMemo(() => toMapTable(data.mapa), [data.mapa]);
+
+  // O mapa destaca e enquadra um município; com vários, mostra a área toda.
+  const singleMunicipality =
+    filters.mun?.length === 1 ? filters.mun[0] : undefined;
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <PanelHeader
-        title="Produto Interno Bruto (PIB)"
-        subtitle={describeTerritorialSelection(data)}
+    <PanelPage
+      title={PIB_TITLE}
+      icon={PIB_ICON}
+      tone="orange"
+      source={source}
+      info={<PibSaibaMais />}
+      fullMobile
+    >
+      <PanelFilters
+        summary={summary}
+        onClear={() => applyFilters(DEFAULTS)}
+        isPending={isPending}
+        sticky
       >
-        <TerritorialFilterBar
+        <TerritorialSelects
           filters={filters}
           ufs={data.ufs}
           municipios={data.municipios}
-          defaults={DEFAULTS}
           years={YEARS}
           onChange={applyFilters}
+          multiple
         />
-      </PanelHeader>
+      </PanelFilters>
+      <p className="hidden text-base text-grey-900 lg:block">
+        Mostrando: <strong>{summary}</strong>
+      </p>
       <div
         aria-busy={isPending}
         className="grid grid-cols-1 gap-6 transition-opacity aria-busy:opacity-60 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
       >
-        <div className="flex min-w-0 flex-col gap-6">
-          <KpiCards items={kpis(selected)} />
-          <ChoroplethMap
-            title="PIB por município"
-            meshUrl={MESH_URL}
-            regions={data.mapa}
-            buckets={PIB_MAP_BUCKETS}
-            valueLabel="PIB"
-            formatValue={reais}
-            selectedCode={filters.mun}
-            onSelectRegion={selectMunicipality}
-          />
+        {/* Arranjo do Power BI. A coluna da direita (gráficos de altura fixa)
+            define a linha; o mapa ocupa o que sobra à esquerda, sem branco. */}
+        <div className="flex min-w-0 flex-col gap-6 lg:h-0 lg:min-h-full">
+          <PibCards point={selected} />
+          {atividade ? (
+            <HighlightChip
+              atividade={atividade}
+              onClear={() => setAtividade(null)}
+            />
+          ) : null}
+          <div className="flex min-h-0 lg:flex-1 [&>*]:flex-1">
+            <ChoroplethMap
+              title="PIB Total"
+              meshUrl={MESH_URL}
+              regions={data.mapa}
+              buckets={PIB_MAP_BUCKETS}
+              valueLabel="PIB"
+              formatValue={reais}
+              selectedCode={singleMunicipality}
+              highlightCodes={highlightCodes}
+              table={mapTable}
+              onSelectRegion={selectMunicipality}
+              fill
+            />
+          </div>
         </div>
         <div className="flex min-w-0 flex-col gap-6">
           <TrendChart
-            title="Evolução anual"
             metrics={metrics}
             selectedLabel={String(filters.ano)}
+            onSelectLabel={(label) => showYear(Number(label))}
           />
-          <PibSectorCharts data={data} />
+          <PibSectorCharts
+            data={data}
+            formatReais={reais}
+            onShowYear={showYear}
+            atividade={atividade}
+            onSelectAtividade={setAtividade}
+          />
         </div>
       </div>
-    </div>
+    </PanelPage>
   );
 };
