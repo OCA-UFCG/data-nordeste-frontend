@@ -7,14 +7,14 @@ import { DATA_PANEL_QUERY } from "@/utils/queries";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
-import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
-import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 import { getSearchIndex } from "@/features/search/contentful";
 import { getRelatedPanelItems } from "@/features/search/relatedPanels";
-import Link from "next/link";
-import { Icon } from "@/components/Icon/Icon";
-import { MACROTHEME_ROUTE_BY_NAME } from "@/features/macrothemes/constants";
 import { pickSearchSnippet } from "@/features/seo/searchSnippet";
+import {
+  CatalogLinkSection,
+  getPanelDescriptionText,
+  PanelDescriptionSection,
+} from "@/components/Panel/PanelTexts";
 
 interface IDataPanelContent {
   panelsCollection: { items: ReportData[] };
@@ -78,7 +78,6 @@ export default async function DataPanel({
     descriptionTitle: panel.descriptionTitle,
     descriptionText: getPanelDescriptionText(panel),
   });
-  const catalogHref = getCatalogHref(panel.macroTheme);
 
   return (
     <HubTemplate>
@@ -91,7 +90,7 @@ export default async function DataPanel({
         </div>
       </div>
 
-      {catalogHref && <CatalogLinkSection href={catalogHref} />}
+      <CatalogLinkSection macroTheme={panel.macroTheme} />
 
       <PanelDescriptionSection panel={panel} />
 
@@ -99,79 +98,3 @@ export default async function DataPanel({
     </HubTemplate>
   );
 }
-
-const PanelDescriptionSection = ({ panel }: { panel: ReportData }) => {
-  if (!panel.descriptionTitle && !panel.description?.json) return null;
-
-  const macroThemeHref = getMacroThemeHref(panel.macroTheme);
-
-  return (
-    <section className="w-full bg-[#EFEFEF] py-10">
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 sm:px-6 lg:px-20">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          {panel.descriptionTitle && (
-            <h2 className="text-[30px] font-semibold leading-[36px] text-[#292829]">
-              {panel.descriptionTitle}
-            </h2>
-          )}
-          {macroThemeHref && <MacroThemeLink href={macroThemeHref} />}
-        </div>
-        {panel.description?.json && (
-          <div className="text-base leading-[150%] text-[#292829] [&>p+p]:mt-4">
-            {documentToReactComponents(panel.description.json)}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-};
-
-const MacroThemeLink = ({ href }: { href: string }) => (
-  <Link
-    className="ml-auto inline-flex h-10 shrink-0 items-center justify-center gap-3 rounded-md bg-white px-5 text-sm font-medium leading-6 text-green-900 transition hover:bg-green-neutro"
-    href={href}
-  >
-    Ver mais sobre o tema
-    <Icon className="size-2" id="expand" size={9} />
-  </Link>
-);
-
-const CatalogLinkSection = ({ href }: { href: string }) => (
-  <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-2.5 px-4 py-8 sm:px-6 lg:px-20">
-    <CatalogLink href={href} />
-  </div>
-);
-
-const CatalogLink = ({ href }: { href: string }) => (
-  <Link
-    className="inline-flex h-10 w-full items-center justify-center gap-3 rounded-md bg-green-800 px-5 text-sm font-medium leading-6 text-white transition hover:bg-green-900"
-    href={href}
-  >
-    Acessar o catálogo de dados
-    <Icon className="size-4" id="database-search" size={16} />
-  </Link>
-);
-
-const getCatalogHref = (macroTheme: string): string | null => {
-  const slug =
-    MACROTHEME_ROUTE_BY_NAME[
-      macroTheme as keyof typeof MACROTHEME_ROUTE_BY_NAME
-    ];
-
-  return slug ? `/catalog?category=${slug}` : null;
-};
-
-const getMacroThemeHref = (macroTheme: string): string | null => {
-  const slug =
-    MACROTHEME_ROUTE_BY_NAME[
-      macroTheme as keyof typeof MACROTHEME_ROUTE_BY_NAME
-    ];
-
-  return slug ? `/macrothemes/${slug}` : null;
-};
-
-const getPanelDescriptionText = (panel: ReportData): string => {
-  if (!panel.description?.json) return "";
-
-  return documentToPlainTextString(panel.description.json);
-};
