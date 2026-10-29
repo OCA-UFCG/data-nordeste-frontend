@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadPibPanel } from "@/features/panels/pib/pibPanel";
+import { lacksSectorData, loadPibPanel } from "@/features/panels/pib/pibPanel";
 
 type RecordedQuery = { sql: string; params: unknown[] };
 
@@ -183,5 +183,15 @@ describe("loadPibPanel", () => {
 
     expect(panel.municipios.map((item) => item.cdMun)).toEqual(["2507507"]);
     expect(panel.filters.mun).toEqual(["2507507"]);
+  });
+});
+
+describe("lacksSectorData", () => {
+  const atividades = [{ label: "Demais serviços", value: 26.77 }];
+
+  it("is true only when both sector charts are empty", () => {
+    expect(lacksSectorData({ vab: null, atividades: [] })).toBe(true);
+    expect(lacksSectorData({ vab: null, atividades })).toBe(false);
+    expect(lacksSectorData({ vab: atividades, atividades: [] })).toBe(false);
   });
 });

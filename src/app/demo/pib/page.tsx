@@ -6,6 +6,7 @@ import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
 import {
   PIB_ICON,
   PIB_PANEL_TEXTS,
+  PIB_SOURCE,
   PIB_TITLE,
 } from "@/components/PibDashboard/pibTheme";
 import { buildMetadata } from "@/config/seo";
@@ -15,6 +16,7 @@ import {
   PIB_YEAR_RANGE,
 } from "@/features/panels/pib/pibPanel";
 import {
+  buildTerritorialSearch,
   parseTerritorialFilters,
   type TerritorialFilters,
 } from "@/features/panels/territorialFilters";
@@ -33,10 +35,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-// Texto do rodapé do Power BI, sem alterações.
-const SOURCE =
-  "Fonte dos dados: Instituto Brasileiro de Geografia e Estatística (IBGE) e Secretaria do Tesouro Nacional (STN) Finanças do Brasil (FINBRA) e Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (SICONFI).";
-
 const loadPanel = async (filters: TerritorialFilters) => {
   try {
     return await loadPibPanel(queryDataDb, filters);
@@ -52,6 +50,21 @@ const loadPanel = async (filters: TerritorialFilters) => {
     return null;
   }
 };
+
+// Para quem visita: a causa técnica (túnel, DATA_DB_URL) fica no console.error.
+// <a>, não <Link>: recarrega a página inteira e refaz a consulta.
+const LoadFailedMessage = ({ filters }: { filters: TerritorialFilters }) => (
+  <PanelMessage>
+    Não foi possível carregar os dados do painel agora. Tente novamente em
+    alguns minutos.{" "}
+    <a
+      href={`/demo/pib${buildTerritorialSearch(filters, PIB_YEAR_RANGE)}`}
+      className="font-medium text-green-900 underline underline-offset-4"
+    >
+      Tentar novamente
+    </a>
+  </PanelMessage>
+);
 
 export default async function PibDemoPage({
   searchParams,
@@ -69,19 +82,15 @@ export default async function PibDemoPage({
     <HubTemplate>
       <PanelTextsFrame panel={PIB_PANEL_TEXTS}>
         {panel ? (
-          <PibDashboard data={panel} source={SOURCE} />
+          <PibDashboard data={panel} source={PIB_SOURCE} />
         ) : (
           <PanelPage
             title={PIB_TITLE}
             icon={PIB_ICON}
             tone="orange"
-            source={SOURCE}
+            source={PIB_SOURCE}
           >
-            <PanelMessage>
-              Não foi possível consultar o banco de dados. Confira se o túnel
-              para o banco está ativo e se <code>DATA_DB_URL</code> está
-              configurada.
-            </PanelMessage>
+            <LoadFailedMessage filters={filters} />
           </PanelPage>
         )}
       </PanelTextsFrame>

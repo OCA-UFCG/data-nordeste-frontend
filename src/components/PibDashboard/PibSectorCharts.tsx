@@ -4,22 +4,36 @@ import { ChartCard } from "@/components/Panel/ChartCard";
 import { HorizontalBarChart } from "@/components/Panel/HorizontalBarChart";
 import { PanelCarousel } from "@/components/Panel/PanelCarousel";
 import { PanelInfo } from "@/components/Panel/PanelInfo";
-import { RankedBars } from "@/components/Panel/RankedBars";
+import {
+  AtividadeList,
+  formatParticipacao,
+  type AtividadeSelection,
+} from "@/components/PibDashboard/AtividadeList";
 import { PIB_ATIVIDADE_TOOLTIP } from "@/components/PibDashboard/pibTheme";
 import type { DataTableContent } from "@/components/Panel/DataTable";
 import type {
   ChartPoint,
   ValueFormatter,
 } from "@/features/panels/chartOptions";
-import { formatPercent } from "@/features/panels/format";
 import {
+  lacksSectorData,
   PIB_VAB_LAST_YEAR,
   type PibPanelData,
 } from "@/features/panels/pib/pibPanel";
 
 const VAB_TITLE = "Valor Adicionado Bruto (VAB) por setor";
 const ATIVIDADE_TITLE = "Participação da atividade com maior VAB no PIB";
-const percent = (value: number) => formatPercent(value, 2);
+
+// Um título só, com os dois do Power BI, quando nenhum dos dois tem dados.
+const SECTORS_TITLE = `${VAB_TITLE} e participação da atividade com maior VAB no PIB`;
+
+// IMPORTANT: altura fixa no xl, com aviso ou gráficos: o mapa segue a altura desta
+// coluna e mudaria de tamanho ao trocar de ano. Os gráficos preenchem o que sobra.
+const SECTORS_HEIGHT = "xl:h-[30rem]";
+
+// Corpo dos cards no xl: gráfico, lista, aviso e tabela ocupam a altura toda.
+const FILL_XL = "xl:h-auto xl:min-h-0 xl:flex-1";
+const TABLE_CLASS = `h-64 sm:h-72 ${FILL_XL}`;
 
 const toTable = (
   caption: string,
@@ -32,49 +46,19 @@ const toTable = (
   rows: points.map((point) => [point.label, format(point.value)]),
 });
 
-// -my-3: o botão mantém 44 px de toque sem deixar o título mais alto que o
-// do card ao lado.
 const AtividadeInfo = () => (
   <PanelInfo
     label="Sobre a participação da atividade com maior VAB"
-    className="-my-3 text-grey-800"
+    className="text-grey-800"
   >
     {PIB_ATIVIDADE_TOOLTIP}
   </PanelInfo>
 );
 
-// Degradê no rodapé: mostra que a lista continua rolando.
-type AtividadeSelection = {
-  atividade: string | null;
-  onSelectAtividade: (atividade: string | null) => void;
-};
-
-const AtividadeList = ({
-  data,
-  atividade,
-  onSelectAtividade,
-}: AtividadeSelection & { data: PibPanelData }) => (
-  <div className="relative">
-    <div className="h-64 overflow-y-auto pb-6 sm:h-72">
-      <RankedBars
-        points={data.atividades}
-        formatValue={percent}
-        selectedLabel={atividade}
-        onSelect={onSelectAtividade}
-      />
-    </div>
-    {data.atividades.length > 4 ? (
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white"
-      />
-    ) : null}
-  </div>
-);
-
-// Mesma altura dos gráficos que substitui: trocar de ano não redimensiona o mapa.
 const VabNotice = ({ onShowYear }: { onShowYear: (ano: number) => void }) => (
-  <div className="flex h-64 flex-col items-center justify-center gap-4 text-center sm:h-72">
+  <div
+    className={`flex flex-col items-center justify-center gap-4 py-6 text-center ${FILL_XL}`}
+  >
     <p className="text-base font-medium text-grey-1000">
       <strong>ATENÇÃO:</strong> Os dados para os anos de 2022 e 2023 ainda não
       foram disponibilizados.
@@ -89,6 +73,20 @@ const VabNotice = ({ onShowYear }: { onShowYear: (ano: number) => void }) => (
   </div>
 );
 
+// Anos sem VAB (após PIB_VAB_LAST_YEAR): um aviso no lugar dos dois iguais
+// (meia coluna vazia no desktop, dois slides repetidos no celular).
+const SectorsNotice = ({
+  onShowYear,
+}: {
+  onShowYear: (ano: number) => void;
+}) => (
+  <div className={`flex [&>*]:flex-1 ${SECTORS_HEIGHT}`}>
+    <ChartCard title={SECTORS_TITLE}>
+      <VabNotice onShowYear={onShowYear} />
+    </ChartCard>
+  </div>
+);
+
 export const PibSectorCharts = ({
   data,
   formatReais,
@@ -99,12 +97,19 @@ export const PibSectorCharts = ({
   formatReais: ValueFormatter;
   onShowYear: (ano: number) => void;
 }) => {
+  if (lacksSectorData(data)) return <SectorsNotice onShowYear={onShowYear} />;
   const notice = <VabNotice onShowYear={onShowYear} />;
 
   return (
-    <PanelCarousel label="Valor Adicionado Bruto" columns="xl:grid-cols-2">
+    <PanelCarousel
+      label="Valor Adicionado Bruto"
+      columns={`xl:grid-cols-2 ${SECTORS_HEIGHT}`}
+      alignHeaders
+    >
       <ChartCard
         title={VAB_TITLE}
+        tableClassName={TABLE_CLASS}
+        toolbarInside
         table={
           data.vab
             ? toTable(VAB_TITLE, ["Setor", "VAB"], data.vab, formatReais)
@@ -116,6 +121,7 @@ export const PibSectorCharts = ({
             points={data.vab}
             formatValue={formatReais}
             label="Gráfico de barras do VAB por setor"
+            className={`h-64 w-full sm:h-72 ${FILL_XL}`}
           />
         ) : (
           notice
@@ -124,19 +130,21 @@ export const PibSectorCharts = ({
       <ChartCard
         title={ATIVIDADE_TITLE}
         info={<AtividadeInfo />}
+        tableClassName={TABLE_CLASS}
+        toolbarInside
         table={
           data.atividades.length
             ? toTable(
                 ATIVIDADE_TITLE,
                 ["Atividade", "Participação no PIB"],
                 data.atividades,
-                percent,
+                formatParticipacao,
               )
             : undefined
         }
       >
         {data.atividades.length ? (
-          <AtividadeList data={data} {...selection} />
+          <AtividadeList points={data.atividades} {...selection} />
         ) : (
           notice
         )}

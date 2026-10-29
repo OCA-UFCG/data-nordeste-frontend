@@ -48,6 +48,16 @@ export type PibPanelData = TerritorialSelection & {
   atividades: ChartPoint[];
 };
 
+/**
+ * Nenhum dos dois gráficos de setor (VAB e participação) tem dados no filtro:
+ * o painel mostra um aviso só, em vez de dois iguais.
+ *
+ * @example lacksSectorData({ ...panel, vab: null, atividades: [] }) // true
+ */
+export const lacksSectorData = (
+  data: Pick<PibPanelData, "vab" | "atividades">,
+): boolean => !data.vab && data.atividades.length === 0;
+
 const PIB_VIEW = "eco_pib.vw_pib_municipal_pbi";
 
 const loadSerie = async (query: SqlQuery, filters: TerritorialFilters) => {
