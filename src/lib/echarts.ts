@@ -6,6 +6,7 @@ import {
   LegendComponent,
   TooltipComponent,
 } from "echarts/components";
+import { LabelLayout } from "echarts/features";
 import { CanvasRenderer, SVGRenderer } from "echarts/renderers";
 
 echarts.use([
@@ -13,6 +14,9 @@ echarts.use([
   BarChart,
   CanvasRenderer,
   GridComponent,
+
+  // Sem ele, o `labelLayout: { hideOverlap }` das séries é ignorado em silêncio.
+  LabelLayout,
   LegendComponent,
   LineChart,
   MapChart,

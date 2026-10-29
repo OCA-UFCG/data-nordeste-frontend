@@ -1,0 +1,39 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { RankedBars } from "@/components/Panel/RankedBars";
+
+const POINTS = [
+  { label: "Demais serviços", value: 26.77 },
+  { label: "Indústrias de transformação", value: 5.87 },
+];
+
+describe("RankedBars", () => {
+  it("is a plain list without onSelect", () => {
+    render(<RankedBars points={POINTS} formatValue={String} />);
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("toggles the selected row", () => {
+    const onSelect = vi.fn();
+
+    render(
+      <RankedBars
+        points={POINTS}
+        formatValue={String}
+        selectedLabel="Demais serviços"
+        onSelect={onSelect}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Demais serviços/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Indústrias/ }));
+
+    expect(onSelect.mock.calls).toEqual([
+      [null],
+      ["Indústrias de transformação"],
+    ]);
+    expect(
+      screen.getByRole("button", { name: /Demais serviços/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+});

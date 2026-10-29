@@ -45,12 +45,8 @@ describe("buildTrendOption", () => {
     ]);
   });
 
-  it("keeps only the selected and latest labels when they would overlap", () => {
-    expect(trendLabels(200)).toEqual(["", "", "R$ 1,51 tri"]);
-  });
-
-  it("always labels the selected point", () => {
-    expect(trendLabels(200, 0)).toEqual(["R$ 1,24 tri", "", "R$ 1,51 tri"]);
+  it("drops point labels on narrow screens", () => {
+    expect(trendLabels(200)).toEqual(["", "", ""]);
   });
 });
 
@@ -73,6 +69,24 @@ describe("buildChoroplethOption", () => {
     expect(option.tooltip.formatter({ data: item })).toContain(
       "&lt;b&gt;Recife&lt;/b&gt; (PE)",
     );
+  });
+
+  it("greys out regions outside the highlight", () => {
+    const option = buildChoroplethOption({
+      regions: [
+        { code: "2611606", name: "Recife", uf: "PE", value: 6e10 },
+        { code: "2507507", name: "João Pessoa", uf: "PB", value: 2e10 },
+      ],
+      buckets: PIB_MAP_BUCKETS,
+      mapName: "test",
+      valueLabel: "PIB",
+      formatValue: (value) => formatReaisCompact(value),
+      highlightCodes: new Set(["2611606"]),
+    }) as { series: { data: { itemStyle: { areaColor: string } }[] }[] };
+    const [recife, joaoPessoa] = option.series[0].data;
+
+    expect(recife.itemStyle.areaColor).toBe("#421608");
+    expect(joaoPessoa.itemStyle.areaColor).toBe("#e5e5e5");
   });
 
   it("pans only with a mouse, keeping one-finger drag for page scroll", () => {

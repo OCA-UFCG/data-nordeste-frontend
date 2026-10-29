@@ -1,8 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { EChart } from "@/components/EChart/EChart";
 import { ChartCard, ChartNotice } from "@/components/Panel/ChartCard";
+import type { DataTableContent } from "@/components/Panel/DataTable";
 import {
   buildChoroplethOption,
   type ChoroplethRegion,
@@ -79,8 +86,22 @@ const useRegionMap = (
     return { mapName, visible, areaBounds: getMapBounds(visible) };
   }, [meshUrl, features, regions]);
 
-const MapLegend = ({ buckets }: { buckets: readonly ChoroplethBucket[] }) => (
-  <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-grey-1000">
+// `overlay`: no desktop, a legenda fica sobre o oceano no canto inferior direito
+// e o mapa ganha a altura dela; no celular, o mapa é pequeno e ela vai para baixo.
+const MapLegend = ({
+  buckets,
+  overlay = false,
+}: {
+  buckets: readonly ChoroplethBucket[];
+  overlay?: boolean;
+}) => (
+  <ul
+    className={
+      overlay
+        ? "mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-grey-1000 lg:pointer-events-none lg:absolute lg:bottom-0 lg:right-0 lg:mt-0 lg:flex lg:flex-col lg:gap-1 lg:rounded-md lg:bg-white/85 lg:p-2"
+        : "mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-grey-1000"
+    }
+  >
     {buckets.map((bucket) => (
       <li key={bucket.label} className="flex items-center gap-2">
         <span
@@ -102,7 +123,12 @@ export type ChoroplethMapProps = {
   valueLabel: string;
   formatValue: ValueFormatter;
   selectedCode?: string;
+  highlightCodes?: ReadonlySet<string>;
+  table?: DataTableContent;
   onSelectRegion: (code: string) => void;
+
+  // No desktop ocupa a altura do pai; no celular segue o formato da malha.
+  fill?: boolean;
 };
 
 const MeshFallback = ({ status }: { status: MeshStatus }) => (
@@ -129,7 +155,8 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
     props.regions,
   );
   const canPan = useMousePointer();
-  const { selectedCode, regions, buckets, valueLabel, formatValue } = props;
+  const { selectedCode, highlightCodes, regions, buckets } = props;
+  const { valueLabel, formatValue } = props;
   const framing = useMemo(() => {
     const focusBounds = selectedCode
       ? getMunicipalityFocusBounds(visible, selectedCode)
@@ -147,6 +174,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
         valueLabel,
         formatValue,
         selectedCode,
+        highlightCodes,
         mapName,
         framing,
         canPan,
@@ -157,26 +185,53 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
       valueLabel,
       formatValue,
       selectedCode,
+      highlightCodes,
       mapName,
       framing,
       canPan,
     ],
   );
 
+  const map =
+    status === "ready" && areaBounds ? (
+      <EChart
+        buildOption={buildOption}
+        label={`Mapa coroplético: ${props.title}`}
+        className={
+          props.fill
+            ? "aspect-(--map-ratio) w-full lg:aspect-auto lg:min-h-0 lg:flex-1"
+            : "w-full"
+        }
+        style={
+          props.fill
+            ? ({ "--map-ratio": aspectRatio } as CSSProperties)
+            : { aspectRatio }
+        }
+        renderer={MAP_RENDERER}
+        onItemClick={props.onSelectRegion}
+      />
+    ) : (
+      <MeshFallback status={status} />
+    );
+
+  if (props.fill) {
+    return (
+      <ChartCard
+        title={props.title}
+        table={props.table}
+        tableClassName="h-64 sm:h-72 lg:h-auto lg:min-h-0 lg:flex-1"
+      >
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          {map}
+          <MapLegend buckets={props.buckets} overlay />
+        </div>
+      </ChartCard>
+    );
+  }
+
   return (
-    <ChartCard title={props.title}>
-      {status === "ready" && areaBounds ? (
-        <EChart
-          buildOption={buildOption}
-          label={`Mapa coroplético: ${props.title}`}
-          className="w-full"
-          style={{ aspectRatio }}
-          renderer={MAP_RENDERER}
-          onItemClick={props.onSelectRegion}
-        />
-      ) : (
-        <MeshFallback status={status} />
-      )}
+    <ChartCard title={props.title} table={props.table}>
+      {map}
       <MapLegend buckets={props.buckets} />
     </ChartCard>
   );

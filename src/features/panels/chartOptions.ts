@@ -37,18 +37,23 @@ export type TrendConfig = {
 };
 
 const trendLabel = (config: TrendConfig, width: number) => {
-  const everyLabelFits = width / config.points.length >= LABEL_SLOT_WIDTH;
-  const lastIndex = config.points.length - 1;
-  const labelled = (index: number) =>
-    everyLabelFits || index === lastIndex || index === config.selectedIndex;
+  // Fora do celular, todos os anos têm rótulo, como no Power BI (o hideOverlap
+  // esconde os que colidirem); no celular o valor do ano vai num destaque acima.
+  const showLabels =
+    !isCompactChart(width) || width / config.points.length >= LABEL_SLOT_WIDTH;
 
   return {
     show: true,
     position: "top",
+    distance: 10,
     fontSize: FONT_SIZE,
     color: MUTED_COLOR,
-    formatter: ({ value, dataIndex }: { value: number; dataIndex: number }) =>
-      labelled(dataIndex) ? config.formatLabel(value) : "",
+
+    // Contorno branco: o rótulo fica legível onde a linha sobe e cruza o texto.
+    textBorderColor: "#fff",
+    textBorderWidth: 3,
+    formatter: ({ value }: { value: number }) =>
+      showLabels ? config.formatLabel(value) : "",
   };
 };
 
@@ -74,7 +79,7 @@ const trendAxes = (config: TrendConfig, compact: boolean) => ({
     axisLabel: {
       fontSize: FONT_SIZE,
       color: MUTED_COLOR,
-      interval: compact ? 3 : "auto",
+      interval: compact ? 3 : 0,
     },
     axisTick: { show: false },
   },
@@ -82,6 +87,8 @@ const trendAxes = (config: TrendConfig, compact: boolean) => ({
     type: "value",
     splitNumber: compact ? 3 : 4,
     axisLabel: {
+      // Evita que o rótulo do primeiro ano encoste nos valores do eixo.
+      margin: compact ? 8 : 40,
       fontSize: FONT_SIZE,
       color: MUTED_COLOR,
       formatter: config.formatAxis,
@@ -142,8 +149,9 @@ export const buildHorizontalBarOption = (
   grid: { left: 8, right: 96, top: 8, bottom: 8, containLabel: true },
   tooltip: {
     ...TOOLTIP_BASE,
-    trigger: "axis",
-    axisPointer: { type: "shadow" },
+
+    // Tooltip na própria barra, sem a faixa cinza da categoria.
+    trigger: "item",
     valueFormatter: formatValue,
   },
   xAxis: { type: "value", show: false },
@@ -244,6 +252,9 @@ export type ChoroplethConfig = {
   valueLabel: string;
   formatValue: ValueFormatter;
   selectedCode?: string;
+
+  // Só estes municípios ficam coloridos; os demais vão para o cinza.
+  highlightCodes?: ReadonlySet<string>;
   framing?: MapFraming;
   canPan?: boolean;
 };
@@ -267,6 +278,8 @@ const choroplethTooltip =
     return `<strong>${place}</strong><br/>${escapeHtml(config.valueLabel)}: ${config.formatValue(data.value)}`;
   };
 
+const DIMMED_AREA = "#e5e5e5";
+
 const choroplethRegions = (config: ChoroplethConfig) =>
   config.regions.map((region) => ({
     name: region.code,
@@ -274,7 +287,10 @@ const choroplethRegions = (config: ChoroplethConfig) =>
     nome: region.name,
     uf: region.uf,
     itemStyle: {
-      areaColor: getBucket(config.buckets, region.value).color,
+      areaColor:
+        config.highlightCodes && !config.highlightCodes.has(region.code)
+          ? DIMMED_AREA
+          : getBucket(config.buckets, region.value).color,
       ...(region.code === config.selectedCode
         ? { borderColor: SELECTED_BORDER, borderWidth: 3 }
         : {}),
