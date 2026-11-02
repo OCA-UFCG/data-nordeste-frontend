@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { RankedBars } from "@/components/Panel/RankedBars";
+import { RankedBars } from "@/components/Panel/charts/RankedBars";
 import { AtividadeHighlightChip } from "@/components/PibDashboard/AtividadeHighlightChip";
 import type { ChartPoint } from "@/features/panels/chartOptions";
 import { formatPercent } from "@/features/panels/format";
 
-// Abaixo do lg, a caixa com rolagem interna prendia o dedo: a lista mostra só
+// Abaixo do lg, a caixa com rolagem interna prende o dedo: a lista mostra só
 // as primeiras e cresce no botão. O nth-child segue MOBILE_LIMIT (5 → n+6).
 const MOBILE_LIMIT = 5;
 const HIDE_EXTRA_ROWS = "max-lg:[&_li:nth-child(n+6)]:hidden";

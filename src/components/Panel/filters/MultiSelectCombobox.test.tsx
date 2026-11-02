@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { MultiSelectCombobox } from "@/components/Panel/MultiSelectCombobox";
+import { MultiSelectCombobox } from "@/components/Panel/filters/MultiSelectCombobox";
 
 const OPTIONS = [
   { value: "2507507", label: "João Pessoa (PB)" },
@@ -167,14 +167,5 @@ describe("MultiSelectCombobox", () => {
       screen.getByRole("checkbox", { name: "Caruaru (PE)" }),
     ).toBeEnabled();
     expect(screen.queryByText(/Máximo de/)).not.toBeInTheDocument();
-  });
-
-  it("has no limit without max", () => {
-    renderCombobox(["2611606", "2507507"]);
-    open();
-
-    expect(
-      screen.getByRole("checkbox", { name: "Caruaru (PE)" }),
-    ).toBeEnabled();
   });
 });

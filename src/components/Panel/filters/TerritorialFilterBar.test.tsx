@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { TerritorialSelects } from "@/components/Panel/TerritorialFilterBar";
+import { TerritorialSelects } from "@/components/Panel/filters/TerritorialFilterBar";
 
 const renderSelects = (multiple?: boolean, onChange = vi.fn()) => {
   render(

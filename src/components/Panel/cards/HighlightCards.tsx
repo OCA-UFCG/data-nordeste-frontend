@@ -1,6 +1,9 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
-import type { KpiItem } from "@/components/Panel/KpiCards";
-import { PANEL_TONES, type PanelTone } from "@/components/Panel/PanelShell";
+import type { KpiItem } from "@/components/Panel/cards/KpiCards";
+import {
+  PANEL_TONES,
+  type PanelTone,
+} from "@/components/Panel/layout/PanelShell";
 
 // ponytail: largura média estimada de um caractere do valor (Inter em negrito,
 // com folga); medir o texto no canvas se a fonte mudar.

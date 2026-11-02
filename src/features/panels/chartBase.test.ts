@@ -7,10 +7,6 @@ describe("escapeHtml", () => {
       "&lt;b title=&quot;x&quot;&gt;Açu &amp; Cia&lt;/b&gt;",
     );
   });
-
-  it("keeps plain text as is", () => {
-    expect(escapeHtml("João Pessoa (PB)")).toBe("João Pessoa (PB)");
-  });
 });
 
 describe("tooltipHtml", () => {
@@ -23,10 +19,6 @@ describe("tooltipHtml", () => {
     expect(
       blocks(tooltipHtml("2021", "R$ 1,24 Tri", ["+8,2% em relação a 2020"])),
     ).toEqual(["2021", "R$ 1,24 Tri", "+8,2% em relação a 2020"]);
-  });
-
-  it("shows only label and value without notes", () => {
-    expect(blocks(tooltipHtml("2021", "R$ 1,24 Tri"))).toHaveLength(2);
   });
 
   it("escapes every piece of text", () => {

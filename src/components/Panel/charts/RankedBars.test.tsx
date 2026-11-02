@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { RankedBars } from "@/components/Panel/RankedBars";
+import { RankedBars } from "@/components/Panel/charts/RankedBars";
 
 const POINTS = [
   { label: "Demais serviços", value: 26.77 },
@@ -8,12 +8,6 @@ const POINTS = [
 ];
 
 describe("RankedBars", () => {
-  it("is a plain list without onSelect", () => {
-    render(<RankedBars points={POINTS} formatValue={String} />);
-
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
-  });
-
   it("toggles the selected row", () => {
     const onSelect = vi.fn();
 

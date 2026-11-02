@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CollapsibleText } from "@/components/Panel/CollapsibleText";
+import { CollapsibleText } from "@/components/Panel/texts/CollapsibleText";
 
 // O jsdom não faz layout: as alturas e o ResizeObserver são simulados.
 class ResizeObserverFake {
@@ -77,8 +77,6 @@ describe("CollapsibleText", () => {
     expect(readMore()).toBeInTheDocument();
   });
 
-  // Com line-clamp-3 a caixa não muda de altura quando a fonte da web carrega
-  // e o texto passa a ter 4 linhas; o ResizeObserver não dispara.
   it("measures again when the web font finishes loading", async () => {
     let fontsLoaded = () => {};
     const ready = new Promise<void>((resolve) => (fontsLoaded = resolve));

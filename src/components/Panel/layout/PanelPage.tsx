@@ -1,6 +1,9 @@
 import { Info, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { PANEL_TONES, type PanelTone } from "@/components/Panel/PanelShell";
+import {
+  PANEL_TONES,
+  type PanelTone,
+} from "@/components/Panel/layout/PanelShell";
 
 // O mobile mostra uma versão resumida do painel (sem mapa e rankings extras).
 export const MobileSummaryAlert = () => (

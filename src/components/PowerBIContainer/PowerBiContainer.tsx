@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { ReportData } from "@/utils/interfaces";
 import { buildPowerBiSource } from "@/features/embeds/powerBi";
 import { Icon } from "@/components/Icon/Icon";
-import { PanelIntro } from "@/components/Panel/PanelIntro";
+import { PanelIntro } from "@/components/Panel/texts/PanelIntro";
 
 const PowerBIContainer = ({
   panel,

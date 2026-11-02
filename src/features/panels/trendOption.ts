@@ -129,8 +129,7 @@ const trendSeries = (config: TrendConfig, width: number) => ({
   labelLayout: { hideOverlap: true },
 });
 
-// A 360 px, 3 anos (~35 px) não cabem um rótulo de 4 dígitos com folga e
-// "2011 2014 2017" se colavam; 4 anos dão ~46 px.
+// No celular, um ano a cada 4: a cada 3, os rótulos de 4 dígitos se colam.
 const COMPACT_LABEL_STEP = 4;
 
 // Fora do celular, o menor passo que dá YEAR_LABEL_WIDTH a cada ano exibido

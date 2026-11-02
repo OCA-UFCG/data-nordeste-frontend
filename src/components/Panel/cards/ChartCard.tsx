@@ -1,7 +1,10 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
-import { DataTable, type DataTableContent } from "@/components/Panel/DataTable";
+import {
+  DataTable,
+  type DataTableContent,
+} from "@/components/Panel/cards/DataTable";
 
 export const TableToggle = ({
   showTable,

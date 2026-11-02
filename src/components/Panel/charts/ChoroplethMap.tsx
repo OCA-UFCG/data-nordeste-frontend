@@ -2,8 +2,8 @@
 
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { EChart } from "@/components/EChart/EChart";
-import { ChartCard, ChartNotice } from "@/components/Panel/ChartCard";
-import type { DataTableContent } from "@/components/Panel/DataTable";
+import { ChartCard, ChartNotice } from "@/components/Panel/cards/ChartCard";
+import type { DataTableContent } from "@/components/Panel/cards/DataTable";
 import {
   buildChoroplethColorOption,
   buildChoroplethFrameOption,
@@ -164,7 +164,6 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
 
   // Separados: passar o mouse na lista de atividades troca só o destaque, que
   // entra por merge sem redesenhar os ~1.800 municípios nem desfazer o zoom.
-  // Opção fixa, sem largura: redimensionar não redesenha nem volta o zoom.
   const frameOption = useMemo(
     () => buildChoroplethFrameOption({ mapName, framing, canPan }),
     [mapName, framing, canPan],

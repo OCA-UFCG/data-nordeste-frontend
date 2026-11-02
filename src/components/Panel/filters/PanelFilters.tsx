@@ -2,7 +2,7 @@
 
 import { Funnel, FunnelX, LoaderCircle, MapPin } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
-import { InsideDialogContext } from "@/components/Panel/MultiSelectCombobox";
+import { InsideDialogContext } from "@/components/Panel/filters/MultiSelectCombobox";
 import {
   Sheet,
   SheetContent,

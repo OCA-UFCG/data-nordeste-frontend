@@ -2,18 +2,21 @@
 
 import { LoaderCircle, Wallet } from "lucide-react";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
-import { ChoroplethMap } from "@/components/Panel/ChoroplethMap";
-import type { DataTableContent } from "@/components/Panel/DataTable";
+import { ChoroplethMap } from "@/components/Panel/charts/ChoroplethMap";
+import type { DataTableContent } from "@/components/Panel/cards/DataTable";
 import {
   type CardChange,
   HighlightCard,
   withCommonFit,
-} from "@/components/Panel/HighlightCards";
-import { PanelFilters } from "@/components/Panel/PanelFilters";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { TerritorialSelects } from "@/components/Panel/TerritorialFilterBar";
-import { TrendChart, type TrendMetric } from "@/components/Panel/TrendChart";
-import { useTerritorialNavigation } from "@/components/Panel/useTerritorialNavigation";
+} from "@/components/Panel/cards/HighlightCards";
+import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { TerritorialSelects } from "@/components/Panel/filters/TerritorialFilterBar";
+import {
+  TrendChart,
+  type TrendMetric,
+} from "@/components/Panel/charts/TrendChart";
+import { useTerritorialNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
   AtividadeHighlightChip,
   PIB_MAP_ID,
@@ -167,8 +170,8 @@ const useAtividadeHighlight = (data: PibPanelData) => {
     [shown, data.mapa],
   );
 
-  // O clique limpa a pré-visualização: sem isso, desmarcar com o mouse ainda
-  // sobre a linha deixava o mapa destacado até o ponteiro sair da lista.
+  // O clique limpa a pré-visualização: senão, desmarcar com o mouse sobre a
+  // linha mantém o mapa destacado até o ponteiro sair da lista.
   const setAtividade = useCallback((next: string | null) => {
     setChosen(next);
     setPreview(null);

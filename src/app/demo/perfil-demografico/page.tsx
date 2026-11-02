@@ -4,8 +4,8 @@ import {
   DEMOGRAFIA_ICON,
   DEMOGRAFIA_TITLE,
 } from "@/components/DemografiaDashboard/demografiaTheme";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { PanelMessage } from "@/components/Panel/PanelShell";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { PanelMessage } from "@/components/Panel/layout/PanelShell";
 import { buildMetadata } from "@/config/seo";
 import {
   DEMOGRAFIA_YEAR_RANGE,

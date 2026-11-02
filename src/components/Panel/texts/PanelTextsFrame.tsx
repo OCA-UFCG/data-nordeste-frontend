@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { PanelIntro } from "@/components/Panel/PanelIntro";
+import { PanelIntro } from "@/components/Panel/texts/PanelIntro";
 import {
   CatalogLinkSection,
   PanelDescriptionSection,
-} from "@/components/Panel/PanelTexts";
+} from "@/components/Panel/texts/PanelTexts";
 import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedPanelsSection";
 import type { PanelContent } from "@/features/panels/panelContent";
 

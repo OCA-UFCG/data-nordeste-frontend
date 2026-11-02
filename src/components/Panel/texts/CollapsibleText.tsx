@@ -34,12 +34,8 @@ const watchClamp = (
   };
 };
 
-// Mede com o corte ativo (só no celular): texto que cabe em 3 linhas não ganha
-// "Ler mais". Remede a cada mudança de tamanho (girar o celular), quando a
-// fonte da web termina de carregar e quando o texto muda, o que mexe no
-// scrollHeight sem mudar a caixa.
-// Começa cortado, como o servidor renderiza: no caso comum, de texto longo, o
-// botão já está lá e nada se move após a hidratação.
+// Mede com o corte ativo (só no celular) e remede ao mudar o tamanho, a fonte ou
+// o texto. Começa cortado, como o servidor: o botão do texto longo não pula.
 const useIsClamped = (
   ref: RefObject<HTMLParagraphElement | null>,
   expanded: boolean,

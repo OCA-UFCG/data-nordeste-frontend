@@ -44,10 +44,8 @@ export const createPanelEntryReader =
     return content.panelsCollection.items[0] ?? null;
   };
 
-// PERF: unstable_cache, não só o cache do fetch do getContent. Com
-// `dynamic = "force-dynamic"` (as demos), o Next trata `revalidate: false` como
-// ausente e não guarda o fetch; dentro do unstable_cache o fetch é no-store, então
-// o conteúdo fica guardado uma vez só. A chave inclui o `id`.
+// PERF: com `force-dynamic` (as demos) o Next ignora o `revalidate: false` do
+// getContent e não guarda o fetch; o unstable_cache guarda, com o `id` na chave.
 export const getPanelEntry = unstable_cache(
   createPanelEntryReader(getContent),
   ["panel-entry"],

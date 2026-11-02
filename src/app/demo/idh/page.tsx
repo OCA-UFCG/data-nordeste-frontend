@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
 import { IDH_ICON, IDH_TITLE } from "@/components/IdhDashboard/idhTheme";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { PanelMessage } from "@/components/Panel/PanelShell";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { PanelMessage } from "@/components/Panel/layout/PanelShell";
 import { buildMetadata } from "@/config/seo";
 import {
   loadIdhPanel,

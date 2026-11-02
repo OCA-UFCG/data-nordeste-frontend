@@ -4,7 +4,7 @@ import { useId } from "react";
 import {
   ALL_OPTION,
   FilterSelect,
-} from "@/components/Panel/TerritorialFilterBar";
+} from "@/components/Panel/filters/TerritorialFilterBar";
 import {
   IDH_RECORTES,
   IDH_YEAR_RANGE,

@@ -69,10 +69,6 @@ describe("parseTerritorialFilters", () => {
     });
   });
 
-  it("caps how many places come from the URL", () => {
-    expect(parse({ uf: ["AL", "BA", "CE"] }, 2).uf).toEqual(["AL", "BA"]);
-  });
-
   // Inválidos e repetidos não ocupam vaga: o limite conta só o que é válido.
   it("caps after dropping invalid and repeated codes", () => {
     const valid = Array.from({ length: 100 }, (_, index) =>

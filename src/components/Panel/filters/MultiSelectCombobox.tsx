@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { SelectOption } from "@/components/Panel/TerritorialFilterBar";
+import type { SelectOption } from "@/components/Panel/filters/TerritorialFilterBar";
 import {
   Popover,
   PopoverContent,
@@ -148,9 +148,8 @@ const OptionList = ({
   </div>
 );
 
-// Aviso de que o máximo chegou: as opções não marcadas travaram. A região viva
-// fica sempre na página e só o texto muda: leitores de tela costumam ignorar
-// um role="status" que já nasce preenchido.
+// Região viva sempre na página, só o texto muda: leitores de tela costumam
+// ignorar um role="status" que já nasce preenchido.
 const LimitNotice = ({
   full,
   max,

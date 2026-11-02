@@ -5,10 +5,10 @@ import { IdhGroupView } from "@/components/IdhDashboard/IdhGroupView";
 import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
 import { IdhSelects } from "@/components/IdhDashboard/IdhSelects";
 import { IDH_ICON, IDH_TITLE } from "@/components/IdhDashboard/idhTheme";
-import { PanelFilters } from "@/components/Panel/PanelFilters";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { PanelTabs } from "@/components/Panel/PanelTabs";
-import { usePanelNavigation } from "@/components/Panel/useTerritorialNavigation";
+import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { PanelTabs } from "@/components/Panel/layout/PanelTabs";
+import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
   buildIdhSearch,
   DEFAULT_IDH_FILTERS,

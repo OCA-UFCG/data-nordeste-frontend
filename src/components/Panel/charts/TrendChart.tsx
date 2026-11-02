@@ -2,8 +2,8 @@
 
 import { useCallback, useId, useState } from "react";
 import { EChart } from "@/components/EChart/EChart";
-import { TableToggle } from "@/components/Panel/ChartCard";
-import { DataTable } from "@/components/Panel/DataTable";
+import { TableToggle } from "@/components/Panel/cards/ChartCard";
+import { DataTable } from "@/components/Panel/cards/DataTable";
 import {
   buildTrendOption,
   type ChartPoint,

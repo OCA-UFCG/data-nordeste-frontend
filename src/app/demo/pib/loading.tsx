@@ -1,4 +1,4 @@
-import { PanelPage } from "@/components/Panel/PanelPage";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import {
   PIB_ICON,
   PIB_SOURCE,
@@ -6,9 +6,8 @@ import {
 } from "@/components/PibDashboard/pibTheme";
 import HubTemplate from "@/templates/HubTemplate";
 
-// Mesmo arranjo do PibDashboard, para a página não pular quando os dados chegam.
-// Os textos do Contentful viram blocos cinza: o esqueleto aparece na hora, sem
-// esperar o Contentful mesmo com o cache vazio.
+// Mesmo arranjo do PibDashboard, para a página não pular quando os dados chegam;
+// os textos do Contentful viram blocos cinza, sem esperar o Contentful.
 const Bone = ({ className }: { className: string }) => (
   <div
     className={`animate-pulse rounded-lg bg-white shadow-sm motion-reduce:animate-none ${className}`}

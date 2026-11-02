@@ -1,8 +1,5 @@
-import { CollapsibleText } from "@/components/Panel/CollapsibleText";
+import { CollapsibleText } from "@/components/Panel/texts/CollapsibleText";
 import { ReportData } from "@/utils/interfaces";
-
-// Cabeçalho do painel (tema, data e texto de abertura), fora de PanelTexts: o
-// PowerBiContainer é "use client" e não deve carregar o renderizador de rich text.
 
 const INTRO_TEXT =
   "w-full max-w-[1280px] text-base leading-[150%] text-[#292829]";

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   HighlightCard,
   withCommonFit,
-} from "@/components/Panel/HighlightCards";
+} from "@/components/Panel/cards/HighlightCards";
 
 describe("HighlightCard", () => {
   it("gives every card of a group the font of the longest value", () => {

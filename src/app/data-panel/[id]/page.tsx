@@ -13,7 +13,7 @@ import {
   CatalogLinkSection,
   getPanelDescriptionText,
   PanelDescriptionSection,
-} from "@/components/Panel/PanelTexts";
+} from "@/components/Panel/texts/PanelTexts";
 
 export async function generateMetadata({
   params,

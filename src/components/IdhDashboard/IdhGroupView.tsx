@@ -2,14 +2,14 @@
 
 import { ChartColumnIncreasing, Wallet } from "lucide-react";
 import { useMemo } from "react";
-import { ChartCard } from "@/components/Panel/ChartCard";
-import { ColumnChart } from "@/components/Panel/ColumnChart";
+import { ChartCard } from "@/components/Panel/cards/ChartCard";
+import { ColumnChart } from "@/components/Panel/charts/ColumnChart";
 import {
   HighlightCard,
   withCommonFit,
-} from "@/components/Panel/HighlightCards";
-import type { KpiItem } from "@/components/Panel/KpiCards";
-import { PanelCarousel } from "@/components/Panel/PanelCarousel";
+} from "@/components/Panel/cards/HighlightCards";
+import type { KpiItem } from "@/components/Panel/cards/KpiCards";
+import { PanelCarousel } from "@/components/Panel/layout/PanelCarousel";
 import type {
   IdhGroupPoint,
   IdhGroupSerie,

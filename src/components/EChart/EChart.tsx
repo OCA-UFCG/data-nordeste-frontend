@@ -35,9 +35,8 @@ type EChartProps = EChartSource & {
   // zoom e o enquadramento da opção anterior).
   morph?: boolean;
 
-  // Aplicada por merge sobre a opção base, e junto dela em cada redesenho (o
-  // mapa já sai pintado, sem piscar no cinza): o que só muda a cor (destaque do
-  // mapa) não redesenha nem desfaz o zoom.
+  // Merge sobre a base, e junto dela em cada redesenho (o mapa não pisca no
+  // cinza): trocar só a cor (destaque do mapa) não redesenha nem desfaz o zoom.
   restyleOption?: ChartOption;
 };
 
@@ -213,8 +212,6 @@ const withRestyle = (base: ChartOption, restyle?: ChartOption): ChartOption => {
   return { ...base, ...restyle, series };
 };
 
-// Com `option` fixa, a largura muda o memo mas não a referência: o efeito do
-// redesenho não roda de novo.
 const useBaseOption = (
   width: number,
   { buildOption, option }: ChartOptionsProps,

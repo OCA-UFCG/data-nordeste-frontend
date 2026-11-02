@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { MultiSelectCombobox } from "@/components/Panel/MultiSelectCombobox";
+import { MultiSelectCombobox } from "@/components/Panel/filters/MultiSelectCombobox";
 import {
   TERRITORIAL_AREAS,
   type TerritorialArea,

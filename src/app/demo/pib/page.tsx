@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { PanelMessage } from "@/components/Panel/PanelShell";
-import { PanelTextsFrame } from "@/components/Panel/PanelTextsFrame";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { PanelMessage } from "@/components/Panel/layout/PanelShell";
+import { PanelTextsFrame } from "@/components/Panel/texts/PanelTextsFrame";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
 import {
   PIB_ICON,

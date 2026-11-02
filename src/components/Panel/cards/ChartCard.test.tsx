@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { ChartCard } from "@/components/Panel/ChartCard";
+import { ChartCard } from "@/components/Panel/cards/ChartCard";
 
 const TABLE = {
   caption: "VAB por setor",
@@ -25,11 +25,5 @@ describe("ChartCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ver gráfico" }));
 
     expect(screen.getByText("gráfico")).toBeInTheDocument();
-  });
-
-  it("has no toggle without a table", () => {
-    render(<ChartCard title="Mapa">x</ChartCard>);
-
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

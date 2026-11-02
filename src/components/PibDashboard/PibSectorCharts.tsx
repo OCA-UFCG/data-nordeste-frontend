@@ -1,16 +1,16 @@
 "use client";
 
-import { ChartCard } from "@/components/Panel/ChartCard";
-import { HorizontalBarChart } from "@/components/Panel/HorizontalBarChart";
-import { PanelCarousel } from "@/components/Panel/PanelCarousel";
-import { PanelInfo } from "@/components/Panel/PanelInfo";
+import { ChartCard } from "@/components/Panel/cards/ChartCard";
+import { HorizontalBarChart } from "@/components/Panel/charts/HorizontalBarChart";
+import { PanelCarousel } from "@/components/Panel/layout/PanelCarousel";
+import { PanelInfo } from "@/components/Panel/layout/PanelInfo";
 import {
   AtividadeList,
   formatParticipacao,
   type AtividadeSelection,
 } from "@/components/PibDashboard/AtividadeList";
 import { PIB_ATIVIDADE_TOOLTIP } from "@/components/PibDashboard/pibTheme";
-import type { DataTableContent } from "@/components/Panel/DataTable";
+import type { DataTableContent } from "@/components/Panel/cards/DataTable";
 import type {
   ChartPoint,
   ValueFormatter,

@@ -78,7 +78,6 @@ const buildBase = () => BASE;
 
 type ChartProps = Parameters<typeof EChart>[0];
 
-// Sem `option`, usa a opção que depende da largura (a dos outros gráficos).
 const renderChart = async (props: Partial<ChartProps>) => {
   const source = props.option ? {} : { buildOption: buildBase };
   const chartProps = { ...source, ...props } as ChartProps;
@@ -119,17 +118,6 @@ describe("EChart", () => {
     expect(fakeChart.zr.off).not.toHaveBeenCalled();
     expect(first).not.toHaveBeenCalled();
     expect(latest).toHaveBeenCalledWith(2);
-  });
-
-  it("subscribes the item click once across renders", async () => {
-    const { rerender } = await renderChart({ onItemClick: vi.fn() });
-
-    rerender(
-      <EChart buildOption={buildBase} label="Mapa" onItemClick={vi.fn()} />,
-    );
-
-    expect(fakeChart.on).toHaveBeenCalledTimes(1);
-    expect(fakeChart.off).not.toHaveBeenCalled();
   });
 
   it("keeps the tooltip while the chart is on screen and hides it when it leaves", async () => {

@@ -1,4 +1,4 @@
-import { PanelInfo } from "@/components/Panel/PanelInfo";
+import { PanelInfo } from "@/components/Panel/layout/PanelInfo";
 
 // Texto do balão "Saiba mais" do Power BI, sem alterações.
 const SAIBA_MAIS = [
