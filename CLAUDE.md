@@ -135,6 +135,11 @@ by `next.config.mjs`. Cache windows come from `REVALIDATE` /
   embedding arbitrary external URLs.
 - Macrotheme slugs use hyphens in URLs and underscores in Contentful IDs; the
   `replace(/-/g, "_")` in `src/app/macrothemes/[slug]/page.tsx` keeps shared links alive.
+- `/api/pdf-proxy` only fetches https URLs on the hosts in
+  `src/features/boletim/pdfSource.ts`, follows redirects by hand checking every hop
+  against that list, and only relays bodies starting with `%PDF-`, always as
+  `application/pdf`. The route fetches from the server, so it must never take an
+  arbitrary URL.
 
 ### Search
 
