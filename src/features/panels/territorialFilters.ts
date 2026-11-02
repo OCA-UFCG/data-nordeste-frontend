@@ -43,20 +43,20 @@ const isTerritorialArea = (value?: string): value is TerritorialArea =>
 
 const MUNICIPALITY_PATTERN = /^\d{7}$/;
 
-// Corta antes de validar: com limite 1 equivale a firstValue, e um valor
-// inválido conta no limite em vez de abrir espaço para outro.
+// Valida e tira repetidos antes de cortar, como o servidor conta o limite: um
+// link com 100 códigos válidos e alguns inválidos mantém os 100 válidos.
 const parseCodes = (
   value: string | string[] | undefined,
   pattern: RegExp,
   limit: number,
 ): string[] | undefined => {
-  const codes = [value ?? []]
+  const valid = [value ?? []]
     .flat()
-    .slice(0, limit)
     .map((code) => code.toUpperCase())
     .filter((code) => pattern.test(code));
+  const codes = [...new Set(valid)].slice(0, limit);
 
-  return codes.length ? [...new Set(codes)] : undefined;
+  return codes.length ? codes : undefined;
 };
 
 /**

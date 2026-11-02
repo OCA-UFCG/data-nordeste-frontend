@@ -21,7 +21,11 @@ beforeAll(() => {
   globalThis.ResizeObserver ??= ResizeObserverStub;
 });
 
-const renderCombobox = (values: string[] = [], onChange = vi.fn()) => {
+const renderCombobox = (
+  values: string[] = [],
+  onChange = vi.fn(),
+  max?: number,
+) => {
   render(
     <MultiSelectCombobox
       id="mun"
@@ -30,6 +34,7 @@ const renderCombobox = (values: string[] = [], onChange = vi.fn()) => {
       values={values}
       options={OPTIONS}
       onChange={onChange}
+      max={max}
     />,
   );
 
@@ -133,5 +138,43 @@ describe("MultiSelectCombobox", () => {
     expect(boxes).toHaveLength(100);
     expect(boxes[0]).toBeChecked();
     expect(screen.getByText(/Mostrando 100 de 150/)).toBeInTheDocument();
+  });
+
+  // O servidor corta acima do máximo; sem a trava, a seleção sumiria calada.
+  it("locks the unchecked options once the maximum is reached", () => {
+    renderCombobox(["2611606"], vi.fn(), 2);
+    open();
+
+    // A região viva já existe vazia: o leitor de tela anuncia quando o texto entra.
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    check("João Pessoa (PB)");
+
+    expect(
+      screen.getByRole("checkbox", { name: "Caruaru (PE)" }),
+    ).toBeDisabled();
+    expect(screen.getByRole("checkbox", { name: "Recife (PE)" })).toBeEnabled();
+    expect(
+      screen.getByText("Máximo de 2 municípios selecionados"),
+    ).toBeInTheDocument();
+  });
+
+  it("unlocks the options after unchecking one", () => {
+    renderCombobox(["2611606", "2507507"], vi.fn(), 2);
+    open();
+    check("Recife (PE)");
+
+    expect(
+      screen.getByRole("checkbox", { name: "Caruaru (PE)" }),
+    ).toBeEnabled();
+    expect(screen.queryByText(/Máximo de/)).not.toBeInTheDocument();
+  });
+
+  it("has no limit without max", () => {
+    renderCombobox(["2611606", "2507507"]);
+    open();
+
+    expect(
+      screen.getByRole("checkbox", { name: "Caruaru (PE)" }),
+    ).toBeEnabled();
   });
 });

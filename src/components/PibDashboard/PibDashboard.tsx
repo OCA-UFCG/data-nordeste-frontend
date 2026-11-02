@@ -1,13 +1,13 @@
 "use client";
 
 import { LoaderCircle, Wallet } from "lucide-react";
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { ChoroplethMap } from "@/components/Panel/ChoroplethMap";
 import type { DataTableContent } from "@/components/Panel/DataTable";
 import {
   type CardChange,
   HighlightCard,
-  longestValue,
+  withCommonFit,
 } from "@/components/Panel/HighlightCards";
 import { PanelFilters } from "@/components/Panel/PanelFilters";
 import { PanelPage } from "@/components/Panel/PanelPage";
@@ -26,9 +26,9 @@ import {
   formatReaisAxis,
   formatReaisCompact,
 } from "@/features/panels/format";
-import type { ChartPoint } from "@/features/panels/chartOptions";
 import {
   PIB_MAP_BUCKETS,
+  PIB_MAX_PLACES,
   PIB_YEAR_RANGE,
   type PibPanelData,
   type PibYearPoint,
@@ -63,6 +63,7 @@ const trendMetrics = (serie: PibYearPoint[]): TrendMetric[] => {
     {
       key: "pib",
       label: "Evolução anual do PIB Total",
+      valueLabel: "PIB Total",
       points: serie.map((point) => ({
         label: String(point.ano),
         value: point.pib,
@@ -74,6 +75,7 @@ const trendMetrics = (serie: PibYearPoint[]): TrendMetric[] => {
     {
       key: "perCapita",
       label: "Evolução anual do PIB per capita",
+      valueLabel: "PIB per capita",
       points: serie.map((point) => ({
         label: String(point.ano),
         value: point.perCapita,
@@ -85,7 +87,13 @@ const trendMetrics = (serie: PibYearPoint[]): TrendMetric[] => {
   ];
 };
 
-const cardChange = (points: ChartPoint[], ano: number): CardChange | null => {
+// Pela key, não pela posição: reordenar as abas não troca a variação dos cards.
+const cardChange = (
+  metrics: TrendMetric[],
+  key: string,
+  ano: number,
+): CardChange | null => {
+  const points = metrics.find((metric) => metric.key === key)?.points ?? [];
   const index = points.findIndex((point) => point.label === String(ano));
   const change = describeYearChange(points, index);
 
@@ -93,6 +101,27 @@ const cardChange = (points: ChartPoint[], ano: number): CardChange | null => {
     ? { ratio: change.ratio, text: formatYearChange(change) }
     : null;
 };
+
+// Mesma fonte nos dois cards (withCommonFit), como nos cards do IDH.
+const pibCards = (
+  ano: number,
+  point: PibYearPoint | undefined,
+  metrics: TrendMetric[],
+) =>
+  withCommonFit([
+    {
+      icon: PIB_ICON,
+      label: "PIB",
+      value: point ? reais(point.pib) : "Sem dados",
+      change: cardChange(metrics, "pib", ano),
+    },
+    {
+      icon: Wallet,
+      label: "PIB per capita",
+      value: point ? reais(point.perCapita) : "Sem dados",
+      change: cardChange(metrics, "perCapita", ano),
+    },
+  ]);
 
 const PibCards = ({
   ano,
@@ -102,36 +131,19 @@ const PibCards = ({
   ano: number;
   point?: PibYearPoint;
   metrics: TrendMetric[];
-}) => {
-  const pib = point ? reais(point.pib) : "Sem dados";
-  const perCapita = point ? reais(point.perCapita) : "Sem dados";
-  const fitTo = longestValue([pib, perCapita]);
-
-  return (
-    <div className="grid grid-cols-2 gap-3 lg:gap-6">
+}) => (
+  <div className="grid grid-cols-2 gap-3 lg:gap-6">
+    {pibCards(ano, point, metrics).map((card) => (
       <HighlightCard
+        key={card.label}
         tone="orange"
-        icon={PIB_ICON}
-        label="PIB"
-        value={pib}
-        fitTo={fitTo}
         caption={`em ${ano}`}
-        change={cardChange(metrics[0].points, ano)}
         compact
+        {...card}
       />
-      <HighlightCard
-        tone="orange"
-        icon={Wallet}
-        label="PIB per capita"
-        value={perCapita}
-        fitTo={fitTo}
-        caption={`em ${ano}`}
-        change={cardChange(metrics[1].points, ano)}
-        compact
-      />
-    </div>
-  );
-};
+    ))}
+  </div>
+);
 
 const hasAtividade = (data: PibPanelData, label: string | null) =>
   data.atividades.some((point) => point.label === label);
@@ -155,7 +167,14 @@ const useAtividadeHighlight = (data: PibPanelData) => {
     [shown, data.mapa],
   );
 
-  return { atividade, setAtividade: setChosen, setPreview, highlightCodes };
+  // O clique limpa a pré-visualização: sem isso, desmarcar com o mouse ainda
+  // sobre a linha deixava o mapa destacado até o ponteiro sair da lista.
+  const setAtividade = useCallback((next: string | null) => {
+    setChosen(next);
+    setPreview(null);
+  }, []);
+
+  return { atividade, setAtividade, setPreview, highlightCodes };
 };
 
 const toMapTable = (mapa: PibPanelData["mapa"]): DataTableContent => ({
@@ -246,6 +265,7 @@ export const PibDashboard = ({
           years={YEARS}
           onChange={applyFilters}
           multiple
+          maxPlaces={PIB_MAX_PLACES}
         />
       </PanelFilters>
       <SelectionSummary summary={summary} isPending={isPending} chip={chip} />

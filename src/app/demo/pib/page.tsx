@@ -89,6 +89,7 @@ export default async function PibDemoPage({
             icon={PIB_ICON}
             tone="orange"
             source={PIB_SOURCE}
+            fullMobile
           >
             <LoadFailedMessage filters={filters} />
           </PanelPage>

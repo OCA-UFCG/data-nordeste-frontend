@@ -1,17 +1,12 @@
 "use client";
 
-import {
-  type CSSProperties,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { EChart } from "@/components/EChart/EChart";
 import { ChartCard, ChartNotice } from "@/components/Panel/ChartCard";
 import type { DataTableContent } from "@/components/Panel/DataTable";
 import {
-  buildChoroplethOption,
+  buildChoroplethColorOption,
+  buildChoroplethFrameOption,
   type ChoroplethRegion,
   type ValueFormatter,
 } from "@/features/panels/chartOptions";
@@ -166,36 +161,31 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
       ? getMapFraming(areaBounds, aspectRatio, focusBounds)
       : undefined;
   }, [visible, selectedCode, areaBounds, aspectRatio]);
-  const buildOption = useCallback(
+
+  // Separados: passar o mouse na lista de atividades troca só o destaque, que
+  // entra por merge sem redesenhar os ~1.800 municípios nem desfazer o zoom.
+  // Opção fixa, sem largura: redimensionar não redesenha nem volta o zoom.
+  const frameOption = useMemo(
+    () => buildChoroplethFrameOption({ mapName, framing, canPan }),
+    [mapName, framing, canPan],
+  );
+  const colorOption = useMemo(
     () =>
-      buildChoroplethOption({
+      buildChoroplethColorOption({
         regions,
         buckets,
         valueLabel,
         formatValue,
         selectedCode,
         highlightCodes,
-        mapName,
-        framing,
-        canPan,
       }),
-    [
-      regions,
-      buckets,
-      valueLabel,
-      formatValue,
-      selectedCode,
-      highlightCodes,
-      mapName,
-      framing,
-      canPan,
-    ],
+    [regions, buckets, valueLabel, formatValue, selectedCode, highlightCodes],
   );
 
   const map =
     status === "ready" && areaBounds ? (
       <EChart
-        buildOption={buildOption}
+        option={frameOption}
         label={`Mapa coroplético: ${props.title}`}
         className={
           props.fill
@@ -209,6 +199,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
         }
         renderer={MAP_RENDERER}
         morph={false}
+        restyleOption={colorOption}
         onItemClick={props.onSelectRegion}
       />
     ) : (

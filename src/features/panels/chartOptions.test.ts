@@ -1,177 +1,58 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
-  buildChoroplethOption,
+  buildChoroplethColorOption,
+  buildChoroplethFrameOption,
   buildColumnOption,
   buildPyramidOption,
-  buildTrendOption,
 } from "@/features/panels/chartOptions";
-import { trendLabelIndexes } from "@/features/panels/trendOption";
-import { formatReaisAxis, formatReaisCompact } from "@/features/panels/format";
+import { formatReaisCompact } from "@/features/panels/format";
 import type { MapBounds } from "@/features/panels/mapFraming";
+import type { ChartOption } from "@/lib/echarts";
 import { PIB_MAP_BUCKETS } from "@/features/panels/pib/pibPanel";
+import { rankRegions } from "@/features/panels/choropleth";
 
-const POINTS = [
-  { label: "2021", value: 1.2431e12 },
-  { label: "2022", value: 1.38805e12 },
-  { label: "2023", value: 1.51306e12 },
-];
+// Repassa ao ranking real, só para contar as chamadas.
+vi.mock("@/features/panels/choropleth", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/features/panels/choropleth")>();
 
-type LabelFormatter = (params: { value: number; dataIndex: number }) => string;
+  return { ...actual, rankRegions: vi.fn(actual.rankRegions) };
+});
 
-const trendLabels = (width: number, selectedIndex = 2): string[] => {
-  const option = buildTrendOption(
-    {
-      points: POINTS,
-      seriesName: "PIB",
-      selectedIndex,
-      formatLabel: (value) => formatReaisCompact(value),
-      formatValue: (value) => formatReaisCompact(value),
-      formatAxis: formatReaisAxis,
-    },
-    width,
-  ) as { series: { label: { formatter: LabelFormatter } }[] };
-  const { formatter } = option.series[0].label;
-
-  return POINTS.map((point, dataIndex) =>
-    formatter({ value: point.value, dataIndex }),
-  );
+const COLORS = {
+  regions: [
+    { code: "2611606", name: "Recife", uf: "PE", value: 6e10 },
+    { code: "2507507", name: "João Pessoa", uf: "PB", value: 2e10 },
+  ],
+  buckets: PIB_MAP_BUCKETS,
+  valueLabel: "PIB",
+  formatValue: (value: number) => formatReaisCompact(value),
 };
 
-describe("buildTrendOption", () => {
-  it("labels only the ends and the selected year on wide screens", () => {
-    expect(trendLabels(900)).toEqual(["R$ 1,24 tri", "", "R$ 1,51 tri"]);
-    expect(trendLabels(900, 1)).toEqual([
-      "R$ 1,24 tri",
-      "R$ 1,39 tri",
-      "R$ 1,51 tri",
-    ]);
-  });
+type ColorOption = {
+  tooltip: { formatter: (params: { data?: object }) => string };
+  series: { id: string; type: string; data: object[] }[];
+};
 
-  it("shows the change from the previous year in the tooltip", () => {
-    const option = buildTrendOption(
-      {
-        points: POINTS,
-        seriesName: "PIB",
-        selectedIndex: 2,
-        formatLabel: String,
-        formatValue: (value) => formatReaisCompact(value),
-        formatAxis: formatReaisAxis,
-      },
-      900,
-    ) as {
-      tooltip: { formatter: (params: { dataIndex: number }[]) => string };
-    };
-    const html = option.tooltip.formatter([{ dataIndex: 1 }]);
+describe("buildChoroplethColorOption", () => {
+  const itemsOf = (option: ChartOption) =>
+    (option as { series: { data: object[] }[] }).series[0].data;
 
-    expect(html).toContain("R$ 1,39 tri");
-    expect(html).toContain("+11,7% em relação a 2021");
-    expect(option.tooltip.formatter([{ dataIndex: 0 }])).not.toContain(
-      "em relação",
-    );
-  });
-
-  it("drops point labels on narrow screens", () => {
-    expect(trendLabels(200)).toEqual(["", "", ""]);
-  });
-});
-
-describe("buildTrendOption on a phone", () => {
-  type AxisOption = {
-    xAxis: { axisLabel: { interval: (index: number) => boolean } };
-    series: { showAllSymbol: boolean }[];
-  };
-  const YEARS = Array.from({ length: 14 }, (_, index) => String(2010 + index));
-  const phoneOption = (selectedIndex: number) =>
-    buildTrendOption(
-      {
-        points: YEARS.map((label) => ({ label, value: 1 })),
-        seriesName: "PIB",
-        selectedIndex,
-        formatLabel: String,
-        formatValue: String,
-        formatAxis: String,
-      },
-      360,
-    ) as AxisOption;
-  const axisYears = (selectedIndex: number) =>
-    YEARS.filter((_, index) =>
-      phoneOption(selectedIndex).xAxis.axisLabel.interval(index),
-    );
-
-  it("counts axis labels from the last year", () => {
-    expect(axisYears(13)).toEqual(["2011", "2015", "2019", "2023"]);
-  });
-
-  it("labels the selected year and hides the labels closer than a step", () => {
-    expect(axisYears(11)).toEqual(["2011", "2015", "2021"]);
-  });
-
-  it("skips every other year on a desktop chart too narrow for all 14", () => {
-    const option = buildTrendOption(
-      {
-        points: YEARS.map((label) => ({ label, value: 1 })),
-        seriesName: "PIB",
-        selectedIndex: 11,
-        formatLabel: String,
-        formatValue: String,
-        formatAxis: String,
-      },
-      571,
-    ) as AxisOption;
-
-    expect(
-      YEARS.filter((_, index) => option.xAxis.axisLabel.interval(index)),
-    ).toEqual(["2011", "2013", "2015", "2017", "2019", "2021", "2023"]);
-  });
-
-  it("draws every point, so the selected year never disappears", () => {
-    expect(phoneOption(13).series[0].showAllSymbol).toBe(true);
-  });
-});
-
-describe("trendLabelIndexes", () => {
-  it("drops an end label too close to the selected year", () => {
-    expect([...trendLabelIndexes(14, 11, 3)]).toEqual([11, 0]);
-    expect([...trendLabelIndexes(14, 6, 3)]).toEqual([6, 0, 13]);
-    expect([...trendLabelIndexes(14, 13, 3)]).toEqual([13, 0]);
-    expect([...trendLabelIndexes(14, -1, 3)]).toEqual([0, 13]);
-  });
-});
-
-describe("buildChoroplethOption", () => {
   it("shows the position in the ranking in the tooltip", () => {
-    const option = buildChoroplethOption({
-      regions: [
-        { code: "2611606", name: "Recife", uf: "PE", value: 6e10 },
-        { code: "2507507", name: "João Pessoa", uf: "PB", value: 2e10 },
-      ],
-      buckets: PIB_MAP_BUCKETS,
-      mapName: "test",
-      valueLabel: "PIB",
-      formatValue: (value) => formatReaisCompact(value),
-    }) as {
-      tooltip: { formatter: (params: { data?: object }) => string };
-      series: { data: object[] }[];
-    };
-    const [, joaoPessoa] = option.series[0].data;
+    const option = buildChoroplethColorOption(COLORS) as ColorOption;
+    const [, joaoPessoa] = itemsOf(option);
 
     expect(option.tooltip.formatter({ data: joaoPessoa })).toContain("2º de 2");
   });
 
   it("escapes region names in the HTML tooltip", () => {
-    const option = buildChoroplethOption({
+    const option = buildChoroplethColorOption({
+      ...COLORS,
       regions: [
         { code: "2611606", name: "<b>Recife</b>", uf: "PE", value: 6e10 },
       ],
-      buckets: PIB_MAP_BUCKETS,
-      mapName: "test",
-      valueLabel: "PIB",
-      formatValue: (value) => formatReaisCompact(value),
-    }) as {
-      tooltip: { formatter: (params: { data?: object }) => string };
-      series: { data: object[] }[];
-    };
-    const [item] = option.series[0].data;
+    }) as ColorOption;
+    const [item] = itemsOf(option);
 
     expect(option.tooltip.formatter({ data: item })).toContain(
       "&lt;b&gt;Recife&lt;/b&gt; (PE)",
@@ -179,37 +60,67 @@ describe("buildChoroplethOption", () => {
   });
 
   it("greys out regions outside the highlight", () => {
-    const option = buildChoroplethOption({
-      regions: [
-        { code: "2611606", name: "Recife", uf: "PE", value: 6e10 },
-        { code: "2507507", name: "João Pessoa", uf: "PB", value: 2e10 },
-      ],
-      buckets: PIB_MAP_BUCKETS,
-      mapName: "test",
-      valueLabel: "PIB",
-      formatValue: (value) => formatReaisCompact(value),
+    const option = buildChoroplethColorOption({
+      ...COLORS,
       highlightCodes: new Set(["2611606"]),
-    }) as { series: { data: { itemStyle: { areaColor: string } }[] }[] };
-    const [recife, joaoPessoa] = option.series[0].data;
+    });
+    const [recife, joaoPessoa] = itemsOf(option) as {
+      itemStyle: { areaColor: string };
+    }[];
 
     expect(recife.itemStyle.areaColor).toBe("#421608");
     expect(joaoPessoa.itemStyle.areaColor).toBe("#e5e5e5");
   });
 
+  // O hover na lista refaz a opção de cor; o ranking de ~1.800 não precisa.
+  it("ranks each set of regions once across highlight changes", () => {
+    const regions = [...COLORS.regions];
+
+    vi.mocked(rankRegions).mockClear();
+    buildChoroplethColorOption({ ...COLORS, regions });
+    buildChoroplethColorOption({
+      ...COLORS,
+      regions,
+      highlightCodes: new Set(["2611606"]),
+    });
+    expect(rankRegions).toHaveBeenCalledTimes(1);
+
+    buildChoroplethColorOption({ ...COLORS, regions: [...regions] });
+    expect(rankRegions).toHaveBeenCalledTimes(2);
+  });
+
+  // Merge com center/zoom desfaria o zoom e o arrasto a cada destaque.
+  it("leaves the user's zoom and pan alone", () => {
+    const [series] = (
+      buildChoroplethColorOption({
+        ...COLORS,
+        selectedCode: "2611606",
+        highlightCodes: new Set(["2611606"]),
+      }) as ColorOption
+    ).series;
+
+    for (const key of ["center", "zoom", "boundingCoords", "map", "roam"]) {
+      expect(series).not.toHaveProperty(key);
+    }
+  });
+});
+
+describe("buildChoroplethFrameOption", () => {
+  type FrameOption = {
+    series: {
+      id: string;
+      roam: boolean | "scale";
+      boundingCoords?: MapBounds;
+      center?: [number, number];
+      zoom?: number;
+      scaleLimit: { min: number; max?: number };
+    }[];
+  };
+
   it("pans only with a mouse, keeping one-finger drag for page scroll", () => {
-    const config = {
-      regions: [],
-      buckets: PIB_MAP_BUCKETS,
-      mapName: "test",
-      valueLabel: "PIB",
-      formatValue: (value: number) => formatReaisCompact(value),
-    };
     const roam = (canPan?: boolean) =>
-      (
-        buildChoroplethOption({ ...config, canPan }) as {
-          series: { roam: boolean | string }[];
-        }
-      ).series[0].roam;
+      (buildChoroplethFrameOption({ mapName: "test", canPan }) as FrameOption)
+        .series[0].roam;
 
     expect(roam(true)).toBe(true);
     expect(roam(false)).toBe("scale");
@@ -222,18 +133,14 @@ describe("buildChoroplethOption", () => {
       [-35, -18],
     ];
     const [series] = (
-      buildChoroplethOption({
-        regions: [],
-        buckets: PIB_MAP_BUCKETS,
+      buildChoroplethFrameOption({
         mapName: "test",
-        valueLabel: "PIB",
-        formatValue: (value: number) => formatReaisCompact(value),
         framing: {
           bounds: area,
           maxZoom: 500,
           focus: { center: [-39.5, -10.5], zoom: 8 },
         },
-      }) as { series: Record<string, unknown>[] }
+      }) as FrameOption
     ).series;
 
     expect(series).toMatchObject({
@@ -242,6 +149,16 @@ describe("buildChoroplethOption", () => {
       zoom: 8,
       scaleLimit: { min: 1, max: 500 },
     });
+    expect(series).not.toHaveProperty("data");
+  });
+
+  it("shares the series id with the color option, so the merge finds it", () => {
+    const frame = buildChoroplethFrameOption({
+      mapName: "test",
+    }) as FrameOption;
+    const colors = buildChoroplethColorOption(COLORS) as ColorOption;
+
+    expect(colors.series[0].id).toBe(frame.series[0].id);
   });
 });
 

@@ -162,16 +162,21 @@ export type ChoroplethRegion = {
   value: number;
 };
 
-export type ChoroplethConfig = {
+// O que pinta o mapa: muda sem mexer no zoom nem no arrasto do usuário.
+export type ChoroplethColors = {
   regions: ChoroplethRegion[];
   buckets: readonly ChoroplethBucket[];
-  mapName: string;
   valueLabel: string;
   formatValue: ValueFormatter;
   selectedCode?: string;
 
   // Só estes municípios ficam coloridos; os demais vão para o cinza.
   highlightCodes?: ReadonlySet<string>;
+};
+
+// O que posiciona o mapa: mudar isso redesenha e volta ao enquadramento inicial.
+export type ChoroplethFrame = {
+  mapName: string;
   framing?: MapFraming;
   canPan?: boolean;
 };
@@ -181,7 +186,7 @@ type ChoroplethItem = { nome: string; uf: string; value: number; rank: number };
 const rankFormat = new Intl.NumberFormat("pt-BR");
 
 const choroplethTooltip =
-  (config: ChoroplethConfig) =>
+  (config: ChoroplethColors) =>
   ({ data }: { data?: ChoroplethItem }) => {
     if (!data) return "";
     const total = config.regions.length;
@@ -201,14 +206,29 @@ const DIMMED_AREA = "#e5e5e5";
 
 const HOVER_BORDER = TEXT_COLOR;
 
-const regionAreaColor = (config: ChoroplethConfig, region: ChoroplethRegion) =>
+const regionAreaColor = (config: ChoroplethColors, region: ChoroplethRegion) =>
   config.highlightCodes && !config.highlightCodes.has(region.code)
     ? DIMMED_AREA
     : getBucket(config.buckets, region.value).color;
 
+// PERF: o ranking só depende das regiões, mas a opção de cor é refeita a cada
+// destaque (hover na lista). Um por array de regiões, e o GC limpa os antigos.
+const ranksByRegions = new WeakMap<ChoroplethRegion[], Map<string, number>>();
+
+const cachedRanks = (regions: ChoroplethRegion[]) => {
+  const cached = ranksByRegions.get(regions);
+
+  if (cached) return cached;
+  const ranks = rankRegions(regions);
+
+  ranksByRegions.set(regions, ranks);
+
+  return ranks;
+};
+
 // No hover a região mantém a cor e ganha contorno; a escolhida segue verde.
-const choroplethRegions = (config: ChoroplethConfig) => {
-  const ranks = rankRegions(config.regions);
+const choroplethRegions = (config: ChoroplethColors) => {
+  const ranks = cachedRanks(config.regions);
 
   return config.regions.map((region) => {
     const areaColor = regionAreaColor(config, region);
@@ -245,22 +265,27 @@ const choroplethFraming = (framing: MapFraming | undefined) =>
       }
     : { scaleLimit: { min: 1 } };
 
-export const buildChoroplethOption = (
-  config: ChoroplethConfig,
+// As duas opções casam pelo id: a de cores entra por merge sobre a do quadro.
+const CHOROPLETH_SERIES_ID = "choropleth";
+
+/**
+ * Geometria e enquadramento do mapa, sem os dados. Aplicada do zero (notMerge)
+ * só quando o conjunto de regiões ou o quadro muda.
+ *
+ * @example buildChoroplethFrameOption({ mapName: "sudene", canPan: true })
+ */
+export const buildChoroplethFrameOption = (
+  frame: ChoroplethFrame,
 ): ChartOption => ({
   ...baseOption(),
-  tooltip: {
-    ...TOOLTIP_BASE,
-    trigger: "item",
-    formatter: choroplethTooltip(config),
-  },
   series: [
     {
+      id: CHOROPLETH_SERIES_ID,
       type: "map",
-      map: config.mapName,
+      map: frame.mapName,
 
       // Em tela de toque, arrastar com um dedo rola a página, não o mapa.
-      roam: config.canPan ? true : "scale",
+      roam: frame.canPan ? true : "scale",
       selectedMode: false,
       left: 4,
       right: 4,
@@ -269,10 +294,33 @@ export const buildChoroplethOption = (
 
       // Sem isso o ECharts 6 estica a região para preencher a caixa.
       preserveAspect: "contain",
-      ...choroplethFraming(config.framing),
+      ...choroplethFraming(frame.framing),
       itemStyle: { borderColor: "#ffffff", borderWidth: 0.3 },
       emphasis: { label: { show: false } },
-      data: choroplethRegions(config),
+    },
+  ],
+});
+
+/**
+ * Cores, destaque e balão do mapa, aplicados por merge sobre o quadro.
+ * IMPORTANT: sem center/zoom; com eles, cada destaque desfaria o zoom e o
+ * arrasto do usuário.
+ *
+ * @example buildChoroplethColorOption({ regions, buckets, valueLabel: "PIB", formatValue })
+ */
+export const buildChoroplethColorOption = (
+  colors: ChoroplethColors,
+): ChartOption => ({
+  tooltip: {
+    ...TOOLTIP_BASE,
+    trigger: "item",
+    formatter: choroplethTooltip(colors),
+  },
+  series: [
+    {
+      id: CHOROPLETH_SERIES_ID,
+      type: "map",
+      data: choroplethRegions(colors),
     },
   ],
 });

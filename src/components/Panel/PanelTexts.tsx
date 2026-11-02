@@ -1,49 +1,13 @@
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
-import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 import Link from "next/link";
 import { Icon } from "@/components/Icon/Icon";
-import { CollapsibleText } from "@/components/Panel/CollapsibleText";
 import { MACROTHEME_ROUTE_BY_NAME } from "@/features/macrothemes/constants";
 import { ReportData } from "@/utils/interfaces";
+import { richTextToPlainText } from "@/utils/richText";
 
 // Textos do Contentful em volta do painel, usados pela página do Power BI e
-// pelas demos nativas, para que as duas mostrem o mesmo antes e depois.
-
-const INTRO_TEXT =
-  "w-full max-w-[1280px] text-base leading-[150%] text-[#292829]";
-
-// `collapsible`: no celular, o texto de abertura mostra 3 linhas e "Ler mais".
-export const PanelIntro = ({
-  panel,
-  collapsible = false,
-}: {
-  panel: ReportData;
-  collapsible?: boolean;
-}) => {
-  const { macroTheme, date, abovePanelDescription } = panel;
-  const formattedDate = date ? new Date(date).toLocaleDateString("pt-BR") : "";
-
-  return (
-    <>
-      <div className="flex flex-col sm:flex-row justify-between items-center w-full py-4 sticky left-0">
-        <h2 className="text-left font-semibold text-3xl">{macroTheme}</h2>
-        <span className="font-medium text-base mt-2 sm:mt-0">
-          Publicado em: {formattedDate}
-        </span>
-      </div>
-
-      {abovePanelDescription &&
-        (collapsible ? (
-          <CollapsibleText
-            text={abovePanelDescription}
-            className={INTRO_TEXT}
-          />
-        ) : (
-          <p className={INTRO_TEXT}>{abovePanelDescription}</p>
-        ))}
-    </>
-  );
-};
+// pelas demos nativas, para que as duas mostrem o mesmo antes e depois. O
+// cabeçalho (PanelIntro) fica à parte: o Power BI é client e não leva rich text.
 
 export const PanelDescriptionSection = ({ panel }: { panel: ReportData }) => {
   if (!panel.descriptionTitle && !panel.description?.json) return null;
@@ -114,8 +78,5 @@ const getMacroThemeHref = (macroTheme: string): string | null => {
   return slug ? `/macrothemes/${slug}` : null;
 };
 
-export const getPanelDescriptionText = (panel: ReportData): string => {
-  if (!panel.description?.json) return "";
-
-  return documentToPlainTextString(panel.description.json);
-};
+export const getPanelDescriptionText = (panel: ReportData): string =>
+  richTextToPlainText(panel.description);

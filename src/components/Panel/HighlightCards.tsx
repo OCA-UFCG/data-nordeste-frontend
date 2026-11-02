@@ -49,7 +49,7 @@ const ChangeLine = ({ change }: { change: CardChange | null }) => {
  *
  * @example longestValue(["R$ 1,24 Tri", "R$ 21,56 Mil"]) // "R$ 21,56 Mil"
  */
-export const longestValue = (values: string[]): string =>
+const longestValue = (values: string[]): string =>
   values.reduce(
     (longest, value) => (value.length > longest.length ? value : longest),
     "",
@@ -120,6 +120,12 @@ export const HighlightCard = ({
   </div>
 );
 
+/**
+ * Dá a todos os cards de um grupo o mesmo `fitTo` (o valor mais longo), para
+ * os números saírem do mesmo tamanho lado a lado.
+ *
+ * @example withCommonFit(cards).map((item) => <HighlightCard key={item.label} tone="orange" {...item} />)
+ */
 export const withCommonFit = <Item extends KpiItem>(
   items: Item[],
 ): (Item & { fitTo: string })[] => {

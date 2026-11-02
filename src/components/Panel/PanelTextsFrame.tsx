@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
+import { PanelIntro } from "@/components/Panel/PanelIntro";
 import {
   CatalogLinkSection,
   PanelDescriptionSection,
-  PanelIntro,
 } from "@/components/Panel/PanelTexts";
 import { ReportData } from "@/utils/interfaces";
 

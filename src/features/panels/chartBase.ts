@@ -28,7 +28,10 @@ export const TOOLTIP_BASE = {
   borderWidth: 1,
   borderRadius: 8,
   padding: [8, 12],
-  extraCssText: "box-shadow: 0 4px 16px rgba(41, 40, 41, 0.12);",
+
+  // z-index: o ECharts usa 9999999; 30 fica abaixo da barra fixa do local (z-40)
+  // e do cabeçalho do site.
+  extraCssText: "box-shadow: 0 4px 16px rgba(41, 40, 41, 0.12); z-index: 30;",
   textStyle: { fontSize: FONT_SIZE, color: TEXT_COLOR },
 };
 

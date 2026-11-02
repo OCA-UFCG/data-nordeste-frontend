@@ -43,11 +43,13 @@ describe("parseTerritorialFilters", () => {
     ).toEqual(DEFAULTS);
   });
 
+  // Primeiro valor válido: um inválido antes dele não ocupa a única vaga.
   it("uses the first value when a param is repeated", () => {
     expect(parse({ ano: ["2015", "2016"] }).ano).toBe(2015);
     expect(parse({ uf: ["PB", "PE"], mun: ["x", "2611606"] })).toEqual({
       ...DEFAULTS,
       uf: ["PB"],
+      mun: ["2611606"],
     });
   });
 
@@ -69,6 +71,20 @@ describe("parseTerritorialFilters", () => {
 
   it("caps how many places come from the URL", () => {
     expect(parse({ uf: ["AL", "BA", "CE"] }, 2).uf).toEqual(["AL", "BA"]);
+  });
+
+  // Inválidos e repetidos não ocupam vaga: o limite conta só o que é válido.
+  it("caps after dropping invalid and repeated codes", () => {
+    const valid = Array.from({ length: 100 }, (_, index) =>
+      String(2600000 + index),
+    );
+    const mun = ["x", "26116", valid[0], ...valid, "abc"];
+
+    expect(parse({ mun }, 100).mun).toEqual(valid);
+    expect(parse({ uf: ["Paraíba", "pb", "PB", "PE"] }, 2).uf).toEqual([
+      "PB",
+      "PE",
+    ]);
   });
 });
 

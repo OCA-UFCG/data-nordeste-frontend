@@ -57,6 +57,9 @@ type TerritorialSelectsProps = {
 
   // Estado e Município com busca e várias escolhas (PIB). Sem ele, selects nativos.
   multiple?: boolean;
+
+  // Quantos estados e quantos municípios cabem na multisseleção (o limite do servidor).
+  maxPlaces?: number;
 };
 
 type PlaceFilterProps = {
@@ -64,6 +67,7 @@ type PlaceFilterProps = {
   label: string;
   plural: string;
   multiple?: boolean;
+  max?: number;
   values?: string[];
   options: SelectOption[];
   onChange: (values?: string[]) => void;
@@ -102,6 +106,7 @@ export const TerritorialSelects = ({
   municipios,
   onChange,
   multiple,
+  maxPlaces,
 }: TerritorialSelectsProps) => {
   const id = useId();
   const { ano, area } = filters;
@@ -143,6 +148,7 @@ export const TerritorialSelects = ({
         label="Município"
         plural="municípios"
         multiple={multiple}
+        max={maxPlaces}
         values={filters.mun}
         options={municipios.map((mun) => ({
           value: mun.cdMun,

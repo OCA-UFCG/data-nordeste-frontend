@@ -13,6 +13,9 @@ import {
 export type TrendMetric = {
   key: string;
   label: string;
+
+  // Título curto da coluna de valores na tabela ("PIB Total"); sem ele, `label`.
+  valueLabel?: string;
   points: ChartPoint[];
   formatLabel: ValueFormatter;
   formatValue: ValueFormatter;
@@ -155,7 +158,7 @@ export const TrendChart = ({
           <DataTable
             content={{
               caption: active.label,
-              columns: ["Ano", active.label.replace(/^Evolução anual do /, "")],
+              columns: ["Ano", active.valueLabel ?? active.label],
               rows: active.points.map((point) => [
                 point.label,
                 active.formatValue(point.value),
