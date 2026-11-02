@@ -5,7 +5,6 @@ import { PanelTextsFrame } from "@/components/Panel/PanelTextsFrame";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
 import {
   PIB_ICON,
-  PIB_PANEL_TEXTS,
   PIB_SOURCE,
   PIB_TITLE,
 } from "@/components/PibDashboard/pibTheme";
@@ -15,6 +14,7 @@ import {
   PIB_MAX_PLACES,
   PIB_YEAR_RANGE,
 } from "@/features/panels/pib/pibPanel";
+import { loadPibPanelContent } from "@/features/panels/pib/pibContent";
 import {
   buildTerritorialSearch,
   parseTerritorialFilters,
@@ -76,11 +76,14 @@ export default async function PibDemoPage({
     PIB_YEAR_RANGE,
     PIB_MAX_PLACES,
   );
-  const panel = await loadPanel(filters);
+  const [panel, content] = await Promise.all([
+    loadPanel(filters),
+    loadPibPanelContent(),
+  ]);
 
   return (
     <HubTemplate>
-      <PanelTextsFrame panel={PIB_PANEL_TEXTS}>
+      <PanelTextsFrame content={content}>
         {panel ? (
           <PibDashboard data={panel} source={PIB_SOURCE} />
         ) : (

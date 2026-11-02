@@ -12,7 +12,7 @@ const INTRO_TEXT =
  * do Power BI e nas demos nativas. `collapsible`: no celular, o texto mostra
  * 3 linhas e "Ler mais".
  *
- * @example <PanelIntro panel={PIB_PANEL_TEXTS} collapsible />
+ * @example <PanelIntro panel={content.panel} collapsible />
  */
 export const PanelIntro = ({
   panel,

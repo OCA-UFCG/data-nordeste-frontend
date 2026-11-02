@@ -1,14 +1,13 @@
 import PowerBIContainer from "@/components/PowerBIContainer/PowerBiContainer";
 import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedPanelsSection";
 import HubTemplate from "@/templates/HubTemplate";
-import { getContent } from "@/utils/contentful";
-import { ReportData } from "@/utils/interfaces";
-import { DATA_PANEL_QUERY } from "@/utils/queries";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/config/seo";
-import { getSearchIndex } from "@/features/search/contentful";
-import { getRelatedPanelItems } from "@/features/search/relatedPanels";
+import {
+  getPanelEntry,
+  loadPanelContent,
+} from "@/features/panels/panelContent";
 import { pickSearchSnippet } from "@/features/seo/searchSnippet";
 import {
   CatalogLinkSection,
@@ -16,21 +15,13 @@ import {
   PanelDescriptionSection,
 } from "@/components/Panel/PanelTexts";
 
-interface IDataPanelContent {
-  panelsCollection: { items: ReportData[] };
-}
-
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const { panelsCollection: panels } = await getContent<IDataPanelContent>(
-    DATA_PANEL_QUERY,
-    { id },
-  );
-  const panel = panels.items[0];
+  const panel = await getPanelEntry(id);
 
   if (!panel) {
     return buildMetadata({
@@ -59,25 +50,16 @@ export default async function DataPanel({
   searchParams: Promise<{ pageName?: string }>;
 }) {
   const [{ id }, { pageName }] = await Promise.all([params, searchParams]);
+  const content = await loadPanelContent(
+    id,
+    `/data-panel/${encodeURIComponent(id)}`,
+  );
 
-  const [content, searchIndex] = await Promise.all([
-    getContent<IDataPanelContent>(DATA_PANEL_QUERY, { id }),
-    getSearchIndex(),
-  ]);
-  const panels = content.panelsCollection;
-
-  if (!panels.items.length) {
+  if (!content) {
     notFound();
   }
 
-  const panel = panels.items[0];
-  const relatedPanels = getRelatedPanelItems(searchIndex.items, {
-    title: panel.title,
-    href: `/data-panel/${encodeURIComponent(id)}`,
-    macroTheme: panel.macroTheme,
-    descriptionTitle: panel.descriptionTitle,
-    descriptionText: getPanelDescriptionText(panel),
-  });
+  const { panel, relatedItems } = content;
 
   return (
     <HubTemplate>
@@ -94,7 +76,7 @@ export default async function DataPanel({
 
       <PanelDescriptionSection panel={panel} />
 
-      <RelatedPanelsSection items={relatedPanels} />
+      <RelatedPanelsSection items={relatedItems} />
     </HubTemplate>
   );
 }

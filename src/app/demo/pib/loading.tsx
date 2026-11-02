@@ -1,15 +1,14 @@
 import { PanelPage } from "@/components/Panel/PanelPage";
-import { PanelTextsFrame } from "@/components/Panel/PanelTextsFrame";
 import {
   PIB_ICON,
-  PIB_PANEL_TEXTS,
   PIB_SOURCE,
   PIB_TITLE,
 } from "@/components/PibDashboard/pibTheme";
 import HubTemplate from "@/templates/HubTemplate";
 
 // Mesmo arranjo do PibDashboard, para a página não pular quando os dados chegam.
-// A navegação do HubTemplate vem do unstable_cache: o esqueleto não lê o Contentful.
+// Os textos do Contentful viram blocos cinza: o esqueleto aparece na hora, sem
+// esperar o Contentful mesmo com o cache vazio.
 const Bone = ({ className }: { className: string }) => (
   <div
     className={`animate-pulse rounded-lg bg-white shadow-sm motion-reduce:animate-none ${className}`}
@@ -26,6 +25,20 @@ const FiltersBones = () => (
       <Bone className="h-11 max-w-48" />
     </div>
   </>
+);
+
+// Fora do fundo cinza do painel: blocos cinza, não brancos como os do painel.
+const IntroBone = ({ className }: { className: string }) => (
+  <div
+    className={`animate-pulse rounded-lg bg-grey-200 motion-reduce:animate-none ${className}`}
+  />
+);
+
+const IntroBones = () => (
+  <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-3 px-4 pt-4 sm:px-6 lg:px-20">
+    <IntroBone className="h-12 w-64" />
+    <IntroBone className="h-20" />
+  </div>
 );
 
 const MapColumnBones = () => (
@@ -51,24 +64,23 @@ const ChartsColumnBones = () => (
 export default function PibDemoLoading() {
   return (
     <HubTemplate>
-      <PanelTextsFrame panel={PIB_PANEL_TEXTS}>
-        <PanelPage
-          title={PIB_TITLE}
-          icon={PIB_ICON}
-          tone="orange"
-          source={PIB_SOURCE}
-          fullMobile
-        >
-          <div role="status" className="flex flex-col gap-6">
-            <span className="sr-only">Carregando o painel de PIB…</span>
-            <FiltersBones />
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-              <MapColumnBones />
-              <ChartsColumnBones />
-            </div>
+      <IntroBones />
+      <PanelPage
+        title={PIB_TITLE}
+        icon={PIB_ICON}
+        tone="orange"
+        source={PIB_SOURCE}
+        fullMobile
+      >
+        <div role="status" className="flex flex-col gap-6">
+          <span className="sr-only">Carregando o painel de PIB…</span>
+          <FiltersBones />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+            <MapColumnBones />
+            <ChartsColumnBones />
           </div>
-        </PanelPage>
-      </PanelTextsFrame>
+        </div>
+      </PanelPage>
     </HubTemplate>
   );
 }
