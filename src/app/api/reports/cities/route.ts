@@ -1,8 +1,11 @@
+import { isReportFeatureEnabled } from "@/features/reports/availability";
 import { NextResponse } from "next/server";
 import { getAutomaticReportApiBaseUrl } from "@/features/reports/automaticReport";
 
 /** Proxies Automatic-Reporting cities. Example: `GET /api/reports/cities`. */
 export async function GET(): Promise<NextResponse> {
+  if (!isReportFeatureEnabled()) return new NextResponse(null, { status: 404 });
+
   try {
     const response = await fetch(`${getAutomaticReportApiBaseUrl()}/cities`, {
       cache: "no-store",

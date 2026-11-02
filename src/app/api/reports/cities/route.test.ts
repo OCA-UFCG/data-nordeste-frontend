@@ -28,4 +28,15 @@ describe("automatic report cities proxy", () => {
       cache: "no-store",
     });
   });
+
+  it("does not exist in prod while the report feature is off", async () => {
+    const automaticReportApi = new AutomaticReportCitiesFetchFake();
+    vi.stubGlobal("fetch", automaticReportApi.fetch);
+    vi.stubEnv("NEXT_PUBLIC_APP_ENV", "prod");
+
+    const response = await GET();
+
+    expect(response.status).toBe(404);
+    expect(automaticReportApi.fetch).not.toHaveBeenCalled();
+  });
 });

@@ -1,3 +1,4 @@
+import { isReportFeatureEnabled } from "@/features/reports/availability";
 import type { ISection } from "@/utils/interfaces";
 
 const REPORT_NAVIGATION_LINK: ISection = {
@@ -9,6 +10,8 @@ const REPORT_NAVIGATION_LINK: ISection = {
 
 /** Adds the reports page after catalog navigation. Example: `withReportsNavigation(content)`. */
 export function withReportsNavigation(content: ISection[]): ISection[] {
+  if (!isReportFeatureEnabled()) return content;
+
   if (content.some((item) => item.id === REPORT_NAVIGATION_LINK.id)) {
     return content;
   }
