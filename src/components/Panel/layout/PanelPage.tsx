@@ -91,9 +91,11 @@ export const PanelPage = ({
       info={info}
       compact={fullMobile}
     />
-    <div className="flex flex-col gap-6 bg-grey-100 pb-9 lg:rounded-b-lg">
+    <div
+      className={`flex flex-col pb-9 lg:rounded-b-lg ${top ? "lg:gap-6" : "gap-6"} ${PANEL_TONES[tone].surface}`}
+    >
       {top ? (
-        <div className="flex flex-col gap-6 bg-white pt-6 lg:pt-2">
+        <div className="flex flex-col gap-6 bg-white pt-2">
           {fullMobile ? null : (
             <div className="px-6 lg:hidden">
               <MobileSummaryAlert />

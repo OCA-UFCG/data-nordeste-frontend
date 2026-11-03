@@ -124,6 +124,7 @@ export type ChoroplethMapProps = {
 
   // Do xl em diante ocupa a altura do pai; abaixo, segue o formato da malha.
   fill?: boolean;
+  background?: string;
 };
 
 const MeshFallback = ({ status }: { status: MeshStatus }) => (
@@ -193,8 +194,11 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
         }
         style={
           props.fill
-            ? ({ "--map-ratio": aspectRatio } as CSSProperties)
-            : { aspectRatio }
+            ? ({
+                "--map-ratio": aspectRatio,
+                "backgroundColor": props.background,
+              } as CSSProperties)
+            : { aspectRatio, backgroundColor: props.background }
         }
         renderer={MAP_RENDERER}
         morph={false}

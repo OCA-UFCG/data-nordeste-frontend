@@ -64,9 +64,11 @@ const CardValue = ({
   caption,
   change,
   compact,
+  valueClassName,
 }: {
   value: string;
   fitTo: string;
+  valueClassName: string;
   caption?: string;
   change?: CardChange | null;
   compact: boolean;
@@ -75,7 +77,7 @@ const CardValue = ({
     className={`@container flex flex-col items-center pb-6 pt-3 text-center ${compact ? "px-2" : "px-4"}`}
   >
     <span
-      className="font-bold leading-tight text-green-800"
+      className={`font-bold leading-tight ${valueClassName}`}
       style={{ fontSize: fitValueFontSize(fitTo) }}
     >
       {value}
@@ -119,6 +121,7 @@ export const HighlightCard = ({
       caption={caption}
       change={change}
       compact={compact}
+      valueClassName={PANEL_TONES[tone].value}
     />
   </div>
 );

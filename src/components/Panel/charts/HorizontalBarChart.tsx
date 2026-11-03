@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { EChart } from "@/components/EChart/EChart";
 import {
   buildHorizontalBarOption,
-  type ChartPoint,
+  type BarPoint,
   type ValueFormatter,
 } from "@/features/panels/chartOptions";
 
@@ -15,7 +15,7 @@ export const HorizontalBarChart = ({
   color,
   className = "h-64 w-full sm:h-72",
 }: {
-  points: ChartPoint[];
+  points: BarPoint[];
   formatValue: ValueFormatter;
   label: string;
   color?: string;

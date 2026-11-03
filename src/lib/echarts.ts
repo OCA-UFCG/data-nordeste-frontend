@@ -1,5 +1,11 @@
 import * as echarts from "echarts/core";
-import { BarChart, LineChart, MapChart, PieChart } from "echarts/charts";
+import {
+  BarChart,
+  GaugeChart,
+  LineChart,
+  MapChart,
+  PieChart,
+} from "echarts/charts";
 import {
   AriaComponent,
   GridComponent,
@@ -13,6 +19,7 @@ echarts.use([
   AriaComponent,
   BarChart,
   CanvasRenderer,
+  GaugeChart,
   GridComponent,
 
   // Sem ele, o `labelLayout: { hideOverlap }` das séries é ignorado em silêncio.

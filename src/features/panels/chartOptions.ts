@@ -29,15 +29,21 @@ export {
   type TrendConfig,
 } from "@/features/panels/trendOption";
 
+export type BarPoint = ChartPoint & { color?: string };
+
 const barSeries = (
-  points: ChartPoint[],
+  points: BarPoint[],
   formatValue: ValueFormatter,
   color: string,
 ) => ({
   // id fixo: na troca de filtro as barras crescem ou encolhem até o valor novo.
   id: "bars",
   type: "bar",
-  data: points.map((point) => point.value),
+  data: points.map((point) =>
+    point.color
+      ? { value: point.value, itemStyle: { color: point.color } }
+      : point.value,
+  ),
 
   // A espessura acompanha a altura do card (40% da faixa fica de ar), até 32 px.
   barCategoryGap: "40%",
@@ -55,7 +61,7 @@ const barSeries = (
 });
 
 export const buildHorizontalBarOption = (
-  points: ChartPoint[],
+  points: BarPoint[],
   formatValue: ValueFormatter,
   width: number,
   color = ACCENT,
