@@ -82,9 +82,14 @@ outside the repository and rendered through frontend route/component logic.
   missing.
 - Feedback submissions are suppressed locally for 24 hours after a successful
   submit using the `datane@feedback_submitted` localStorage key.
-- Content revalidation depends on environment:
-  - beta or Contentful preview: 60 seconds
-  - production/default: 3600 seconds
+- Contentful content is cached with no expiry in every environment
+  (`revalidate: false`, tag `contentful`), so visits do not spend the
+  Contentful API quota. To show a published change, open
+  `/atualizar-conteudo` and enter the password from the
+  `CONTENT_CACHE_PASSWORD` runtime env var; it expires the tag and every
+  route. Without that env var the page refuses to run. Each server keeps its
+  own cache, so production (two origins behind Cloudflare) only refreshes the
+  origin that served the request.
 - Beta disables search indexing through Next.js metadata robots settings.
 - Google snippets (`<meta name="description">`) for `/data-panel/[id]` and
   `/boletim/[id]` come from the short-text Contentful field `seoDescription`
@@ -239,9 +244,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   computed from the municipal mesh (segments used once or shared by two
   states), which also covers the Sudene part of MG and ES. The class breaks
   are the ArcGIS ones; only the palette changed to a single green scale.
-- Municipalities are a multi-choice filter (`MultiSelectFilter`, shared in
-  `src/components/Panel/`): the URL keeps them as `?mun=2611606,2304400` (a
+- Municipalities are a multi-choice filter (`MultiSelectFilter`, in
+  `src/components/Panel/filters/`): the URL keeps them as `?mun=2611606,2304400` (a
   single code still works), the SQL uses `cd_mun = ANY($n)`, clicking the map
   adds or removes a municipality, and the map frames the whole selection. The
   choice is applied when the list closes, so ticking several boxes queries
-  once. The other demos still use a single municipality.
+  once.

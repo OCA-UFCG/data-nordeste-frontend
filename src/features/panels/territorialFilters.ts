@@ -7,11 +7,12 @@ export const TERRITORIAL_AREAS = [
 
 export type TerritorialArea = (typeof TERRITORIAL_AREAS)[number]["value"];
 
+// Listas: o PIB aceita vários; o Perfil Demográfico usa no máximo um.
 export type TerritorialFilters = {
   ano: number;
   area: TerritorialArea;
-  uf?: string;
-  mun?: string;
+  uf?: string[];
+  mun?: string[];
 };
 
 // `available` lista anos não contíguos (ex.: censos), do mais recente ao mais antigo.
@@ -37,7 +38,7 @@ export const firstValue = (value: string | string[] | undefined) =>
 
 export const UF_PATTERN = /^[A-Z]{2}$/;
 
-const MUNICIPALITY_CODE = /^\d{7}$/;
+const MUNICIPALITY_PATTERN = /^\d{7}$/;
 
 /**
  * Reads a comma-separated list of IBGE municipality codes, dropping invalid
@@ -46,7 +47,7 @@ const MUNICIPALITY_CODE = /^\d{7}$/;
  */
 export const parseMunicipalityCodes = (value?: string): string[] => [
   ...new Set(
-    (value ?? "").split(",").filter((code) => MUNICIPALITY_CODE.test(code)),
+    (value ?? "").split(",").filter((code) => MUNICIPALITY_PATTERN.test(code)),
   ),
 ];
 
@@ -56,21 +57,44 @@ export const serializeMunicipalityCodes = (codes: string[]): string =>
 const isTerritorialArea = (value?: string): value is TerritorialArea =>
   TERRITORIAL_AREAS.some((area) => area.value === value);
 
+// Valida e tira repetidos antes de cortar, como o servidor conta o limite: um
+// link com 100 códigos válidos e alguns inválidos mantém os 100 válidos.
+const parseCodes = (
+  value: string | string[] | undefined,
+  pattern: RegExp,
+  limit: number,
+): string[] | undefined => {
+  const valid = [value ?? []]
+    .flat()
+    .map((code) => code.toUpperCase())
+    .filter((code) => pattern.test(code));
+  const codes = [...new Set(valid)].slice(0, limit);
+
+  return codes.length ? codes : undefined;
+};
+
+/**
+ * Lê ano, área, UFs e municípios da URL, descartando o que não tem o formato esperado.
+ * `maxPlaces` limita quantas UFs/municípios entram; 1 mantém o filtro de valor único.
+ *
+ * @example parseTerritorialFilters({ uf: ["PB", "PE"] }, range, 100).uf // ["PB", "PE"]
+ */
 export const parseTerritorialFilters = (
   params: SearchParams,
   range: YearRange,
+  maxPlaces = 1,
 ): TerritorialFilters => {
   const defaults = defaultTerritorialFilters(range);
   const ano = Number(firstValue(params.ano));
   const area = firstValue(params.area);
-  const uf = firstValue(params.uf)?.toUpperCase();
-  const mun = firstValue(params.mun);
+  const uf = parseCodes(params.uf, UF_PATTERN, maxPlaces);
+  const mun = parseCodes(params.mun, MUNICIPALITY_PATTERN, maxPlaces);
 
   return {
     ano: listYears(range).includes(ano) ? ano : defaults.ano,
     area: isTerritorialArea(area) ? area : defaults.area,
-    ...(uf && UF_PATTERN.test(uf) ? { uf } : {}),
-    ...(mun && MUNICIPALITY_CODE.test(mun) ? { mun } : {}),
+    ...(uf ? { uf } : {}),
+    ...(mun ? { mun } : {}),
   };
 };
 
@@ -83,8 +107,11 @@ export const buildTerritorialSearch = (
 
   if (filters.ano !== defaults.ano) params.set("ano", String(filters.ano));
   if (filters.area !== defaults.area) params.set("area", filters.area);
-  if (filters.uf) params.set("uf", filters.uf);
-  if (filters.mun) params.set("mun", filters.mun);
+
+  // Vários valores repetem o parâmetro (`?uf=PB&uf=PE`); com um só, a URL é a
+  // mesma de antes (`?uf=PB`), então links já compartilhados seguem valendo.
+  filters.uf?.forEach((uf) => params.append("uf", uf));
+  filters.mun?.forEach((mun) => params.append("mun", mun));
   const search = params.toString();
 
   return search ? `?${search}` : "";

@@ -1,9 +1,11 @@
 import {
   baseOption,
-  mapViewportOption,
   SELECTED_BORDER,
   TOOLTIP_BASE,
-  type MapViewport,
+} from "@/features/panels/chartBase";
+import {
+  mapViewportOption,
+  type ChoroplethFrame,
 } from "@/features/panels/chartOptions";
 import type { BorderSegment } from "@/features/panels/stateBorders";
 import type { ChartOption } from "@/lib/echarts";
@@ -13,7 +15,7 @@ export const BORDER_COLOR = "#292829";
 // `tooltip` já vem em HTML escapado, montado por quem conhece o indicador.
 export type LayeredRegion = { code: string; color: string; tooltip: string };
 
-export type LayeredMapConfig = MapViewport & {
+export type LayeredMapConfig = ChoroplethFrame & {
   regions: LayeredRegion[];
   selectedCodes: string[];
   borders: BorderSegment[] | null;
@@ -68,6 +70,10 @@ export const buildLayeredMapOption = (
   },
   geo: {
     ...mapViewportOption(config),
+    emphasis: {
+      label: { show: false },
+      itemStyle: { areaColor: SELECTED_BORDER },
+    },
     tooltip: { show: true },
     label: { show: false },
     regions: geoRegions(config),

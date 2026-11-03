@@ -1,6 +1,6 @@
-import { ChartCard, ChartNotice } from "@/components/Panel/ChartCard";
+import { ChartCard, ChartNotice } from "@/components/Panel/cards/ChartCard";
 import type { ChartPoint } from "@/features/panels/chartOptions";
-import { RankedBars } from "@/components/Panel/RankedBars";
+import { RankedBars } from "@/components/Panel/charts/RankedBars";
 import {
   FNE_CHART_TITLES,
   type FneChart,

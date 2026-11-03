@@ -3,6 +3,7 @@ import { getContent } from "@/utils/contentful";
 import { HEAD_QUERY } from "@/utils/queries";
 import type { ISection } from "@/utils/interfaces";
 import { REVALIDATE } from "@/utils/constants";
+import { CONTENTFUL_CACHE_TAG } from "@/config/revalidation";
 
 type NavigationContent = {
   headerCollection: { items: ISection[] };
@@ -17,5 +18,5 @@ export const getNavigationSections = unstable_cache(
     return content.headerCollection.items;
   },
   ["global-navigation-sections"],
-  { revalidate: REVALIDATE },
+  { revalidate: REVALIDATE, tags: [CONTENTFUL_CACHE_TAG] },
 );

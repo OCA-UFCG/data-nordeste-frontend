@@ -1,6 +1,7 @@
 import * as echarts from "echarts/core";
 import {
   BarChart,
+  GaugeChart,
   LineChart,
   LinesChart,
   MapChart,
@@ -13,14 +14,19 @@ import {
   LegendComponent,
   TooltipComponent,
 } from "echarts/components";
+import { LabelLayout } from "echarts/features";
 import { CanvasRenderer, SVGRenderer } from "echarts/renderers";
 
 echarts.use([
   AriaComponent,
   BarChart,
   CanvasRenderer,
+  GaugeChart,
   GeoComponent,
   GridComponent,
+
+  // Sem ele, o `labelLayout: { hideOverlap }` das séries é ignorado em silêncio.
+  LabelLayout,
   LegendComponent,
   LineChart,
   LinesChart,

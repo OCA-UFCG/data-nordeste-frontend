@@ -1,19 +1,12 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { PostType } from "@/features/posts/postTypes";
 import {
-  RECENT_NEWSLETTER_POST_TYPES,
-  RECENT_PANEL_POST_TYPES,
-  RECENT_SECTION_POST_TYPES,
-  RECENT_STORY_POST_TYPES,
-  PostType,
-} from "@/features/posts/postTypes";
+  RECENT_TAB_POST_TYPES,
+  type RecentFilterKey,
+} from "@/features/home/recentTabs";
 
-export type RecentFilterKey =
-  | "all"
-  | "panels"
-  | "stories"
-  | "newsletters"
-  | "publications";
+export type { RecentFilterKey };
 
 export const FILTERS: {
   [key in RecentFilterKey]: {
@@ -24,31 +17,31 @@ export const FILTERS: {
   };
 } = {
   all: {
-    filter: RECENT_SECTION_POST_TYPES,
+    filter: RECENT_TAB_POST_TYPES.all,
     text: "Todos",
     href: "/explore?page=1",
     key: "all",
   },
   panels: {
-    filter: RECENT_PANEL_POST_TYPES,
+    filter: RECENT_TAB_POST_TYPES.panels,
     text: "Painéis",
     href: "/explore?page=1",
     key: "panels",
   },
   stories: {
-    filter: RECENT_STORY_POST_TYPES,
+    filter: RECENT_TAB_POST_TYPES.stories,
     text: "Narrativas",
     href: "/posts?type_in=data-story&page=1",
     key: "stories",
   },
   newsletters: {
-    filter: RECENT_NEWSLETTER_POST_TYPES,
+    filter: RECENT_TAB_POST_TYPES.newsletters,
     text: "Boletins",
     href: "/posts?type_in=newsletter&page=1",
     key: "newsletters",
   },
   publications: {
-    filter: [...RECENT_STORY_POST_TYPES, ...RECENT_NEWSLETTER_POST_TYPES],
+    filter: RECENT_TAB_POST_TYPES.publications,
     text: "Publicações",
     href: "/posts?page=1",
     key: "publications",

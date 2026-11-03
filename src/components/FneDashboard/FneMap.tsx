@@ -1,8 +1,8 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
-import { LayeredMap } from "@/components/Panel/LayeredMap";
-import { MapLegend } from "@/components/Panel/mapParts";
+import { LayeredMap } from "@/components/Panel/charts/LayeredMap";
+import { MapLegend } from "@/components/Panel/charts/mapParts";
 import {
   FNE_YEAR_RANGE,
   type FneVisao,

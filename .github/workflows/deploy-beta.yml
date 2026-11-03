@@ -66,6 +66,7 @@ jobs:
             --name ${{ vars.CONTAINER_NAME_BETA }} \
             --restart unless-stopped \
             -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" \
+            -e CONTENT_CACHE_PASSWORD="${{ secrets.CONTENT_CACHE_PASSWORD }}" \
             -p ${{ vars.HOST_PORT_BETA }}:${{ vars.CONTAINER_PORT }} \
             -d \
             ${{ vars.DOCKER_IMAGE_BETA }}:${{ github.ref_name }}
@@ -76,5 +77,9 @@ jobs:
             ${{ vars.NETWORK_NAME }} \
             ${{ vars.CONTAINER_NAME_BETA }}
 
+      # Each release is pulled by its own tag, so old images are never
+      # dangling and a plain prune keeps them. -a removes every image no
+      # container uses; image prune (not system prune) leaves stopped
+      # containers alone.
       - name: Prune unused Docker images
-        run: sudo docker system prune -f
+        run: sudo docker image prune -a -f

@@ -6,6 +6,16 @@ vi.mock("@/utils/contentful", () => ({
   getContent: vi.fn(),
 }));
 
+vi.mock("@/features/home/recentPosts", () => ({
+  fetchRecentPostsByTab: vi.fn().mockResolvedValue({
+    all: [],
+    panels: [],
+    stories: [],
+    newsletters: [],
+    publications: [],
+  }),
+}));
+
 vi.mock("@/templates/HubTemplate", () => ({
   default: ({ children }: { children: React.ReactNode }) => (
     <main>{children}</main>

@@ -4,12 +4,10 @@ import { useId } from "react";
 import {
   ALL_OPTION,
   FilterSelect,
-} from "@/components/Panel/TerritorialFilterBar";
+} from "@/components/Panel/filters/TerritorialFilterBar";
 import {
-  IDH_RECORTES,
   IDH_YEAR_RANGE,
   type IdhFilters,
-  type IdhRecorte,
 } from "@/features/panels/idh/idhPanel";
 import { listYears } from "@/features/panels/territorialFilters";
 import type { UfOption } from "@/features/panels/territorialOptions";
@@ -38,15 +36,6 @@ export const IdhSelects = ({
         value={String(filters.ano)}
         options={YEARS}
         onChange={(value) => onChange({ ...filters, ano: Number(value) })}
-      />
-      <FilterSelect
-        id={`${id}-recorte`}
-        label="Recorte"
-        value={filters.recorte}
-        options={[...IDH_RECORTES]}
-        onChange={(value) =>
-          onChange({ ...filters, recorte: value as IdhRecorte })
-        }
       />
       <FilterSelect
         id={`${id}-uf`}

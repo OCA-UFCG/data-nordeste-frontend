@@ -130,7 +130,7 @@ Two behaviors there are load-bearing:
 
 Asset URLs are rewritten to `/contentful-assets/*`, proxied to `images.ctfassets.net`
 by `next.config.mjs`. Cache windows come from `REVALIDATE` /
-`CONTENT_REVALIDATE_SECONDS`: 60s on beta or Contentful preview, 3600s otherwise.
+`CONTENT_REVALIDATE`: Contentful reads never expire; `/atualizar-conteudo` clears the `contentful` tag on demand.
 
 ### Guards you must not soften
 

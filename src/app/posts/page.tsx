@@ -64,18 +64,14 @@ export default async function PostsPage({
     }),
   ]);
   const { pageHeadersCollection: pageHeaders } = pageContent;
-  const { postCollection: initialPosts } = postsContent;
-  const totalPages = buildPostsTotalPages(initialPosts.total);
+  const { postCollection: pagePosts } = postsContent;
+  const totalPages = buildPostsTotalPages(pagePosts.total);
 
   return (
     <HubTemplate>
       <PageHeader content={pageHeaders.items[0]} />
       <Suspense>
-        <Posts
-          rootFilter={rootFilter}
-          totalPages={totalPages || 1}
-          initialPosts={initialPosts.items}
-        />
+        <Posts totalPages={totalPages || 1} posts={pagePosts.items} />
       </Suspense>
     </HubTemplate>
   );

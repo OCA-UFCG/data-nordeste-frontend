@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
-import { IDH_ICON, IDH_TITLE } from "@/components/IdhDashboard/idhTheme";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { PanelMessage } from "@/components/Panel/PanelShell";
-import { buildMetadata } from "@/config/seo";
 import {
+  IDH_ICON,
+  IDH_SOURCE,
+  IDH_TITLE,
+} from "@/components/IdhDashboard/idhTheme";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { PanelMessage } from "@/components/Panel/layout/PanelShell";
+import { PanelTextsFrame } from "@/components/Panel/texts/PanelTextsFrame";
+import { buildMetadata } from "@/config/seo";
+import { loadIdhPanelContent } from "@/features/panels/idh/idhContent";
+import {
+  buildIdhSearch,
   loadIdhPanel,
   parseIdhFilters,
   type IdhFilters,
@@ -24,9 +31,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const SOURCE =
-  "Fonte dos dados: Atlas do Desenvolvimento Humano no Brasil (PNUD, Ipea e Fundação João Pinheiro), com base na PNAD Contínua do IBGE. Sem estado selecionado, os valores são a média simples dos estados (ou regiões metropolitanas) do Nordeste. Consultado ao vivo no banco do Data Nordeste.";
-
 const loadPanel = async (filters: IdhFilters) => {
   try {
     return await loadIdhPanel(queryDataDb, filters);
@@ -43,32 +47,53 @@ const loadPanel = async (filters: IdhFilters) => {
   }
 };
 
+const LoadFailedMessage = ({ filters }: { filters: IdhFilters }) => (
+  <PanelMessage>
+    Não foi possível carregar os dados do painel agora. Tente novamente em
+    alguns minutos.{" "}
+    <a
+      href={`/demo/idh${buildIdhSearch(filters)}`}
+      className="font-medium text-green-900 underline underline-offset-4"
+    >
+      Tentar novamente
+    </a>
+  </PanelMessage>
+);
+
 export default async function IdhDemoPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const panel = await loadPanel(parseIdhFilters(await searchParams));
+  const filters = parseIdhFilters(await searchParams);
+  const [panel, content] = await Promise.all([
+    loadPanel(filters),
+    loadIdhPanelContent(),
+  ]);
 
   // A key remonta as abas quando um link muda ?visao= sem trocar de página.
 
   return (
     <HubTemplate>
-      {panel ? (
-        <IdhDashboard key={panel.filters.visao} data={panel} source={SOURCE} />
-      ) : (
-        <PanelPage
-          title={IDH_TITLE}
-          icon={IDH_ICON}
-          tone="orange"
-          source={SOURCE}
-        >
-          <PanelMessage>
-            Não foi possível consultar o banco de dados. Confira se o túnel para
-            o banco está ativo e se <code>DATA_DB_URL</code> está configurada.
-          </PanelMessage>
-        </PanelPage>
-      )}
+      <PanelTextsFrame content={content}>
+        {panel ? (
+          <IdhDashboard
+            key={panel.filters.visao}
+            data={panel}
+            source={IDH_SOURCE}
+          />
+        ) : (
+          <PanelPage
+            title={IDH_TITLE}
+            icon={IDH_ICON}
+            tone="idh"
+            source={IDH_SOURCE}
+            fullMobile
+          >
+            <LoadFailedMessage filters={filters} />
+          </PanelPage>
+        )}
+      </PanelTextsFrame>
     </HubTemplate>
   );
 }

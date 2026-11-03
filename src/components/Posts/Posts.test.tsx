@@ -1,37 +1,55 @@
-import { render, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { Posts } from "./Posts";
-import { getContent } from "@/utils/contentful";
+import { IPublication } from "@/utils/interfaces";
+
+const searchParams = { current: new URLSearchParams("page=1") };
 
 vi.mock("next/navigation", () => ({
-  useSearchParams: () => new URLSearchParams("page=1"),
-}));
-
-vi.mock("@/utils/contentful", () => ({
-  getContent: vi.fn(),
+  useSearchParams: () => searchParams.current,
 }));
 
 vi.mock("../PostsGrid/PostsGrid", () => ({
-  PostsGrid: () => <div>posts grid</div>,
+  PostsGrid: ({
+    posts,
+    currentPage,
+  }: {
+    posts: IPublication[];
+    currentPage: number;
+  }) => (
+    <div>
+      <span>página {currentPage}</span>
+      {posts.map((post) => (
+        <article key={post.title}>{post.title}</article>
+      ))}
+    </div>
+  ),
 }));
 
-describe("Posts", () => {
-  it("renders server-provided posts on mount without refetching", async () => {
-    vi.mocked(getContent).mockResolvedValue({
-      postCollection: {
-        total: 1,
-        items: [],
-      },
-    });
+const post = (title: string) =>
+  ({
+    title,
+    link: `/posts/${title}`,
+    thumb: { url: "/thumb.png" },
+    type: "newsletter",
+    date: "2024-01-01",
+  }) satisfies IPublication;
 
-    render(
-      <Posts
-        totalPages={1}
-        initialPosts={[]}
-        rootFilter={{ type_in: ["newsletter"] }}
-      />,
+describe("Posts", () => {
+  it("shows the page the server rendered after a pagination link", () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const { rerender } = render(
+      <Posts totalPages={2} posts={[post("Boletim da página 1")]} />,
     );
 
-    await waitFor(() => expect(getContent).not.toHaveBeenCalled());
+    searchParams.current = new URLSearchParams("page=2");
+    rerender(<Posts totalPages={2} posts={[post("Boletim da página 2")]} />);
+
+    expect(screen.getByText("Boletim da página 2")).toBeInTheDocument();
+    expect(screen.getByText("página 2")).toBeInTheDocument();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
   });
 });

@@ -1,4 +1,4 @@
-import { escapeHtml } from "@/features/panels/chartOptions";
+import { escapeHtml } from "@/features/panels/chartBase";
 import { getBucket } from "@/features/panels/choropleth";
 import type { FneVisao } from "@/features/panels/fne/fneFilters";
 import {

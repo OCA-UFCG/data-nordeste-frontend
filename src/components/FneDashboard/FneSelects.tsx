@@ -1,11 +1,11 @@
 "use client";
 
 import { useId } from "react";
-import { MultiSelectFilter } from "@/components/Panel/MultiSelectFilter";
+import { MultiSelectFilter } from "@/components/Panel/filters/MultiSelectFilter";
 import {
   ALL_OPTION,
   FilterSelect,
-} from "@/components/Panel/TerritorialFilterBar";
+} from "@/components/Panel/filters/TerritorialFilterBar";
 import {
   FNE_BIOMAS,
   FNE_SEMIARIDO,

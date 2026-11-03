@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChartCard, ChartNotice } from "@/components/Panel/ChartCard";
+import { ChartCard, ChartNotice } from "@/components/Panel/cards/ChartCard";
 import type { FneVisao } from "@/features/panels/fne/fneFilters";
 import { FNE_FORMATTERS } from "@/features/panels/fne/fneLabels";
 import type { FneHighlight } from "@/features/panels/fne/fnePanel";

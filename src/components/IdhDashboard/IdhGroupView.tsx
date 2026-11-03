@@ -1,102 +1,111 @@
 "use client";
 
-import { ChartColumnIncreasing, Wallet } from "lucide-react";
-import { useMemo } from "react";
-import { ChartCard } from "@/components/Panel/ChartCard";
-import { ColumnChart } from "@/components/Panel/ColumnChart";
-import { HighlightCard } from "@/components/Panel/HighlightCards";
-import type { KpiItem } from "@/components/Panel/KpiCards";
-import { PanelCarousel } from "@/components/Panel/PanelCarousel";
+import { ChartCard, ChartNotice } from "@/components/Panel/cards/ChartCard";
+import { GaugeChart } from "@/components/Panel/charts/GaugeChart";
+import { HorizontalBarChart } from "@/components/Panel/charts/HorizontalBarChart";
 import type {
   IdhGroupPoint,
   IdhGroupSerie,
 } from "@/features/panels/idh/idhPanel";
 import {
-  formatIdh,
   formatIdhCard,
   formatRenda,
-  formatRendaLabel,
-  IDH_COLORS,
+  IDH_GROUP_COLORS,
   NO_DATA,
-  yearLabels,
 } from "@/features/panels/idh/idhFormat";
 
-type GroupMetric = "idh" | "rendimento";
+type GroupValue = { label: string; point: IdhGroupPoint };
 
-const cardValue = (
-  group: IdhGroupSerie,
-  ano: number,
-  metric: GroupMetric,
-  format: (value: number) => string,
-) => {
-  const point = group.serie.find((item) => item.ano === ano);
+const CHART_HEIGHT = "h-48 w-full sm:h-56";
 
-  return point ? format(point[metric]) : NO_DATA;
-};
+const pointsInYear = (groups: IdhGroupSerie[], ano: number): GroupValue[] =>
+  groups.flatMap((group) => {
+    const point = group.serie.find((item) => item.ano === ano);
 
-const groupCards = (groups: IdhGroupSerie[], ano: number): KpiItem[] => [
-  ...groups.map((group) => ({
-    icon: ChartColumnIncreasing,
-    label: `IDH · ${group.label}`,
-    value: cardValue(group, ano, "idh", formatIdhCard),
-  })),
-  ...groups.map((group) => ({
-    icon: Wallet,
-    label: `Rendimento médio · ${group.label}`,
-    value: cardValue(group, ano, "rendimento", formatRenda),
-  })),
-];
+    return point ? [{ label: group.label, point }] : [];
+  });
 
-const useGroupSeries = (groups: IdhGroupSerie[], metric: GroupMetric) =>
-  useMemo(
-    () => ({
-      categories: yearLabels(groups[0]?.serie ?? []),
-      series: groups.map((group, index) => ({
-        name: group.label,
-        color: IDH_COLORS[index % IDH_COLORS.length],
-        values: group.serie.map((point: IdhGroupPoint) => point[metric]),
-      })),
-    }),
-    [groups, metric],
-  );
+const GaugePair = ({
+  title,
+  values,
+  metric,
+}: {
+  title: string;
+  values: GroupValue[];
+  metric: "idh" | "gini";
+}) => (
+  <ChartCard title={title}>
+    {values.length ? (
+      <div className="grid grid-cols-2 gap-2">
+        {values.map(({ label, point }) => (
+          <GaugeChart
+            key={label}
+            label={`Medidor: ${title} · ${label}`}
+            name={label}
+            value={point[metric]}
+            max={1}
+            color={IDH_GROUP_COLORS[label]}
+            formatValue={formatIdhCard}
+            className={CHART_HEIGHT}
+          />
+        ))}
+      </div>
+    ) : (
+      <ChartNotice>{NO_DATA}</ChartNotice>
+    )}
+  </ChartCard>
+);
+
+const GroupBars = ({
+  title,
+  values,
+  metric,
+}: {
+  title: string;
+  values: GroupValue[];
+  metric: "rendaPerCapita" | "rendimento";
+}) => (
+  <ChartCard title={title}>
+    {values.length ? (
+      <HorizontalBarChart
+        label={`Gráfico de barras: ${title}`}
+        points={values.map(({ label, point }) => ({
+          label,
+          value: point[metric],
+          color: IDH_GROUP_COLORS[label],
+        }))}
+        formatValue={formatRenda}
+        className={CHART_HEIGHT}
+      />
+    ) : (
+      <ChartNotice>{NO_DATA}</ChartNotice>
+    )}
+  </ChartCard>
+);
 
 export const IdhGroupView = ({
   groups,
   ano,
-  dimension,
 }: {
   groups: IdhGroupSerie[];
   ano: number;
-  dimension: string;
 }) => {
-  const idh = useGroupSeries(groups, "idh");
-  const rendimento = useGroupSeries(groups, "rendimento");
+  const values = pointsInYear(groups, ano);
 
   return (
-    <div className="flex flex-col gap-6">
-      <PanelCarousel label="Indicadores" columns="lg:grid-cols-4">
-        {groupCards(groups, ano).map((item) => (
-          <HighlightCard key={item.label} tone="orange" {...item} />
-        ))}
-      </PanelCarousel>
-      <div className="flex flex-col gap-6">
-        <ChartCard title={`Evolução anual do IDH ${dimension}`}>
-          <ColumnChart
-            label={`Gráfico de colunas do IDH ${dimension} por ano`}
-            {...idh}
-            formatLabel={formatIdh}
-            formatValue={formatIdh}
-          />
-        </ChartCard>
-        <ChartCard title={`Rendimento médio dos ocupados ${dimension} (R$)`}>
-          <ColumnChart
-            label={`Gráfico de colunas do rendimento médio ${dimension} por ano`}
-            {...rendimento}
-            formatLabel={formatRendaLabel}
-            formatValue={formatRenda}
-          />
-        </ChartCard>
-      </div>
+    <div className="grid gap-6 lg:grid-cols-2">
+      <GaugePair title="IDH" values={values} metric="idh" />
+      <GroupBars
+        title="Renda per capita"
+        values={values}
+        metric="rendaPerCapita"
+      />
+      <GaugePair title="Índice de Gini" values={values} metric="gini" />
+      <GroupBars
+        title="Rendimento médio dos ocupados"
+        values={values}
+        metric="rendimento"
+      />
     </div>
   );
 };

@@ -5,10 +5,10 @@ import { FneOverview } from "@/components/FneDashboard/FneOverview";
 import { FneSelects } from "@/components/FneDashboard/FneSelects";
 import { FneIntro, WhatIsFne } from "@/components/FneDashboard/FneTexts";
 import { FNE_ICON, FNE_TITLE } from "@/components/FneDashboard/fneTheme";
-import { PanelFilters } from "@/components/Panel/PanelFilters";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { PanelTabs } from "@/components/Panel/PanelTabs";
-import { usePanelNavigation } from "@/components/Panel/useTerritorialNavigation";
+import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { PanelTabs } from "@/components/Panel/layout/PanelTabs";
+import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
   buildFneSearch,
   DEFAULT_FNE_FILTERS,
@@ -73,7 +73,7 @@ export const FneDashboard = ({
       icon={FNE_ICON}
       tone="green"
       source={source}
-      summarized={false}
+      fullMobile
       top={
         <PanelTabs
           tabs={FNE_VISOES}

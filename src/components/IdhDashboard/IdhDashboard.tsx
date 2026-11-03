@@ -3,12 +3,14 @@
 import { useCallback, useId, useState } from "react";
 import { IdhGroupView } from "@/components/IdhDashboard/IdhGroupView";
 import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
+import { IdhSaibaMais } from "@/components/IdhDashboard/IdhSaibaMais";
 import { IdhSelects } from "@/components/IdhDashboard/IdhSelects";
 import { IDH_ICON, IDH_TITLE } from "@/components/IdhDashboard/idhTheme";
-import { PanelFilters } from "@/components/Panel/PanelFilters";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { PanelTabs } from "@/components/Panel/PanelTabs";
-import { usePanelNavigation } from "@/components/Panel/useTerritorialNavigation";
+import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
+import { SelectionSummary } from "@/components/Panel/filters/SelectionSummary";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { PanelTabs } from "@/components/Panel/layout/PanelTabs";
+import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
   buildIdhSearch,
   DEFAULT_IDH_FILTERS,
@@ -40,31 +42,24 @@ const IdhTabContent = ({
   tab,
   data,
   onSelectUf,
+  onSelectYear,
 }: {
   tab: IdhVisao;
   data: IdhPanelData;
   onSelectUf: (uf: string) => void;
+  onSelectYear: (ano: number) => void;
 }) => {
-  if (tab === "sexo") {
+  if (tab === "geral") {
     return (
-      <IdhGroupView
-        groups={data.sexo}
-        ano={data.filters.ano}
-        dimension="por sexo"
-      />
-    );
-  }
-  if (tab === "cor") {
-    return (
-      <IdhGroupView
-        groups={data.cor}
-        ano={data.filters.ano}
-        dimension="por cor"
+      <IdhOverview
+        data={data}
+        onSelectUf={onSelectUf}
+        onSelectYear={onSelectYear}
       />
     );
   }
 
-  return <IdhOverview data={data} onSelectUf={onSelectUf} />;
+  return <IdhGroupView groups={data[tab]} ano={data.filters.ano} />;
 };
 
 export const IdhDashboard = ({
@@ -83,25 +78,31 @@ export const IdhDashboard = ({
   };
   const changeFilters = (next: IdhFilters) =>
     applyFilters({ ...next, visao: tab });
+  const summary = describeIdhSelection(data);
 
   return (
     <PanelPage
       title={IDH_TITLE}
       icon={IDH_ICON}
-      tone="orange"
+      tone="idh"
       source={source}
+      info={<IdhSaibaMais visao={tab} />}
+      fullMobile
       top={
         <PanelTabs
           tabs={IDH_VISOES}
           activeKey={tab}
           idPrefix={idPrefix}
           onSelect={(key) => selectTab(key as IdhVisao)}
+          tone="idh"
         />
       }
     >
       <PanelFilters
-        summary={describeIdhSelection(data)}
+        summary={summary}
         onClear={() => changeFilters(DEFAULT_IDH_FILTERS)}
+        isPending={isPending}
+        sticky
       >
         <IdhSelects
           filters={data.filters}
@@ -109,17 +110,19 @@ export const IdhDashboard = ({
           onChange={changeFilters}
         />
       </PanelFilters>
+      <SelectionSummary summary={summary} isPending={isPending} />
       <div
         id={`${idPrefix}-panel`}
         role="tabpanel"
         aria-labelledby={`${idPrefix}-tab-${tab}`}
         aria-busy={isPending}
-        className="transition-opacity aria-busy:opacity-60"
+        className="transition-opacity duration-300 ease-out aria-busy:opacity-75 aria-busy:delay-150 motion-reduce:transition-none"
       >
         <IdhTabContent
           tab={tab}
           data={data}
           onSelectUf={(uf) => changeFilters({ ...data.filters, uf })}
+          onSelectYear={(ano) => changeFilters({ ...data.filters, ano })}
         />
       </div>
     </PanelPage>

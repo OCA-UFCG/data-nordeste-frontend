@@ -1,13 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { RecentSection } from "./RecentSection";
-import { getContent } from "@/utils/contentful";
 import { IPublication } from "@/utils/interfaces";
-
-vi.mock("@/utils/contentful", () => ({
-  getContent: vi.fn(),
-}));
+import type { RecentPostsByTab } from "@/features/home/recentPosts";
 
 vi.mock("@/components/CardCarousel/CardCarousel", () => ({
   CardCarousel: ({ items }: { items: IPublication[] }) => (
@@ -59,106 +55,57 @@ const newsletterPosts = [
   },
 ] satisfies IPublication[];
 
+const postsByTab = {
+  all: initialPosts,
+  panels: panelPosts,
+  stories: storyPosts,
+  newsletters: newsletterPosts,
+  publications: [...storyPosts, ...newsletterPosts],
+} satisfies RecentPostsByTab;
+
+const renderRecentSection = () =>
+  render(
+    <RecentSection
+      header={{ id: "new", title: "Recentes", subtitle: "Últimos itens" }}
+      content={initialPosts}
+      postsByTab={postsByTab}
+    />,
+  );
+
+const expectNoBrowserFetch = (fetchSpy: ReturnType<typeof vi.fn>) => {
+  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(
+    screen.getAllByRole("link", { name: /Ver Todos/i })[0],
+  ).toHaveAttribute("href", "/explore?page=1");
+};
+
 describe("RecentSection", () => {
   it("links all recent items to the explore page before a type is selected", () => {
-    render(
-      <RecentSection
-        header={{ id: "new", title: "Recentes", subtitle: "Últimos itens" }}
-        content={initialPosts}
-      />,
-    );
-
-    expect(
-      screen.getAllByRole("link", { name: /Ver Todos/i })[0],
-    ).toHaveAttribute("href", "/explore?page=1");
-  });
-
-  it("fetches filtered posts and updates the all-posts link when type changes", async () => {
-    vi.mocked(getContent).mockResolvedValue({
-      postCollection: { items: panelPosts },
-    });
-
-    render(
-      <RecentSection
-        header={{ id: "new", title: "Recentes", subtitle: "Últimos itens" }}
-        content={initialPosts}
-      />,
-    );
+    renderRecentSection();
 
     expect(screen.getByText("Publicação inicial")).toBeInTheDocument();
-
-    await userEvent.click(screen.getByLabelText("Painéis"));
-
-    await waitFor(() => {
-      expect(screen.getByText("Painel atualizado")).toBeInTheDocument();
-    });
-    expect(getContent).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({
-        limit: 12,
-        filter: { type_in: ["data-panel"] },
-      }),
-    );
     expect(
       screen.getAllByRole("link", { name: /Ver Todos/i })[0],
     ).toHaveAttribute("href", "/explore?page=1");
   });
 
-  it("fetches only narratives when the narratives filter is selected", async () => {
-    vi.mocked(getContent).mockResolvedValue({
-      postCollection: { items: storyPosts },
-    });
+  it.each([
+    ["Painéis", "Painel atualizado"],
+    ["Narrativas", "Narrativa atualizada"],
+    ["Boletins", "Boletim atualizado"],
+  ])(
+    "shows the preloaded %s tab without calling Contentful",
+    async (tabLabel, expectedTitle) => {
+      const fetchSpy = vi.fn();
+      vi.stubGlobal("fetch", fetchSpy);
+      renderRecentSection();
 
-    render(
-      <RecentSection
-        header={{ id: "new", title: "Recentes", subtitle: "Últimos itens" }}
-        content={initialPosts}
-      />,
-    );
+      await userEvent.click(screen.getByLabelText(tabLabel));
 
-    await userEvent.click(screen.getByLabelText("Narrativas"));
-
-    await waitFor(() => {
-      expect(screen.getByText("Narrativa atualizada")).toBeInTheDocument();
-    });
-    expect(getContent).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({
-        limit: 12,
-        filter: { type_in: ["data-story"] },
-      }),
-    );
-    expect(
-      screen.getAllByRole("link", { name: /Ver Todos/i })[0],
-    ).toHaveAttribute("href", "/explore?page=1");
-  });
-
-  it("fetches only newsletters when the newsletters filter is selected", async () => {
-    vi.mocked(getContent).mockResolvedValue({
-      postCollection: { items: newsletterPosts },
-    });
-
-    render(
-      <RecentSection
-        header={{ id: "new", title: "Recentes", subtitle: "Últimos itens" }}
-        content={initialPosts}
-      />,
-    );
-
-    await userEvent.click(screen.getByLabelText("Boletins"));
-
-    await waitFor(() => {
-      expect(screen.getByText("Boletim atualizado")).toBeInTheDocument();
-    });
-    expect(getContent).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({
-        limit: 12,
-        filter: { type_in: ["newsletter"] },
-      }),
-    );
-    expect(
-      screen.getAllByRole("link", { name: /Ver Todos/i })[0],
-    ).toHaveAttribute("href", "/explore?page=1");
-  });
+      expect(screen.getByText(expectedTitle)).toBeInTheDocument();
+      expect(screen.queryByText("Publicação inicial")).not.toBeInTheDocument();
+      expectNoBrowserFetch(fetchSpy);
+      vi.unstubAllGlobals();
+    },
+  );
 });

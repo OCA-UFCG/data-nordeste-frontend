@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  capitalizeScale,
   formatNumber,
   formatPercent,
   formatReais,
@@ -7,10 +8,22 @@ import {
   formatReaisCompact,
 } from "@/features/panels/format";
 
+describe("capitalizeScale", () => {
+  it("writes the unit like the Power BI labels", () => {
+    expect(capitalizeScale("R$ 1,51 tri")).toBe("R$ 1,51 Tri");
+    expect(capitalizeScale("R$ 27,68 mil")).toBe("R$ 27,68 Mil");
+    expect(capitalizeScale("R$ 500")).toBe("R$ 500");
+  });
+});
+
 describe("formatReaisCompact", () => {
   it("matches the Power BI cards for Nordeste 2017 in pt-BR words", () => {
     expect(formatReaisCompact(953_430_000_000)).toBe("R$ 953,43 bi");
     expect(formatReaisCompact(16_652.57)).toBe("R$ 16,65 mil");
+  });
+
+  it("keeps the unit of the reference value, like the Power BI trend labels", () => {
+    expect(formatReaisCompact(522_770_000_000, 2, 1.51e12)).toBe("R$ 0,52 tri");
   });
 
   it("scales to trillions and millions", () => {

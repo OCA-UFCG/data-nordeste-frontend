@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { REPORT_PAGE_QUERY } from "@/utils/queries/reports";
 import { REVALIDATE } from "@/utils/constants";
+import { CONTENTFUL_CACHE_TAG } from "@/config/revalidation";
 import { getContent } from "@/utils/contentful";
 import type { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
 
@@ -33,5 +34,5 @@ export const getReportPageData = unstable_cache(
     };
   },
   ["report-page-data"],
-  { revalidate: REVALIDATE },
+  { revalidate: REVALIDATE, tags: [CONTENTFUL_CACHE_TAG] },
 );

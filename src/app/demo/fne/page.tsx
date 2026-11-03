@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { FneDashboard } from "@/components/FneDashboard/FneDashboard";
 import { FNE_SOURCE } from "@/components/FneDashboard/FneTexts";
 import { FNE_ICON, FNE_TITLE } from "@/components/FneDashboard/fneTheme";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { PanelMessage } from "@/components/Panel/PanelShell";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { PanelMessage } from "@/components/Panel/layout/PanelShell";
 import { buildMetadata } from "@/config/seo";
 import {
   parseFneFilters,
@@ -58,7 +58,7 @@ export default async function FneDemoPage({
           icon={FNE_ICON}
           tone="green"
           source={FNE_SOURCE}
-          summarized={false}
+          fullMobile
         >
           <PanelMessage>
             Não foi possível consultar o banco de dados. Confira se o túnel para

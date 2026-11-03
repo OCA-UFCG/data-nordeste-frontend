@@ -2,12 +2,12 @@
 
 import { ChevronDown, Lightbulb } from "lucide-react";
 import { useMemo } from "react";
-import { ChartCard } from "@/components/Panel/ChartCard";
-import { ColumnChart } from "@/components/Panel/ColumnChart";
-import { PanelCarousel } from "@/components/Panel/PanelCarousel";
-import { PieChart } from "@/components/Panel/PieChart";
-import { PyramidChart } from "@/components/Panel/PyramidChart";
-import { ValueBars } from "@/components/Panel/ValueBars";
+import { ChartCard } from "@/components/Panel/cards/ChartCard";
+import { ColumnChart } from "@/components/Panel/charts/ColumnChart";
+import { PanelCarousel } from "@/components/Panel/layout/PanelCarousel";
+import { PieChart } from "@/components/Panel/charts/PieChart";
+import { PyramidChart } from "@/components/Panel/charts/PyramidChart";
+import { ValueBars } from "@/components/Panel/charts/ValueBars";
 import { describeDemografia } from "@/features/panels/demografia/demografiaAnalise";
 import {
   topMunicipios,

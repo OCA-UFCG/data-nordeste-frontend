@@ -7,6 +7,7 @@ export type AutomaticReportMacrothemeSlug =
   | "economia-renda"
   | "saneamento"
   | "hidraulica"
+  | "instrumentos-sudene"
   | "todos";
 
 export type AutomaticReportRequest = {
@@ -25,6 +26,7 @@ const AUTOMATIC_REPORT_SLUGS = new Set<AutomaticReportMacrothemeSlug>([
   "economia-renda",
   "saneamento",
   "hidraulica",
+  "instrumentos-sudene",
   "todos",
 ]);
 
@@ -39,6 +41,7 @@ const REPORT_SLUG_BY_THEME_ID: {
   economia_e_renda: "economia-renda",
   infraestrutura_e_saneamento: "saneamento",
   seguranca_hidrica: "hidraulica",
+  instrumentos_sudene: "instrumentos-sudene",
 };
 
 /** Maps a Data Nordeste macrotheme id to the report API slug. Example: `getAutomaticReportSlug("seguranca_hidrica")`. */
