@@ -47,6 +47,7 @@ export default function PerfilDemograficoDemoLoading() {
         icon={DEMOGRAFIA_ICON}
         tone="pink"
         source={DEMOGRAFIA_SOURCE}
+        fullMobile
       >
         <div role="status" className="flex flex-col gap-6">
           <span className="sr-only">

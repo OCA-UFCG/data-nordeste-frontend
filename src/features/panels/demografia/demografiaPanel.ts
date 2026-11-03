@@ -26,14 +26,10 @@ export const DEMOGRAFIA_YEAR_RANGE: YearRange = {
 
 export const DEMOGRAFIA_MAX_PLACES = 100;
 
-export const POPULACAO_MAP_BUCKETS: readonly ChoroplethBucket[] = [
-  { max: 1e4, label: "Até 10 mil", color: "#f9eaf1" },
-  { max: 2e4, label: "10 a 20 mil", color: "#f6d4e3" },
-  { max: 5e4, label: "20 a 50 mil", color: "#efb2cc" },
-  { max: 1e5, label: "50 a 100 mil", color: "#e482a9" },
-  { max: 5e5, label: "100 a 500 mil", color: "#c53d69" },
-  { max: 1e6, label: "500 mil a 1 mi", color: "#8d2744" },
-  { max: Infinity, label: "Acima de 1 mi", color: "#47101f" },
+export const DEMOGRAFIA_PORTES: readonly ChoroplethBucket[] = [
+  { max: 5e4, label: "Pequeno", color: "#efcfdc" },
+  { max: 1e5, label: "Médio", color: "#e7a4bf" },
+  { max: Infinity, label: "Grande", color: "#e482a9" },
 ];
 
 const AREA_ALIASES =
@@ -66,55 +62,46 @@ export type DemografiaPanelData = TerritorialSelection & {
   mapa: ChoroplethRegion[];
 };
 
-const loadSerie = async (query: SqlQuery, filters: TerritorialFilters) => {
+const COR_RACA = [
+  { column: "amarela", label: "Amarela" },
+  { column: "branca", label: "Branca" },
+  { column: "indigena", label: "Indígena" },
+  { column: "parda", label: "Parda" },
+  { column: "preta", label: "Preta" },
+] as const;
+
+type AnoRow = Record<string, NumericCell>;
+
+// Uma linha por censo: a série não segue o filtro de ano, e o resto sai da
+// linha do ano escolhido.
+const loadPorAno = async (query: SqlQuery, filters: TerritorialFilters) => {
   const where = buildTerritorialWhere(filters, {
     byYear: false,
     byMunicipality: true,
   });
-  const rows = await query<{ ano: number; populacao: NumericCell }>(
-    `SELECT ano, SUM(populacao_total) AS populacao FROM ${DEMOGRAFIA_ROWS}
-     WHERE ${where.sql} GROUP BY ano ORDER BY ano`,
-    where.params,
-  );
-
-  return rows.map((row) => ({
-    label: String(row.ano),
-    value: toNumber(row.populacao),
-  }));
-};
-
-const COR_RACA = [
-  { column: "parda", label: "Parda" },
-  { column: "branca", label: "Branca" },
-  { column: "preta", label: "Preta" },
-  { column: "indigena", label: "Indígena" },
-  { column: "amarela", label: "Amarela" },
-] as const;
-
-// Cor ou raça soma só quem declarou; por isso fica um pouco abaixo do total.
-const loadComposicao = async (query: SqlQuery, filters: TerritorialFilters) => {
-  const where = buildTerritorialWhere(filters, {
-    byYear: true,
-    byMunicipality: true,
-  });
-  const columns = ["mulher", "homem", ...COR_RACA.map(({ column }) => column)];
+  const columns = [
+    "populacao_total",
+    "mulher",
+    "homem",
+    ...COR_RACA.map(({ column }) => column),
+  ];
   const sums = columns
     .map((column) => `SUM(${column}) AS ${column}`)
     .join(", ");
-  const [row] = await query<Record<string, NumericCell>>(
-    `SELECT ${sums} FROM ${DEMOGRAFIA_ROWS} WHERE ${where.sql}`,
+
+  return query<AnoRow>(
+    `SELECT ano, ${sums} FROM ${DEMOGRAFIA_ROWS}
+     WHERE ${where.sql} GROUP BY ano ORDER BY ano`,
     where.params,
   );
-  const value = (column: string) => toNumber(row?.[column] ?? null);
-
-  return {
-    sexo: { mulheres: value("mulher"), homens: value("homem") },
-    corRaca: COR_RACA.map(({ column, label }) => ({
-      label,
-      value: value(column),
-    })).sort((a, b) => b.value - a.value),
-  };
 };
+
+const cell = (row: AnoRow | undefined, column: string) =>
+  toNumber(row?.[column] ?? null);
+
+// Cor ou raça soma só quem declarou; por isso fica um pouco abaixo do total.
+const corRacaDe = (row: AnoRow | undefined): ChartPoint[] =>
+  COR_RACA.map(({ column, label }) => ({ label, value: cell(row, column) }));
 
 // O Figma agrupa a pirâmide por décadas; a tabela tem 12 faixas
 // (0-4, 5-9, ..., 25-29 de 5 em 5 anos, depois 30-39 ... 70-79 e 80+).
@@ -181,10 +168,19 @@ const loadMapa = async (query: SqlQuery, filters: TerritorialFilters) => {
   }));
 };
 
-export const topMunicipios = (mapa: ChoroplethRegion[], limit = 5) =>
-  [...mapa]
+/**
+ * "População por município": os municípios do filtro, do mais populoso ao
+ * menos. O mapa mostra a área toda; a lista fica só com os escolhidos.
+ *
+ * @example populacaoPorMunicipio(mapa, ["2504009"]) // [{ label: "Campina Grande (PB)", value: 419379 }]
+ */
+export const populacaoPorMunicipio = (
+  mapa: ChoroplethRegion[],
+  mun?: string[],
+): ChartPoint[] =>
+  mapa
+    .filter((region) => !mun || mun.includes(region.code))
     .sort((a, b) => b.value - a.value)
-    .slice(0, limit)
     .map((region) => ({
       label: `${region.name} (${region.uf})`,
       value: region.value,
@@ -200,12 +196,22 @@ export const loadDemografiaPanel = async (
     requested,
   );
   const { filters } = selection;
-  const [serie, composicao, piramide, mapa] = await Promise.all([
-    loadSerie(query, filters),
-    loadComposicao(query, filters),
+  const [porAno, piramide, mapa] = await Promise.all([
+    loadPorAno(query, filters),
     loadPiramide(query, filters),
     loadMapa(query, filters),
   ]);
+  const atual = porAno.find((row) => Number(row.ano) === filters.ano);
 
-  return { ...selection, ...composicao, serie, piramide, mapa };
+  return {
+    ...selection,
+    serie: porAno.map((row) => ({
+      label: String(row.ano),
+      value: cell(row, "populacao_total"),
+    })),
+    sexo: { mulheres: cell(atual, "mulher"), homens: cell(atual, "homem") },
+    corRaca: corRacaDe(atual),
+    piramide,
+    mapa,
+  };
 };

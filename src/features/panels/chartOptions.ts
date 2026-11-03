@@ -480,6 +480,20 @@ const centerLine = {
   },
 };
 
+const PYRAMID_HOVER_COLOR = "rgba(197, 61, 105, 0.08)";
+
+type TooltipSize = { contentSize: number[]; viewSize: number[] };
+
+// No canto de cima oposto ao mouse: as faixas do topo são as mais curtas, então
+// o balão não cobre a faixa sob o mouse nem as vizinhas.
+const pyramidTooltipPosition = (
+  point: number[],
+  _params: unknown,
+  _dom: unknown,
+  _rect: unknown,
+  { contentSize, viewSize }: TooltipSize,
+) => [point[0] < viewSize[0] / 2 ? viewSize[0] - contentSize[0] : 0, 0];
+
 export const buildPyramidOption = (
   config: PyramidConfig,
   width: number,
@@ -493,7 +507,11 @@ export const buildPyramidOption = (
     tooltip: {
       ...TOOLTIP_BASE,
       trigger: "axis",
-      axisPointer: { type: "shadow" },
+      axisPointer: {
+        type: "shadow",
+        shadowStyle: { color: PYRAMID_HOVER_COLOR },
+      },
+      position: pyramidTooltipPosition,
       valueFormatter: (value: number) => config.formatValue(Math.abs(value)),
     },
     xAxis: {

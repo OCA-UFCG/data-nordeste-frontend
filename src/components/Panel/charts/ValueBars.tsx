@@ -3,14 +3,8 @@ import type {
   ValueFormatter,
 } from "@/features/panels/chartOptions";
 
-// Barra longa leva o número dentro; curta, logo depois da ponta (Figma).
-const INSIDE_SHARE = 0.6;
-
-const BarValue = ({ children }: { children: string }) => (
-  <span className="whitespace-nowrap px-2 text-sm tabular-nums text-grey-1100">
-    {children}
-  </span>
-);
+// Espaço do número depois da ponta, para a maior barra não empurrá-lo para fora.
+const VALUE_ROOM = "5rem";
 
 export const ValueBars = ({
   points,
@@ -24,28 +18,25 @@ export const ValueBars = ({
   const largest = Math.max(...points.map((point) => point.value), 0) || 1;
 
   return (
-    <ul className="flex flex-col gap-4">
-      {points.map((point) => {
-        const share = point.value / largest;
-        const value = formatValue(point.value);
-
-        return (
-          <li key={point.label} className="flex items-center gap-2">
-            <span className="w-24 shrink-0 text-sm font-medium text-grey-1100 lg:w-44">
-              {point.label}
+    <ul className="flex flex-col gap-1.5">
+      {points.map((point) => (
+        <li key={point.label} className="flex items-center gap-2">
+          <span className="w-32 shrink-0 text-right text-xs leading-tight text-grey-1100">
+            {point.label}
+          </span>
+          <div className="flex min-w-0 flex-1 items-center">
+            <div
+              className={`h-4 min-w-1 ${barClassName}`}
+              style={{
+                width: `calc((100% - ${VALUE_ROOM}) * ${point.value / largest})`,
+              }}
+            />
+            <span className="whitespace-nowrap px-1.5 text-xs tabular-nums text-grey-1100">
+              {formatValue(point.value)}
             </span>
-            <div className="flex min-w-0 flex-1 items-center">
-              <div
-                className={`flex h-[35px] min-w-1 items-center justify-end ${barClassName}`}
-                style={{ width: `${share * 100}%` }}
-              >
-                {share >= INSIDE_SHARE ? <BarValue>{value}</BarValue> : null}
-              </div>
-              {share < INSIDE_SHARE ? <BarValue>{value}</BarValue> : null}
-            </div>
-          </li>
-        );
-      })}
+          </div>
+        </li>
+      ))}
     </ul>
   );
 };

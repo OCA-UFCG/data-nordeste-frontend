@@ -90,6 +90,7 @@ export default async function PerfilDemograficoDemoPage({
             icon={DEMOGRAFIA_ICON}
             tone="pink"
             source={DEMOGRAFIA_SOURCE}
+            fullMobile
           >
             <LoadFailedMessage filters={filters} />
           </PanelPage>

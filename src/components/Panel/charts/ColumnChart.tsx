@@ -53,14 +53,22 @@ export const toColumnTable = (
   ]),
 });
 
+// Inclinados como no Power BI: todas as categorias aparecem mesmo no card estreito.
+const rotatedAxis = (xAxis: { axisLabel: object }) => ({
+  ...xAxis,
+  axisLabel: { ...xAxis.axisLabel, interval: 0, rotate: 35 },
+});
+
 export const ColumnChart = ({
   label,
   fit = false,
+  rotateLabels = false,
   onSelectLabel,
   ...config
 }: ColumnConfig & {
   label: string;
   fit?: boolean;
+  rotateLabels?: boolean;
   onSelectLabel?: (label: string) => void;
 }) => {
   const { categories, series, formatLabel, formatValue } = config;
@@ -84,8 +92,11 @@ export const ColumnChart = ({
       ...option,
       legend: { show: false },
       grid: { ...(option.grid as object), bottom: 8 },
+      ...(rotateLabels
+        ? { xAxis: rotatedAxis(option.xAxis as { axisLabel: object }) }
+        : {}),
     };
-  }, [categories, series, formatLabel, formatValue]);
+  }, [categories, series, formatLabel, formatValue, rotateLabels]);
   const width = categories.length * (series.length * SLOT_PER_BAR + SLOT_GAP);
 
   return (

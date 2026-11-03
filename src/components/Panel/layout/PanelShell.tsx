@@ -13,7 +13,12 @@ export const PANEL_TONES = {
     card: "bg-orange-900",
     ...DEFAULT_TONE_BODY,
   },
-  pink: { shell: "bg-pink-600", card: "bg-pink-800", ...DEFAULT_TONE_BODY },
+  pink: {
+    shell: "bg-pink-600",
+    card: "bg-pink-800",
+    ...DEFAULT_TONE_BODY,
+    value: "text-[#018f39]",
+  },
 
   idh: {
     shell: "bg-[#7c46e1]",

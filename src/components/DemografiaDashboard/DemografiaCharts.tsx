@@ -1,19 +1,21 @@
 "use client";
 
-import { ChevronDown, Lightbulb } from "lucide-react";
 import { useMemo } from "react";
 import { ChartCard } from "@/components/Panel/cards/ChartCard";
-import { ColumnChart } from "@/components/Panel/charts/ColumnChart";
-import { PanelCarousel } from "@/components/Panel/layout/PanelCarousel";
-import { PieChart } from "@/components/Panel/charts/PieChart";
+import {
+  ColumnChart,
+  toColumnTable,
+} from "@/components/Panel/charts/ColumnChart";
+import { HorizontalBarChart } from "@/components/Panel/charts/HorizontalBarChart";
 import { PyramidChart } from "@/components/Panel/charts/PyramidChart";
 import { ValueBars } from "@/components/Panel/charts/ValueBars";
-import { describeDemografia } from "@/features/panels/demografia/demografiaAnalise";
+import type { ChartPoint } from "@/features/panels/chartOptions";
+import type { DemografiaPanelData } from "@/features/panels/demografia/demografiaPanel";
 import {
-  topMunicipios,
-  type DemografiaPanelData,
-} from "@/features/panels/demografia/demografiaPanel";
-import { formatNumberCompact, formatPessoas } from "@/features/panels/format";
+  capitalizeScale,
+  formatNumberCompact,
+  formatPessoas,
+} from "@/features/panels/format";
 
 const MULHER_COLOR = "#c53d69";
 const HOMEM_COLOR = "#97b42e";
@@ -23,121 +25,148 @@ const BAR_COLOR = "#e482a9";
 const formatPessoasCurto = (value: number) =>
   formatNumberCompact(value, value >= 1e6 ? 1 : 0);
 
-// "48 MI", como no Figma.
-const formatSerieLabel = (value: number) =>
-  formatNumberCompact(value, 0).toUpperCase();
+// Todas as colunas na unidade da maior ("0 Mi" ... "33 Mi"), como no Power BI.
+const columnConfig = (title: string, points: ChartPoint[]) => {
+  const largest = Math.max(...points.map((point) => point.value), 0);
 
-const SexoCharts = ({ data }: { data: DemografiaPanelData }) => {
-  const slices = useMemo(
-    () => [
-      { label: "Mulher", value: data.sexo.mulheres, color: MULHER_COLOR },
-      { label: "Homem", value: data.sexo.homens, color: HOMEM_COLOR },
+  return {
+    categories: points.map((point) => point.label),
+    series: [
+      {
+        name: title,
+        color: BAR_COLOR,
+        values: points.map((point) => point.value),
+      },
     ],
-    [data.sexo],
-  );
-  const piramide = useMemo(() => {
-    // O ECharts desenha a primeira categoria embaixo: "0 a 9 anos" na base.
-    const faixas = data.piramide;
+    formatLabel: (value: number) =>
+      capitalizeScale(formatNumberCompact(value, 0, largest)),
+    formatValue: formatPessoas,
+  };
+};
 
-    return {
-      categories: faixas.map((faixa) => faixa.faixa),
+export const PopulacaoPorSexo = ({
+  sexo,
+}: {
+  sexo: DemografiaPanelData["sexo"];
+}) => {
+  const points = useMemo(
+    () => [
+      { label: "Mulher", value: sexo.mulheres, color: MULHER_COLOR },
+      { label: "Homem", value: sexo.homens, color: HOMEM_COLOR },
+    ],
+    [sexo],
+  );
+
+  return (
+    <ChartCard title="População por sexo">
+      <HorizontalBarChart
+        label="Gráfico de barras da população por sexo"
+        points={points}
+        formatValue={formatPessoas}
+        className="h-28 w-full"
+      />
+    </ChartCard>
+  );
+};
+
+export const PopulacaoPorMunicipio = ({ points }: { points: ChartPoint[] }) => (
+  <ChartCard title="População por município">
+    <div
+      role="region"
+      aria-label="Lista da população por município"
+      tabIndex={0}
+      className="h-80 overflow-y-auto pr-1"
+    >
+      <ValueBars
+        points={points}
+        formatValue={formatPessoas}
+        barClassName="bg-[#e482a9]"
+      />
+    </div>
+  </ChartCard>
+);
+
+const PIRAMIDE_TITLE = "População por faixa etária e sexo";
+
+export const PiramideEtaria = ({
+  piramide,
+}: {
+  piramide: DemografiaPanelData["piramide"];
+}) => {
+  const config = useMemo(
+    () => ({
+      categories: piramide.map((faixa) => faixa.faixa),
       left: {
         name: "Mulher",
         color: MULHER_COLOR,
-        values: faixas.map((faixa) => faixa.mulheres),
+        values: piramide.map((faixa) => faixa.mulheres),
       },
       right: {
         name: "Homem",
         color: HOMEM_COLOR,
-        values: faixas.map((faixa) => faixa.homens),
+        values: piramide.map((faixa) => faixa.homens),
       },
-    };
-  }, [data.piramide]);
+      formatValue: formatPessoas,
+      formatShort: formatPessoasCurto,
+    }),
+    [piramide],
+  );
+  const table = toColumnTable(PIRAMIDE_TITLE, "Faixa etária", {
+    ...config,
+    series: [config.left, config.right],
+    formatLabel: formatPessoas,
+  });
 
   return (
-    <PanelCarousel label="População por sexo" columns="xl:grid-cols-2">
-      <ChartCard title="População por sexo">
-        <PieChart
-          slices={slices}
-          formatValue={formatPessoas}
-          label="Gráfico de pizza da população por sexo"
-        />
-      </ChartCard>
-      <ChartCard title="População por faixa etária e sexo">
-        <PyramidChart
-          label="Pirâmide etária da população por sexo"
-          {...piramide}
-          formatValue={formatPessoas}
-          formatShort={formatPessoasCurto}
-        />
-      </ChartCard>
-    </PanelCarousel>
+    <ChartCard title={PIRAMIDE_TITLE} table={table} toolbarInside>
+      <PyramidChart label="Pirâmide etária da população por sexo" {...config} />
+    </ChartCard>
   );
 };
 
-const AnaliseDescritiva = ({ data }: { data: DemografiaPanelData }) => (
-  <details className="group rounded-lg bg-green-800 text-grey-100">
-    <summary className="flex cursor-pointer list-none items-center gap-3 p-6 [&::-webkit-details-marker]:hidden">
-      <Lightbulb aria-hidden className="size-6 shrink-0" />
-      <span className="flex-1 text-xl font-semibold leading-9">
-        Análise descritiva
-      </span>
-      <ChevronDown
-        aria-hidden
-        className="size-6 shrink-0 transition-transform group-open:rotate-180"
-      />
-    </summary>
-    <ul className="flex list-disc flex-col gap-2 px-6 pb-6 pl-11 text-base leading-relaxed">
-      {describeDemografia(data).map((frase) => (
-        <li key={frase}>{frase}</li>
-      ))}
-    </ul>
-  </details>
-);
+const SERIE_TITLE = "Série temporal da população";
 
-export const DemografiaCharts = ({ data }: { data: DemografiaPanelData }) => {
-  const top = useMemo(() => topMunicipios(data.mapa), [data.mapa]);
-  const serie = useMemo(
-    () => ({
-      categories: data.serie.map((point) => point.label),
-      series: [
-        {
-          name: "População",
-          color: BAR_COLOR,
-          values: data.serie.map((point) => point.value),
-        },
-      ],
-    }),
-    [data.serie],
-  );
+export const SerieTemporal = ({
+  serie,
+  onSelectYear,
+}: {
+  serie: ChartPoint[];
+  onSelectYear: (ano: number) => void;
+}) => {
+  const config = useMemo(() => columnConfig("População", serie), [serie]);
 
   return (
-    <>
-      <SexoCharts data={data} />
-      <ChartCard title="Top 5 municípios mais populosos">
-        <ValueBars
-          points={top}
-          formatValue={formatPessoas}
-          barClassName="bg-pink-500"
-        />
-      </ChartCard>
-      <ChartCard title="População por cor ou raça">
-        <ValueBars
-          points={data.corRaca}
-          formatValue={formatPessoas}
-          barClassName="bg-pink-500"
-        />
-      </ChartCard>
-      <ChartCard title="Série temporal">
-        <ColumnChart
-          label="Gráfico de colunas da população por censo"
-          fit
-          {...serie}
-          formatLabel={formatSerieLabel}
-          formatValue={formatPessoas}
-        />
-      </ChartCard>
-      <AnaliseDescritiva data={data} />
-    </>
+    <ChartCard
+      title={SERIE_TITLE}
+      table={toColumnTable(SERIE_TITLE, "Ano", config)}
+      toolbarInside
+    >
+      <ColumnChart
+        label="Gráfico de colunas da população por censo"
+        {...config}
+        onSelectLabel={(ano) => onSelectYear(Number(ano))}
+      />
+      <p className="text-center text-xs text-grey-900">Ano</p>
+    </ChartCard>
+  );
+};
+
+const COR_RACA_TITLE = "População por cor ou raça";
+
+export const PopulacaoPorCorRaca = ({ corRaca }: { corRaca: ChartPoint[] }) => {
+  const config = useMemo(() => columnConfig("População", corRaca), [corRaca]);
+
+  return (
+    <ChartCard
+      title={COR_RACA_TITLE}
+      table={toColumnTable(COR_RACA_TITLE, "Cor ou raça", config)}
+      toolbarInside
+    >
+      <ColumnChart
+        label="Gráfico de colunas da população por cor ou raça"
+        {...config}
+        rotateLabels
+      />
+    </ChartCard>
   );
 };

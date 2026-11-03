@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEMOGRAFIA_YEAR_RANGE,
   loadDemografiaPanel,
-  topMunicipios,
+  populacaoPorMunicipio,
 } from "@/features/panels/demografia/demografiaPanel";
 import { parseTerritorialFilters } from "@/features/panels/territorialFilters";
 
@@ -38,9 +38,10 @@ class DemografiaDatabaseFake {
         { cd_mun: "2504009", municipio_uf: "Campina Grande (PB)" },
       ];
     }
-    if (sql.includes("SUM(mulher) AS mulher")) {
+    if (sql.includes("GROUP BY ano")) {
       return [
         {
+          ano: 2022,
           mulher: "28240713",
           homem: "26417802",
           parda: "32559846",
@@ -57,7 +58,7 @@ class DemografiaDatabaseFake {
 }
 
 describe("loadDemografiaPanel", () => {
-  it("sorts race groups and keeps sex totals", async () => {
+  it("keeps sex totals and lists race groups alphabetically", async () => {
     const db = new DemografiaDatabaseFake();
     const panel = await loadDemografiaPanel(db.query, {
       ano: 2022,
@@ -66,11 +67,11 @@ describe("loadDemografiaPanel", () => {
 
     expect(panel.sexo).toEqual({ mulheres: 28240713, homens: 26417802 });
     expect(panel.corRaca.map((item) => item.label)).toEqual([
-      "Parda",
-      "Branca",
-      "Preta",
-      "Indígena",
       "Amarela",
+      "Branca",
+      "Indígena",
+      "Parda",
+      "Preta",
     ]);
   });
 
@@ -107,15 +108,15 @@ describe("census years", () => {
   });
 });
 
-describe("topMunicipios", () => {
-  it("returns the most populous municipalities with their state", () => {
+describe("populacaoPorMunicipio", () => {
+  it("keeps the chosen municipalities, most populous first, with their state", () => {
     const regions = [
       { code: "1", name: "Recife", uf: "PE", value: 1_488_920 },
       { code: "2", name: "Fortaleza", uf: "CE", value: 2_428_708 },
       { code: "3", name: "Crato", uf: "CE", value: 131_050 },
     ];
 
-    expect(topMunicipios(regions, 2)).toEqual([
+    expect(populacaoPorMunicipio(regions, ["1", "2"])).toEqual([
       { label: "Fortaleza (CE)", value: 2_428_708 },
       { label: "Recife (PE)", value: 1_488_920 },
     ]);
