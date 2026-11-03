@@ -104,7 +104,10 @@ export const PanelPage = ({
           {top}
         </div>
       ) : null}
-      <div className={`flex flex-col gap-6 px-6 ${top ? "" : "pt-6"}`}>
+      {/* fullMobile: a barra fixa do local encosta na faixa do título no celular. */}
+      <div
+        className={`flex flex-col gap-6 px-6 ${top ? "" : fullMobile ? "lg:pt-6" : "pt-6"}`}
+      >
         {top || fullMobile ? null : <MobileSummaryAlert />}
         {children}
         <p className="text-sm leading-relaxed text-grey-900">{source}</p>
