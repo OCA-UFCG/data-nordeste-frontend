@@ -102,6 +102,8 @@ export const IdhDashboard = ({
       <PanelFilters
         summary={describeIdhSelection(data)}
         onClear={() => changeFilters(DEFAULT_IDH_FILTERS)}
+        isPending={isPending}
+        sticky
       >
         <IdhSelects
           filters={data.filters}

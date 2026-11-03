@@ -51,6 +51,8 @@ export const DemografiaDashboard = ({
       <PanelFilters
         summary={describeTerritorialSelection(data)}
         onClear={() => applyFilters(DEFAULTS)}
+        isPending={isPending}
+        sticky
       >
         <TerritorialSelects
           filters={filters}

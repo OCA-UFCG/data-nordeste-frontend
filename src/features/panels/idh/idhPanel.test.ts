@@ -33,13 +33,7 @@ class IdhDatabaseFake {
       return [{ ano: 2021, idh: "0.702", idh_ad: "0.518", rdpct: "467.43" }];
     }
     if (sql.includes("estado_rm AS lugar")) {
-      return [
-        {
-          lugar: "Região Metropolitana de Recife",
-          uf: "PE",
-          idh: "0.746",
-        },
-      ];
+      return [{ lugar: "Pernambuco", uf: "PE", idh: "0.746" }];
     }
     if (sql.includes("sexo AS grupo")) {
       return [
@@ -55,11 +49,7 @@ class IdhDatabaseFake {
 describe("loadIdhPanel", () => {
   it("averages the states and splits the sex view by group", async () => {
     const db = new IdhDatabaseFake();
-    const panel = await loadIdhPanel(db.query, {
-      ano: 2021,
-      recorte: "estado",
-      visao: "geral",
-    });
+    const panel = await loadIdhPanel(db.query, { ano: 2021, visao: "geral" });
 
     expect(panel.serie[0]).toMatchObject({
       idh: 0.702,
@@ -74,55 +64,37 @@ describe("loadIdhPanel", () => {
     expect(panel.cor.every((group) => group.serie.length === 0)).toBe(true);
   });
 
-  it("binds recorte and UF, and keeps the ranking at all states", async () => {
+  it("binds the UF, keeps the map at all states and skips metropolitan rows", async () => {
     const db = new IdhDatabaseFake();
 
-    await loadIdhPanel(db.query, {
-      ano: 2021,
-      recorte: "rm",
-      visao: "geral",
-      uf: "PE",
-    });
+    await loadIdhPanel(db.query, { ano: 2021, visao: "geral", uf: "PE" });
 
-    expect(db.callFor("AVG(idh_ad)").params).toEqual(["Sim", "PE"]);
-    expect(db.callFor("estado_rm AS lugar").params).toEqual(["Sim", 2021]);
+    expect(db.callFor("AVG(idh_ad)").params).toEqual(["PE"]);
+    expect(db.callFor("estado_rm AS lugar").params).toEqual([2021]);
+    expect(
+      db.calls.every(({ sql }) => sql.includes("regiao_metropolitana = 'Não'")),
+    ).toBe(true);
   });
 
   it("keys the map by UF so it matches the state mesh", async () => {
     const db = new IdhDatabaseFake();
-    const panel = await loadIdhPanel(db.query, {
-      ano: 2021,
-      recorte: "rm",
-      visao: "geral",
-    });
+    const panel = await loadIdhPanel(db.query, { ano: 2021, visao: "geral" });
 
     expect(panel.mapa).toEqual([
-      {
-        code: "PE",
-        name: "Região Metropolitana de Recife",
-        uf: "PE",
-        value: 0.746,
-      },
+      { code: "PE", name: "Pernambuco", uf: "PE", value: 0.746 },
     ]);
-    expect(panel.ranking).toEqual([
-      { label: "Região Metropolitana de Recife", value: 0.746 },
-    ]);
+    expect(panel.ranking).toEqual([{ label: "Pernambuco", value: 0.746 }]);
   });
 
   it("drops a UF that is not in the data", async () => {
     const db = new IdhDatabaseFake();
     const panel = await loadIdhPanel(db.query, {
       ano: 2021,
-      recorte: "estado",
       visao: "cor",
       uf: "SP",
     });
 
-    expect(panel.filters).toEqual({
-      ano: 2021,
-      recorte: "estado",
-      visao: "cor",
-    });
+    expect(panel.filters).toEqual({ ano: 2021, visao: "cor" });
     expect(describeIdhSelection(panel)).toBe(
       "Média dos estados do Nordeste · 2021",
     );
@@ -133,16 +105,14 @@ describe("parseIdhFilters and buildIdhSearch", () => {
   it("round-trips non-default filters and rejects invalid values", () => {
     const filters = parseIdhFilters({
       ano: "2015",
-      recorte: "rm",
       visao: "sexo",
       uf: "pe",
     });
 
-    expect(buildIdhSearch(filters)).toBe(
-      "?ano=2015&recorte=rm&uf=PE&visao=sexo",
-    );
-    expect(
-      parseIdhFilters({ ano: "1999", recorte: "x", visao: "y", uf: "PE'" }),
-    ).toEqual({ ano: 2021, recorte: "estado", visao: "geral" });
+    expect(buildIdhSearch(filters)).toBe("?ano=2015&uf=PE&visao=sexo");
+    expect(parseIdhFilters({ ano: "1999", visao: "y", uf: "PE'" })).toEqual({
+      ano: 2021,
+      visao: "geral",
+    });
   });
 });
