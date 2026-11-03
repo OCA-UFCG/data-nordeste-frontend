@@ -35,10 +35,10 @@ const BarRow = ({
   </>
 );
 
-type PreviewHandler = (label: string | null) => void;
+export type PreviewHandler = (label: string | null) => void;
 
 // Só com mouse: no toque, o pointerenter vem junto do toque e o clique já fixa.
-const previewOnMouse =
+export const previewOnMouse =
   (onPreview: PreviewHandler | undefined, label: string | null) =>
   (event: PointerEvent<HTMLElement>) => {
     if (event.pointerType === "mouse") onPreview?.(label);

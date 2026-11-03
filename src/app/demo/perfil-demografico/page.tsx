@@ -2,16 +2,21 @@ import type { Metadata } from "next";
 import { DemografiaDashboard } from "@/components/DemografiaDashboard/DemografiaDashboard";
 import {
   DEMOGRAFIA_ICON,
+  DEMOGRAFIA_SOURCE,
   DEMOGRAFIA_TITLE,
 } from "@/components/DemografiaDashboard/demografiaTheme";
 import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { PanelMessage } from "@/components/Panel/layout/PanelShell";
+import { PanelTextsFrame } from "@/components/Panel/texts/PanelTextsFrame";
 import { buildMetadata } from "@/config/seo";
+import { loadDemografiaPanelContent } from "@/features/panels/demografia/demografiaContent";
 import {
+  DEMOGRAFIA_MAX_PLACES,
   DEMOGRAFIA_YEAR_RANGE,
   loadDemografiaPanel,
 } from "@/features/panels/demografia/demografiaPanel";
 import {
+  buildTerritorialSearch,
   parseTerritorialFilters,
   type TerritorialFilters,
 } from "@/features/panels/territorialFilters";
@@ -30,9 +35,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const SOURCE =
-  "Fonte dos dados: Instituto Brasileiro de Geografia e Estatística (IBGE), Censos Demográficos de 2000, 2010 e 2022. A população por cor ou raça soma apenas quem declarou. Consultado ao vivo no banco do Data Nordeste.";
-
 const loadPanel = async (filters: TerritorialFilters) => {
   try {
     return await loadDemografiaPanel(queryDataDb, filters);
@@ -49,6 +51,19 @@ const loadPanel = async (filters: TerritorialFilters) => {
   }
 };
 
+const LoadFailedMessage = ({ filters }: { filters: TerritorialFilters }) => (
+  <PanelMessage>
+    Não foi possível carregar os dados do painel agora. Tente novamente em
+    alguns minutos.{" "}
+    <a
+      href={`/demo/perfil-demografico${buildTerritorialSearch(filters, DEMOGRAFIA_YEAR_RANGE)}`}
+      className="font-medium text-green-900 underline underline-offset-4"
+    >
+      Tentar novamente
+    </a>
+  </PanelMessage>
+);
+
 export default async function PerfilDemograficoDemoPage({
   searchParams,
 }: {
@@ -57,26 +72,30 @@ export default async function PerfilDemograficoDemoPage({
   const filters = parseTerritorialFilters(
     await searchParams,
     DEMOGRAFIA_YEAR_RANGE,
+    DEMOGRAFIA_MAX_PLACES,
   );
-  const panel = await loadPanel(filters);
+  const [panel, content] = await Promise.all([
+    loadPanel(filters),
+    loadDemografiaPanelContent(),
+  ]);
 
   return (
     <HubTemplate>
-      {panel ? (
-        <DemografiaDashboard data={panel} source={SOURCE} />
-      ) : (
-        <PanelPage
-          title={DEMOGRAFIA_TITLE}
-          icon={DEMOGRAFIA_ICON}
-          tone="pink"
-          source={SOURCE}
-        >
-          <PanelMessage>
-            Não foi possível consultar o banco de dados. Confira se o túnel para
-            o banco está ativo e se <code>DATA_DB_URL</code> está configurada.
-          </PanelMessage>
-        </PanelPage>
-      )}
+      <PanelTextsFrame content={content}>
+        {panel ? (
+          <DemografiaDashboard data={panel} source={DEMOGRAFIA_SOURCE} />
+        ) : (
+          <PanelPage
+            title={DEMOGRAFIA_TITLE}
+            icon={DEMOGRAFIA_ICON}
+            tone="pink"
+            source={DEMOGRAFIA_SOURCE}
+            fullMobile
+          >
+            <LoadFailedMessage filters={filters} />
+          </PanelPage>
+        )}
+      </PanelTextsFrame>
     </HubTemplate>
   );
 }

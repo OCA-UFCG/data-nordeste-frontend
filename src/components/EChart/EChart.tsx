@@ -29,6 +29,8 @@ type EChartProps = EChartSource & {
 
   // Clique em qualquer ponto da área do grid: recebe o índice da categoria.
   onCategoryClick?: (index: number) => void;
+
+  onCategoryHover?: (index: number | null) => void;
   renderer?: ChartRenderer;
 
   // false: cada opção nova redesenha do zero (o mapa, que não pode herdar o
@@ -134,6 +136,35 @@ const useCategoryClick = (
 
     return () => {
       zr.off("click", handleGridClick);
+    };
+  }, [chart, latest]);
+};
+
+type AxisPointerEvent = { axesInfo?: { value: unknown }[] };
+
+// Pelo ponteiro do eixo (trigger "axis"), que o toque também move.
+const useCategoryHover = (
+  chart: ChartInstance | null,
+  onCategoryHover?: (index: number | null) => void,
+) => {
+  const latest = useLatest(onCategoryHover);
+
+  useEffect(() => {
+    if (!chart) return;
+    const handlePointer = (event: unknown) => {
+      const index = (event as AxisPointerEvent).axesInfo?.[0]?.value;
+
+      latest.current?.(typeof index === "number" ? index : null);
+    };
+    const handleOut = () => latest.current?.(null);
+
+    chart.on("updateAxisPointer", handlePointer);
+    chart.on("globalout", handleOut);
+
+    return () => {
+      if (chart.isDisposed()) return;
+      chart.off("updateAxisPointer", handlePointer);
+      chart.off("globalout", handleOut);
     };
   }, [chart, latest]);
 };
@@ -289,6 +320,7 @@ export const EChart = ({
   style,
   onItemClick,
   onCategoryClick,
+  onCategoryHover,
   renderer,
   morph,
   restyleOption,
@@ -304,6 +336,7 @@ export const EChart = ({
   });
   useItemClick(chart, onItemClick);
   useCategoryClick(chart, onCategoryClick);
+  useCategoryHover(chart, onCategoryHover);
   useHideTooltipOffscreen(chart, containerRef);
 
   return (

@@ -1,56 +1,83 @@
-import type { DemografiaPanelData } from "@/features/panels/demografia/demografiaPanel";
-import { formatPercent, formatPessoas } from "@/features/panels/format";
+import type { ChartPoint } from "@/features/panels/chartOptions";
+import { getBucket } from "@/features/panels/choropleth";
+import {
+  DEMOGRAFIA_PORTES,
+  type CorRacaAno,
+  type DemografiaPorte,
+  type MunicipioPoint,
+} from "@/features/panels/demografia/demografiaPanel";
+import { formatPercent } from "@/features/panels/format";
 
-type AnaliseInput = Pick<
-  DemografiaPanelData,
-  "filters" | "serie" | "sexo" | "piramide" | "corRaca"
->;
+/**
+ * Participação de uma parte no total, com uma casa ("51,7%").
+ *
+ * @example formatShare(28_240_713, 54_658_515) // "51,7%"
+ */
+export const formatShare = (value: number, total: number): string =>
+  formatPercent(total ? (100 * value) / total : 0);
 
-const share = (part: number, total: number) =>
-  formatPercent(total ? (100 * part) / total : 0, 1);
+const variacoes = (corRaca: ChartPoint[], anterior: ChartPoint[]) =>
+  corRaca
+    .map((item) => {
+      const antes = anterior.find((prev) => prev.label === item.label)?.value;
 
-const populacaoFrase = ({ filters, serie }: AnaliseInput) => {
-  const index = serie.findIndex((point) => point.label === String(filters.ano));
+      return antes
+        ? { label: item.label, pct: (100 * (item.value - antes)) / antes }
+        : null;
+    })
+    .filter((item) => item !== null)
+    .sort((a, b) => b.pct - a.pct);
 
-  if (index < 0) return null;
-  const { value } = serie[index];
-  const anterior = serie[index - 1];
-  const base = `População residente em ${filters.ano}: ${formatPessoas(value)} pessoas`;
+const comparacao = (corRaca: ChartPoint[], anterior: CorRacaAno | null) => {
+  if (!anterior) return "Não há ano anterior para comparação.";
+  const lista = variacoes(corRaca, anterior.corRaca);
+  const alta = lista[0];
+  const queda = lista[lista.length - 1];
 
-  if (!anterior?.value) return `${base}.`;
-  const variacao = (100 * (value - anterior.value)) / anterior.value;
-  const sentido = variacao >= 0 ? "a mais" : "a menos";
+  if (!alta || alta.pct <= 0) return null;
+  const aumento = `Em comparação com ${anterior.ano}, houve um aumento de ${formatPercent(alta.pct)} na cor ou raça ${alta.label}.`;
 
-  return `${base}, ${formatPercent(Math.abs(variacao), 1)} ${sentido} que em ${anterior.label}.`;
+  return queda.pct < 0
+    ? `${aumento} Enquanto ${queda.label} apresentou uma redução de ${formatPercent(-queda.pct)}.`
+    : aumento;
 };
 
-const sexoFrase = ({ sexo }: AnaliseInput) => {
-  const total = sexo.mulheres + sexo.homens;
-
-  return total
-    ? `Mulheres são ${share(sexo.mulheres, total)} da população e homens, ${share(sexo.homens, total)}.`
-    : null;
-};
-
-const faixaFrase = ({ piramide }: AnaliseInput) => {
-  const [maior] = [...piramide].sort(
-    (a, b) => b.mulheres + b.homens - (a.mulheres + a.homens),
-  );
-
-  return maior ? `A faixa etária mais numerosa é a de ${maior.faixa}.` : null;
-};
-
-const corFrase = ({ corRaca }: AnaliseInput) => {
+/**
+ * "Distribuição por cor ou raça" da Análise descritiva do Power BI: as duas
+ * maiores (sobre quem declarou) e a maior alta e queda desde o censo anterior.
+ *
+ * @example describeCorRaca(corRaca, { ano: 2010, corRaca: anterior }) // ["A população se autodeclara majoritariamente Parda (59,6%), seguida por Branca (26,7%).", "Em comparação com 2010, ..."]
+ */
+export const describeCorRaca = (
+  corRaca: ChartPoint[],
+  anterior: CorRacaAno | null,
+): string[] => {
   const total = corRaca.reduce((sum, item) => sum + item.value, 0);
-  const [maior] = corRaca;
+  const [primeira, segunda] = [...corRaca].sort((a, b) => b.value - a.value);
 
-  return maior && total
-    ? `${maior.label} é a cor ou raça mais declarada (${share(maior.value, total)} de quem declarou).`
-    : null;
+  if (!total || !segunda) return [];
+  const share = (item: ChartPoint) => formatShare(item.value, total);
+  const linhas = [
+    `A população se autodeclara majoritariamente ${primeira.label} (${share(primeira)}), seguida por ${segunda.label} (${share(segunda)}).`,
+    comparacao(corRaca, anterior),
+  ];
+
+  return linhas.filter((linha) => linha !== null);
 };
 
-// Frases do bloco "Análise descritiva", calculadas só com os números do painel.
-export const describeDemografia = (data: AnaliseInput): string[] =>
-  [populacaoFrase, sexoFrase, faixaFrase, corFrase]
-    .map((frase) => frase(data))
-    .filter((frase): frase is string => frase !== null);
+export type PorteGrupo = { porte: DemografiaPorte; codes: string[] };
+
+/**
+ * Os municípios da lista separados por porte, na ordem da legenda.
+ *
+ * @example municipiosPorPorte(lista)[2].codes.length // 64 (Grande, Nordeste 2022)
+ */
+export const municipiosPorPorte = (
+  municipios: MunicipioPoint[],
+): PorteGrupo[] =>
+  DEMOGRAFIA_PORTES.map((porte) => ({
+    porte,
+    codes: municipios
+      .filter((item) => getBucket(DEMOGRAFIA_PORTES, item.value) === porte)
+      .map((item) => item.code),
+  }));

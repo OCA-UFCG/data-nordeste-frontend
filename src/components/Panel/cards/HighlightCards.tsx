@@ -64,6 +64,7 @@ const CardValue = ({
   caption,
   change,
   compact,
+  fill,
   valueClassName,
 }: {
   value: string;
@@ -72,9 +73,10 @@ const CardValue = ({
   caption?: string;
   change?: CardChange | null;
   compact: boolean;
+  fill: boolean;
 }) => (
   <div
-    className={`@container flex flex-col items-center pb-6 pt-3 text-center ${compact ? "px-2" : "px-4"}`}
+    className={`@container flex flex-col items-center pb-6 pt-3 text-center ${compact ? "px-2" : "px-4"} ${fill ? "flex-1 justify-center" : ""}`}
   >
     <span
       className={`font-bold leading-tight ${valueClassName}`}
@@ -91,7 +93,8 @@ const CardValue = ({
 
 // `caption`: legenda curta abaixo do valor (ex.: "em 2023"); `change`: a
 // variação em relação ao ano anterior (omitida nos painéis que não a mostram);
-// `fitTo`: o valor mais longo do grupo (ver longestValue).
+// `fitTo`: o valor mais longo do grupo (ver longestValue); `fill`: o valor fica
+// centrado quando a linha da grade é mais alta que o card.
 export const HighlightCard = ({
   icon: CardIcon,
   label,
@@ -101,12 +104,14 @@ export const HighlightCard = ({
   change,
   fitTo = value,
   compact = false,
+  fill = false,
 }: KpiItem & {
   tone: PanelTone;
   caption?: string;
   change?: CardChange | null;
   fitTo?: string;
   compact?: boolean;
+  fill?: boolean;
 }) => (
   <div className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-grey-200 bg-white shadow-sm">
     <div
@@ -121,6 +126,7 @@ export const HighlightCard = ({
       caption={caption}
       change={change}
       compact={compact}
+      fill={fill}
       valueClassName={PANEL_TONES[tone].value}
     />
   </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useMemo } from "react";
+import { type CSSProperties, type ReactNode, useMemo } from "react";
 import { EChart } from "@/components/EChart/EChart";
 import { ChartCard } from "@/components/Panel/cards/ChartCard";
 import type { DataTableContent } from "@/components/Panel/cards/DataTable";
@@ -28,6 +28,7 @@ export type ChoroplethMapProps = {
   selectedCode?: string;
   highlightCodes?: ReadonlySet<string>;
   table?: DataTableContent;
+  legend?: ReactNode;
   onSelectRegion: (code: string) => void;
 
   // Do xl em diante ocupa a altura do pai; abaixo, segue o formato da malha.
@@ -97,7 +98,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
       >
         <div className="relative flex min-h-0 flex-1 flex-col">
           {map}
-          <MapLegend buckets={props.buckets} overlay />
+          {props.legend ?? <MapLegend buckets={props.buckets} overlay />}
         </div>
       </ChartCard>
     );
@@ -106,7 +107,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
   return (
     <ChartCard title={props.title} table={props.table}>
       {map}
-      <MapLegend buckets={props.buckets} />
+      {props.legend ?? <MapLegend buckets={props.buckets} />}
     </ChartCard>
   );
 };

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEMOGRAFIA_YEAR_RANGE,
   loadDemografiaPanel,
-  topMunicipios,
+  populacaoPorMunicipio,
 } from "@/features/panels/demografia/demografiaPanel";
 import { parseTerritorialFilters } from "@/features/panels/territorialFilters";
 
@@ -27,14 +27,21 @@ class DemografiaDatabaseFake {
 
   private rowsFor(sql: string): object[] {
     if (sql.includes("DISTINCT sigla_uf")) {
-      return [{ sigla_uf: "CE", estado_uf: "Ceará" }];
+      return [
+        { sigla_uf: "CE", estado_uf: "Ceará" },
+        { sigla_uf: "PB", estado_uf: "Paraíba" },
+      ];
     }
     if (sql.includes("municipio_uf FROM")) {
-      return [{ cd_mun: "2304400", municipio_uf: "Fortaleza (CE)" }];
+      return [
+        { cd_mun: "2304400", municipio_uf: "Fortaleza (CE)" },
+        { cd_mun: "2504009", municipio_uf: "Campina Grande (PB)" },
+      ];
     }
-    if (sql.includes("SUM(mulher) AS mulher")) {
+    if (sql.includes("GROUP BY ano")) {
       return [
         {
+          ano: 2022,
           mulher: "28240713",
           homem: "26417802",
           parda: "32559846",
@@ -51,7 +58,7 @@ class DemografiaDatabaseFake {
 }
 
 describe("loadDemografiaPanel", () => {
-  it("sorts race groups and keeps sex totals", async () => {
+  it("keeps sex totals and lists race groups alphabetically", async () => {
     const db = new DemografiaDatabaseFake();
     const panel = await loadDemografiaPanel(db.query, {
       ano: 2022,
@@ -60,29 +67,34 @@ describe("loadDemografiaPanel", () => {
 
     expect(panel.sexo).toEqual({ mulheres: 28240713, homens: 26417802 });
     expect(panel.corRaca.map((item) => item.label)).toEqual([
-      "Parda",
-      "Branca",
-      "Preta",
-      "Indígena",
       "Amarela",
+      "Branca",
+      "Indígena",
+      "Parda",
+      "Preta",
     ]);
   });
 
-  it("maps the census area columns and binds the filters", async () => {
+  it("maps the census area columns and binds several places with = ANY", async () => {
     const db = new DemografiaDatabaseFake();
 
     await loadDemografiaPanel(db.query, {
       ano: 2010,
       area: "semiarido",
-      uf: ["CE"],
-      mun: ["2304400"],
+      uf: ["CE", "PB"],
+      mun: ["2304400", "2504009"],
     });
     const serie = db.callFor("GROUP BY ano");
 
     expect(serie.sql).toContain("semi_21 AS semiarido");
-    expect(serie.sql).toContain("semiarido = 'Sim'");
-    expect(serie.params).toEqual(["CE", "2304400"]);
-    expect(db.callFor("GROUP BY cd_mun").params).toEqual([2010, "CE"]);
+    expect(serie.sql).toContain(
+      "semiarido = 'Sim' AND sigla_uf = ANY($1) AND cd_mun = ANY($2)",
+    );
+    expect(serie.params).toEqual([
+      ["CE", "PB"],
+      ["2304400", "2504009"],
+    ]);
+    expect(db.callFor("GROUP BY cd_mun").params).toEqual([2010, ["CE", "PB"]]);
   });
 });
 
@@ -96,17 +108,17 @@ describe("census years", () => {
   });
 });
 
-describe("topMunicipios", () => {
-  it("returns the most populous municipalities with their state", () => {
+describe("populacaoPorMunicipio", () => {
+  it("keeps the chosen municipalities, most populous first, with their state", () => {
     const regions = [
       { code: "1", name: "Recife", uf: "PE", value: 1_488_920 },
       { code: "2", name: "Fortaleza", uf: "CE", value: 2_428_708 },
       { code: "3", name: "Crato", uf: "CE", value: 131_050 },
     ];
 
-    expect(topMunicipios(regions, 2)).toEqual([
-      { label: "Fortaleza (CE)", value: 2_428_708 },
-      { label: "Recife (PE)", value: 1_488_920 },
+    expect(populacaoPorMunicipio(regions, ["1", "2"])).toEqual([
+      { code: "2", label: "Fortaleza (CE)", value: 2_428_708 },
+      { code: "1", label: "Recife (PE)", value: 1_488_920 },
     ]);
   });
 });

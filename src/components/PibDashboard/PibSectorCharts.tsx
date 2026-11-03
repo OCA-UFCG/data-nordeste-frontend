@@ -109,7 +109,6 @@ export const PibSectorCharts = ({
       <ChartCard
         title={VAB_TITLE}
         tableClassName={TABLE_CLASS}
-        toolbarInside
         table={
           data.vab
             ? toTable(VAB_TITLE, ["Setor", "VAB"], data.vab, formatReais)
@@ -131,7 +130,6 @@ export const PibSectorCharts = ({
         title={ATIVIDADE_TITLE}
         info={<AtividadeInfo />}
         tableClassName={TABLE_CLASS}
-        toolbarInside
         table={
           data.atividades.length
             ? toTable(

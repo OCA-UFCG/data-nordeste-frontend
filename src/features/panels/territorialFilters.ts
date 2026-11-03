@@ -7,7 +7,6 @@ export const TERRITORIAL_AREAS = [
 
 export type TerritorialArea = (typeof TERRITORIAL_AREAS)[number]["value"];
 
-// Listas: o PIB aceita vários; o Perfil Demográfico usa no máximo um.
 export type TerritorialFilters = {
   ano: number;
   area: TerritorialArea;

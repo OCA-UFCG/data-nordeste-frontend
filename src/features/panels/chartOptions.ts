@@ -102,6 +102,35 @@ export type ColumnConfig = {
   formatValue: ValueFormatter;
 };
 
+type TooltipRect = { x: number; y: number; width: number };
+type TooltipSize = { contentSize: number[]; viewSize: number[] };
+
+// Acima da coluna apontada e do rótulo dela: seguindo o mouse, o balão cobria a
+// coluna vizinha.
+const aboveColumn = (
+  _point: number[],
+  _params: unknown,
+  _dom: unknown,
+  rect: TooltipRect | null,
+  { contentSize, viewSize }: TooltipSize,
+) => {
+  if (!rect) return undefined;
+  const [width, height] = contentSize;
+  const x = rect.x + rect.width / 2 - width / 2;
+
+  return [
+    Math.min(Math.max(x, 0), viewSize[0] - width),
+    Math.max(rect.y - height - 22, 0),
+  ];
+};
+
+const FADED_OPACITY = 0.35;
+
+export const FOCUS_BAR = {
+  emphasis: { focus: "self" },
+  blur: { itemStyle: { opacity: FADED_OPACITY } },
+};
+
 const columnSeries = (series: ColumnSeries, formatLabel: ValueFormatter) => ({
   id: series.name,
   type: "bar",
@@ -110,6 +139,7 @@ const columnSeries = (series: ColumnSeries, formatLabel: ValueFormatter) => ({
   barMaxWidth: 36,
   barGap: "12%",
   itemStyle: { color: series.color },
+  ...FOCUS_BAR,
   label: {
     show: true,
     position: "top",
@@ -145,8 +175,8 @@ export const buildColumnOption = (config: ColumnConfig): ChartOption => ({
   },
   tooltip: {
     ...TOOLTIP_BASE,
-    trigger: "axis",
-    axisPointer: { type: "shadow" },
+    trigger: "item",
+    position: aboveColumn,
     valueFormatter: config.formatValue,
   },
   xAxis: {
@@ -388,6 +418,8 @@ export type PyramidConfig = {
   right: ColumnSeries;
   formatValue: ValueFormatter;
   formatShort: ValueFormatter;
+
+  activeIndex?: number | null;
 };
 
 // ponytail: larguras estimadas (rótulo do eixo ~80 px, dígito ~7 px a 12 px);
@@ -458,6 +490,7 @@ const pyramidSeries = (
   series: ColumnSeries,
   side: "left" | "right",
   scale: PyramidScale,
+  activeIndex?: number | null,
 ) => ({
   id: `piramide-${side}`,
   type: "bar",
@@ -465,9 +498,10 @@ const pyramidSeries = (
   stack: "piramide",
   barCategoryGap: "12%",
   itemStyle: { color: series.color },
-  data: series.values.map((value) => ({
+  data: series.values.map((value, index) => ({
     value: side === "left" ? -value : value,
     label: pyramidLabel(value, value * scale.pxPerUnit, side, scale),
+    itemStyle: { opacity: fadedUnless(activeIndex, index) },
   })),
 });
 
@@ -485,6 +519,11 @@ const centerLine = {
   },
 };
 
+const PYRAMID_HOVER_COLOR = "rgba(197, 61, 105, 0.08)";
+
+const fadedUnless = (activeIndex: number | null | undefined, index: number) =>
+  activeIndex == null || activeIndex === index ? 1 : FADED_OPACITY;
+
 export const buildPyramidOption = (
   config: PyramidConfig,
   width: number,
@@ -495,11 +534,17 @@ export const buildPyramidOption = (
     ...baseOption(),
     ...columnLegend([config.left, config.right]),
     grid: { left: 8, right: 8, top: 8, bottom: 32, containLabel: true },
+
+    // Sem balão, que cobria as faixas vizinhas: os números da faixa apontada
+    // ficam num leitor fora do gráfico. O ponteiro do eixo segue para o hover.
     tooltip: {
       ...TOOLTIP_BASE,
       trigger: "axis",
-      axisPointer: { type: "shadow" },
-      valueFormatter: (value: number) => config.formatValue(Math.abs(value)),
+      showContent: false,
+      axisPointer: {
+        type: "shadow",
+        shadowStyle: { color: PYRAMID_HOVER_COLOR },
+      },
     },
     xAxis: {
       type: "value",
@@ -515,8 +560,8 @@ export const buildPyramidOption = (
       axisLabel: { fontSize: 12, color: TEXT_COLOR },
     },
     series: [
-      pyramidSeries(config.left, "left", scale),
-      pyramidSeries(config.right, "right", scale),
+      pyramidSeries(config.left, "left", scale, config.activeIndex),
+      pyramidSeries(config.right, "right", scale, config.activeIndex),
       centerLine,
     ],
   };

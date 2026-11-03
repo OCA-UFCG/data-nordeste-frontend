@@ -1,19 +1,31 @@
 "use client";
 
-import { ChevronDown, Lightbulb } from "lucide-react";
-import { useMemo } from "react";
+import { Info } from "lucide-react";
+import { useMemo, useState } from "react";
 import { ChartCard } from "@/components/Panel/cards/ChartCard";
-import { ColumnChart } from "@/components/Panel/charts/ColumnChart";
-import { PanelCarousel } from "@/components/Panel/layout/PanelCarousel";
-import { PieChart } from "@/components/Panel/charts/PieChart";
-import { PyramidChart } from "@/components/Panel/charts/PyramidChart";
-import { ValueBars } from "@/components/Panel/charts/ValueBars";
-import { describeDemografia } from "@/features/panels/demografia/demografiaAnalise";
 import {
-  topMunicipios,
-  type DemografiaPanelData,
+  ColumnChart,
+  toColumnTable,
+} from "@/components/Panel/charts/ColumnChart";
+import { HorizontalBarChart } from "@/components/Panel/charts/HorizontalBarChart";
+import { PyramidChart } from "@/components/Panel/charts/PyramidChart";
+import type { PreviewHandler } from "@/components/Panel/charts/RankedBars";
+import { ValueBars } from "@/components/Panel/charts/ValueBars";
+import type { ChartPoint } from "@/features/panels/chartOptions";
+import {
+  describeCorRaca,
+  formatShare,
+} from "@/features/panels/demografia/demografiaAnalise";
+import type {
+  CorRacaAno,
+  DemografiaPanelData,
+  PopulacaoPorFaixa,
 } from "@/features/panels/demografia/demografiaPanel";
-import { formatNumberCompact, formatPessoas } from "@/features/panels/format";
+import {
+  capitalizeScale,
+  formatNumberCompact,
+  formatPessoas,
+} from "@/features/panels/format";
 
 const MULHER_COLOR = "#c53d69";
 const HOMEM_COLOR = "#97b42e";
@@ -23,121 +35,269 @@ const BAR_COLOR = "#e482a9";
 const formatPessoasCurto = (value: number) =>
   formatNumberCompact(value, value >= 1e6 ? 1 : 0);
 
-// "48 MI", como no Figma.
-const formatSerieLabel = (value: number) =>
-  formatNumberCompact(value, 0).toUpperCase();
+const largestIndex = (values: number[]) => values.indexOf(Math.max(...values));
 
-const SexoCharts = ({ data }: { data: DemografiaPanelData }) => {
-  const slices = useMemo(
-    () => [
-      { label: "Mulher", value: data.sexo.mulheres, color: MULHER_COLOR },
-      { label: "Homem", value: data.sexo.homens, color: HOMEM_COLOR },
+// `sameScale`: todas as colunas na unidade da maior ("48 Mi" ... "55 Mi"), como
+// no Power BI; sem ele, cada uma na sua ("69 Mil", não "0 Mi", que parece zero).
+const columnConfig = (
+  title: string,
+  points: ChartPoint[],
+  sameScale: boolean,
+) => {
+  const largest = Math.max(...points.map((point) => point.value), 0);
+
+  return {
+    categories: points.map((point) => point.label),
+    series: [
+      {
+        name: title,
+        color: BAR_COLOR,
+        values: points.map((point) => point.value),
+      },
     ],
-    [data.sexo],
-  );
-  const piramide = useMemo(() => {
-    // O ECharts desenha a primeira categoria embaixo: "0 a 9 anos" na base.
-    const faixas = data.piramide;
+    formatLabel: (value: number) =>
+      capitalizeScale(
+        formatNumberCompact(value, 0, sameScale ? largest : value),
+      ),
+    formatValue: formatPessoas,
+  };
+};
 
-    return {
-      categories: faixas.map((faixa) => faixa.faixa),
+export const PopulacaoPorSexo = ({
+  sexo,
+}: {
+  sexo: DemografiaPanelData["sexo"];
+}) => {
+  const points = useMemo(
+    () => [
+      { label: "Mulher", value: sexo.mulheres, color: MULHER_COLOR },
+      { label: "Homem", value: sexo.homens, color: HOMEM_COLOR },
+    ],
+    [sexo],
+  );
+  const formatValue = useMemo(() => {
+    const total = sexo.mulheres + sexo.homens;
+
+    return (value: number) =>
+      `${formatPessoas(value)} (${formatShare(value, total)})`;
+  }, [sexo]);
+
+  return (
+    <ChartCard title="População por sexo">
+      <HorizontalBarChart
+        label="Gráfico de barras da população por sexo"
+        points={points}
+        formatValue={formatValue}
+        className="min-h-24 w-full flex-1"
+        fadeOthers
+        labelRoom={136}
+      />
+    </ChartCard>
+  );
+};
+
+// Absoluta: a lista rola dentro do card e não estica a linha da grade.
+export const PopulacaoPorMunicipio = ({
+  points,
+  selectedLabel,
+  onSelect,
+  onPreview,
+}: {
+  points: ChartPoint[];
+  selectedLabel: string | null;
+  onSelect: (label: string) => void;
+  onPreview: PreviewHandler;
+}) => (
+  <ChartCard title="População por município">
+    <div className="relative min-h-80 flex-1">
+      <div
+        role="region"
+        aria-label="Lista da população por município"
+        className="absolute inset-0 overflow-y-auto pr-1"
+      >
+        <ValueBars
+          points={points}
+          formatValue={formatPessoas}
+          barClassName="bg-[#e482a9]"
+          selectedLabel={selectedLabel}
+          onSelect={onSelect}
+          onPreview={onPreview}
+        />
+      </div>
+    </div>
+  </ChartCard>
+);
+
+const PIRAMIDE_TITLE = "População por faixa etária e sexo";
+
+const FaixaValue = ({
+  label,
+  value,
+  total,
+  color,
+}: {
+  label: string;
+  value: number;
+  total: number;
+  color: string;
+}) => (
+  <span className="inline-flex items-center gap-1.5">
+    <span
+      aria-hidden
+      className="size-2.5 rounded-full"
+      style={{ backgroundColor: color }}
+    />
+    {label}{" "}
+    <span className="tabular-nums">
+      {formatPessoas(value)} ({formatShare(value, total)})
+    </span>
+  </span>
+);
+
+// No lugar do balão, que cobria as faixas vizinhas. Altura fixa (até duas
+// linhas): trocar de faixa não mexe no card.
+const FaixaReader = ({ faixa }: { faixa: PopulacaoPorFaixa }) => {
+  const total = faixa.mulheres + faixa.homens;
+
+  return (
+    <p
+      aria-live="polite"
+      className="flex h-10 flex-wrap content-center items-center gap-x-3 text-sm leading-5 text-grey-1100"
+    >
+      <strong className="font-semibold">{faixa.faixa}</strong>
+      <FaixaValue
+        label="Mulher"
+        value={faixa.mulheres}
+        total={total}
+        color={MULHER_COLOR}
+      />
+      <FaixaValue
+        label="Homem"
+        value={faixa.homens}
+        total={total}
+        color={HOMEM_COLOR}
+      />
+    </p>
+  );
+};
+
+export const PiramideEtaria = ({
+  piramide,
+}: {
+  piramide: DemografiaPanelData["piramide"];
+}) => {
+  const [hover, setHover] = useState<number | null>(null);
+  const config = useMemo(
+    () => ({
+      categories: piramide.map((faixa) => faixa.faixa),
       left: {
         name: "Mulher",
         color: MULHER_COLOR,
-        values: faixas.map((faixa) => faixa.mulheres),
+        values: piramide.map((faixa) => faixa.mulheres),
       },
       right: {
         name: "Homem",
         color: HOMEM_COLOR,
-        values: faixas.map((faixa) => faixa.homens),
+        values: piramide.map((faixa) => faixa.homens),
       },
-    };
-  }, [data.piramide]);
+      formatValue: formatPessoas,
+      formatShort: formatPessoasCurto,
+    }),
+    [piramide],
+  );
+  const table = toColumnTable(PIRAMIDE_TITLE, "Faixa etária", {
+    ...config,
+    series: [config.left, config.right],
+    formatLabel: formatPessoas,
+  });
+  const shown =
+    piramide[
+      hover ??
+        largestIndex(piramide.map((faixa) => faixa.mulheres + faixa.homens))
+    ];
 
   return (
-    <PanelCarousel label="População por sexo" columns="xl:grid-cols-2">
-      <ChartCard title="População por sexo">
-        <PieChart
-          slices={slices}
-          formatValue={formatPessoas}
-          label="Gráfico de pizza da população por sexo"
-        />
-      </ChartCard>
-      <ChartCard title="População por faixa etária e sexo">
-        <PyramidChart
-          label="Pirâmide etária da população por sexo"
-          {...piramide}
-          formatValue={formatPessoas}
-          formatShort={formatPessoasCurto}
-        />
-      </ChartCard>
-    </PanelCarousel>
+    <ChartCard title={PIRAMIDE_TITLE} table={table}>
+      {shown ? <FaixaReader faixa={shown} /> : null}
+      <PyramidChart
+        label="Pirâmide etária da população por sexo"
+        className="min-h-80 w-full flex-1"
+        {...config}
+        activeIndex={hover}
+        onHoverFaixa={setHover}
+      />
+    </ChartCard>
   );
 };
 
-const AnaliseDescritiva = ({ data }: { data: DemografiaPanelData }) => (
-  <details className="group rounded-lg bg-green-800 text-grey-100">
-    <summary className="flex cursor-pointer list-none items-center gap-3 p-6 [&::-webkit-details-marker]:hidden">
-      <Lightbulb aria-hidden className="size-6 shrink-0" />
-      <span className="flex-1 text-xl font-semibold leading-9">
-        Análise descritiva
-      </span>
-      <ChevronDown
-        aria-hidden
-        className="size-6 shrink-0 transition-transform group-open:rotate-180"
-      />
-    </summary>
-    <ul className="flex list-disc flex-col gap-2 px-6 pb-6 pl-11 text-base leading-relaxed">
-      {describeDemografia(data).map((frase) => (
-        <li key={frase}>{frase}</li>
-      ))}
-    </ul>
-  </details>
-);
+const SERIE_TITLE = "Série temporal da população";
 
-export const DemografiaCharts = ({ data }: { data: DemografiaPanelData }) => {
-  const top = useMemo(() => topMunicipios(data.mapa), [data.mapa]);
-  const serie = useMemo(
-    () => ({
-      categories: data.serie.map((point) => point.label),
-      series: [
-        {
-          name: "População",
-          color: BAR_COLOR,
-          values: data.serie.map((point) => point.value),
-        },
-      ],
-    }),
-    [data.serie],
-  );
+export const SerieTemporal = ({
+  serie,
+  onSelectYear,
+}: {
+  serie: ChartPoint[];
+  onSelectYear: (ano: number) => void;
+}) => {
+  const config = useMemo(() => columnConfig("População", serie, true), [serie]);
 
   return (
-    <>
-      <SexoCharts data={data} />
-      <ChartCard title="Top 5 municípios mais populosos">
-        <ValueBars
-          points={top}
-          formatValue={formatPessoas}
-          barClassName="bg-pink-500"
-        />
-      </ChartCard>
-      <ChartCard title="População por cor ou raça">
-        <ValueBars
-          points={data.corRaca}
-          formatValue={formatPessoas}
-          barClassName="bg-pink-500"
-        />
-      </ChartCard>
-      <ChartCard title="Série temporal">
-        <ColumnChart
-          label="Gráfico de colunas da população por censo"
-          fit
-          {...serie}
-          formatLabel={formatSerieLabel}
-          formatValue={formatPessoas}
-        />
-      </ChartCard>
-      <AnaliseDescritiva data={data} />
-    </>
+    <ChartCard
+      title={SERIE_TITLE}
+      table={toColumnTable(SERIE_TITLE, "Ano", config)}
+    >
+      <ColumnChart
+        label="Gráfico de colunas da população por censo"
+        {...config}
+        axisName="Ano"
+        grow
+        onSelectLabel={(label) => onSelectYear(Number(label))}
+      />
+    </ChartCard>
+  );
+};
+
+const COR_RACA_TITLE = "População por cor ou raça";
+
+const CorRacaNota = ({ lines }: { lines: string[] }) => (
+  <p className="mt-3 flex gap-2 text-sm leading-relaxed text-grey-1000">
+    <Info aria-hidden className="mt-0.5 size-4 shrink-0" />
+    <span className="flex flex-col gap-1">
+      {lines.map((line) => (
+        <span key={line}>{line}</span>
+      ))}
+    </span>
+  </p>
+);
+
+export const PopulacaoPorCorRaca = ({
+  corRaca,
+  anterior,
+}: {
+  corRaca: ChartPoint[];
+  anterior: CorRacaAno | null;
+}) => {
+  const config = useMemo(() => {
+    const total = corRaca.reduce((sum, point) => sum + point.value, 0);
+
+    return {
+      ...columnConfig("População", corRaca, false),
+      formatValue: (value: number) =>
+        `${formatPessoas(value)} (${formatShare(value, total)})`,
+    };
+  }, [corRaca]);
+
+  return (
+    <ChartCard
+      title={COR_RACA_TITLE}
+      table={toColumnTable(COR_RACA_TITLE, "Cor ou raça", config)}
+    >
+      <ColumnChart
+        label="Gráfico de colunas da população por cor ou raça"
+        {...config}
+        rotateLabels
+      />
+      <CorRacaNota lines={describeCorRaca(corRaca, anterior)} />
+    </ChartCard>
   );
 };

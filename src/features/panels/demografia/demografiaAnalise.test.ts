@@ -1,42 +1,69 @@
 import { describe, expect, it } from "vitest";
-import { describeDemografia } from "@/features/panels/demografia/demografiaAnalise";
+import {
+  describeCorRaca,
+  municipiosPorPorte,
+  formatShare,
+} from "@/features/panels/demografia/demografiaAnalise";
 
-describe("describeDemografia", () => {
-  it("summarizes growth, sex, age and race from the panel numbers", () => {
+const corRaca = (values: number[]) =>
+  ["Amarela", "Branca", "Indígena", "Parda", "Preta"].map((label, index) => ({
+    label,
+    value: values[index],
+  }));
+
+const NORDESTE_2022 = corRaca([
+  68_749, 14_571_557, 327_725, 32_559_846, 7_127_018,
+]);
+const NORDESTE_2010 = corRaca([
+  631_009, 15_627_710, 208_691, 31_554_475, 5_058_802,
+]);
+
+describe("describeCorRaca", () => {
+  it("names the two largest groups and the biggest rise and fall since the previous census", () => {
     expect(
-      describeDemografia({
-        filters: { ano: 2022, area: "nordeste" },
-        serie: [
-          { label: "2010", value: 53_081_950 },
-          { label: "2022", value: 54_658_515 },
-        ],
-        sexo: { mulheres: 28_240_713, homens: 26_417_802 },
-        piramide: [
-          { faixa: "0 a 9 anos", mulheres: 3_690_179, homens: 3_828_504 },
-          { faixa: "30 a 39 anos", mulheres: 4_446_912, homens: 4_060_504 },
-        ],
-        corRaca: [
-          { label: "Parda", value: 32_559_846 },
-          { label: "Branca", value: 14_571_557 },
-        ],
-      }),
+      describeCorRaca(NORDESTE_2022, { ano: 2010, corRaca: NORDESTE_2010 }),
     ).toEqual([
-      "População residente em 2022: 54.658.515 pessoas, 3,0% a mais que em 2010.",
-      "Mulheres são 51,7% da população e homens, 48,3%.",
-      "A faixa etária mais numerosa é a de 30 a 39 anos.",
-      "Parda é a cor ou raça mais declarada (69,1% de quem declarou).",
+      "A população se autodeclara majoritariamente Parda (59,6%), seguida por Branca (26,7%).",
+      "Em comparação com 2010, houve um aumento de 57,0% na cor ou raça Indígena. Enquanto Amarela apresentou uma redução de 89,1%.",
     ]);
   });
 
-  it("skips what has no data", () => {
+  it("says when there is no previous census and drops the fall when nothing fell", () => {
+    expect(describeCorRaca(NORDESTE_2010, null)[1]).toBe(
+      "Não há ano anterior para comparação.",
+    );
     expect(
-      describeDemografia({
-        filters: { ano: 2000, area: "nordeste" },
-        serie: [],
-        sexo: { mulheres: 0, homens: 0 },
-        piramide: [],
-        corRaca: [],
-      }),
-    ).toEqual([]);
+      describeCorRaca(corRaca([2, 2, 2, 2, 2]), {
+        ano: 2000,
+        corRaca: corRaca([1, 2, 2, 2, 2]),
+      })[1],
+    ).toBe(
+      "Em comparação com 2000, houve um aumento de 100,0% na cor ou raça Amarela.",
+    );
+  });
+});
+
+describe("municipiosPorPorte", () => {
+  it("groups the municipalities by size, keeping empty sizes", () => {
+    const grupos = municipiosPorPorte([
+      { code: "2504009", label: "Campina Grande (PB)", value: 419_379 },
+      { code: "2516201", label: "Sousa (PB)", value: 67_259 },
+      { code: "2515302", label: "Sapé (PB)", value: 51_306 },
+    ]);
+
+    expect(
+      grupos.map(({ porte, codes }) => [porte.label, codes.length]),
+    ).toEqual([
+      ["Pequeno", 0],
+      ["Médio", 2],
+      ["Grande", 1],
+    ]);
+  });
+});
+
+describe("formatShare", () => {
+  it("formats the share of the total with one decimal, 0% without total", () => {
+    expect(formatShare(28_240_713, 54_658_515)).toBe("51,7%");
+    expect(formatShare(5, 0)).toBe("0,0%");
   });
 });
