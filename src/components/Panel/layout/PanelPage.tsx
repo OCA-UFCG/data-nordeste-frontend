@@ -94,9 +94,11 @@ export const PanelPage = ({
     <div className="flex flex-col gap-6 bg-grey-100 pb-9 lg:rounded-b-lg">
       {top ? (
         <div className="flex flex-col gap-6 bg-white pt-6 lg:pt-2">
-          <div className="px-6 lg:hidden">
-            <MobileSummaryAlert />
-          </div>
+          {fullMobile ? null : (
+            <div className="px-6 lg:hidden">
+              <MobileSummaryAlert />
+            </div>
+          )}
           {top}
         </div>
       ) : null}

@@ -85,3 +85,35 @@ export const loadPanelContent = async (
 
   return { panel, relatedItems };
 };
+
+/**
+ * Texts of a native demo panel, from the "panels" entry its Power BI page uses
+ * (`/data-panel/<id>`). A Contentful failure (error or missing entry) becomes
+ * null and a console.error: the database numbers stay on screen.
+ *
+ * @example await loadDemoPanelContent("idh")
+ */
+export const loadDemoPanelContent = async (
+  id: string,
+): Promise<PanelContent | null> => {
+  try {
+    // O href da página do Power BI: assim o próprio painel não entra nos relacionados.
+    const content = await loadPanelContent(id, `/data-panel/${id}`);
+
+    if (content) return content;
+
+    throw new Error(
+      `Contentful has no "panels" entry titled "${id}"; expected one entry with the panel texts.`,
+    );
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        event: `${id}_demo_content_failed`,
+        id,
+        message: error instanceof Error ? error.message : String(error),
+      }),
+    );
+
+    return null;
+  }
+};
