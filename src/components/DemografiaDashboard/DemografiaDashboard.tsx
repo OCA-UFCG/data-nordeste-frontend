@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo } from "react";
+import { DemografiaAnaliseSheet } from "@/components/DemografiaDashboard/DemografiaAnaliseSheet";
 import {
   PiramideEtaria,
   PopulacaoPorCorRaca,
@@ -8,6 +9,7 @@ import {
   PopulacaoPorSexo,
   SerieTemporal,
 } from "@/components/DemografiaDashboard/DemografiaCharts";
+import { DemografiaSaibaMais } from "@/components/DemografiaDashboard/DemografiaSaibaMais";
 import {
   DEMOGRAFIA_ICON,
   DEMOGRAFIA_TITLE,
@@ -91,6 +93,7 @@ export const DemografiaDashboard = ({
       icon={DEMOGRAFIA_ICON}
       tone="pink"
       source={source}
+      info={<DemografiaSaibaMais />}
       fullMobile
     >
       <PanelFilters
@@ -138,6 +141,9 @@ export const DemografiaDashboard = ({
               formatValue={formatPessoas}
               selectedCode={singleMunicipality}
               table={mapTable}
+              info={
+                <DemografiaAnaliseSheet data={data} municipios={municipios} />
+              }
               onSelectRegion={selectMunicipality}
               background={OCEAN_COLOR}
               fill

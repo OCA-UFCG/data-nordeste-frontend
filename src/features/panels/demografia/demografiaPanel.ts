@@ -26,10 +26,27 @@ export const DEMOGRAFIA_YEAR_RANGE: YearRange = {
 
 export const DEMOGRAFIA_MAX_PLACES = 100;
 
-export const DEMOGRAFIA_PORTES: readonly ChoroplethBucket[] = [
-  { max: 5e4, label: "Pequeno", color: "#efcfdc" },
-  { max: 1e5, label: "Médio", color: "#e7a4bf" },
-  { max: Infinity, label: "Grande", color: "#e482a9" },
+export type DemografiaPorte = ChoroplethBucket & { texto: string };
+
+export const DEMOGRAFIA_PORTES: readonly DemografiaPorte[] = [
+  {
+    max: 5e4,
+    label: "Pequeno",
+    color: "#efcfdc",
+    texto: "Pequeno porte (até 50 mil hab.)",
+  },
+  {
+    max: 1e5,
+    label: "Médio",
+    color: "#e7a4bf",
+    texto: "Médio porte (50 mil - 100 mil hab.)",
+  },
+  {
+    max: Infinity,
+    label: "Grande",
+    color: "#e482a9",
+    texto: "Grande porte (acima de 100 mil hab.)",
+  },
 ];
 
 const AREA_ALIASES =
@@ -54,10 +71,13 @@ export type PopulacaoPorFaixa = {
   homens: number;
 };
 
+export type CorRacaAno = { ano: number; corRaca: ChartPoint[] };
+
 export type DemografiaPanelData = TerritorialSelection & {
   serie: ChartPoint[];
   sexo: { mulheres: number; homens: number };
   corRaca: ChartPoint[];
+  corRacaAnterior: CorRacaAno | null;
   piramide: PopulacaoPorFaixa[];
   mapa: ChoroplethRegion[];
 };
@@ -201,7 +221,9 @@ export const loadDemografiaPanel = async (
     loadPiramide(query, filters),
     loadMapa(query, filters),
   ]);
-  const atual = porAno.find((row) => Number(row.ano) === filters.ano);
+  const index = porAno.findIndex((row) => Number(row.ano) === filters.ano);
+  const atual = porAno[index];
+  const anterior = index > 0 ? porAno[index - 1] : undefined;
 
   return {
     ...selection,
@@ -211,6 +233,9 @@ export const loadDemografiaPanel = async (
     })),
     sexo: { mulheres: cell(atual, "mulher"), homens: cell(atual, "homem") },
     corRaca: corRacaDe(atual),
+    corRacaAnterior: anterior
+      ? { ano: Number(anterior.ano), corRaca: corRacaDe(anterior) }
+      : null,
     piramide,
     mapa,
   };
