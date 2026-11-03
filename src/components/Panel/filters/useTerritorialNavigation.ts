@@ -36,8 +36,9 @@ export const useTerritorialNavigation = (
     [range],
   );
   const { isPending, applyFilters } = usePanelNavigation(buildSearch);
+
   const selectMunicipality = useCallback(
-    (cdMun: string) => applyFilters({ ...filters, mun: cdMun }),
+    (cdMun: string) => applyFilters({ ...filters, mun: [cdMun] }),
     [applyFilters, filters],
   );
 

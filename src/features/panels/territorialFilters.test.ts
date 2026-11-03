@@ -8,8 +8,8 @@ import {
 
 const RANGE = { first: 2010, last: 2023 };
 const DEFAULTS = defaultTerritorialFilters(RANGE);
-const parse = (params: Record<string, string | string[]>) =>
-  parseTerritorialFilters(params, RANGE);
+const parse = (params: Record<string, string | string[]>, maxPlaces = 1) =>
+  parseTerritorialFilters(params, RANGE, maxPlaces);
 
 describe("parseTerritorialFilters", () => {
   it("defaults to the latest year in the Nordeste", () => {
@@ -24,7 +24,12 @@ describe("parseTerritorialFilters", () => {
         uf: "pe",
         mun: "2611606",
       }),
-    ).toEqual({ ano: 2017, area: "semiarido", uf: "PE", mun: "2611606" });
+    ).toEqual({
+      ano: 2017,
+      area: "semiarido",
+      uf: ["PE"],
+      mun: ["2611606"],
+    });
   });
 
   it("drops values outside the expected shape", () => {
@@ -38,8 +43,44 @@ describe("parseTerritorialFilters", () => {
     ).toEqual(DEFAULTS);
   });
 
+  // Primeiro valor válido: um inválido antes dele não ocupa a única vaga.
   it("uses the first value when a param is repeated", () => {
     expect(parse({ ano: ["2015", "2016"] }).ano).toBe(2015);
+    expect(parse({ uf: ["PB", "PE"], mun: ["x", "2611606"] })).toEqual({
+      ...DEFAULTS,
+      uf: ["PB"],
+      mun: ["2611606"],
+    });
+  });
+
+  it("reads repeated states and municipalities when several are allowed", () => {
+    expect(
+      parse(
+        {
+          uf: ["pb", "PE", "PB", "Paraíba"],
+          mun: ["2507507", "26116", "2611606"],
+        },
+        10,
+      ),
+    ).toEqual({
+      ...DEFAULTS,
+      uf: ["PB", "PE"],
+      mun: ["2507507", "2611606"],
+    });
+  });
+
+  // Inválidos e repetidos não ocupam vaga: o limite conta só o que é válido.
+  it("caps after dropping invalid and repeated codes", () => {
+    const valid = Array.from({ length: 100 }, (_, index) =>
+      String(2600000 + index),
+    );
+    const mun = ["x", "26116", valid[0], ...valid, "abc"];
+
+    expect(parse({ mun }, 100).mun).toEqual(valid);
+    expect(parse({ uf: ["Paraíba", "pb", "PB", "PE"] }, 2).uf).toEqual([
+      "PB",
+      "PE",
+    ]);
   });
 });
 
@@ -49,10 +90,26 @@ describe("buildTerritorialSearch", () => {
   });
 
   it("round-trips through parseTerritorialFilters", () => {
-    const filters = { ano: 2012, area: "caatinga", uf: "BA" } as const;
-    const search = new URLSearchParams(buildTerritorialSearch(filters, RANGE));
+    const filters = { ano: 2012, area: "caatinga" as const, uf: ["BA"] };
+    const search = buildTerritorialSearch(filters, RANGE);
 
-    expect(parse(Object.fromEntries(search))).toEqual(filters);
+    expect(search).toBe("?ano=2012&area=caatinga&uf=BA");
+    expect(parse(Object.fromEntries(new URLSearchParams(search)))).toEqual(
+      filters,
+    );
+  });
+
+  it("repeats the param for several places", () => {
+    const search = buildTerritorialSearch(
+      { ...DEFAULTS, uf: ["PB", "PE"], mun: ["2507507", "2611606"] },
+      RANGE,
+    );
+    const params = new URLSearchParams(search);
+
+    expect(search).toBe("?uf=PB&uf=PE&mun=2507507&mun=2611606");
+    expect(
+      parse({ uf: params.getAll("uf"), mun: params.getAll("mun") }, 10),
+    ).toEqual({ ...DEFAULTS, uf: ["PB", "PE"], mun: ["2507507", "2611606"] });
   });
 });
 

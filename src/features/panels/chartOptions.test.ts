@@ -1,94 +1,126 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
-  buildChoroplethOption,
+  buildChoroplethColorOption,
+  buildChoroplethFrameOption,
   buildColumnOption,
   buildPyramidOption,
-  buildTrendOption,
 } from "@/features/panels/chartOptions";
-import { formatReaisAxis, formatReaisCompact } from "@/features/panels/format";
+import { formatReaisCompact } from "@/features/panels/format";
 import type { MapBounds } from "@/features/panels/mapFraming";
+import type { ChartOption } from "@/lib/echarts";
 import { PIB_MAP_BUCKETS } from "@/features/panels/pib/pibPanel";
+import { rankRegions } from "@/features/panels/choropleth";
 
-const POINTS = [
-  { label: "2021", value: 1.2431e12 },
-  { label: "2022", value: 1.38805e12 },
-  { label: "2023", value: 1.51306e12 },
-];
+// Repassa ao ranking real, só para contar as chamadas.
+vi.mock("@/features/panels/choropleth", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/features/panels/choropleth")>();
 
-type LabelFormatter = (params: { value: number; dataIndex: number }) => string;
-
-const trendLabels = (width: number, selectedIndex = 2): string[] => {
-  const option = buildTrendOption(
-    {
-      points: POINTS,
-      seriesName: "PIB",
-      selectedIndex,
-      formatLabel: (value) => formatReaisCompact(value),
-      formatValue: (value) => formatReaisCompact(value),
-      formatAxis: formatReaisAxis,
-    },
-    width,
-  ) as { series: { label: { formatter: LabelFormatter } }[] };
-  const { formatter } = option.series[0].label;
-
-  return POINTS.map((point, dataIndex) =>
-    formatter({ value: point.value, dataIndex }),
-  );
-};
-
-describe("buildTrendOption", () => {
-  it("labels every point on wide screens", () => {
-    expect(trendLabels(900)).toEqual([
-      "R$ 1,24 tri",
-      "R$ 1,39 tri",
-      "R$ 1,51 tri",
-    ]);
-  });
-
-  it("keeps only the selected and latest labels when they would overlap", () => {
-    expect(trendLabels(200)).toEqual(["", "", "R$ 1,51 tri"]);
-  });
-
-  it("always labels the selected point", () => {
-    expect(trendLabels(200, 0)).toEqual(["R$ 1,24 tri", "", "R$ 1,51 tri"]);
-  });
+  return { ...actual, rankRegions: vi.fn(actual.rankRegions) };
 });
 
-describe("buildChoroplethOption", () => {
+const COLORS = {
+  regions: [
+    { code: "2611606", name: "Recife", uf: "PE", value: 6e10 },
+    { code: "2507507", name: "João Pessoa", uf: "PB", value: 2e10 },
+  ],
+  buckets: PIB_MAP_BUCKETS,
+  valueLabel: "PIB",
+  formatValue: (value: number) => formatReaisCompact(value),
+};
+
+type ColorOption = {
+  tooltip: { formatter: (params: { data?: object }) => string };
+  series: { id: string; type: string; data: object[] }[];
+};
+
+describe("buildChoroplethColorOption", () => {
+  const itemsOf = (option: ChartOption) =>
+    (option as { series: { data: object[] }[] }).series[0].data;
+
+  it("shows the position in the ranking in the tooltip", () => {
+    const option = buildChoroplethColorOption(COLORS) as ColorOption;
+    const [, joaoPessoa] = itemsOf(option);
+
+    expect(option.tooltip.formatter({ data: joaoPessoa })).toContain("2º de 2");
+  });
+
   it("escapes region names in the HTML tooltip", () => {
-    const option = buildChoroplethOption({
+    const option = buildChoroplethColorOption({
+      ...COLORS,
       regions: [
         { code: "2611606", name: "<b>Recife</b>", uf: "PE", value: 6e10 },
       ],
-      buckets: PIB_MAP_BUCKETS,
-      mapName: "test",
-      valueLabel: "PIB",
-      formatValue: (value) => formatReaisCompact(value),
-    }) as {
-      tooltip: { formatter: (params: { data?: object }) => string };
-      series: { data: object[] }[];
-    };
-    const [item] = option.series[0].data;
+    }) as ColorOption;
+    const [item] = itemsOf(option);
 
     expect(option.tooltip.formatter({ data: item })).toContain(
       "&lt;b&gt;Recife&lt;/b&gt; (PE)",
     );
   });
 
+  it("greys out regions outside the highlight", () => {
+    const option = buildChoroplethColorOption({
+      ...COLORS,
+      highlightCodes: new Set(["2611606"]),
+    });
+    const [recife, joaoPessoa] = itemsOf(option) as {
+      itemStyle: { areaColor: string };
+    }[];
+
+    expect(recife.itemStyle.areaColor).toBe("#421608");
+    expect(joaoPessoa.itemStyle.areaColor).toBe("#e5e5e5");
+  });
+
+  // O hover na lista refaz a opção de cor; o ranking de ~1.800 não precisa.
+  it("ranks each set of regions once across highlight changes", () => {
+    const regions = [...COLORS.regions];
+
+    vi.mocked(rankRegions).mockClear();
+    buildChoroplethColorOption({ ...COLORS, regions });
+    buildChoroplethColorOption({
+      ...COLORS,
+      regions,
+      highlightCodes: new Set(["2611606"]),
+    });
+    expect(rankRegions).toHaveBeenCalledTimes(1);
+
+    buildChoroplethColorOption({ ...COLORS, regions: [...regions] });
+    expect(rankRegions).toHaveBeenCalledTimes(2);
+  });
+
+  // Merge com center/zoom desfaria o zoom e o arrasto a cada destaque.
+  it("leaves the user's zoom and pan alone", () => {
+    const [series] = (
+      buildChoroplethColorOption({
+        ...COLORS,
+        selectedCode: "2611606",
+        highlightCodes: new Set(["2611606"]),
+      }) as ColorOption
+    ).series;
+
+    for (const key of ["center", "zoom", "boundingCoords", "map", "roam"]) {
+      expect(series).not.toHaveProperty(key);
+    }
+  });
+});
+
+describe("buildChoroplethFrameOption", () => {
+  type FrameOption = {
+    series: {
+      id: string;
+      roam: boolean | "scale";
+      boundingCoords?: MapBounds;
+      center?: [number, number];
+      zoom?: number;
+      scaleLimit: { min: number; max?: number };
+    }[];
+  };
+
   it("pans only with a mouse, keeping one-finger drag for page scroll", () => {
-    const config = {
-      regions: [],
-      buckets: PIB_MAP_BUCKETS,
-      mapName: "test",
-      valueLabel: "PIB",
-      formatValue: (value: number) => formatReaisCompact(value),
-    };
     const roam = (canPan?: boolean) =>
-      (
-        buildChoroplethOption({ ...config, canPan }) as {
-          series: { roam: boolean | string }[];
-        }
-      ).series[0].roam;
+      (buildChoroplethFrameOption({ mapName: "test", canPan }) as FrameOption)
+        .series[0].roam;
 
     expect(roam(true)).toBe(true);
     expect(roam(false)).toBe("scale");
@@ -101,18 +133,14 @@ describe("buildChoroplethOption", () => {
       [-35, -18],
     ];
     const [series] = (
-      buildChoroplethOption({
-        regions: [],
-        buckets: PIB_MAP_BUCKETS,
+      buildChoroplethFrameOption({
         mapName: "test",
-        valueLabel: "PIB",
-        formatValue: (value: number) => formatReaisCompact(value),
         framing: {
           bounds: area,
           maxZoom: 500,
           focus: { center: [-39.5, -10.5], zoom: 8 },
         },
-      }) as { series: Record<string, unknown>[] }
+      }) as FrameOption
     ).series;
 
     expect(series).toMatchObject({
@@ -121,6 +149,16 @@ describe("buildChoroplethOption", () => {
       zoom: 8,
       scaleLimit: { min: 1, max: 500 },
     });
+    expect(series).not.toHaveProperty("data");
+  });
+
+  it("shares the series id with the color option, so the merge finds it", () => {
+    const frame = buildChoroplethFrameOption({
+      mapName: "test",
+    }) as FrameOption;
+    const colors = buildChoroplethColorOption(COLORS) as ColorOption;
+
+    expect(colors.series[0].id).toBe(frame.series[0].id);
   });
 });
 

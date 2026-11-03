@@ -1,10 +1,22 @@
 import type { Metadata } from "next";
-import { CircleDollarSign } from "lucide-react";
-import { PanelMessage, PanelShell } from "@/components/Panel/PanelShell";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { PanelMessage } from "@/components/Panel/layout/PanelShell";
+import { PanelTextsFrame } from "@/components/Panel/texts/PanelTextsFrame";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
-import { buildMetadata } from "@/config/seo";
-import { loadPibPanel, PIB_YEAR_RANGE } from "@/features/panels/pib/pibPanel";
 import {
+  PIB_ICON,
+  PIB_SOURCE,
+  PIB_TITLE,
+} from "@/components/PibDashboard/pibTheme";
+import { buildMetadata } from "@/config/seo";
+import {
+  loadPibPanel,
+  PIB_MAX_PLACES,
+  PIB_YEAR_RANGE,
+} from "@/features/panels/pib/pibPanel";
+import { loadPibPanelContent } from "@/features/panels/pib/pibContent";
+import {
+  buildTerritorialSearch,
   parseTerritorialFilters,
   type TerritorialFilters,
 } from "@/features/panels/territorialFilters";
@@ -23,9 +35,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const SOURCE =
-  "Fonte dos dados: Instituto Brasileiro de Geografia e Estatística (IBGE), Secretaria do Tesouro Nacional (STN) Finanças do Brasil (FINBRA) e Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (SICONFI). Consultado ao vivo no banco do Data Nordeste.";
-
 const loadPanel = async (filters: TerritorialFilters) => {
   try {
     return await loadPibPanel(queryDataDb, filters);
@@ -42,30 +51,53 @@ const loadPanel = async (filters: TerritorialFilters) => {
   }
 };
 
+// Para quem visita: a causa técnica (túnel, DATA_DB_URL) fica no console.error.
+// <a>, não <Link>: recarrega a página inteira e refaz a consulta.
+const LoadFailedMessage = ({ filters }: { filters: TerritorialFilters }) => (
+  <PanelMessage>
+    Não foi possível carregar os dados do painel agora. Tente novamente em
+    alguns minutos.{" "}
+    <a
+      href={`/demo/pib${buildTerritorialSearch(filters, PIB_YEAR_RANGE)}`}
+      className="font-medium text-green-900 underline underline-offset-4"
+    >
+      Tentar novamente
+    </a>
+  </PanelMessage>
+);
+
 export default async function PibDemoPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const filters = parseTerritorialFilters(await searchParams, PIB_YEAR_RANGE);
-  const panel = await loadPanel(filters);
+  const filters = parseTerritorialFilters(
+    await searchParams,
+    PIB_YEAR_RANGE,
+    PIB_MAX_PLACES,
+  );
+  const [panel, content] = await Promise.all([
+    loadPanel(filters),
+    loadPibPanelContent(),
+  ]);
 
   return (
     <HubTemplate>
-      <PanelShell
-        theme="Painel de Economia e Renda"
-        icon={CircleDollarSign}
-        source={SOURCE}
-      >
+      <PanelTextsFrame content={content}>
         {panel ? (
-          <PibDashboard data={panel} />
+          <PibDashboard data={panel} source={PIB_SOURCE} />
         ) : (
-          <PanelMessage>
-            Não foi possível consultar o banco de dados. Confira se o túnel para
-            o banco está ativo e se <code>DATA_DB_URL</code> está configurada.
-          </PanelMessage>
+          <PanelPage
+            title={PIB_TITLE}
+            icon={PIB_ICON}
+            tone="orange"
+            source={PIB_SOURCE}
+            fullMobile
+          >
+            <LoadFailedMessage filters={filters} />
+          </PanelPage>
         )}
-      </PanelShell>
+      </PanelTextsFrame>
     </HubTemplate>
   );
 }

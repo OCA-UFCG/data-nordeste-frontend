@@ -11,16 +11,31 @@ const decimal = (digits: number) =>
     maximumFractionDigits: digits,
   });
 
-export const formatNumberCompact = (value: number, digits = 2): string => {
-  const scale = SCALES.find(({ limit }) => Math.abs(value) >= limit);
+// `reference` fixa a escala: com o máximo da série, todos os rótulos saem na
+// mesma unidade ("R$ 0,52 tri" ... "R$ 1,51 tri", como no Power BI do PIB).
+export const formatNumberCompact = (
+  value: number,
+  digits = 2,
+  reference = value,
+): string => {
+  const scale = SCALES.find(({ limit }) => Math.abs(reference) >= limit);
 
   if (!scale) return decimal(0).format(value);
 
   return `${decimal(digits).format(value / scale.limit)} ${scale.suffix}`;
 };
 
-export const formatReaisCompact = (value: number, digits = 2): string =>
-  `R$ ${formatNumberCompact(value, digits)}`;
+export const formatReaisCompact = (
+  value: number,
+  digits = 2,
+  reference = value,
+): string => `R$ ${formatNumberCompact(value, digits, reference)}`;
+
+// Unidade com inicial maiúscula, como nos rótulos do Power BI ("R$ 1,51 Tri").
+export const capitalizeScale = (text: string): string =>
+  text.replace(/ (tri|bi|mi|mil)$/, (match) =>
+    match.replace(/ (\w)/, (_, letter: string) => ` ${letter.toUpperCase()}`),
+  );
 
 export const formatNumber = (value: number, digits = 0): string =>
   decimal(digits).format(value);

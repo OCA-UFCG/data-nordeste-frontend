@@ -5,12 +5,12 @@ import {
   DEMOGRAFIA_ICON,
   DEMOGRAFIA_TITLE,
 } from "@/components/DemografiaDashboard/demografiaTheme";
-import { ChoroplethMap } from "@/components/Panel/ChoroplethMap";
-import { HighlightCard } from "@/components/Panel/HighlightCards";
-import { PanelFilters } from "@/components/Panel/PanelFilters";
-import { PanelPage } from "@/components/Panel/PanelPage";
-import { TerritorialSelects } from "@/components/Panel/TerritorialFilterBar";
-import { useTerritorialNavigation } from "@/components/Panel/useTerritorialNavigation";
+import { ChoroplethMap } from "@/components/Panel/charts/ChoroplethMap";
+import { HighlightCard } from "@/components/Panel/cards/HighlightCards";
+import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
+import { PanelPage } from "@/components/Panel/layout/PanelPage";
+import { TerritorialSelects } from "@/components/Panel/filters/TerritorialFilterBar";
+import { useTerritorialNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
   DEMOGRAFIA_YEAR_RANGE,
   POPULACAO_MAP_BUCKETS,
@@ -79,7 +79,7 @@ export const DemografiaDashboard = ({
               buckets={POPULACAO_MAP_BUCKETS}
               valueLabel="População"
               formatValue={formatPessoas}
-              selectedCode={filters.mun}
+              selectedCode={filters.mun?.[0]}
               onSelectRegion={selectMunicipality}
             />
           </div>

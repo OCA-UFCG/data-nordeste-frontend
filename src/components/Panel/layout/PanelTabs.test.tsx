@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { PanelTabs } from "@/components/Panel/PanelTabs";
+import { PanelTabs } from "@/components/Panel/layout/PanelTabs";
 
 const TABS = [
   { key: "geral", label: "Visão geral" },

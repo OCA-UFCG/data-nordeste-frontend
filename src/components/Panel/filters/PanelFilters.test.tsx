@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { PanelFilters } from "@/components/Panel/PanelFilters";
+import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
 
 const renderFilters = (onClear = vi.fn()) =>
   render(

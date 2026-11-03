@@ -8,14 +8,17 @@ import {
   Wallet,
 } from "lucide-react";
 import { useMemo } from "react";
-import { ChartCard } from "@/components/Panel/ChartCard";
-import { ChoroplethMap } from "@/components/Panel/ChoroplethMap";
-import { ColumnChart } from "@/components/Panel/ColumnChart";
-import { HighlightCard } from "@/components/Panel/HighlightCards";
-import type { KpiItem } from "@/components/Panel/KpiCards";
-import { HorizontalBarChart } from "@/components/Panel/HorizontalBarChart";
-import { RankedBars } from "@/components/Panel/RankedBars";
-import { PanelCarousel } from "@/components/Panel/PanelCarousel";
+import { ChartCard } from "@/components/Panel/cards/ChartCard";
+import { ChoroplethMap } from "@/components/Panel/charts/ChoroplethMap";
+import { ColumnChart } from "@/components/Panel/charts/ColumnChart";
+import {
+  HighlightCard,
+  withCommonFit,
+} from "@/components/Panel/cards/HighlightCards";
+import type { KpiItem } from "@/components/Panel/cards/KpiCards";
+import { HorizontalBarChart } from "@/components/Panel/charts/HorizontalBarChart";
+import { RankedBars } from "@/components/Panel/charts/RankedBars";
+import { PanelCarousel } from "@/components/Panel/layout/PanelCarousel";
 import {
   IDH_MAP_BUCKETS,
   type IdhPanelData,
@@ -144,7 +147,7 @@ export const IdhOverview = ({
         label="Indicadores"
         columns="lg:grid-cols-3 xl:grid-cols-5"
       >
-        {overviewCards(selected).map((item) => (
+        {withCommonFit(overviewCards(selected)).map((item) => (
           <HighlightCard key={item.label} tone="orange" {...item} />
         ))}
       </PanelCarousel>

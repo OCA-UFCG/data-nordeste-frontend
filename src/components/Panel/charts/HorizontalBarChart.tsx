@@ -13,11 +13,13 @@ export const HorizontalBarChart = ({
   formatValue,
   label,
   color,
+  className = "h-64 w-full sm:h-72",
 }: {
   points: ChartPoint[];
   formatValue: ValueFormatter;
   label: string;
   color?: string;
+  className?: string;
 }) => {
   const buildOption = useCallback(
     (width: number) =>
@@ -26,10 +28,6 @@ export const HorizontalBarChart = ({
   );
 
   return (
-    <EChart
-      buildOption={buildOption}
-      label={label}
-      className="h-64 w-full sm:h-72"
-    />
+    <EChart buildOption={buildOption} label={label} className={className} />
   );
 };
