@@ -76,6 +76,20 @@ describe("loadIdhPanel", () => {
     ).toBe(true);
   });
 
+  it("passes user filters as bind parameters, never inside the SQL", async () => {
+    const db = new IdhDatabaseFake();
+
+    await loadIdhPanel(db.query, { ano: 2015, visao: "sexo", uf: "PE" });
+
+    expect(db.calls.length).toBeGreaterThan(1);
+    for (const { sql } of db.calls) {
+      expect(sql).not.toContain("PE");
+      expect(sql).not.toContain("2015");
+    }
+    expect(db.callFor("sexo AS grupo").params).toEqual(["PE"]);
+    expect(db.callFor("estado_rm AS lugar").params).toEqual([2015]);
+  });
+
   it("keys the map by UF so it matches the state mesh", async () => {
     const db = new IdhDatabaseFake();
     const panel = await loadIdhPanel(db.query, { ano: 2021, visao: "geral" });

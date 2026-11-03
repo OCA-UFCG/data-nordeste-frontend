@@ -10,12 +10,15 @@ import {
 import { useMemo } from "react";
 import { ChartCard } from "@/components/Panel/cards/ChartCard";
 import { ChoroplethMap } from "@/components/Panel/charts/ChoroplethMap";
-import { ColumnChart } from "@/components/Panel/charts/ColumnChart";
+import {
+  ColumnChart,
+  toColumnTable,
+} from "@/components/Panel/charts/ColumnChart";
+import type { DataTableContent } from "@/components/Panel/cards/DataTable";
 import {
   HighlightCard,
   withCommonFit,
 } from "@/components/Panel/cards/HighlightCards";
-import type { KpiItem } from "@/components/Panel/cards/KpiCards";
 import { HorizontalBarChart } from "@/components/Panel/charts/HorizontalBarChart";
 import { RankedBars } from "@/components/Panel/charts/RankedBars";
 import { PanelCarousel } from "@/components/Panel/layout/PanelCarousel";
@@ -35,7 +38,7 @@ import {
 
 const MESH_URL = "/maps/estados-nordeste.json";
 
-const overviewCards = (point?: IdhYearPoint): KpiItem[] => {
+const overviewCards = (point?: IdhYearPoint) => {
   const show = (format: (value: number) => string, key: keyof IdhYearPoint) =>
     point ? format(point[key]) : NO_DATA;
 
@@ -80,6 +83,8 @@ const dimensions = (point?: IdhYearPoint) =>
 const useEvolutionSeries = (serie: IdhYearPoint[]) =>
   useMemo(
     () => ({
+      formatLabel: formatIdh,
+      formatValue: formatIdh,
       categories: yearLabels(serie),
       series: [
         {
@@ -97,8 +102,14 @@ const useEvolutionSeries = (serie: IdhYearPoint[]) =>
     [serie],
   );
 
+const toRankingTable = (data: IdhPanelData): DataTableContent => ({
+  caption: `IDH por estado em ${data.filters.ano}`,
+  columns: ["Estado", "IDH"],
+  rows: data.ranking.map((point) => [point.label, formatIdh(point.value)]),
+});
+
 const RankingCard = ({ data }: { data: IdhPanelData }) => (
-  <ChartCard title="IDH por estado">
+  <ChartCard title="IDH por estado" table={toRankingTable(data)}>
     <RankedBars points={data.ranking} formatValue={formatIdh} />
   </ChartCard>
 );
@@ -118,6 +129,7 @@ const IdhMap = ({
     valueLabel="IDH"
     formatValue={formatIdh}
     selectedCode={data.filters.uf}
+    table={toRankingTable(data)}
     onSelectRegion={onSelectUf}
   />
 );
@@ -126,9 +138,11 @@ const IdhMap = ({
 export const IdhOverview = ({
   data,
   onSelectUf,
+  onSelectYear,
 }: {
   data: IdhPanelData;
   onSelectUf: (uf: string) => void;
+  onSelectYear: (ano: number) => void;
 }) => {
   const selected = data.serie.find((point) => point.ano === data.filters.ano);
   const evolution = useEvolutionSeries(data.serie);
@@ -143,15 +157,21 @@ export const IdhOverview = ({
           <HighlightCard key={item.label} tone="orange" {...item} />
         ))}
       </PanelCarousel>
-      <ChartCard title="Evolução anual do IDH e IDH ajustado à desigualdade">
+      <ChartCard
+        title="Evolução anual do IDH e IDH ajustado à desigualdade"
+        table={toColumnTable(
+          "Evolução anual do IDH e IDH ajustado à desigualdade",
+          "Ano",
+          evolution,
+        )}
+      >
         <ColumnChart
           label="Gráfico de colunas do IDH e do IDH ajustado por ano"
           {...evolution}
-          formatLabel={formatIdh}
-          formatValue={formatIdh}
+          onSelectLabel={(ano) => onSelectYear(Number(ano))}
         />
       </ChartCard>
-      <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="min-w-0">
           <IdhMap data={data} onSelectUf={onSelectUf} />
         </div>

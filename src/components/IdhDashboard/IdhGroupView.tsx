@@ -3,13 +3,16 @@
 import { ChartColumnIncreasing, Wallet } from "lucide-react";
 import { useMemo } from "react";
 import { ChartCard } from "@/components/Panel/cards/ChartCard";
-import { ColumnChart } from "@/components/Panel/charts/ColumnChart";
+import {
+  ColumnChart,
+  toColumnTable,
+} from "@/components/Panel/charts/ColumnChart";
 import {
   HighlightCard,
   withCommonFit,
 } from "@/components/Panel/cards/HighlightCards";
-import type { KpiItem } from "@/components/Panel/cards/KpiCards";
 import { PanelCarousel } from "@/components/Panel/layout/PanelCarousel";
+import type { ColumnConfig } from "@/features/panels/chartOptions";
 import type {
   IdhGroupPoint,
   IdhGroupSerie,
@@ -37,7 +40,7 @@ const cardValue = (
   return point ? format(point[metric]) : NO_DATA;
 };
 
-const groupCards = (groups: IdhGroupSerie[], ano: number): KpiItem[] => [
+const groupCards = (groups: IdhGroupSerie[], ano: number) => [
   ...groups.map((group) => ({
     icon: ChartColumnIncreasing,
     label: `IDH · ${group.label}`,
@@ -50,9 +53,16 @@ const groupCards = (groups: IdhGroupSerie[], ano: number): KpiItem[] => [
   })),
 ];
 
-const useGroupSeries = (groups: IdhGroupSerie[], metric: GroupMetric) =>
+const useGroupSeries = (
+  groups: IdhGroupSerie[],
+  metric: GroupMetric,
+  formatLabel: (value: number) => string,
+  formatValue: (value: number) => string,
+) =>
   useMemo(
     () => ({
+      formatLabel,
+      formatValue,
       categories: yearLabels(groups[0]?.serie ?? []),
       series: groups.map((group, index) => ({
         name: group.label,
@@ -60,20 +70,47 @@ const useGroupSeries = (groups: IdhGroupSerie[], metric: GroupMetric) =>
         values: group.serie.map((point: IdhGroupPoint) => point[metric]),
       })),
     }),
-    [groups, metric],
+    [groups, metric, formatLabel, formatValue],
   );
+
+const GroupChart = ({
+  title,
+  label,
+  config,
+  onSelectYear,
+}: {
+  title: string;
+  label: string;
+  config: ColumnConfig;
+  onSelectYear: (ano: number) => void;
+}) => (
+  <ChartCard title={title} table={toColumnTable(title, "Ano", config)}>
+    <ColumnChart
+      label={label}
+      {...config}
+      onSelectLabel={(ano) => onSelectYear(Number(ano))}
+    />
+  </ChartCard>
+);
 
 export const IdhGroupView = ({
   groups,
   ano,
   dimension,
+  onSelectYear,
 }: {
   groups: IdhGroupSerie[];
   ano: number;
   dimension: string;
+  onSelectYear: (ano: number) => void;
 }) => {
-  const idh = useGroupSeries(groups, "idh");
-  const rendimento = useGroupSeries(groups, "rendimento");
+  const idh = useGroupSeries(groups, "idh", formatIdh, formatIdh);
+  const rendimento = useGroupSeries(
+    groups,
+    "rendimento",
+    formatRendaLabel,
+    formatRenda,
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -83,22 +120,18 @@ export const IdhGroupView = ({
         ))}
       </PanelCarousel>
       <div className="flex flex-col gap-6">
-        <ChartCard title={`Evolução anual do IDH ${dimension}`}>
-          <ColumnChart
-            label={`Gráfico de colunas do IDH ${dimension} por ano`}
-            {...idh}
-            formatLabel={formatIdh}
-            formatValue={formatIdh}
-          />
-        </ChartCard>
-        <ChartCard title={`Rendimento médio dos ocupados ${dimension} (R$)`}>
-          <ColumnChart
-            label={`Gráfico de colunas do rendimento médio ${dimension} por ano`}
-            {...rendimento}
-            formatLabel={formatRendaLabel}
-            formatValue={formatRenda}
-          />
-        </ChartCard>
+        <GroupChart
+          title={`Evolução anual do IDH ${dimension}`}
+          label={`Gráfico de colunas do IDH ${dimension} por ano`}
+          config={idh}
+          onSelectYear={onSelectYear}
+        />
+        <GroupChart
+          title={`Rendimento médio dos ocupados ${dimension} (R$)`}
+          label={`Gráfico de colunas do rendimento médio ${dimension} por ano`}
+          config={rendimento}
+          onSelectYear={onSelectYear}
+        />
       </div>
     </div>
   );
