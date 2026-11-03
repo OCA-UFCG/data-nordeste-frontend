@@ -41,21 +41,17 @@ const CardToolbar = ({
 );
 
 // `table`: os mesmos números em tabela, como o "Mostrar como tabela" do Power BI.
-// `toolbarInside`: "Ver tabela" e ⓘ no topo do card branco, e o título usa a
-// largura toda (em cards estreitos lado a lado, o título quebrava em 4 linhas).
 export const ChartCard = ({
   title,
   info,
   table,
   tableClassName,
-  toolbarInside = false,
   children,
 }: {
   title: string;
   info?: ReactNode;
   table?: DataTableContent;
   tableClassName?: string;
-  toolbarInside?: boolean;
   children: ReactNode;
 }) => {
   const [showTable, setShowTable] = useState(false);
@@ -71,16 +67,15 @@ export const ChartCard = ({
 
   return (
     <section className="flex min-h-0 min-w-0 flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
+      {/* Título longo em card estreito: os botões descem para a linha de baixo
+          em vez de espremer o título. -my-2: o botão de 44 px não aumenta a linha. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
         <h2 className="text-lg font-semibold text-grey-1100 sm:text-xl">
           {title}
         </h2>
-        {toolbarInside ? null : toolbar}
+        {toolbar ? <div className="-my-2 ml-auto">{toolbar}</div> : null}
       </div>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col rounded-lg bg-white p-3 shadow-sm sm:p-4">
-        {toolbarInside && toolbar ? (
-          <div className="-mr-1 -mt-2 flex justify-end sm:-mr-2">{toolbar}</div>
-        ) : null}
         {table && showTable ? (
           <DataTable content={table} className={tableClassName} />
         ) : (
