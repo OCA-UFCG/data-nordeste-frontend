@@ -97,12 +97,8 @@ const useEvolutionSeries = (serie: IdhYearPoint[]) =>
     [serie],
   );
 
-const isRm = (data: IdhPanelData) => data.filters.recorte === "rm";
-
 const RankingCard = ({ data }: { data: IdhPanelData }) => (
-  <ChartCard
-    title={isRm(data) ? "IDH por região metropolitana" : "IDH por estado"}
-  >
+  <ChartCard title="IDH por estado">
     <RankedBars points={data.ranking} formatValue={formatIdh} />
   </ChartCard>
 );
@@ -115,11 +111,7 @@ const IdhMap = ({
   onSelectUf: (uf: string) => void;
 }) => (
   <ChoroplethMap
-    title={
-      isRm(data)
-        ? "IDH da região metropolitana de cada estado"
-        : "IDH por estado"
-    }
+    title="IDH por estado"
     meshUrl={MESH_URL}
     regions={data.mapa}
     buckets={IDH_MAP_BUCKETS}

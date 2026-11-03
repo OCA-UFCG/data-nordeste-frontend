@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const SOURCE =
-  "Fonte dos dados: Atlas do Desenvolvimento Humano no Brasil (PNUD, Ipea e Fundação João Pinheiro), com base na PNAD Contínua do IBGE. Sem estado selecionado, os valores são a média simples dos estados (ou regiões metropolitanas) do Nordeste. Consultado ao vivo no banco do Data Nordeste.";
+  "Fonte dos dados: Atlas do Desenvolvimento Humano no Brasil (PNUD, Ipea e Fundação João Pinheiro), com base na PNAD Contínua do IBGE. Sem estado selecionado, os valores são a média simples dos estados do Nordeste. Consultado ao vivo no banco do Data Nordeste.";
 
 const loadPanel = async (filters: IdhFilters) => {
   try {

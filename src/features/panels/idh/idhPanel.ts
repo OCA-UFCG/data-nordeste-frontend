@@ -31,13 +31,6 @@ export const IDH_MAP_BUCKETS: readonly ChoroplethBucket[] = [
   { max: Infinity, label: "Acima de 0,775", color: "#8c2d04" },
 ];
 
-export const IDH_RECORTES = [
-  { value: "estado", label: "Estado" },
-  { value: "rm", label: "Região metropolitana" },
-] as const;
-
-export type IdhRecorte = (typeof IDH_RECORTES)[number]["value"];
-
 export const IDH_VISOES = [
   { key: "geral", label: "Visão geral" },
   { key: "sexo", label: "Visão por sexo" },
@@ -48,26 +41,20 @@ export type IdhVisao = (typeof IDH_VISOES)[number]["key"];
 
 export type IdhFilters = {
   ano: number;
-  recorte: IdhRecorte;
   visao: IdhVisao;
   uf?: string;
 };
 
 export const DEFAULT_IDH_FILTERS: IdhFilters = {
   ano: IDH_YEAR_RANGE.last,
-  recorte: "estado",
   visao: "geral",
 };
-
-const isRecorte = (value?: string): value is IdhRecorte =>
-  IDH_RECORTES.some((recorte) => recorte.value === value);
 
 const isVisao = (value?: string): value is IdhVisao =>
   IDH_VISOES.some((visao) => visao.key === value);
 
 export const parseIdhFilters = (params: SearchParams): IdhFilters => {
   const ano = Number(firstValue(params.ano));
-  const recorte = firstValue(params.recorte);
   const visao = firstValue(params.visao);
   const uf = firstValue(params.uf)?.toUpperCase();
 
@@ -75,7 +62,6 @@ export const parseIdhFilters = (params: SearchParams): IdhFilters => {
     ano: listYears(IDH_YEAR_RANGE).includes(ano)
       ? ano
       : DEFAULT_IDH_FILTERS.ano,
-    recorte: isRecorte(recorte) ? recorte : DEFAULT_IDH_FILTERS.recorte,
     visao: isVisao(visao) ? visao : DEFAULT_IDH_FILTERS.visao,
     ...(uf && UF_PATTERN.test(uf) ? { uf } : {}),
   };
@@ -86,9 +72,6 @@ export const buildIdhSearch = (filters: IdhFilters): string => {
 
   if (filters.ano !== DEFAULT_IDH_FILTERS.ano) {
     params.set("ano", String(filters.ano));
-  }
-  if (filters.recorte !== DEFAULT_IDH_FILTERS.recorte) {
-    params.set("recorte", filters.recorte);
   }
   if (filters.uf) params.set("uf", filters.uf);
   if (filters.visao !== DEFAULT_IDH_FILTERS.visao) {
@@ -153,13 +136,15 @@ const buildIdhWhere = (
   scope: { byYear: boolean; byUf: boolean },
 ): SqlWhere => {
   const params: unknown[] = [];
-  const conditions: string[] = [];
+
+  // As views também têm uma linha por região metropolitana; o Power BI só
+  // mostra estados, então o painel nativo também (sem filtro de recorte).
+  const conditions: string[] = ["regiao_metropolitana = 'Não'"];
   const add = (column: string, value: unknown) => {
     params.push(value);
     conditions.push(`${column} = $${params.length}`);
   };
 
-  add("regiao_metropolitana", filters.recorte === "rm" ? "Sim" : "Não");
   if (scope.byYear) add("ano", filters.ano);
   if (scope.byUf && filters.uf) add("RIGHT(TRIM(estado_uf), 2)", filters.uf);
 
@@ -176,7 +161,7 @@ const loadUfs = async (query: SqlQuery): Promise<UfOption[]> => {
   return rows.map((row) => ({ sigla: row.sigla_uf, nome: row.estado_1 }));
 };
 
-// Sem UF, o valor é a média simples dos estados (ou RMs), como no Power BI.
+// Sem UF, o valor é a média simples dos estados, como no Power BI.
 const loadSerie = async (query: SqlQuery, filters: IdhFilters) => {
   const where = buildIdhWhere(filters, { byYear: false, byUf: true });
   const rows = await query<Record<string, NumericCell> & { ano: number }>(
@@ -256,11 +241,7 @@ export const loadIdhPanel = async (
   const uf = ufs.find((item) => item.sigla === requested.uf)?.sigla;
   const filters: IdhFilters = uf
     ? { ...requested, uf }
-    : {
-        ano: requested.ano,
-        recorte: requested.recorte,
-        visao: requested.visao,
-      };
+    : { ano: requested.ano, visao: requested.visao };
   const [serie, mapa, sexo, cor] = await Promise.all([
     loadSerie(query, filters),
     loadLugares(query, filters),
@@ -278,10 +259,7 @@ export const describeIdhSelection = ({
   ufs,
 }: Pick<IdhPanelData, "filters" | "ufs">): string => {
   const uf = ufs.find((item) => item.sigla === filters.uf);
-  const isRm = filters.recorte === "rm";
-  const place = uf
-    ? `${uf.nome}${isRm ? " · região metropolitana" : ""}`
-    : `Média ${isRm ? "das regiões metropolitanas" : "dos estados"} do Nordeste`;
+  const place = uf ? uf.nome : "Média dos estados do Nordeste";
 
   return `${place} · ${filters.ano}`;
 };
