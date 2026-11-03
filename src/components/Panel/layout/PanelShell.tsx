@@ -14,6 +14,7 @@ export const PANEL_TONES = {
     ...DEFAULT_TONE_BODY,
   },
   pink: { shell: "bg-pink-600", card: "bg-pink-800", ...DEFAULT_TONE_BODY },
+  green: { shell: "bg-green-800", card: "bg-green-1000", ...DEFAULT_TONE_BODY },
 
   idh: {
     shell: "bg-[#7c46e1]",
