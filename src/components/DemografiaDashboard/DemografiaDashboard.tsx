@@ -49,7 +49,6 @@ const YEARS = listYears(DEMOGRAFIA_YEAR_RANGE);
 const DEFAULTS = defaultTerritorialFilters(DEMOGRAFIA_YEAR_RANGE);
 const OCEAN_COLOR = "#c5e0fa";
 
-// Esticam o card até a altura da linha da grade: sem faixa vazia embaixo.
 const Cell = ({
   className,
   children,
@@ -99,7 +98,6 @@ export const DemografiaDashboard = ({
   const selectedLabel =
     municipios.find((item) => item.code === singleMunicipality)?.label ?? null;
 
-  // Clicar de novo no município escolhido volta para a área toda.
   const toggleMunicipality = (label: string) => {
     const code = highlight.codeByLabel.get(label);
 

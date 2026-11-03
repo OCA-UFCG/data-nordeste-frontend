@@ -259,7 +259,6 @@ export const SerieTemporal = ({
 
 const COR_RACA_TITLE = "População por cor ou raça";
 
-// A "Análise descritiva" do Power BI, junto do gráfico que ela comenta.
 const CorRacaNota = ({ lines }: { lines: string[] }) => (
   <p className="mt-3 flex gap-2 text-sm leading-relaxed text-grey-1000">
     <Info aria-hidden className="mt-0.5 size-4 shrink-0" />

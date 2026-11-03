@@ -9,8 +9,6 @@ import {
 import type { MunicipioPoint } from "@/features/panels/demografia/demografiaPanel";
 import { formatNumber } from "@/features/panels/format";
 
-// O que acende no mapa: o município sob o mouse na lista; senão, o porte sob o
-// mouse (ou foco) na legenda; senão, o porte fixado com clique.
 export const useDemografiaHighlight = (municipios: MunicipioPoint[]) => {
   const grupos = useMemo(() => municipiosPorPorte(municipios), [municipios]);
   const [porte, setPorte] = useState<string | null>(null);

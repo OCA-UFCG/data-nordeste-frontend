@@ -86,7 +86,6 @@ export const ColumnChart = ({
   label: string;
   fit?: boolean;
 
-  // Cresce até a altura do card, quando o vizinho da linha é mais alto.
   grow?: boolean;
   rotateLabels?: boolean;
   axisName?: string;

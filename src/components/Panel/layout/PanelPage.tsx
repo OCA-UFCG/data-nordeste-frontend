@@ -104,7 +104,6 @@ export const PanelPage = ({
           {top}
         </div>
       ) : null}
-      {/* fullMobile: a barra fixa do local encosta na faixa do título no celular. */}
       <div
         className={`flex flex-col gap-6 px-6 ${top ? "" : fullMobile ? "lg:pt-6" : "pt-6"}`}
       >

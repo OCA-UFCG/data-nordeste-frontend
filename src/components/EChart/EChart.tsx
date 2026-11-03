@@ -30,7 +30,6 @@ type EChartProps = EChartSource & {
   // Clique em qualquer ponto da área do grid: recebe o índice da categoria.
   onCategoryClick?: (index: number) => void;
 
-  // Categoria sob o ponteiro do eixo (mouse ou toque); null quando sai.
   onCategoryHover?: (index: number | null) => void;
   renderer?: ChartRenderer;
 
