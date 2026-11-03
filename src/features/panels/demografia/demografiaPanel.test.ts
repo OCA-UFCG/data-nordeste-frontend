@@ -27,10 +27,16 @@ class DemografiaDatabaseFake {
 
   private rowsFor(sql: string): object[] {
     if (sql.includes("DISTINCT sigla_uf")) {
-      return [{ sigla_uf: "CE", estado_uf: "Ceará" }];
+      return [
+        { sigla_uf: "CE", estado_uf: "Ceará" },
+        { sigla_uf: "PB", estado_uf: "Paraíba" },
+      ];
     }
     if (sql.includes("municipio_uf FROM")) {
-      return [{ cd_mun: "2304400", municipio_uf: "Fortaleza (CE)" }];
+      return [
+        { cd_mun: "2304400", municipio_uf: "Fortaleza (CE)" },
+        { cd_mun: "2504009", municipio_uf: "Campina Grande (PB)" },
+      ];
     }
     if (sql.includes("SUM(mulher) AS mulher")) {
       return [
@@ -68,21 +74,26 @@ describe("loadDemografiaPanel", () => {
     ]);
   });
 
-  it("maps the census area columns and binds the filters", async () => {
+  it("maps the census area columns and binds several places with = ANY", async () => {
     const db = new DemografiaDatabaseFake();
 
     await loadDemografiaPanel(db.query, {
       ano: 2010,
       area: "semiarido",
-      uf: ["CE"],
-      mun: ["2304400"],
+      uf: ["CE", "PB"],
+      mun: ["2304400", "2504009"],
     });
     const serie = db.callFor("GROUP BY ano");
 
     expect(serie.sql).toContain("semi_21 AS semiarido");
-    expect(serie.sql).toContain("semiarido = 'Sim'");
-    expect(serie.params).toEqual(["CE", "2304400"]);
-    expect(db.callFor("GROUP BY cd_mun").params).toEqual([2010, "CE"]);
+    expect(serie.sql).toContain(
+      "semiarido = 'Sim' AND sigla_uf = ANY($1) AND cd_mun = ANY($2)",
+    );
+    expect(serie.params).toEqual([
+      ["CE", "PB"],
+      ["2304400", "2504009"],
+    ]);
+    expect(db.callFor("GROUP BY cd_mun").params).toEqual([2010, ["CE", "PB"]]);
   });
 });
 

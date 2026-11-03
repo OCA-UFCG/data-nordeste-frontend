@@ -24,6 +24,8 @@ export const DEMOGRAFIA_YEAR_RANGE: YearRange = {
   available: [2022, 2010, 2000],
 };
 
+export const DEMOGRAFIA_MAX_PLACES = 100;
+
 export const POPULACAO_MAP_BUCKETS: readonly ChoroplethBucket[] = [
   { max: 1e4, label: "Até 10 mil", color: "#f9eaf1" },
   { max: 2e4, label: "10 a 20 mil", color: "#f6d4e3" },

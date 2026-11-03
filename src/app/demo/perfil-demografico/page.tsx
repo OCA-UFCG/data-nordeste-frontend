@@ -8,6 +8,7 @@ import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { PanelMessage } from "@/components/Panel/layout/PanelShell";
 import { buildMetadata } from "@/config/seo";
 import {
+  DEMOGRAFIA_MAX_PLACES,
   DEMOGRAFIA_YEAR_RANGE,
   loadDemografiaPanel,
 } from "@/features/panels/demografia/demografiaPanel";
@@ -57,6 +58,7 @@ export default async function PerfilDemograficoDemoPage({
   const filters = parseTerritorialFilters(
     await searchParams,
     DEMOGRAFIA_YEAR_RANGE,
+    DEMOGRAFIA_MAX_PLACES,
   );
   const panel = await loadPanel(filters);
 

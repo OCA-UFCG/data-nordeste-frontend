@@ -8,10 +8,12 @@ import {
 import { ChoroplethMap } from "@/components/Panel/charts/ChoroplethMap";
 import { HighlightCard } from "@/components/Panel/cards/HighlightCards";
 import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
+import { SelectionSummary } from "@/components/Panel/filters/SelectionSummary";
 import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { TerritorialSelects } from "@/components/Panel/filters/TerritorialFilterBar";
 import { useTerritorialNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
+  DEMOGRAFIA_MAX_PLACES,
   DEMOGRAFIA_YEAR_RANGE,
   POPULACAO_MAP_BUCKETS,
   type DemografiaPanelData,
@@ -40,6 +42,9 @@ export const DemografiaDashboard = ({
   const populacao = data.serie.find(
     (point) => point.label === String(filters.ano),
   );
+  const summary = describeTerritorialSelection(data, true);
+  const singleMunicipality =
+    filters.mun?.length === 1 ? filters.mun[0] : undefined;
 
   return (
     <PanelPage
@@ -49,7 +54,7 @@ export const DemografiaDashboard = ({
       source={source}
     >
       <PanelFilters
-        summary={describeTerritorialSelection(data)}
+        summary={summary}
         onClear={() => applyFilters(DEFAULTS)}
         isPending={isPending}
         sticky
@@ -60,8 +65,11 @@ export const DemografiaDashboard = ({
           municipios={data.municipios}
           years={YEARS}
           onChange={applyFilters}
+          multiple
+          maxPlaces={DEMOGRAFIA_MAX_PLACES}
         />
       </PanelFilters>
+      <SelectionSummary summary={summary} isPending={isPending} />
       <div
         aria-busy={isPending}
         className="grid grid-cols-1 gap-6 transition-opacity aria-busy:opacity-60 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
@@ -81,7 +89,7 @@ export const DemografiaDashboard = ({
               buckets={POPULACAO_MAP_BUCKETS}
               valueLabel="População"
               formatValue={formatPessoas}
-              selectedCode={filters.mun?.[0]}
+              selectedCode={singleMunicipality}
               onSelectRegion={selectMunicipality}
             />
           </div>

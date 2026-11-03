@@ -21,7 +21,7 @@ const renderSelects = (multiple?: boolean, onChange = vi.fn()) => {
 };
 
 describe("TerritorialSelects", () => {
-  it("keeps native single selects by default (Perfil Demográfico)", () => {
+  it("keeps native single selects by default", () => {
     const onChange = renderSelects();
 
     expect(screen.getByRole("combobox", { name: "Estado" })).toHaveValue("PE");

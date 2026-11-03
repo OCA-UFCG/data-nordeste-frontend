@@ -29,8 +29,8 @@ export const buildTerritorialWhere = (
     conditions.push(`${column} = $${params.length}`);
   };
 
-  // Um valor mantém o `= $n` de sempre (o Perfil Demográfico gera o mesmo SQL);
-  // vários viram `= ANY($n)` com um array, que o pg envia como parâmetro.
+  // Um valor mantém o `= $n` de sempre; vários viram `= ANY($n)` com um array,
+  // que o pg envia como parâmetro.
   const addAny = (column: string, values: string[] = []) => {
     if (values.length === 1) add(column, values[0]);
     if (values.length < 2) return;
