@@ -31,12 +31,19 @@ export type TrendConfig = {
 // ponytail: larguras estimadas a 14 px, com folga ("R$ 1,51 Tri", "2010", eixo Y
 // e margens); medir o texto no canvas se a fonte ou o formato mudarem.
 const LABEL_SLOT_WIDTH = 96;
-const YEAR_LABEL_WIDTH = 44;
+export const YEAR_LABEL_WIDTH = 44;
 const PLOT_CHROME_WIDTH = 170;
 
-// Largura de cada ano na área do gráfico (sem eixo Y e margens).
-const plotSlot = (width: number, count: number) =>
-  Math.max(width - PLOT_CHROME_WIDTH, 1) / Math.max(count, 1);
+/**
+ * Largura de cada ano na área do gráfico, descontados eixo Y e margens (`chrome`).
+ *
+ * @example plotSlot(570, 10) // 40
+ */
+export const plotSlot = (
+  width: number,
+  count: number,
+  chrome = PLOT_CHROME_WIDTH,
+): number => Math.max(width - chrome, 1) / Math.max(count, 1);
 
 /**
  * Pontos com rótulo de valor: o ano escolhido e as duas pontas da série. Uma
@@ -139,10 +146,15 @@ const axisLabelStep = (width: number, count: number) =>
     ? COMPACT_LABEL_STEP
     : Math.ceil(YEAR_LABEL_WIDTH / plotSlot(width, count));
 
-// Um ano a cada `step` contado do fim, para o mais recente sempre ter rótulo; o
-// escolhido também aparece, e os a menos de um passo dele somem para não sobrepor.
-const axisLabelInterval =
-  (count: number, selectedIndex: number, step: number) => (index: number) => {
+/**
+ * Um ano a cada `step` contado do fim, para o mais recente sempre ter rótulo; o
+ * escolhido também aparece, e os a menos de um passo dele somem para não sobrepor.
+ *
+ * @example axisLabelInterval(10, 4, 2)(5) // false: 2017 cai no passo, mas encosta em 2016, o escolhido
+ */
+export const axisLabelInterval =
+  (count: number, selectedIndex: number, step: number) =>
+  (index: number): boolean => {
     if (index === selectedIndex) return true;
     const nearSelected =
       selectedIndex >= 0 && Math.abs(index - selectedIndex) < step;

@@ -1,4 +1,8 @@
 import type { KeyboardEvent } from "react";
+import {
+  PANEL_TONES,
+  type PanelTone,
+} from "@/components/Panel/layout/PanelShell";
 
 export type PanelTab = { key: string; label: string };
 
@@ -18,11 +22,13 @@ export const PanelTabs = ({
   activeKey,
   idPrefix,
   onSelect,
+  tone = "orange",
 }: {
   tabs: readonly PanelTab[];
   activeKey: string;
   idPrefix: string;
   onSelect: (key: string) => void;
+  tone?: PanelTone;
 }) => {
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const current = tabs.findIndex((tab) => tab.key === activeKey);
@@ -54,7 +60,7 @@ export const PanelTabs = ({
             aria-controls={isActive ? `${idPrefix}-panel` : undefined}
             tabIndex={isActive ? 0 : -1}
             onClick={() => onSelect(tab.key)}
-            className="shrink-0 whitespace-nowrap border-b-2 px-3 py-4 text-sm font-medium aria-selected:border-green-800 aria-selected:text-green-800 aria-selected:shadow-xs aria-[selected=false]:border-transparent aria-[selected=false]:text-grey-600"
+            className={`shrink-0 whitespace-nowrap border-b-2 px-3 py-4 text-sm font-medium aria-selected:shadow-xs aria-[selected=false]:border-transparent aria-[selected=false]:text-grey-600 ${PANEL_TONES[tone].tab}`}
           >
             {tab.label}
           </button>

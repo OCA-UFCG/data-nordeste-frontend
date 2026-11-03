@@ -1,7 +1,7 @@
 "use client";
 
-import { LoaderCircle, Wallet } from "lucide-react";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { Wallet } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { ChoroplethMap } from "@/components/Panel/charts/ChoroplethMap";
 import type { DataTableContent } from "@/components/Panel/cards/DataTable";
 import {
@@ -10,6 +10,7 @@ import {
   withCommonFit,
 } from "@/components/Panel/cards/HighlightCards";
 import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
+import { SelectionSummary } from "@/components/Panel/filters/SelectionSummary";
 import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { TerritorialSelects } from "@/components/Panel/filters/TerritorialFilterBar";
 import {
@@ -187,36 +188,6 @@ const toMapTable = (mapa: PibPanelData["mapa"]): DataTableContent => ({
     .sort((a, b) => b.value - a.value)
     .map((region) => [`${region.name} (${region.uf})`, reais(region.value)]),
 });
-
-// Spinner só do desktop: no celular, a barra fixa já o mostra. O chip fica aqui,
-// e não sobre o mapa, para o mapa não mudar de tamanho; min-h-13 reserva a altura.
-const SelectionSummary = ({
-  summary,
-  isPending,
-  chip,
-}: {
-  summary: string;
-  isPending: boolean;
-  chip: ReactNode;
-}) => (
-  <div className="hidden min-h-13 items-center justify-between gap-4 lg:flex">
-    <p
-      aria-live="polite"
-      className="flex items-center gap-2 text-base text-grey-900"
-    >
-      <span>
-        Mostrando: <strong>{summary}</strong>
-      </span>
-      {isPending ? (
-        <LoaderCircle
-          aria-label="Atualizando"
-          className="size-4 shrink-0 animate-spin text-green-800"
-        />
-      ) : null}
-    </p>
-    {chip}
-  </div>
-);
 
 export const PibDashboard = ({
   data,

@@ -3,6 +3,7 @@ import {
   buildChoroplethColorOption,
   buildChoroplethFrameOption,
   buildColumnOption,
+  buildHorizontalBarOption,
   buildPyramidOption,
 } from "@/features/panels/chartOptions";
 import { formatReaisCompact } from "@/features/panels/format";
@@ -159,6 +160,26 @@ describe("buildChoroplethFrameOption", () => {
     const colors = buildChoroplethColorOption(COLORS) as ColorOption;
 
     expect(colors.series[0].id).toBe(frame.series[0].id);
+  });
+});
+
+describe("buildHorizontalBarOption", () => {
+  it("paints a bar in its own color and the rest in the series color", () => {
+    const option = buildHorizontalBarOption(
+      [
+        { label: "Homem", value: 657, color: "#97B42E" },
+        { label: "Total", value: 640 },
+      ],
+      String,
+      640,
+      "#f5791a",
+    ) as { series: { data: unknown[]; itemStyle: { color: string } }[] };
+
+    expect(option.series[0].data).toEqual([
+      { value: 657, itemStyle: { color: "#97B42E" } },
+      640,
+    ]);
+    expect(option.series[0].itemStyle.color).toBe("#f5791a");
   });
 });
 

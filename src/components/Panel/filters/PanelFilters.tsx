@@ -99,8 +99,8 @@ const StickyLocation = ({
 
   return (
     <div
-      style={{ top }}
-      className="sticky z-40 -mx-6 flex items-center gap-2 border-b border-grey-200 bg-white px-4 py-2 shadow-sm lg:hidden"
+      style={top ? { top } : undefined}
+      className="sticky top-20 z-40 -mx-6 flex items-center gap-2 border-b border-grey-200 bg-white px-4 py-2 shadow-sm lg:hidden"
     >
       <p
         aria-live="polite"

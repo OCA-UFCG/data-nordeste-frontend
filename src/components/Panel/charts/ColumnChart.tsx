@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { EChart } from "@/components/EChart/EChart";
+import type { DataTableContent } from "@/components/Panel/cards/DataTable";
 import {
   buildColumnOption,
   type ColumnConfig,
@@ -33,12 +34,44 @@ const ColumnLegend = ({ series }: { series: ColumnSeries[] }) => (
   </ul>
 );
 
+/**
+ * "Ver tabela" de um gráfico de colunas: uma linha por categoria e uma coluna
+ * por série.
+ *
+ * @example toColumnTable("IDH por ano", "Ano", config) // { columns: ["Ano", "IDH", ...], ... }
+ */
+export const toColumnTable = (
+  caption: string,
+  categoryLabel: string,
+  { categories, series, formatValue }: ColumnConfig,
+): DataTableContent => ({
+  caption,
+  columns: [categoryLabel, ...series.map((item) => item.name)],
+  rows: categories.map((category, index) => [
+    category,
+    ...series.map((item) => formatValue(item.values[index])),
+  ]),
+});
+
 export const ColumnChart = ({
   label,
   fit = false,
+  onSelectLabel,
   ...config
-}: ColumnConfig & { label: string; fit?: boolean }) => {
+}: ColumnConfig & {
+  label: string;
+  fit?: boolean;
+  onSelectLabel?: (label: string) => void;
+}) => {
   const { categories, series, formatLabel, formatValue } = config;
+  const selectColumn = useCallback(
+    (index: number) => {
+      const category = categories[index];
+
+      if (category !== undefined) onSelectLabel?.(category);
+    },
+    [categories, onSelectLabel],
+  );
   const buildOption = useCallback(() => {
     const option = buildColumnOption({
       categories,
@@ -61,6 +94,7 @@ export const ColumnChart = ({
         <EChart
           buildOption={buildOption}
           label={label}
+          onCategoryClick={onSelectLabel ? selectColumn : undefined}
           className={fit ? "mx-auto h-64" : "h-64 w-full sm:h-72"}
           style={fit ? { width } : { minWidth: width }}
         />
