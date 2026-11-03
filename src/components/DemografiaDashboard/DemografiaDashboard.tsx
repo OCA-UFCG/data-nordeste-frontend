@@ -39,6 +39,10 @@ import {
   listYears,
 } from "@/features/panels/territorialFilters";
 import { describeTerritorialSelection } from "@/features/panels/territorialOptions";
+import {
+  describeYearChange,
+  formatYearChange,
+} from "@/features/panels/yearChange";
 
 const MESH_URL = "/maps/municipios-sudene.json";
 const YEARS = listYears(DEMOGRAFIA_YEAR_RANGE);
@@ -78,9 +82,11 @@ export const DemografiaDashboard = ({
   const { filters } = data;
   const { isPending, applyFilters, selectMunicipality } =
     useTerritorialNavigation(filters, DEMOGRAFIA_YEAR_RANGE);
-  const populacao = data.serie.find(
+  const anoIndex = data.serie.findIndex(
     (point) => point.label === String(filters.ano),
   );
+  const populacao = data.serie[anoIndex];
+  const change = describeYearChange(data.serie, anoIndex);
   const summary = describeTerritorialSelection(data, true);
   const singleMunicipality =
     filters.mun?.length === 1 ? filters.mun[0] : undefined;
@@ -143,6 +149,12 @@ export const DemografiaDashboard = ({
               icon={DEMOGRAFIA_ICON}
               label="População residente"
               value={populacao ? formatPessoas(populacao.value) : "Sem dados"}
+              caption={`em ${filters.ano}`}
+              change={
+                change
+                  ? { ratio: change.ratio, text: formatYearChange(change) }
+                  : null
+              }
               compact
               fill
             />
