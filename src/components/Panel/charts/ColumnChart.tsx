@@ -77,6 +77,7 @@ const customAxis = (
 export const ColumnChart = ({
   label,
   fit = false,
+  grow = false,
   rotateLabels = false,
   axisName,
   onSelectLabel,
@@ -84,6 +85,9 @@ export const ColumnChart = ({
 }: ColumnConfig & {
   label: string;
   fit?: boolean;
+
+  // Cresce até a altura do card, quando o vizinho da linha é mais alto.
+  grow?: boolean;
   rotateLabels?: boolean;
   axisName?: string;
   onSelectLabel?: (label: string) => void;
@@ -122,13 +126,19 @@ export const ColumnChart = ({
   const width = categories.length * (series.length * SLOT_PER_BAR + SLOT_GAP);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="overflow-x-auto">
+    <div className={`flex flex-col gap-4 ${grow ? "flex-1" : ""}`}>
+      <div className={`overflow-x-auto ${grow ? "flex flex-1" : ""}`}>
         <EChart
           buildOption={buildOption}
           label={label}
           onCategoryClick={onSelectLabel ? selectColumn : undefined}
-          className={fit ? "mx-auto h-64" : "h-64 w-full sm:h-72"}
+          className={
+            fit
+              ? "mx-auto h-64"
+              : grow
+                ? "min-h-64 w-full flex-1 sm:min-h-72"
+                : "h-64 w-full sm:h-72"
+          }
           style={fit ? { width } : { minWidth: width }}
         />
       </div>

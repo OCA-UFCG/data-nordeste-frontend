@@ -61,6 +61,7 @@ export const PorteLegend = ({
         <button
           type="button"
           aria-pressed={porte === item.label}
+          title={item.texto}
           onClick={() => onSelect(porte === item.label ? null : item.label)}
           onPointerEnter={previewOnMouse(onPreview, item.label)}
           onFocus={() => onPreview(item.label)}

@@ -126,7 +126,6 @@ export type ChoroplethMapProps = {
   selectedCode?: string;
   highlightCodes?: ReadonlySet<string>;
   table?: DataTableContent;
-  info?: ReactNode;
   legend?: ReactNode;
   onSelectRegion: (code: string) => void;
 
@@ -222,7 +221,6 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
       <ChartCard
         title={props.title}
         table={props.table}
-        info={props.info}
         tableClassName="h-64 sm:h-72 xl:h-auto xl:min-h-0 xl:flex-1"
       >
         <div className="relative flex min-h-0 flex-1 flex-col">
@@ -234,7 +232,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
   }
 
   return (
-    <ChartCard title={props.title} table={props.table} info={props.info}>
+    <ChartCard title={props.title} table={props.table}>
       {map}
       {props.legend ?? <MapLegend buckets={props.buckets} />}
     </ChartCard>

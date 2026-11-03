@@ -1,5 +1,6 @@
 "use client";
 
+import { Info } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ChartCard } from "@/components/Panel/cards/ChartCard";
 import {
@@ -11,8 +12,12 @@ import { PyramidChart } from "@/components/Panel/charts/PyramidChart";
 import type { PreviewHandler } from "@/components/Panel/charts/RankedBars";
 import { ValueBars } from "@/components/Panel/charts/ValueBars";
 import type { ChartPoint } from "@/features/panels/chartOptions";
-import { formatShare } from "@/features/panels/demografia/demografiaAnalise";
+import {
+  describeCorRaca,
+  formatShare,
+} from "@/features/panels/demografia/demografiaAnalise";
 import type {
+  CorRacaAno,
   DemografiaPanelData,
   PopulacaoPorFaixa,
 } from "@/features/panels/demografia/demografiaPanel";
@@ -245,6 +250,7 @@ export const SerieTemporal = ({
         label="Gráfico de colunas da população por censo"
         {...config}
         axisName="Ano"
+        grow
         onSelectLabel={(label) => onSelectYear(Number(label))}
       />
     </ChartCard>
@@ -253,7 +259,25 @@ export const SerieTemporal = ({
 
 const COR_RACA_TITLE = "População por cor ou raça";
 
-export const PopulacaoPorCorRaca = ({ corRaca }: { corRaca: ChartPoint[] }) => {
+// A "Análise descritiva" do Power BI, junto do gráfico que ela comenta.
+const CorRacaNota = ({ lines }: { lines: string[] }) => (
+  <p className="mt-3 flex gap-2 text-sm leading-relaxed text-grey-1000">
+    <Info aria-hidden className="mt-0.5 size-4 shrink-0" />
+    <span className="flex flex-col gap-1">
+      {lines.map((line) => (
+        <span key={line}>{line}</span>
+      ))}
+    </span>
+  </p>
+);
+
+export const PopulacaoPorCorRaca = ({
+  corRaca,
+  anterior,
+}: {
+  corRaca: ChartPoint[];
+  anterior: CorRacaAno | null;
+}) => {
   const config = useMemo(() => {
     const total = corRaca.reduce((sum, point) => sum + point.value, 0);
 
@@ -274,6 +298,7 @@ export const PopulacaoPorCorRaca = ({ corRaca }: { corRaca: ChartPoint[] }) => {
         {...config}
         rotateLabels
       />
+      <CorRacaNota lines={describeCorRaca(corRaca, anterior)} />
     </ChartCard>
   );
 };

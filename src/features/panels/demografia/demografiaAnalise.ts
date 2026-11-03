@@ -6,7 +6,7 @@ import {
   type DemografiaPorte,
   type MunicipioPoint,
 } from "@/features/panels/demografia/demografiaPanel";
-import { formatNumber, formatPercent } from "@/features/panels/format";
+import { formatPercent } from "@/features/panels/format";
 
 /**
  * Participação de uma parte no total, com uma casa ("51,7%").
@@ -81,18 +81,3 @@ export const municipiosPorPorte = (
       .filter((item) => getBucket(DEMOGRAFIA_PORTES, item.value) === porte)
       .map((item) => item.code),
   }));
-
-/**
- * "Quantidade de municípios por porte" da Análise descritiva do Power BI; omite
- * o porte sem município.
- *
- * @example describePortes([{ code: "2504009", label: "Campina Grande (PB)", value: 419379 }]) // ["➡ Grande porte (acima de 100 mil hab.): 1 município."]
- */
-export const describePortes = (municipios: MunicipioPoint[]): string[] =>
-  municipiosPorPorte(municipios)
-    .filter(({ codes }) => codes.length)
-    .map(({ porte, codes }) => {
-      const nome = codes.length === 1 ? "município" : "municípios";
-
-      return `➡ ${porte.texto}: ${formatNumber(codes.length)} ${nome}.`;
-    });

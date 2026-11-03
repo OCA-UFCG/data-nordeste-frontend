@@ -1,7 +1,6 @@
 "use client";
 
 import { type ReactNode, useMemo } from "react";
-import { DemografiaAnaliseSheet } from "@/components/DemografiaDashboard/DemografiaAnaliseSheet";
 import {
   PiramideEtaria,
   PopulacaoPorCorRaca,
@@ -170,9 +169,6 @@ export const DemografiaDashboard = ({
                   onPreview={highlight.setPortePreview}
                 />
               }
-              info={
-                <DemografiaAnaliseSheet data={data} municipios={municipios} />
-              }
               onSelectRegion={selectMunicipality}
               background={OCEAN_COLOR}
               fill
@@ -195,7 +191,10 @@ export const DemografiaDashboard = ({
             serie={data.serie}
             onSelectYear={(ano) => applyFilters({ ...filters, ano })}
           />
-          <PopulacaoPorCorRaca corRaca={data.corRaca} />
+          <PopulacaoPorCorRaca
+            corRaca={data.corRaca}
+            anterior={data.corRacaAnterior}
+          />
         </div>
       </div>
     </PanelPage>

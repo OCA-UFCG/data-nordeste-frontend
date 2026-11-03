@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   describeCorRaca,
-  describePortes,
+  municipiosPorPorte,
   formatShare,
 } from "@/features/panels/demografia/demografiaAnalise";
 
@@ -43,17 +43,20 @@ describe("describeCorRaca", () => {
   });
 });
 
-describe("describePortes", () => {
-  it("counts municipalities by size, in the singular for one and skipping empty sizes", () => {
+describe("municipiosPorPorte", () => {
+  it("groups the municipalities by size, keeping empty sizes", () => {
+    const grupos = municipiosPorPorte([
+      { code: "2504009", label: "Campina Grande (PB)", value: 419_379 },
+      { code: "2516201", label: "Sousa (PB)", value: 67_259 },
+      { code: "2515302", label: "Sapé (PB)", value: 51_306 },
+    ]);
+
     expect(
-      describePortes([
-        { code: "2504009", label: "Campina Grande (PB)", value: 419_379 },
-        { code: "2516201", label: "Sousa (PB)", value: 67_259 },
-        { code: "2515302", label: "Sapé (PB)", value: 51_306 },
-      ]),
+      grupos.map(({ porte, codes }) => [porte.label, codes.length]),
     ).toEqual([
-      "➡ Médio porte (50 mil - 100 mil hab.): 2 municípios.",
-      "➡ Grande porte (acima de 100 mil hab.): 1 município.",
+      ["Pequeno", 0],
+      ["Médio", 2],
+      ["Grande", 1],
     ]);
   });
 });
