@@ -71,6 +71,8 @@ export type PopulacaoPorFaixa = {
   homens: number;
 };
 
+export type MunicipioPoint = ChartPoint & { code: string };
+
 export type CorRacaAno = { ano: number; corRaca: ChartPoint[] };
 
 export type DemografiaPanelData = TerritorialSelection & {
@@ -192,16 +194,17 @@ const loadMapa = async (query: SqlQuery, filters: TerritorialFilters) => {
  * "População por município": os municípios do filtro, do mais populoso ao
  * menos. O mapa mostra a área toda; a lista fica só com os escolhidos.
  *
- * @example populacaoPorMunicipio(mapa, ["2504009"]) // [{ label: "Campina Grande (PB)", value: 419379 }]
+ * @example populacaoPorMunicipio(mapa, ["2504009"]) // [{ code: "2504009", label: "Campina Grande (PB)", value: 419379 }]
  */
 export const populacaoPorMunicipio = (
   mapa: ChoroplethRegion[],
   mun?: string[],
-): ChartPoint[] =>
+): MunicipioPoint[] =>
   mapa
     .filter((region) => !mun || mun.includes(region.code))
     .sort((a, b) => b.value - a.value)
     .map((region) => ({
+      code: region.code,
       label: `${region.name} (${region.uf})`,
       value: region.value,
     }));

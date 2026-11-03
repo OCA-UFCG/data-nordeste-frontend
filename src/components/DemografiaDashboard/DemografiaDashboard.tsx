@@ -9,6 +9,10 @@ import {
   PopulacaoPorSexo,
   SerieTemporal,
 } from "@/components/DemografiaDashboard/DemografiaCharts";
+import {
+  PorteLegend,
+  useDemografiaHighlight,
+} from "@/components/DemografiaDashboard/DemografiaMapa";
 import { DemografiaSaibaMais } from "@/components/DemografiaDashboard/DemografiaSaibaMais";
 import {
   DEMOGRAFIA_ICON,
@@ -86,6 +90,22 @@ export const DemografiaDashboard = ({
     [data.mapa, filters.mun],
   );
   const mapTable = useMemo(() => toMapTable(data), [data]);
+  const highlight = useDemografiaHighlight(municipios);
+  const selectedLabel =
+    municipios.find((item) => item.code === singleMunicipality)?.label ?? null;
+
+  // Clicar de novo no município escolhido volta para a área toda.
+  const toggleMunicipality = (label: string) => {
+    const code = highlight.codeByLabel.get(label);
+
+    if (!code) return;
+    if (code === singleMunicipality) {
+      applyFilters({ ...filters, mun: undefined });
+
+      return;
+    }
+    selectMunicipality(code);
+  };
 
   return (
     <PanelPage
@@ -117,8 +137,8 @@ export const DemografiaDashboard = ({
         aria-busy={isPending}
         className="flex flex-col gap-6 transition-opacity duration-300 ease-out aria-busy:opacity-75 aria-busy:delay-150 motion-reduce:transition-none"
       >
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[minmax(0,4.5fr)_minmax(0,3.75fr)_minmax(0,3.75fr)]">
-          <Cell className="xl:col-start-2 xl:row-start-1">
+        <div className="grid grid-cols-1 gap-6 lg:max-[1399px]:grid-cols-2 min-[1400px]:grid-cols-[minmax(0,4.4fr)_minmax(0,4.4fr)_minmax(0,3.2fr)]">
+          <Cell className="min-[1400px]:col-start-3 min-[1400px]:row-start-1">
             <HighlightCard
               tone="pink"
               icon={DEMOGRAFIA_ICON}
@@ -128,10 +148,10 @@ export const DemografiaDashboard = ({
               fill
             />
           </Cell>
-          <Cell className="xl:col-start-3 xl:row-start-1">
+          <Cell className="min-[1400px]:col-start-2 min-[1400px]:row-start-1">
             <PopulacaoPorSexo sexo={data.sexo} />
           </Cell>
-          <Cell className="min-h-0 xl:col-start-1 xl:row-span-2 xl:row-start-1 xl:h-0 xl:min-h-full">
+          <Cell className="min-h-0 min-[1400px]:col-start-1 min-[1400px]:row-span-2 min-[1400px]:row-start-1 min-[1400px]:h-0 min-[1400px]:min-h-full">
             <ChoroplethMap
               title="Porte dos municípios"
               meshUrl={MESH_URL}
@@ -141,6 +161,15 @@ export const DemografiaDashboard = ({
               formatValue={formatPessoas}
               selectedCode={singleMunicipality}
               table={mapTable}
+              highlightCodes={highlight.highlightCodes}
+              legend={
+                <PorteLegend
+                  grupos={highlight.grupos}
+                  porte={highlight.porte}
+                  onSelect={highlight.setPorte}
+                  onPreview={highlight.setPortePreview}
+                />
+              }
               info={
                 <DemografiaAnaliseSheet data={data} municipios={municipios} />
               }
@@ -149,11 +178,16 @@ export const DemografiaDashboard = ({
               fill
             />
           </Cell>
-          <Cell className="xl:col-start-2 xl:row-start-2">
+          <Cell className="min-[1400px]:col-start-2 min-[1400px]:row-start-2">
             <PiramideEtaria piramide={data.piramide} />
           </Cell>
-          <Cell className="lg:col-span-2 xl:col-span-1 xl:col-start-3 xl:row-start-2">
-            <PopulacaoPorMunicipio points={municipios} />
+          <Cell className="lg:max-[1399px]:col-span-2 min-[1400px]:col-start-3 min-[1400px]:row-start-2">
+            <PopulacaoPorMunicipio
+              points={municipios}
+              selectedLabel={selectedLabel}
+              onSelect={toggleMunicipality}
+              onPreview={highlight.setMunPreview}
+            />
           </Cell>
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

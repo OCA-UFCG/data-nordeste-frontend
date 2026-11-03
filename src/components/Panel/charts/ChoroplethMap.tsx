@@ -127,6 +127,7 @@ export type ChoroplethMapProps = {
   highlightCodes?: ReadonlySet<string>;
   table?: DataTableContent;
   info?: ReactNode;
+  legend?: ReactNode;
   onSelectRegion: (code: string) => void;
 
   // Do xl em diante ocupa a altura do pai; abaixo, segue o formato da malha.
@@ -226,7 +227,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
       >
         <div className="relative flex min-h-0 flex-1 flex-col">
           {map}
-          <MapLegend buckets={props.buckets} overlay />
+          {props.legend ?? <MapLegend buckets={props.buckets} overlay />}
         </div>
       </ChartCard>
     );
@@ -235,7 +236,7 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
   return (
     <ChartCard title={props.title} table={props.table} info={props.info}>
       {map}
-      <MapLegend buckets={props.buckets} />
+      {props.legend ?? <MapLegend buckets={props.buckets} />}
     </ChartCard>
   );
 };

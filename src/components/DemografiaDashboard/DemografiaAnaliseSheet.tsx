@@ -7,12 +7,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import type { ChartPoint } from "@/features/panels/chartOptions";
 import {
   describeCorRaca,
   describePortes,
 } from "@/features/panels/demografia/demografiaAnalise";
-import type { DemografiaPanelData } from "@/features/panels/demografia/demografiaPanel";
+import type {
+  DemografiaPanelData,
+  MunicipioPoint,
+} from "@/features/panels/demografia/demografiaPanel";
 
 const AnaliseSection = ({
   title,
@@ -36,7 +38,7 @@ export const DemografiaAnaliseSheet = ({
   municipios,
 }: {
   data: Pick<DemografiaPanelData, "corRaca" | "corRacaAnterior">;
-  municipios: ChartPoint[];
+  municipios: MunicipioPoint[];
 }) => (
   <Sheet>
     <SheetTrigger className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md bg-[#c53d69] px-3 text-sm font-medium text-white hover:bg-[#a8325a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c53d69]">

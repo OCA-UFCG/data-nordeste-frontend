@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   describeCorRaca,
   describePortes,
+  formatShare,
 } from "@/features/panels/demografia/demografiaAnalise";
 
 const corRaca = (values: number[]) =>
@@ -46,13 +47,20 @@ describe("describePortes", () => {
   it("counts municipalities by size, in the singular for one and skipping empty sizes", () => {
     expect(
       describePortes([
-        { label: "Campina Grande (PB)", value: 419_379 },
-        { label: "Sousa (PB)", value: 67_259 },
-        { label: "Sapé (PB)", value: 51_306 },
+        { code: "2504009", label: "Campina Grande (PB)", value: 419_379 },
+        { code: "2516201", label: "Sousa (PB)", value: 67_259 },
+        { code: "2515302", label: "Sapé (PB)", value: 51_306 },
       ]),
     ).toEqual([
       "➡ Médio porte (50 mil - 100 mil hab.): 2 municípios.",
       "➡ Grande porte (acima de 100 mil hab.): 1 município.",
     ]);
+  });
+});
+
+describe("formatShare", () => {
+  it("formats the share of the total with one decimal, 0% without total", () => {
+    expect(formatShare(28_240_713, 54_658_515)).toBe("51,7%");
+    expect(formatShare(5, 0)).toBe("0,0%");
   });
 });

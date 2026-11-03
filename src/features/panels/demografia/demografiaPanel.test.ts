@@ -117,8 +117,8 @@ describe("populacaoPorMunicipio", () => {
     ];
 
     expect(populacaoPorMunicipio(regions, ["1", "2"])).toEqual([
-      { label: "Fortaleza (CE)", value: 2_428_708 },
-      { label: "Recife (PE)", value: 1_488_920 },
+      { code: "2", label: "Fortaleza (CE)", value: 2_428_708 },
+      { code: "1", label: "Recife (PE)", value: 1_488_920 },
     ]);
   });
 });

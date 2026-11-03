@@ -54,12 +54,12 @@ export default function PerfilDemograficoDemoLoading() {
             Carregando o painel de Perfil Demográfico…
           </span>
           <FiltersBones />
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[minmax(0,4.5fr)_minmax(0,3.75fr)_minmax(0,3.75fr)]">
-            <Bone className="h-32 xl:col-start-2 xl:row-start-1" />
-            <Bone className="h-32 xl:col-start-3 xl:row-start-1" />
-            <Bone className="aspect-[4/5] xl:col-start-1 xl:row-span-2 xl:row-start-1 xl:aspect-auto" />
-            <Bone className="h-96 xl:col-start-2 xl:row-start-2" />
-            <Bone className="h-96 lg:col-span-2 xl:col-span-1 xl:col-start-3 xl:row-start-2" />
+          <div className="grid grid-cols-1 gap-6 lg:max-[1399px]:grid-cols-2 min-[1400px]:grid-cols-[minmax(0,4.4fr)_minmax(0,4.4fr)_minmax(0,3.2fr)]">
+            <Bone className="h-32 min-[1400px]:col-start-2 min-[1400px]:row-start-1" />
+            <Bone className="h-32 min-[1400px]:col-start-3 min-[1400px]:row-start-1" />
+            <Bone className="aspect-[4/5] min-[1400px]:col-start-1 min-[1400px]:row-span-2 min-[1400px]:row-start-1 min-[1400px]:aspect-auto" />
+            <Bone className="h-96 min-[1400px]:col-start-2 min-[1400px]:row-start-2" />
+            <Bone className="h-96 lg:max-[1399px]:col-span-2 min-[1400px]:col-start-3 min-[1400px]:row-start-2" />
           </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Bone className="h-80" />

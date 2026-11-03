@@ -3,8 +3,18 @@ import { getBucket } from "@/features/panels/choropleth";
 import {
   DEMOGRAFIA_PORTES,
   type CorRacaAno,
+  type DemografiaPorte,
+  type MunicipioPoint,
 } from "@/features/panels/demografia/demografiaPanel";
 import { formatNumber, formatPercent } from "@/features/panels/format";
+
+/**
+ * Participação de uma parte no total, com uma casa ("51,7%").
+ *
+ * @example formatShare(28_240_713, 54_658_515) // "51,7%"
+ */
+export const formatShare = (value: number, total: number): string =>
+  formatPercent(total ? (100 * value) / total : 0);
 
 const variacoes = (corRaca: ChartPoint[], anterior: ChartPoint[]) =>
   corRaca
@@ -46,7 +56,7 @@ export const describeCorRaca = (
   const [primeira, segunda] = [...corRaca].sort((a, b) => b.value - a.value);
 
   if (!total || !segunda) return [];
-  const share = (item: ChartPoint) => formatPercent((100 * item.value) / total);
+  const share = (item: ChartPoint) => formatShare(item.value, total);
   const linhas = [
     `A população se autodeclara majoritariamente ${primeira.label} (${share(primeira)}), seguida por ${segunda.label} (${share(segunda)}).`,
     comparacao(corRaca, anterior),
@@ -55,18 +65,34 @@ export const describeCorRaca = (
   return linhas.filter((linha) => linha !== null);
 };
 
+export type PorteGrupo = { porte: DemografiaPorte; codes: string[] };
+
+/**
+ * Os municípios da lista separados por porte, na ordem da legenda.
+ *
+ * @example municipiosPorPorte(lista)[2].codes.length // 64 (Grande, Nordeste 2022)
+ */
+export const municipiosPorPorte = (
+  municipios: MunicipioPoint[],
+): PorteGrupo[] =>
+  DEMOGRAFIA_PORTES.map((porte) => ({
+    porte,
+    codes: municipios
+      .filter((item) => getBucket(DEMOGRAFIA_PORTES, item.value) === porte)
+      .map((item) => item.code),
+  }));
+
 /**
  * "Quantidade de municípios por porte" da Análise descritiva do Power BI; omite
  * o porte sem município.
  *
- * @example describePortes([{ label: "Campina Grande (PB)", value: 419379 }]) // ["➡ Grande porte (acima de 100 mil hab.): 1 município."]
+ * @example describePortes([{ code: "2504009", label: "Campina Grande (PB)", value: 419379 }]) // ["➡ Grande porte (acima de 100 mil hab.): 1 município."]
  */
-export const describePortes = (municipios: ChartPoint[]): string[] =>
-  DEMOGRAFIA_PORTES.map((porte) => {
-    const total = municipios.filter(
-      (item) => getBucket(DEMOGRAFIA_PORTES, item.value) === porte,
-    ).length;
-    const nome = total === 1 ? "município" : "municípios";
+export const describePortes = (municipios: MunicipioPoint[]): string[] =>
+  municipiosPorPorte(municipios)
+    .filter(({ codes }) => codes.length)
+    .map(({ porte, codes }) => {
+      const nome = codes.length === 1 ? "município" : "municípios";
 
-    return total ? `➡ ${porte.texto}: ${formatNumber(total)} ${nome}.` : null;
-  }).filter((linha) => linha !== null);
+      return `➡ ${porte.texto}: ${formatNumber(codes.length)} ${nome}.`;
+    });
