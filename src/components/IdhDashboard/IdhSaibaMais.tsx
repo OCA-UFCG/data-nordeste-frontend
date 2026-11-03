@@ -3,8 +3,7 @@ import type { IdhVisao } from "@/features/panels/idh/idhPanel";
 
 type SaibaMaisItem = { paragraphs: string[]; list?: string[] };
 
-// Textos do balão "Saiba mais" do Power BI, sem alterações. A página "Visão
-// geral" tem uma versão revisada; as de sexo e cor, a mesma versão anterior.
+// Textos do Power BI, sem alterações.
 const GERAL: SaibaMaisItem[] = [
   {
     paragraphs: [
@@ -109,7 +108,7 @@ const SaibaMaisEntry = ({ item }: { item: SaibaMaisItem }) => (
 
 export const IdhSaibaMais = ({ visao }: { visao: IdhVisao }) => (
   <PanelInfo label="Saiba mais">
-    <p className="mb-2 font-semibold">Saiba mais</p>
+    <p className="mb-2 font-semibold text-[#018f39]">Saiba mais</p>
     <ul className="flex max-h-[60vh] list-disc flex-col gap-2 overflow-y-auto pl-5">
       {(visao === "geral" ? GERAL : GRUPOS).map((item) => (
         <SaibaMaisEntry key={item.paragraphs[0]} item={item} />

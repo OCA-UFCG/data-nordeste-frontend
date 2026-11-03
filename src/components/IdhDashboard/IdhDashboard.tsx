@@ -59,14 +59,7 @@ const IdhTabContent = ({
     );
   }
 
-  return (
-    <IdhGroupView
-      groups={data[tab]}
-      ano={data.filters.ano}
-      dimension={tab === "sexo" ? "por sexo" : "por cor"}
-      onSelectYear={onSelectYear}
-    />
-  );
+  return <IdhGroupView groups={data[tab]} ano={data.filters.ano} />;
 };
 
 export const IdhDashboard = ({
@@ -91,7 +84,7 @@ export const IdhDashboard = ({
     <PanelPage
       title={IDH_TITLE}
       icon={IDH_ICON}
-      tone="orange"
+      tone="idh"
       source={source}
       info={<IdhSaibaMais visao={tab} />}
       fullMobile
@@ -101,6 +94,7 @@ export const IdhDashboard = ({
           activeKey={tab}
           idPrefix={idPrefix}
           onSelect={(key) => selectTab(key as IdhVisao)}
+          tone="idh"
         />
       }
     >

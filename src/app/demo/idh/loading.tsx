@@ -7,15 +7,12 @@ import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { IDH_VISOES } from "@/features/panels/idh/idhPanel";
 import HubTemplate from "@/templates/HubTemplate";
 
-// Mesmo arranjo da "Visão geral" do IdhDashboard, para a página não pular
-// quando os dados chegam; os textos do Contentful viram blocos cinza.
 const Bone = ({ className }: { className: string }) => (
   <div
     className={`animate-pulse rounded-lg bg-white shadow-sm motion-reduce:animate-none ${className}`}
   />
 );
 
-// Fora do fundo cinza do painel: blocos cinza, não brancos como os do painel.
 const GreyBone = ({ className }: { className: string }) => (
   <div
     className={`animate-pulse rounded-lg bg-grey-200 motion-reduce:animate-none ${className}`}
@@ -65,7 +62,7 @@ export default function IdhDemoLoading() {
       <PanelPage
         title={IDH_TITLE}
         icon={IDH_ICON}
-        tone="orange"
+        tone="idh"
         source={IDH_SOURCE}
         fullMobile
         top={<TabsBones />}
@@ -74,13 +71,9 @@ export default function IdhDemoLoading() {
           <span className="sr-only">Carregando o painel de IDH…</span>
           <FiltersBones />
           <CardsBones />
-          <Bone className="h-80 sm:h-96" />
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-            <Bone className="aspect-square" />
-            <div className="flex flex-col gap-6">
-              <Bone className="h-72" />
-              <Bone className="h-72" />
-            </div>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Bone className="h-96 lg:h-auto xl:h-[37rem]" />
+            <Bone className="aspect-[4/5] xl:aspect-auto" />
           </div>
         </div>
       </PanelPage>

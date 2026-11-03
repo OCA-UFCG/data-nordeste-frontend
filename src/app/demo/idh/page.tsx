@@ -47,8 +47,6 @@ const loadPanel = async (filters: IdhFilters) => {
   }
 };
 
-// Para quem visita: a causa técnica (túnel, DATA_DB_URL) fica no console.error.
-// <a>, não <Link>: recarrega a página inteira e refaz a consulta.
 const LoadFailedMessage = ({ filters }: { filters: IdhFilters }) => (
   <PanelMessage>
     Não foi possível carregar os dados do painel agora. Tente novamente em
@@ -88,7 +86,7 @@ export default async function IdhDemoPage({
           <PanelPage
             title={IDH_TITLE}
             icon={IDH_ICON}
-            tone="orange"
+            tone="idh"
             source={IDH_SOURCE}
             fullMobile
           >

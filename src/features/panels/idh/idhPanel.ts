@@ -1,7 +1,4 @@
-import type {
-  ChartPoint,
-  ChoroplethRegion,
-} from "@/features/panels/chartOptions";
+import type { ChoroplethRegion } from "@/features/panels/chartOptions";
 import type { ChoroplethBucket } from "@/features/panels/choropleth";
 import {
   firstValue,
@@ -20,15 +17,13 @@ import {
 
 export const IDH_YEAR_RANGE: YearRange = { first: 2012, last: 2021 };
 
-// Faixas do PNUD (0,1) pintariam o Nordeste (0,648 a 0,782) quase de uma cor só.
+// Classes do PNUD com as cores e os nomes da legenda do Power BI.
 export const IDH_MAP_BUCKETS: readonly ChoroplethBucket[] = [
-  { max: 0.65, label: "Até 0,650", color: "#feedde" },
-  { max: 0.675, label: "0,650 a 0,675", color: "#fdd0a2" },
-  { max: 0.7, label: "0,675 a 0,700", color: "#fdae6b" },
-  { max: 0.725, label: "0,700 a 0,725", color: "#fd8d3c" },
-  { max: 0.75, label: "0,725 a 0,750", color: "#f16913" },
-  { max: 0.775, label: "0,750 a 0,775", color: "#d94801" },
-  { max: Infinity, label: "Acima de 0,775", color: "#8c2d04" },
+  { max: 0.5, label: "Muito baixo", color: "#bf1621" },
+  { max: 0.6, label: "Baixo", color: "#f5791a" },
+  { max: 0.7, label: "Médio", color: "#ffbe20" },
+  { max: 0.8, label: "Alto", color: "#00bd47" },
+  { max: Infinity, label: "Muito alto", color: "#769fff" },
 ];
 
 export const IDH_VISOES = [
@@ -89,14 +84,12 @@ export type IdhYearPoint = {
   gini: number;
   rendaPerCapita: number;
   rendimento: number;
-  longevidade: number;
-  educacao: number;
-  renda: number;
 };
 
 export type IdhGroupPoint = {
   ano: number;
   idh: number;
+  gini: number;
   rendaPerCapita: number;
   rendimento: number;
 };
@@ -107,7 +100,6 @@ export type IdhPanelData = {
   filters: IdhFilters;
   ufs: UfOption[];
   serie: IdhYearPoint[];
-  ranking: ChartPoint[];
   mapa: ChoroplethRegion[];
   sexo: IdhGroupSerie[];
   cor: IdhGroupSerie[];
@@ -118,16 +110,20 @@ const GERAL_VIEW = "des_idh.idh_geral_novo_view";
 // Nas views de sexo e cor a sigla está em estado_rm, não em sigla_uf (e a de
 // sexo também troca agregacao com estado_1). regiao_metropolitana e o sufixo
 // de estado_uf ("... - PE") são iguais nas três, por isso o filtro usa esses.
+// `renda`: a renda per capita de cada visão no Power BI (rdpct por sexo, rdpc
+// por cor).
 const GROUPS = {
   sexo: {
     view: "des_idh.idh_sexo_novo_view",
     column: "sexo",
-    labels: { MULHER: "Mulheres", HOMEM: "Homens" },
+    renda: "rdpct",
+    labels: { HOMEM: "Homem", MULHER: "Mulher" },
   },
   cor: {
     view: "des_idh.idh_cor_novo_view",
     column: "cor",
-    labels: { NEGRO: "Negros", BRANCO: "Brancos" },
+    renda: "rdpc",
+    labels: { BRANCO: "Branco", NEGRO: "Negro" },
   },
 } as const;
 
@@ -166,8 +162,7 @@ const loadSerie = async (query: SqlQuery, filters: IdhFilters) => {
   const where = buildIdhWhere(filters, { byYear: false, byUf: true });
   const rows = await query<Record<string, NumericCell> & { ano: number }>(
     `SELECT ano, AVG(idh) AS idh, AVG(idh_ad) AS idh_ad, AVG(gini) AS gini,
-       AVG(rdpct) AS rdpct, AVG(renocup) AS renocup,
-       AVG(idh_l) AS idh_l, AVG(idh_e) AS idh_e, AVG(idh_r) AS idh_r
+       AVG(rdpct) AS rdpct, AVG(renocup) AS renocup
      FROM ${GERAL_VIEW} WHERE ${where.sql} GROUP BY ano ORDER BY ano`,
     where.params,
   );
@@ -179,9 +174,6 @@ const loadSerie = async (query: SqlQuery, filters: IdhFilters) => {
     gini: toNumber(row.gini),
     rendaPerCapita: toNumber(row.rdpct),
     rendimento: toNumber(row.renocup),
-    longevidade: toNumber(row.idh_l),
-    educacao: toNumber(row.idh_e),
-    renda: toNumber(row.idh_r),
   }));
 };
 
@@ -204,18 +196,19 @@ const loadLugares = async (query: SqlQuery, filters: IdhFilters) => {
 const loadGroups = async (
   query: SqlQuery,
   filters: IdhFilters,
-  { view, column, labels }: (typeof GROUPS)[keyof typeof GROUPS],
+  { view, column, renda, labels }: (typeof GROUPS)[keyof typeof GROUPS],
 ): Promise<IdhGroupSerie[]> => {
   const where = buildIdhWhere(filters, { byYear: false, byUf: true });
   const rows = await query<{
     ano: number;
     grupo: string;
     idh: NumericCell;
-    rdpct: NumericCell;
+    gini: NumericCell;
+    renda: NumericCell;
     renocup: NumericCell;
   }>(
-    `SELECT ano, ${column} AS grupo, AVG(idh) AS idh, AVG(rdpct) AS rdpct,
-       AVG(renocup) AS renocup
+    `SELECT ano, ${column} AS grupo, AVG(idh) AS idh, AVG(gini) AS gini,
+       AVG(${renda}) AS renda, AVG(renocup) AS renocup
      FROM ${view} WHERE ${where.sql} GROUP BY ano, ${column} ORDER BY ano`,
     where.params,
   );
@@ -227,7 +220,8 @@ const loadGroups = async (
       .map((row) => ({
         ano: row.ano,
         idh: toNumber(row.idh),
-        rendaPerCapita: toNumber(row.rdpct),
+        gini: toNumber(row.gini),
+        rendaPerCapita: toNumber(row.renda),
         rendimento: toNumber(row.renocup),
       })),
   }));
@@ -249,9 +243,7 @@ export const loadIdhPanel = async (
     loadGroups(query, filters, GROUPS.cor),
   ]);
 
-  const ranking = mapa.map(({ name, value }) => ({ label: name, value }));
-
-  return { filters, ufs, serie, ranking, mapa, sexo, cor };
+  return { filters, ufs, serie, mapa, sexo, cor };
 };
 
 export const describeIdhSelection = ({
