@@ -4,25 +4,31 @@ import type {
   ValueFormatter,
 } from "@/features/panels/chartOptions";
 
+type BarStyle = { barClassName?: string; valueClassName?: string };
+
 const BarRow = ({
   point,
   largest,
   formatValue,
+  barClassName = "bg-orange-600 group-hover:bg-orange-700",
+  valueClassName = "w-16",
 }: {
   point: ChartPoint;
   largest: number;
   formatValue: ValueFormatter;
-}) => (
+} & BarStyle) => (
   <>
     <span className="text-base leading-snug text-grey-1100">{point.label}</span>
     <span className="flex items-center gap-3">
       <span className="h-5 flex-1 rounded-r bg-grey-100">
         <span
-          className="block h-full min-w-1 rounded-r bg-orange-600 transition-[width,background-color] duration-500 ease-out group-hover:bg-orange-700 motion-reduce:transition-none"
+          className={`block h-full min-w-1 rounded-r transition-[width,background-color] duration-500 ease-out motion-reduce:transition-none ${barClassName}`}
           style={{ width: `${(point.value / largest) * 100}%` }}
         />
       </span>
-      <span className="w-16 shrink-0 text-right text-base font-semibold tabular-nums text-grey-1100">
+      <span
+        className={`shrink-0 text-right text-base font-semibold tabular-nums text-grey-1100 ${valueClassName}`}
+      >
         {formatValue(point.value)}
       </span>
     </span>
@@ -46,16 +52,24 @@ export const RankedBars = ({
   selectedLabel,
   onSelect,
   onPreview,
+  barClassName,
+  valueClassName,
 }: {
   points: ChartPoint[];
   formatValue: ValueFormatter;
   selectedLabel?: string | null;
   onSelect?: (label: string | null) => void;
   onPreview?: PreviewHandler;
-}) => {
+} & BarStyle) => {
   const largest = Math.max(...points.map((point) => point.value), 0) || 1;
   const row = (point: ChartPoint) => (
-    <BarRow point={point} largest={largest} formatValue={formatValue} />
+    <BarRow
+      point={point}
+      largest={largest}
+      formatValue={formatValue}
+      barClassName={barClassName}
+      valueClassName={valueClassName}
+    />
   );
 
   return (

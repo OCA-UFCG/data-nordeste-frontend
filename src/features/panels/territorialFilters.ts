@@ -37,10 +37,24 @@ export const firstValue = (value: string | string[] | undefined) =>
 
 export const UF_PATTERN = /^[A-Z]{2}$/;
 
+const MUNICIPALITY_PATTERN = /^\d{7}$/;
+
+/**
+ * Reads a comma-separated list of IBGE municipality codes, dropping invalid
+ * and repeated ones. A single code (the old `?mun=` links) still works.
+ * @example parseMunicipalityCodes("2611606,abc,2611606,2304400") // ["2611606", "2304400"]
+ */
+export const parseMunicipalityCodes = (value?: string): string[] => [
+  ...new Set(
+    (value ?? "").split(",").filter((code) => MUNICIPALITY_PATTERN.test(code)),
+  ),
+];
+
+export const serializeMunicipalityCodes = (codes: string[]): string =>
+  codes.join(",");
+
 const isTerritorialArea = (value?: string): value is TerritorialArea =>
   TERRITORIAL_AREAS.some((area) => area.value === value);
-
-const MUNICIPALITY_PATTERN = /^\d{7}$/;
 
 // Valida e tira repetidos antes de cortar, como o servidor conta o limite: um
 // link com 100 códigos válidos e alguns inválidos mantém os 100 válidos.

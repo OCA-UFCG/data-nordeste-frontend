@@ -19,6 +19,7 @@ export const PANEL_TONES = {
     ...DEFAULT_TONE_BODY,
     value: "text-[#018f39]",
   },
+  green: { shell: "bg-green-800", card: "bg-green-1000", ...DEFAULT_TONE_BODY },
 
   idh: {
     shell: "bg-[#7c46e1]",

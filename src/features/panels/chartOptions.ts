@@ -301,6 +301,25 @@ const choroplethFraming = (framing: MapFraming | undefined) =>
       }
     : { scaleLimit: { min: 1 } };
 
+// Comum à série `map` e ao componente `geo` (mapa com camadas).
+export const mapViewportOption = (frame: ChoroplethFrame) => ({
+  map: frame.mapName,
+
+  // Em tela de toque, arrastar com um dedo rola a página, não o mapa.
+  roam: frame.canPan ? true : "scale",
+  selectedMode: false,
+  left: 4,
+  right: 4,
+  top: 4,
+  bottom: 4,
+
+  // Sem isso o ECharts 6 estica a região para preencher a caixa.
+  preserveAspect: "contain",
+  ...choroplethFraming(frame.framing),
+  itemStyle: { borderColor: "#ffffff", borderWidth: 0.3 },
+  emphasis: { label: { show: false } },
+});
+
 // As duas opções casam pelo id: a de cores entra por merge sobre a do quadro.
 const CHOROPLETH_SERIES_ID = "choropleth";
 
@@ -318,21 +337,7 @@ export const buildChoroplethFrameOption = (
     {
       id: CHOROPLETH_SERIES_ID,
       type: "map",
-      map: frame.mapName,
-
-      // Em tela de toque, arrastar com um dedo rola a página, não o mapa.
-      roam: frame.canPan ? true : "scale",
-      selectedMode: false,
-      left: 4,
-      right: 4,
-      top: 4,
-      bottom: 4,
-
-      // Sem isso o ECharts 6 estica a região para preencher a caixa.
-      preserveAspect: "contain",
-      ...choroplethFraming(frame.framing),
-      itemStyle: { borderColor: "#ffffff", borderWidth: 0.3 },
-      emphasis: { label: { show: false } },
+      ...mapViewportOption(frame),
     },
   ],
 });

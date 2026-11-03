@@ -3,7 +3,7 @@ import {
   getAspectScale,
   getMapAspectRatio,
   getMapFraming,
-  getMunicipalityFocusBounds,
+  getSelectionFocusBounds,
   getMapBounds,
   mapNameFor,
   selectMapFeatures,
@@ -90,9 +90,9 @@ describe("getMapAspectRatio", () => {
   });
 });
 
-describe("getMunicipalityFocusBounds", () => {
+describe("getSelectionFocusBounds", () => {
   it("centres a square frame on the municipality with room for neighbours", () => {
-    const bounds = getMunicipalityFocusBounds(FEATURES, "2927408");
+    const bounds = getSelectionFocusBounds(FEATURES, ["2927408"]);
 
     if (!bounds) throw new Error("Expected bounds for 2927408, got undefined.");
     const [[west, north], [east, south]] = bounds;
@@ -104,7 +104,24 @@ describe("getMunicipalityFocusBounds", () => {
   });
 
   it("returns undefined for a municipality outside the mesh", () => {
-    expect(getMunicipalityFocusBounds(FEATURES, "0000000")).toBeUndefined();
+    expect(getSelectionFocusBounds(FEATURES, ["0000000"])).toBeUndefined();
+    expect(getSelectionFocusBounds(FEATURES, [])).toBeUndefined();
+  });
+
+  it("frames every selected municipality and ignores codes outside the mesh", () => {
+    const bounds = getSelectionFocusBounds(FEATURES, [
+      "2611606",
+      "2927408",
+      "0000000",
+    ]);
+
+    if (!bounds) throw new Error("Expected bounds for two municipalities.");
+    const [[west, north], [east, south]] = bounds;
+
+    expect((west + east) / 2).toBeCloseTo(-36.5);
+    expect((north + south) / 2).toBeCloseTo(-10.5);
+    expect(west).toBeLessThan(-39);
+    expect(east).toBeGreaterThan(-34);
   });
 });
 

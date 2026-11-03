@@ -3,11 +3,13 @@ import {
   BarChart,
   GaugeChart,
   LineChart,
+  LinesChart,
   MapChart,
   PieChart,
 } from "echarts/charts";
 import {
   AriaComponent,
+  GeoComponent,
   GridComponent,
   LegendComponent,
   TooltipComponent,
@@ -20,12 +22,14 @@ echarts.use([
   BarChart,
   CanvasRenderer,
   GaugeChart,
+  GeoComponent,
   GridComponent,
 
   // Sem ele, o `labelLayout: { hideOverlap }` das séries é ignorado em silêncio.
   LabelLayout,
   LegendComponent,
   LineChart,
+  LinesChart,
   MapChart,
   PieChart,
   SVGRenderer,
