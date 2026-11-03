@@ -54,18 +54,16 @@ export default function PerfilDemograficoDemoLoading() {
             Carregando o painel de Perfil Demográfico…
           </span>
           <FiltersBones />
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.9fr)]">
-            <div className="flex flex-col gap-6">
-              <Bone className="h-36" />
-              <Bone className="h-96" />
-              <Bone className="h-80" />
-            </div>
-            <div className="flex flex-col gap-6">
-              <Bone className="h-44" />
-              <Bone className="h-96" />
-              <Bone className="h-80" />
-            </div>
-            <Bone className="aspect-[4/5] lg:col-span-2 xl:col-span-1 xl:aspect-auto" />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[minmax(0,4.5fr)_minmax(0,3.75fr)_minmax(0,3.75fr)]">
+            <Bone className="h-32 xl:col-start-2 xl:row-start-1" />
+            <Bone className="h-32 xl:col-start-3 xl:row-start-1" />
+            <Bone className="aspect-[4/5] xl:col-start-1 xl:row-span-2 xl:row-start-1 xl:aspect-auto" />
+            <Bone className="h-96 xl:col-start-2 xl:row-start-2" />
+            <Bone className="h-96 lg:col-span-2 xl:col-span-1 xl:col-start-3 xl:row-start-2" />
+          </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <Bone className="h-80" />
+            <Bone className="h-80" />
           </div>
         </div>
       </PanelPage>

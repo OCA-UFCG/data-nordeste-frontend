@@ -9,8 +9,9 @@ import {
 
 export const PyramidChart = ({
   label,
+  className = "h-80 w-full",
   ...config
-}: PyramidConfig & { label: string }) => {
+}: PyramidConfig & { label: string; className?: string }) => {
   const { categories, left, right, formatValue, formatShort } = config;
   const buildOption = useCallback(
     (width: number) =>
@@ -22,6 +23,6 @@ export const PyramidChart = ({
   );
 
   return (
-    <EChart buildOption={buildOption} label={label} className="h-80 w-full" />
+    <EChart buildOption={buildOption} label={label} className={className} />
   );
 };

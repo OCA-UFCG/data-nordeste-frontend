@@ -53,22 +53,39 @@ export const toColumnTable = (
   ]),
 });
 
+type AxisCustom = { rotateLabels: boolean; axisName?: string };
+
 // Inclinados como no Power BI: todas as categorias aparecem mesmo no card estreito.
-const rotatedAxis = (xAxis: { axisLabel: object }) => ({
+const customAxis = (
+  xAxis: { axisLabel: object },
+  { rotateLabels, axisName }: AxisCustom,
+) => ({
   ...xAxis,
-  axisLabel: { ...xAxis.axisLabel, interval: 0, rotate: 35 },
+  ...(rotateLabels
+    ? { axisLabel: { ...xAxis.axisLabel, interval: 0, rotate: 35 } }
+    : {}),
+  ...(axisName
+    ? {
+        name: axisName,
+        nameLocation: "middle",
+        nameGap: 30,
+        nameTextStyle: { fontSize: 12 },
+      }
+    : {}),
 });
 
 export const ColumnChart = ({
   label,
   fit = false,
   rotateLabels = false,
+  axisName,
   onSelectLabel,
   ...config
 }: ColumnConfig & {
   label: string;
   fit?: boolean;
   rotateLabels?: boolean;
+  axisName?: string;
   onSelectLabel?: (label: string) => void;
 }) => {
   const { categories, series, formatLabel, formatValue } = config;
@@ -91,12 +108,17 @@ export const ColumnChart = ({
     return {
       ...option,
       legend: { show: false },
-      grid: { ...(option.grid as object), bottom: 8 },
-      ...(rotateLabels
-        ? { xAxis: rotatedAxis(option.xAxis as { axisLabel: object }) }
+      grid: { ...(option.grid as object), bottom: axisName ? 28 : 8 },
+      ...(rotateLabels || axisName
+        ? {
+            xAxis: customAxis(option.xAxis as { axisLabel: object }, {
+              rotateLabels,
+              axisName,
+            }),
+          }
         : {}),
     };
-  }, [categories, series, formatLabel, formatValue, rotateLabels]);
+  }, [categories, series, formatLabel, formatValue, rotateLabels, axisName]);
   const width = categories.length * (series.length * SLOT_PER_BAR + SLOT_GAP);
 
   return (

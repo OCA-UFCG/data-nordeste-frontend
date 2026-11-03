@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import {
   PiramideEtaria,
   PopulacaoPorCorRaca,
@@ -39,6 +39,17 @@ const MESH_URL = "/maps/municipios-sudene.json";
 const YEARS = listYears(DEMOGRAFIA_YEAR_RANGE);
 const DEFAULTS = defaultTerritorialFilters(DEMOGRAFIA_YEAR_RANGE);
 const OCEAN_COLOR = "#c5e0fa";
+
+// Esticam o card até a altura da linha da grade: sem faixa vazia embaixo.
+const Cell = ({
+  className,
+  children,
+}: {
+  className: string;
+  children: ReactNode;
+}) => (
+  <div className={`flex min-w-0 [&>*]:flex-1 ${className}`}>{children}</div>
+);
 
 const toMapTable = (data: DemografiaPanelData): DataTableContent => ({
   caption: `Porte dos municípios em ${data.filters.ano}`,
@@ -101,41 +112,50 @@ export const DemografiaDashboard = ({
       <SelectionSummary summary={summary} isPending={isPending} />
       <div
         aria-busy={isPending}
-        className="grid grid-cols-1 gap-6 transition-opacity duration-300 ease-out aria-busy:opacity-75 aria-busy:delay-150 motion-reduce:transition-none lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+        className="flex flex-col gap-6 transition-opacity duration-300 ease-out aria-busy:opacity-75 aria-busy:delay-150 motion-reduce:transition-none"
       >
-        <div className="flex min-w-0 flex-col gap-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[minmax(0,4.5fr)_minmax(0,3.75fr)_minmax(0,3.75fr)]">
+          <Cell className="xl:col-start-2 xl:row-start-1">
             <HighlightCard
               tone="pink"
               icon={DEMOGRAFIA_ICON}
               label="População residente"
               value={populacao ? formatPessoas(populacao.value) : "Sem dados"}
+              compact
+              fill
             />
+          </Cell>
+          <Cell className="xl:col-start-3 xl:row-start-1">
             <PopulacaoPorSexo sexo={data.sexo} />
-          </div>
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <PopulacaoPorMunicipio points={municipios} />
-            <PiramideEtaria piramide={data.piramide} />
-            <SerieTemporal
-              serie={data.serie}
-              onSelectYear={(ano) => applyFilters({ ...filters, ano })}
+          </Cell>
+          <Cell className="min-h-0 xl:col-start-1 xl:row-span-2 xl:row-start-1 xl:h-0 xl:min-h-full">
+            <ChoroplethMap
+              title="Porte dos municípios"
+              meshUrl={MESH_URL}
+              regions={data.mapa}
+              buckets={DEMOGRAFIA_PORTES}
+              valueLabel="População"
+              formatValue={formatPessoas}
+              selectedCode={singleMunicipality}
+              table={mapTable}
+              onSelectRegion={selectMunicipality}
+              background={OCEAN_COLOR}
+              fill
             />
-            <PopulacaoPorCorRaca corRaca={data.corRaca} />
-          </div>
+          </Cell>
+          <Cell className="xl:col-start-2 xl:row-start-2">
+            <PiramideEtaria piramide={data.piramide} />
+          </Cell>
+          <Cell className="lg:col-span-2 xl:col-span-1 xl:col-start-3 xl:row-start-2">
+            <PopulacaoPorMunicipio points={municipios} />
+          </Cell>
         </div>
-        <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-          <ChoroplethMap
-            title="Porte dos municípios"
-            meshUrl={MESH_URL}
-            regions={data.mapa}
-            buckets={DEMOGRAFIA_PORTES}
-            valueLabel="População"
-            formatValue={formatPessoas}
-            selectedCode={singleMunicipality}
-            table={mapTable}
-            onSelectRegion={selectMunicipality}
-            background={OCEAN_COLOR}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <SerieTemporal
+            serie={data.serie}
+            onSelectYear={(ano) => applyFilters({ ...filters, ano })}
           />
+          <PopulacaoPorCorRaca corRaca={data.corRaca} />
         </div>
       </div>
     </PanelPage>

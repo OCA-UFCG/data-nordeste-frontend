@@ -63,25 +63,28 @@ export const PopulacaoPorSexo = ({
         label="Gráfico de barras da população por sexo"
         points={points}
         formatValue={formatPessoas}
-        className="h-28 w-full"
+        className="min-h-24 w-full flex-1"
       />
     </ChartCard>
   );
 };
 
+// Absoluta: a lista rola dentro do card e não estica a linha da grade.
 export const PopulacaoPorMunicipio = ({ points }: { points: ChartPoint[] }) => (
   <ChartCard title="População por município">
-    <div
-      role="region"
-      aria-label="Lista da população por município"
-      tabIndex={0}
-      className="h-80 overflow-y-auto pr-1"
-    >
-      <ValueBars
-        points={points}
-        formatValue={formatPessoas}
-        barClassName="bg-[#e482a9]"
-      />
+    <div className="relative min-h-80 flex-1">
+      <div
+        role="region"
+        aria-label="Lista da população por município"
+        tabIndex={0}
+        className="absolute inset-0 overflow-y-auto pr-1"
+      >
+        <ValueBars
+          points={points}
+          formatValue={formatPessoas}
+          barClassName="bg-[#e482a9]"
+        />
+      </div>
     </div>
   </ChartCard>
 );
@@ -119,7 +122,11 @@ export const PiramideEtaria = ({
 
   return (
     <ChartCard title={PIRAMIDE_TITLE} table={table} toolbarInside>
-      <PyramidChart label="Pirâmide etária da população por sexo" {...config} />
+      <PyramidChart
+        label="Pirâmide etária da população por sexo"
+        className="min-h-80 w-full flex-1"
+        {...config}
+      />
     </ChartCard>
   );
 };
@@ -144,9 +151,9 @@ export const SerieTemporal = ({
       <ColumnChart
         label="Gráfico de colunas da população por censo"
         {...config}
+        axisName="Ano"
         onSelectLabel={(ano) => onSelectYear(Number(ano))}
       />
-      <p className="text-center text-xs text-grey-900">Ano</p>
     </ChartCard>
   );
 };
