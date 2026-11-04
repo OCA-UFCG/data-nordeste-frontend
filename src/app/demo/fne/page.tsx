@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { FneDashboard } from "@/components/FneDashboard/FneDashboard";
-import { FNE_SOURCE } from "@/components/FneDashboard/FneTexts";
+import { FNE_SOURCE, FneIntro } from "@/components/FneDashboard/FneTexts";
 import { FNE_ICON, FNE_TITLE } from "@/components/FneDashboard/fneTheme";
 import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { PanelMessage } from "@/components/Panel/layout/PanelShell";
@@ -50,6 +50,11 @@ export default async function FneDemoPage({
 
   return (
     <HubTemplate>
+      {/* Acima do painel, como os textos das outras demos: no celular a barra
+          do local encosta nas abas. */}
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col px-4 py-4 sm:px-6 lg:px-20 lg:pb-0">
+        <FneIntro />
+      </div>
       {panel ? (
         <FneDashboard data={panel} source={FNE_SOURCE} />
       ) : (

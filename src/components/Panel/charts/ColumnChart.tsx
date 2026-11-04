@@ -81,6 +81,7 @@ export const ColumnChart = ({
   rotateLabels = false,
   axisName,
   onSelectLabel,
+  slotPerBar = SLOT_PER_BAR,
   ...config
 }: ColumnConfig & {
   label: string;
@@ -90,6 +91,9 @@ export const ColumnChart = ({
   rotateLabels?: boolean;
   axisName?: string;
   onSelectLabel?: (label: string) => void;
+
+  // Rótulos curtos ("13,9 bi") cabem em colunas mais estreitas.
+  slotPerBar?: number;
 }) => {
   const { categories, series, formatLabel, formatValue } = config;
   const selectColumn = useCallback(
@@ -122,7 +126,7 @@ export const ColumnChart = ({
         : {}),
     };
   }, [categories, series, formatLabel, formatValue, rotateLabels, axisName]);
-  const width = categories.length * (series.length * SLOT_PER_BAR + SLOT_GAP);
+  const width = categories.length * (series.length * slotPerBar + SLOT_GAP);
 
   return (
     <div className={`flex flex-col gap-4 ${grow ? "flex-1" : ""}`}>

@@ -243,7 +243,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   state limit can be a `lines` series sharing its zoom and pan. The limit is
   computed from the municipal mesh (segments used once or shared by two
   states), which also covers the Sudene part of MG and ES. The class breaks
-  are the ArcGIS ones; only the palette changed to a single green scale.
+  and colours are the ArcGIS ones, as are the bar colour (`#00bd47`) and the
+  colours of the beneficiary-size pie.
 - Municipalities are a multi-choice filter (`MultiSelectFilter`, in
   `src/components/Panel/filters/`): the URL keeps them as `?mun=2611606,2304400` (a
   single code still works), the SQL uses `cd_mun = ANY($n)`, clicking the map

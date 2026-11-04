@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { describeFneSelection } from "@/features/panels/fne/fneSelection";
-import { toFneLayeredRegions } from "@/features/panels/fne/fneMap";
+import { formatFneLabel } from "@/features/panels/fne/fneLabels";
+import {
+  fneStateCodes,
+  groupFneRegionsByBucket,
+  toFneLayeredRegions,
+} from "@/features/panels/fne/fneMap";
 import { loadFnePanel, toFneChartPoints } from "@/features/panels/fne/fnePanel";
 
 type RecordedQuery = { sql: string; params: unknown[] };
@@ -185,10 +190,52 @@ describe("toFneLayeredRegions", () => {
       "valor",
     );
 
-    expect(region.color).toBe("#00441b");
+    expect(region.color).toBe("#47101f");
     expect(region.tooltip).toContain("Recife &lt;script&gt;");
     expect(region.tooltip).toContain(
       "<strong>Valor contratado: R$ 400,00 mi</strong>",
     );
+  });
+});
+
+const region = (code: string, quantidade: number) => ({
+  code,
+  name: code,
+  uf: "PE",
+  quantidade,
+  valor: 0,
+  ticketMedio: 0,
+});
+
+describe("groupFneRegionsByBucket", () => {
+  it("puts each municipality in the class of the active metric", () => {
+    const grupos = groupFneRegionsByBucket(
+      [region("a", 0), region("b", 10), region("c", 2000)],
+      "quantidade",
+    );
+
+    expect(grupos.map((grupo) => grupo.codes)).toEqual([
+      ["a"],
+      ["b"],
+      [],
+      [],
+      [],
+      ["c"],
+    ]);
+  });
+});
+
+describe("formatFneLabel", () => {
+  it("formats each value in its own scale", () => {
+    expect(formatFneLabel(35551)).toBe("35,6 mil");
+    expect(formatFneLabel(1749513)).toBe("1,7 mi");
+  });
+});
+
+describe("fneStateCodes", () => {
+  it("lists only the municipalities of the state", () => {
+    expect(
+      fneStateCodes([region("a", 1), { ...region("b", 1), uf: "CE" }], "CE"),
+    ).toEqual(["b"]);
   });
 });

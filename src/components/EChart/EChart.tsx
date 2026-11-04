@@ -225,8 +225,26 @@ type ChartSeries = { id?: string | number };
 const seriesOf = (option: ChartOption): ChartSeries[] =>
   [option.series ?? []].flat();
 
-// Junta o restyle à base numa chamada só, casando as séries pelo id. Raso de
-// propósito: o restyle do mapa só traz `data` e o balão, que a base não tem.
+const isPlainObject = (value: unknown): value is object =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+// Componentes de topo (o geo do mapa em camadas) se mesclam como no setOption;
+// substituídos, perderiam o `map` e o quadro.
+const mergeComponents = (base: ChartOption, restyle: ChartOption) =>
+  Object.fromEntries(
+    Object.entries(restyle).map(([key, value]) => {
+      const original = base[key];
+
+      return [
+        key,
+        isPlainObject(value) && isPlainObject(original)
+          ? { ...original, ...value }
+          : value,
+      ];
+    }),
+  );
+
+// Junta o restyle à base numa chamada só, casando as séries pelo id.
 const withRestyle = (base: ChartOption, restyle?: ChartOption): ChartOption => {
   if (!restyle) return base;
   const restyleSeries = seriesOf(restyle);
@@ -240,7 +258,7 @@ const withRestyle = (base: ChartOption, restyle?: ChartOption): ChartOption => {
       : restyleSeries.find((restyled) => restyled.id === item.id)),
   }));
 
-  return { ...base, ...restyle, series };
+  return { ...base, ...mergeComponents(base, restyle), series };
 };
 
 const useBaseOption = (

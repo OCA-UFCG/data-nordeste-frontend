@@ -1,4 +1,5 @@
 import { ChevronDown, ExternalLink } from "lucide-react";
+import { PanelInfo } from "@/components/Panel/layout/PanelInfo";
 
 // Textos do painel do FNE no ArcGIS (Experience e tela "Sobre" do dashboard).
 export const FNE_SOURCE =
@@ -49,23 +50,25 @@ export const FneIntro = () => (
   </div>
 );
 
+// Fora da página: quem quer o contexto abre no ⓘ do cabeçalho, como nos
+// outros painéis, e os gráficos fecham a página.
 export const WhatIsFne = () => (
-  <section className="flex flex-col gap-4 rounded-lg bg-white p-4 shadow-sm sm:p-6">
-    <h2 className="text-xl font-bold text-grey-1100">O que é o FNE?</h2>
-    <div className="flex flex-col gap-3 text-base leading-relaxed text-grey-1100">
+  <PanelInfo label="O que é o FNE?">
+    <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto">
+      <p className="text-base font-semibold text-[#018f39]">O que é o FNE?</p>
       {WHAT_IS_FNE.map((paragraph) => (
         <p key={paragraph}>{paragraph}</p>
       ))}
+      <a
+        href={BNB_FNE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-md bg-green-800 px-5 text-base font-medium text-white transition hover:bg-green-900"
+      >
+        Saiba mais no Banco do Nordeste
+        <ExternalLink aria-hidden className="size-4" />
+        <span className="sr-only">(abre em nova aba)</span>
+      </a>
     </div>
-    <a
-      href={BNB_FNE_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-md bg-green-800 px-5 text-base font-medium text-white transition hover:bg-green-900"
-    >
-      Saiba mais
-      <ExternalLink aria-hidden className="size-4" />
-      <span className="sr-only">(abre o site do Banco do Nordeste)</span>
-    </a>
-  </section>
+  </PanelInfo>
 );

@@ -1,6 +1,9 @@
 import type { ChoroplethBucket } from "@/features/panels/choropleth";
 import type { FneVisao } from "@/features/panels/fne/fneFilters";
-import { formatReaisCompact } from "@/features/panels/format";
+import {
+  formatNumberCompact,
+  formatReaisCompact,
+} from "@/features/panels/format";
 
 // DO NOT CHANGE: `prefix` vira nome de coluna (<prefix>_qtd, <prefix>_valor) no SQL.
 export const FNE_SETORES = [
@@ -62,16 +65,25 @@ export const FNE_FORMATTERS: Record<FneVisao, (value: number) => string> = {
   valor: formatValor,
 };
 
-const NONE_COLOR = "#efefef";
-const GREENS = ["#c7e9c0", "#74c476", "#31a354", "#006d2c", "#00441b"];
+/**
+ * Short label over a column, each value in its own scale so a small sector
+ * never reads "0,0 mi" next to the largest one. Sem "R$": o título já diz
+ * "em reais" e, com ele, rótulos vizinhos se sobrepunham.
+ * @example formatFneLabel(35551) // "35,6 mil"
+ */
+export const formatFneLabel = (value: number): string =>
+  formatNumberCompact(value, 1);
 
-// Mesmos cortes das camadas do ArcGIS; só a paleta virou uma escala de verdes.
+const NONE_COLOR = "#ffffff";
+const CLASS_COLORS = ["#00bd47", "#018f39", "#e482a9", "#8d2744", "#47101f"];
+
+// Mesmos cortes e cores das camadas do ArcGIS.
 const buckets = (limits: number[], labels: string[]): ChoroplethBucket[] => [
   { max: 1, label: "Sem contratações", color: NONE_COLOR },
   ...labels.map((label, index) => ({
     max: limits[index] ?? Infinity,
     label,
-    color: GREENS[index],
+    color: CLASS_COLORS[index],
   })),
 ];
 
