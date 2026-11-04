@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { FneDashboard } from "@/components/FneDashboard/FneDashboard";
-import { FNE_SOURCE, FneIntro } from "@/components/FneDashboard/FneTexts";
+import { FNE_SOURCE } from "@/components/FneDashboard/FneTexts";
 import { FNE_ICON, FNE_TITLE } from "@/components/FneDashboard/fneTheme";
 import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { PanelMessage } from "@/components/Panel/layout/PanelShell";
+import { PanelTextsFrame } from "@/components/Panel/texts/PanelTextsFrame";
 import { buildMetadata } from "@/config/seo";
+import { loadFnePanelContent } from "@/features/panels/fne/fneContent";
 import {
+  buildFneSearch,
   parseFneFilters,
   type FneFilters,
 } from "@/features/panels/fne/fneFilters";
@@ -41,37 +44,47 @@ const loadPanel = async (filters: FneFilters) => {
   }
 };
 
+const LoadFailedMessage = ({ filters }: { filters: FneFilters }) => (
+  <PanelMessage>
+    Não foi possível carregar os dados do painel agora. Tente novamente em
+    alguns minutos.{" "}
+    <a
+      href={`/demo/fne${buildFneSearch(filters)}`}
+      className="font-medium text-green-900 underline underline-offset-4"
+    >
+      Tentar novamente
+    </a>
+  </PanelMessage>
+);
+
 export default async function FneDemoPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const panel = await loadPanel(parseFneFilters(await searchParams));
+  const filters = parseFneFilters(await searchParams);
+  const [panel, content] = await Promise.all([
+    loadPanel(filters),
+    loadFnePanelContent(),
+  ]);
 
   return (
     <HubTemplate>
-      {/* Acima do painel, como os textos das outras demos: no celular a barra
-          do local encosta nas abas. */}
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col px-4 py-4 sm:px-6 lg:px-20 lg:pb-0">
-        <FneIntro />
-      </div>
-      {panel ? (
-        <FneDashboard data={panel} source={FNE_SOURCE} />
-      ) : (
-        <PanelPage
-          title={FNE_TITLE}
-          icon={FNE_ICON}
-          tone="green"
-          source={FNE_SOURCE}
-          fullMobile
-        >
-          <PanelMessage>
-            Não foi possível consultar o banco de dados. Confira se o túnel para
-            o banco do Gamma está ativo e se <code>DATA_DB_URL</code> está
-            configurada.
-          </PanelMessage>
-        </PanelPage>
-      )}
+      <PanelTextsFrame content={content}>
+        {panel ? (
+          <FneDashboard data={panel} source={FNE_SOURCE} />
+        ) : (
+          <PanelPage
+            title={FNE_TITLE}
+            icon={FNE_ICON}
+            tone="green"
+            source={FNE_SOURCE}
+            fullMobile
+          >
+            <LoadFailedMessage filters={filters} />
+          </PanelPage>
+        )}
+      </PanelTextsFrame>
     </HubTemplate>
   );
 }

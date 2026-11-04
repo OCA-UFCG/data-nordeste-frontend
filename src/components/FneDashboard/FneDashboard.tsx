@@ -3,7 +3,7 @@
 import { useCallback, useId, useState } from "react";
 import { FneOverview } from "@/components/FneDashboard/FneOverview";
 import { FneSelects } from "@/components/FneDashboard/FneSelects";
-import { WhatIsFne } from "@/components/FneDashboard/FneTexts";
+import { FneSaibaMais } from "@/components/FneDashboard/FneTexts";
 import { FNE_ICON, FNE_TITLE } from "@/components/FneDashboard/fneTheme";
 import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
 import { SelectionSummary } from "@/components/Panel/filters/SelectionSummary";
@@ -74,7 +74,7 @@ export const FneDashboard = ({
       icon={FNE_ICON}
       tone="green"
       source={source}
-      info={<WhatIsFne />}
+      info={<FneSaibaMais />}
       fullMobile
       top={
         <PanelTabs
