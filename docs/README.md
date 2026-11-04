@@ -91,6 +91,13 @@ outside the repository and rendered through frontend route/component logic.
   own cache, so production (two origins behind Cloudflare) only refreshes the
   origin that served the request.
 - Beta disables search indexing through Next.js metadata robots settings.
+- Production `robots.txt` (`src/features/seo/robotsRules.ts`) blocks
+  `/posts?*`, `/explore?*`, `/search` and `/atualizar-conteudo`. Each
+  query-string combination on those routes is a separate Contentful GraphQL
+  request, and crawlers enumerating them used ~2/3 of the API quota in Oct
+  2026. Canonical pages stay crawlable; `/catalog?page=N` stays open because
+  its pagination comes from Zenodo. Add any new route that turns
+  `searchParams` into Contentful variables.
 - Google snippets (`<meta name="description">`) for `/data-panel/[id]` and
   `/boletim/[id]` come from the short-text Contentful field `seoDescription`
   on `panels` and `post`. Empty field falls back to the page's rich-text
