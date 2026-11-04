@@ -45,7 +45,7 @@ export const PanelTabs = ({
       role="tablist"
       aria-label="Visão do painel"
       onKeyDown={handleKeyDown}
-      className="flex gap-4 overflow-x-auto border-b border-grey-400 bg-white px-6"
+      className="flex overflow-x-auto border-b border-grey-400 bg-white sm:gap-4 sm:px-6"
     >
       {tabs.map((tab) => {
         const isActive = tab.key === activeKey;
@@ -60,7 +60,7 @@ export const PanelTabs = ({
             aria-controls={isActive ? `${idPrefix}-panel` : undefined}
             tabIndex={isActive ? 0 : -1}
             onClick={() => onSelect(tab.key)}
-            className={`shrink-0 whitespace-nowrap border-b-2 px-3 py-4 text-sm font-medium aria-selected:shadow-xs aria-[selected=false]:border-transparent aria-[selected=false]:text-grey-600 ${PANEL_TONES[tone].tab}`}
+            className={`min-w-0 flex-1 border-b-2 px-3 py-3 text-center text-sm font-medium leading-tight sm:flex-none sm:shrink-0 sm:whitespace-nowrap sm:py-4 aria-selected:shadow-xs aria-[selected=false]:border-transparent aria-[selected=false]:text-grey-600 ${PANEL_TONES[tone].tab}`}
           >
             {tab.label}
           </button>

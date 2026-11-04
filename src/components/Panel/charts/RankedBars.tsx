@@ -54,12 +54,19 @@ export const RankedBars = ({
   onPreview,
   barClassName,
   valueClassName,
+  spread = false,
+  rowClassName = "hover:bg-orange-100/60 aria-pressed:bg-orange-100",
 }: {
   points: ChartPoint[];
   formatValue: ValueFormatter;
   selectedLabel?: string | null;
   onSelect?: (label: string | null) => void;
   onPreview?: PreviewHandler;
+
+  // Num card esticado pela grade, reparte a sobra entre as linhas em vez de
+  // deixá-la vazia embaixo.
+  spread?: boolean;
+  rowClassName?: string;
 } & BarStyle) => {
   const largest = Math.max(...points.map((point) => point.value), 0) || 1;
   const row = (point: ChartPoint) => (
@@ -74,7 +81,7 @@ export const RankedBars = ({
 
   return (
     <ul
-      className="flex flex-col gap-2"
+      className={`group/bars flex flex-col gap-2 ${spread ? "flex-1 justify-between" : ""}`}
       onPointerLeave={previewOnMouse(onPreview, null)}
     >
       {points.map((point) => (
@@ -87,7 +94,7 @@ export const RankedBars = ({
                 onSelect(point.label === selectedLabel ? null : point.label)
               }
               onPointerEnter={previewOnMouse(onPreview, point.label)}
-              className={`group flex w-full cursor-pointer flex-col gap-1.5 rounded-md p-1.5 text-left transition-[opacity,background-color] hover:bg-orange-100/60 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-green-800 aria-pressed:bg-orange-100 motion-reduce:transition-none ${selectedLabel && point.label !== selectedLabel ? "opacity-50" : ""}`}
+              className={`group flex w-full cursor-pointer flex-col gap-1.5 rounded-md p-1.5 text-left transition-[opacity,background-color] hover:opacity-100 focus-visible:outline-2 focus-visible:outline-green-800 motion-reduce:transition-none ${rowClassName} ${selectedLabel && point.label !== selectedLabel ? "opacity-50" : ""}`}
             >
               {row(point)}
             </button>

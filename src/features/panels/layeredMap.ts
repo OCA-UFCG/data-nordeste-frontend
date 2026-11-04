@@ -15,19 +15,32 @@ export const BORDER_COLOR = "#292829";
 // `tooltip` já vem em HTML escapado, montado por quem conhece o indicador.
 export type LayeredRegion = { code: string; color: string; tooltip: string };
 
-export type LayeredMapConfig = ChoroplethFrame & {
-  regions: LayeredRegion[];
-  selectedCodes: string[];
+export type LayeredMapFrame = ChoroplethFrame & {
   borders: BorderSegment[] | null;
 };
 
-const geoRegions = ({ regions, selectedCodes }: LayeredMapConfig) => {
+export type LayeredMapColors = {
+  regions: LayeredRegion[];
+  selectedCodes: string[];
+  highlightCodes?: ReadonlySet<string>;
+};
+
+const DIMMED_AREA = "#e5e5e5";
+
+const geoRegions = ({
+  regions,
+  selectedCodes,
+  highlightCodes,
+}: LayeredMapColors) => {
   const selected = new Set(selectedCodes);
 
   return regions.map((region) => ({
     name: region.code,
     itemStyle: {
-      areaColor: region.color,
+      areaColor:
+        highlightCodes && !highlightCodes.has(region.code)
+          ? DIMMED_AREA
+          : region.color,
       ...(selected.has(region.code)
         ? { borderColor: SELECTED_BORDER, borderWidth: 3 }
         : {}),
@@ -55,28 +68,40 @@ const bordersSeries = (borders: BorderSegment[]) => ({
 });
 
 /**
- * Choropleth on a `geo` component, so extra layers (state borders) can be
- * drawn as series that share its zoom and pan.
- * @example buildLayeredMapOption({ mapName, regions, selectedCodes: [], borders: null })
+ * Geometry, framing and border layer of the map, applied from scratch only
+ * when the mesh, the framing or the border toggle changes.
+ * @example buildLayeredMapOption({ mapName, canPan: true, borders: null })
  */
-export const buildLayeredMapOption = (
-  config: LayeredMapConfig,
-): ChartOption => ({
+export const buildLayeredMapOption = (frame: LayeredMapFrame): ChartOption => ({
   ...baseOption(),
-  tooltip: {
-    ...TOOLTIP_BASE,
-    trigger: "item",
-    formatter: tooltipByCode(config.regions),
-  },
   geo: {
-    ...mapViewportOption(config),
+    ...mapViewportOption(frame),
+
+    // Contorno das camadas do ArcGIS: os municípios sem contratação são brancos.
+    itemStyle: { borderColor: "#4d4d4d", borderWidth: 0.2 },
     emphasis: {
       label: { show: false },
       itemStyle: { areaColor: SELECTED_BORDER },
     },
     tooltip: { show: true },
     label: { show: false },
-    regions: geoRegions(config),
   },
-  series: config.borders ? [bordersSeries(config.borders)] : [],
+  series: frame.borders ? [bordersSeries(frame.borders)] : [],
+});
+
+/**
+ * Colours, highlight and tooltip, merged over the frame option.
+ * IMPORTANT: sem center/zoom; com eles, cada destaque desfaria o zoom e o
+ * arrasto do usuário.
+ * @example buildLayeredColorOption({ regions, selectedCodes: [], highlightCodes: new Set(["2611606"]) })
+ */
+export const buildLayeredColorOption = (
+  colors: LayeredMapColors,
+): ChartOption => ({
+  tooltip: {
+    ...TOOLTIP_BASE,
+    trigger: "item",
+    formatter: tooltipByCode(colors.regions),
+  },
+  geo: { regions: geoRegions(colors) },
 });

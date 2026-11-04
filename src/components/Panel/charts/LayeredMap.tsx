@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { type CSSProperties, useMemo, type ReactNode } from "react";
 import { EChart } from "@/components/EChart/EChart";
 import { ChartCard } from "@/components/Panel/cards/ChartCard";
 import {
@@ -9,6 +9,7 @@ import {
   useMapFrame,
 } from "@/components/Panel/charts/mapParts";
 import {
+  buildLayeredColorOption,
   buildLayeredMapOption,
   type LayeredRegion,
 } from "@/features/panels/layeredMap";
@@ -20,13 +21,17 @@ export type LayeredMapProps = {
   regions: LayeredRegion[];
   showBorders: boolean;
   selectedCodes: string[];
+  highlightCodes?: ReadonlySet<string>;
   onSelectRegion: (code: string) => void;
   controls: ReactNode;
   legend: ReactNode;
+
+  // Do lg em diante ocupa a altura do pai; abaixo, segue o formato da malha.
+  fill?: boolean;
 };
 
 export const LayeredMap = (props: LayeredMapProps) => {
-  const { regions, selectedCodes, showBorders } = props;
+  const { regions, selectedCodes, highlightCodes, showBorders } = props;
   const codes = useMemo(() => regions.map((region) => region.code), [regions]);
   const frame = useMapFrame(props.meshUrl, codes, selectedCodes);
   const { features, mapName, areaBounds, framing, canPan } = frame;
@@ -37,17 +42,16 @@ export const LayeredMap = (props: LayeredMapProps) => {
     () => (showBorders ? getStateBorders(features) : null),
     [showBorders, features],
   );
-  const option = useMemo(
-    () =>
-      buildLayeredMapOption({
-        regions,
-        selectedCodes,
-        borders,
-        mapName,
-        framing,
-        canPan,
-      }),
-    [regions, selectedCodes, borders, mapName, framing, canPan],
+  const frameOption = useMemo(
+    () => buildLayeredMapOption({ mapName, framing, canPan, borders }),
+    [mapName, framing, canPan, borders],
+  );
+
+  // Separada do quadro: o destaque da lista entra por merge, sem redesenhar
+  // os ~1.800 municípios nem desfazer o zoom.
+  const colorOption = useMemo(
+    () => buildLayeredColorOption({ regions, selectedCodes, highlightCodes }),
+    [regions, selectedCodes, highlightCodes],
   );
 
   return (
@@ -55,10 +59,19 @@ export const LayeredMap = (props: LayeredMapProps) => {
       {props.controls}
       {frame.status === "ready" && areaBounds ? (
         <EChart
-          option={option}
+          option={frameOption}
+          restyleOption={colorOption}
           label={`Mapa coroplético: ${props.title}`}
-          className="w-full"
-          style={{ aspectRatio: frame.aspectRatio }}
+          className={
+            props.fill
+              ? "aspect-(--map-ratio) w-full lg:aspect-auto lg:min-h-0 lg:flex-1"
+              : "w-full"
+          }
+          style={
+            props.fill
+              ? ({ "--map-ratio": frame.aspectRatio } as CSSProperties)
+              : { aspectRatio: frame.aspectRatio }
+          }
           renderer={MAP_RENDERER}
           morph={false}
           onItemClick={props.onSelectRegion}
