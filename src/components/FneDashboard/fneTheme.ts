@@ -6,6 +6,21 @@ export const FNE_TITLE =
   "Fundo Constitucional de Financiamento do Nordeste (FNE)";
 export const FNE_ICON = HandCoins;
 
+// Cor das colunas e das fatias da pizza de porte nos dashboards do ArcGIS.
+export const FNE_BAR_COLOR = "#00bd47";
+export const FNE_BAR_CLASS = "bg-[#00bd47]";
+
+export const FNE_PORTE_COLORS: Record<string, string> = {
+  "Mini": "#bbe880",
+  "Micro": "#72ffaa",
+  "Pequeno": "#7355cf",
+  "Pequeno-médio": "#769fff",
+  "Médio": "#966400",
+  "Médio I": "#3f6eff",
+  "Médio II": "#f7bad3",
+  "Grande": "#d29eff",
+};
+
 export type FneChart =
   | "setores"
   | "portes"

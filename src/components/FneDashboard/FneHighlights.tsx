@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { ChartCard, ChartNotice } from "@/components/Panel/cards/ChartCard";
+import {
+  previewOnMouse,
+  type PreviewHandler,
+} from "@/components/Panel/charts/RankedBars";
 import type { FneVisao } from "@/features/panels/fne/fneFilters";
 import { FNE_FORMATTERS } from "@/features/panels/fne/fneLabels";
 import type { FneHighlight } from "@/features/panels/fne/fnePanel";
@@ -29,18 +33,25 @@ const HighlightItem = ({
   visao,
   ano,
   hiddenOnMobile,
+  selected,
+  onSelect,
+  onPreview,
 }: {
   item: FneHighlight;
   rank: number;
   visao: FneVisao;
   ano: number;
   hiddenOnMobile: boolean;
+  selected: boolean;
+  onSelect: (cdMun: string) => void;
+  onPreview: PreviewHandler;
 }) => {
   const format = FNE_FORMATTERS[visao];
 
   return (
     <li
-      className={`gap-3 rounded-lg border-l-[6px] border-green-800 bg-white p-4 shadow-sm ${hiddenOnMobile ? "hidden lg:flex" : "flex"}`}
+      onPointerEnter={previewOnMouse(onPreview, item.cdMun)}
+      className={`gap-3 rounded-lg border border-l-[6px] border-grey-200 border-l-green-800 bg-white p-4 transition-colors hover:border-green-800 hover:bg-green-100/40 motion-reduce:transition-none ${selected ? "border-green-800 bg-green-100/60" : ""} ${hiddenOnMobile ? "hidden lg:flex" : "flex"}`}
     >
       <span className="text-lg font-bold tabular-nums text-green-800">
         {rank}º
@@ -48,7 +59,19 @@ const HighlightItem = ({
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3">
           <h3 className="text-base font-bold text-green-900">
-            {item.nome} – {item.uf}
+            <button
+              type="button"
+              aria-pressed={selected}
+              title={
+                selected ? "Tirar do filtro" : "Filtrar por este município"
+              }
+              onClick={() => onSelect(item.cdMun)}
+              onFocus={() => onPreview(item.cdMun)}
+              onBlur={() => onPreview(null)}
+              className="cursor-pointer text-left underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-green-800"
+            >
+              {item.nome} – {item.uf}
+            </button>
           </h3>
           <span className="text-sm text-grey-800">{ano}</span>
         </div>
@@ -73,15 +96,22 @@ const HighlightItem = ({
   );
 };
 
-// No celular abre com 5 e um botão mostra os 20; no desktop a lista rola no card.
+// No celular abre com 5 e um botão mostra os 20; no desktop a lista ocupa a
+// altura da linha da grade e rola no card.
 export const FneHighlights = ({
   items,
   visao,
   ano,
+  selectedCodes,
+  onSelect,
+  onPreview,
 }: {
   items: FneHighlight[];
   visao: FneVisao;
   ano: number;
+  selectedCodes: string[];
+  onSelect: (cdMun: string) => void;
+  onPreview: PreviewHandler;
 }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -92,7 +122,8 @@ export const FneHighlights = ({
           <ol
             tabIndex={0}
             aria-label="Municípios em destaque"
-            className="flex flex-col gap-3 lg:max-h-[36rem] lg:overflow-y-auto lg:pr-1"
+            onPointerLeave={previewOnMouse(onPreview, null)}
+            className="flex flex-col gap-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1"
           >
             {items.map((item, index) => (
               <HighlightItem
@@ -102,6 +133,9 @@ export const FneHighlights = ({
                 visao={visao}
                 ano={ano}
                 hiddenOnMobile={!expanded && index >= MOBILE_PREVIEW}
+                selected={selectedCodes.includes(item.cdMun)}
+                onSelect={onSelect}
+                onPreview={onPreview}
               />
             ))}
           </ol>

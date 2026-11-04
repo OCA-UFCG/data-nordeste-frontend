@@ -3,9 +3,10 @@
 import { useCallback, useId, useState } from "react";
 import { FneOverview } from "@/components/FneDashboard/FneOverview";
 import { FneSelects } from "@/components/FneDashboard/FneSelects";
-import { FneIntro, WhatIsFne } from "@/components/FneDashboard/FneTexts";
+import { WhatIsFne } from "@/components/FneDashboard/FneTexts";
 import { FNE_ICON, FNE_TITLE } from "@/components/FneDashboard/fneTheme";
 import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
+import { SelectionSummary } from "@/components/Panel/filters/SelectionSummary";
 import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { PanelTabs } from "@/components/Panel/layout/PanelTabs";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
@@ -18,7 +19,6 @@ import {
 } from "@/features/panels/fne/fneFilters";
 import type { FnePanelData } from "@/features/panels/fne/fnePanel";
 import { describeFneSelection } from "@/features/panels/fne/fneSelection";
-import { toggleValue } from "@/features/panels/filterOptions";
 
 // Trocar de aba não consulta o banco de novo: os dois indicadores já vieram.
 const useFneNavigation = () => {
@@ -66,6 +66,7 @@ export const FneDashboard = ({
     showVisao({ ...data.filters, visao: next });
   };
   const changeFilters = (next: FneFilters) => applyFilters({ ...next, visao });
+  const summary = describeFneSelection(data);
 
   return (
     <PanelPage
@@ -73,6 +74,7 @@ export const FneDashboard = ({
       icon={FNE_ICON}
       tone="green"
       source={source}
+      info={<WhatIsFne />}
       fullMobile
       top={
         <PanelTabs
@@ -80,13 +82,15 @@ export const FneDashboard = ({
           activeKey={visao}
           idPrefix={idPrefix}
           onSelect={(key) => selectVisao(key as FneVisao)}
+          tone="green"
         />
       }
     >
-      <FneIntro />
       <PanelFilters
-        summary={describeFneSelection(data)}
+        summary={summary}
         onClear={() => changeFilters(DEFAULT_FNE_FILTERS)}
+        isPending={isPending}
+        sticky
       >
         <FneSelects
           filters={data.filters}
@@ -95,6 +99,7 @@ export const FneDashboard = ({
           onChange={changeFilters}
         />
       </PanelFilters>
+      <SelectionSummary summary={summary} isPending={isPending} />
       <div
         id={`${idPrefix}-panel`}
         role="tabpanel"
@@ -102,19 +107,8 @@ export const FneDashboard = ({
         aria-busy={isPending}
         className="transition-opacity aria-busy:opacity-60"
       >
-        <FneOverview
-          data={data}
-          visao={visao}
-          onSelectAno={(ano) => changeFilters({ ...data.filters, ano })}
-          onSelectMunicipality={(cdMun) =>
-            changeFilters({
-              ...data.filters,
-              muns: toggleValue(data.filters.muns, cdMun),
-            })
-          }
-        />
+        <FneOverview data={data} visao={visao} onChange={changeFilters} />
       </div>
-      <WhatIsFne />
     </PanelPage>
   );
 };

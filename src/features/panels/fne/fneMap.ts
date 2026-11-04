@@ -1,5 +1,5 @@
 import { escapeHtml } from "@/features/panels/chartBase";
-import { getBucket } from "@/features/panels/choropleth";
+import { getBucket, type ChoroplethBucket } from "@/features/panels/choropleth";
 import type { FneVisao } from "@/features/panels/fne/fneFilters";
 import {
   FNE_MAP_BUCKETS,
@@ -51,3 +51,30 @@ export const toFneLayeredRegions = (
     color: getBucket(FNE_MAP_BUCKETS[visao], region[visao]).color,
     tooltip: fneTooltip(region, visao),
   }));
+
+export type FneBucketGroup = { bucket: ChoroplethBucket; codes: string[] };
+
+/**
+ * Municipalities of each map class, for the legend counts and highlight.
+ * @example groupFneRegionsByBucket(data.mapa, "quantidade")[0].codes.length
+ */
+export const groupFneRegionsByBucket = (
+  mapa: FneMapRegion[],
+  visao: FneVisao,
+): FneBucketGroup[] =>
+  FNE_MAP_BUCKETS[visao].map((bucket) => ({
+    bucket,
+    codes: mapa
+      .filter(
+        (region) => getBucket(FNE_MAP_BUCKETS[visao], region[visao]) === bucket,
+      )
+      .map((region) => region.code),
+  }));
+
+/**
+ * Codes of the municipalities of one state on the map, to light it up when
+ * the state bar is hovered.
+ * @example fneStateCodes(data.mapa, "PE")
+ */
+export const fneStateCodes = (mapa: FneMapRegion[], sigla: string): string[] =>
+  mapa.filter((region) => region.uf === sigla).map((region) => region.code);

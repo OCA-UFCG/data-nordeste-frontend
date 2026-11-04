@@ -1,18 +1,20 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { type ReactNode, useId, useMemo, useState } from "react";
 import { LayeredMap } from "@/components/Panel/charts/LayeredMap";
-import { MapLegend } from "@/components/Panel/charts/mapParts";
+import { previewOnMouse } from "@/components/Panel/charts/RankedBars";
 import {
   FNE_YEAR_RANGE,
   type FneVisao,
 } from "@/features/panels/fne/fneFilters";
-import { FNE_MAP_BUCKETS } from "@/features/panels/fne/fneLabels";
 import {
   fneLayerTitle,
+  groupFneRegionsByBucket,
   toFneLayeredRegions,
+  type FneBucketGroup,
 } from "@/features/panels/fne/fneMap";
 import type { FnePanelData } from "@/features/panels/fne/fnePanel";
+import { formatNumber } from "@/features/panels/format";
 import { BORDER_COLOR } from "@/features/panels/layeredMap";
 import { listYears } from "@/features/panels/territorialFilters";
 
@@ -75,20 +77,58 @@ const BorderToggle = ({
   </label>
 );
 
+const BucketLegend = ({
+  grupos,
+  bucket,
+  onSelect,
+  onPreview,
+}: {
+  grupos: FneBucketGroup[];
+  bucket: string | null;
+  onSelect: (bucket: string | null) => void;
+  onPreview: (bucket: string | null) => void;
+}) => (
+  <ul
+    className="flex flex-wrap gap-1.5"
+    onPointerLeave={previewOnMouse(onPreview, null)}
+  >
+    {grupos.map(({ bucket: item, codes }) => (
+      <li key={item.label}>
+        <button
+          type="button"
+          aria-pressed={bucket === item.label}
+          onClick={() => onSelect(bucket === item.label ? null : item.label)}
+          onPointerEnter={previewOnMouse(onPreview, item.label)}
+          onFocus={() => onPreview(item.label)}
+          onBlur={() => onPreview(null)}
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-md border border-grey-200 px-2 text-sm text-grey-1000 transition-colors hover:bg-green-100 focus-visible:outline-2 focus-visible:outline-green-800 aria-pressed:border-green-800 aria-pressed:bg-green-100 motion-reduce:transition-none"
+        >
+          <span
+            aria-hidden
+            className="size-3.5 shrink-0 rounded-full border border-grey-300"
+            style={{ backgroundColor: item.color }}
+          />
+          {item.label} ({formatNumber(codes.length)})
+        </button>
+      </li>
+    ))}
+  </ul>
+);
+
 const FneMapLegend = ({
   title,
-  visao,
   showBorders,
+  children,
 }: {
   title: string;
-  visao: FneVisao;
   showBorders: boolean;
+  children: ReactNode;
 }) => (
-  <div className="mt-3 flex flex-col gap-1">
+  <div className="mt-3 flex flex-col gap-2">
     <p className="text-sm font-semibold text-grey-1100">{title}</p>
-    <MapLegend buckets={FNE_MAP_BUCKETS[visao]} />
+    {children}
     {showBorders ? (
-      <p className="mt-2 flex items-center gap-2 text-sm text-grey-1000">
+      <p className="flex items-center gap-2 text-sm text-grey-1000">
         <span
           aria-hidden
           className="h-0.5 w-5 shrink-0"
@@ -100,16 +140,59 @@ const FneMapLegend = ({
   </div>
 );
 
+/**
+ * Destaque do mapa: os municípios sob o mouse (Top 20 ou estado) vencem a
+ * classe da legenda (prévia ou fixada).
+ * @example const highlight = useFneMapHighlight(data.mapa, visao)
+ */
+export const useFneMapHighlight = (
+  mapa: FnePanelData["mapa"],
+  visao: FneVisao,
+) => {
+  const grupos = useMemo(
+    () => groupFneRegionsByBucket(mapa, visao),
+    [mapa, visao],
+  );
+
+  // Fixada por aba: as classes de quantidade e de valor são outras.
+  const [pinned, setPinned] = useState<{ visao: FneVisao; label: string }>();
+  const bucket = pinned?.visao === visao ? pinned.label : null;
+  const setBucket = (label: string | null) =>
+    setPinned(label ? { visao, label } : undefined);
+  const [bucketPreview, setBucketPreview] = useState<string | null>(null);
+  const [previewCodes, setPreviewCodes] = useState<string[] | null>(null);
+  const highlightCodes = useMemo(() => {
+    if (previewCodes) return new Set(previewCodes);
+    const shown = bucketPreview ?? bucket;
+    const grupo = grupos.find((item) => item.bucket.label === shown);
+
+    return grupo ? new Set(grupo.codes) : undefined;
+  }, [previewCodes, bucketPreview, bucket, grupos]);
+
+  return {
+    grupos,
+    bucket,
+    setBucket,
+    setBucketPreview,
+    setPreviewCodes,
+    highlightCodes,
+  };
+};
+
+export type FneMapHighlight = ReturnType<typeof useFneMapHighlight>;
+
 export const FneMap = ({
   data,
   visao,
   onSelectAno,
   onSelectMunicipality,
+  highlight,
 }: {
   data: FnePanelData;
   visao: FneVisao;
   onSelectAno: (ano: number) => void;
   onSelectMunicipality: (cdMun: string) => void;
+  highlight: FneMapHighlight;
 }) => {
   const [showBorders, setShowBorders] = useState(true);
   const regions = useMemo(
@@ -125,6 +208,7 @@ export const FneMap = ({
       regions={regions}
       showBorders={showBorders}
       selectedCodes={data.filters.muns}
+      highlightCodes={highlight.highlightCodes}
       onSelectRegion={onSelectMunicipality}
       controls={
         <div className="mb-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-grey-200 pb-3">
@@ -132,12 +216,16 @@ export const FneMap = ({
           <BorderToggle checked={showBorders} onChange={setShowBorders} />
         </div>
       }
+      fill
       legend={
-        <FneMapLegend
-          title={layerTitle}
-          visao={visao}
-          showBorders={showBorders}
-        />
+        <FneMapLegend title={layerTitle} showBorders={showBorders}>
+          <BucketLegend
+            grupos={highlight.grupos}
+            bucket={highlight.bucket}
+            onSelect={highlight.setBucket}
+            onPreview={highlight.setBucketPreview}
+          />
+        </FneMapLegend>
       }
     />
   );
