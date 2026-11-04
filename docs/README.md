@@ -229,6 +229,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   totals, the charts by sector, beneficiary size, PNDR typology, population
   size, state, Semiárido and RIDE, the top 20 municipalities, the year layers
   with the state limit, and the "Sobre" and "O que é o FNE?" texts all stay.
+- Texts around the panel (intro, "Saiba mais" and "Conteúdos relacionados")
+  come from the Contentful "panels" entry `fundo_financiamento`, like the other
+  demos. The ArcGIS "Sobre" and "O que é o FNE?" texts sit in the header ⓘ.
 - Data comes from the `instrsudene_fne` schema, which exists only on the
   **Gamma** database (`10.5.8.137`), not on Beta. Point the tunnel behind
   `DATA_DB_URL` at Gamma to run the demo locally.

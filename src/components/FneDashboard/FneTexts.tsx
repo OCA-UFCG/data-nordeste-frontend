@@ -1,4 +1,4 @@
-import { ChevronDown, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { PanelInfo } from "@/components/Panel/layout/PanelInfo";
 
 // Textos do painel do FNE no ArcGIS (Experience e tela "Sobre" do dashboard).
@@ -21,44 +21,28 @@ const WHAT_IS_FNE = [
 
 const BNB_FNE_URL = "https://www.bnb.gov.br/fne";
 
-export const FneIntro = () => (
-  <div className="flex flex-col gap-3">
-    <div className="flex flex-col gap-1">
-      <p className="text-sm font-semibold uppercase tracking-wide text-green-800">
-        Instrumentos da Sudene
-      </p>
-      <h2 className="text-xl font-bold leading-snug text-grey-1100 sm:text-2xl">
-        Distribuição dos Investimentos do FNE no Nordeste e Territórios
-        Estratégicos (2021–2025)
-      </h2>
-      <p className="text-sm text-grey-800">Publicado em 11/03/2026</p>
-    </div>
-    <details className="group rounded-lg bg-white shadow-sm">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-base font-semibold text-green-900">
-        Sobre o painel de contratações do FNE
-        <ChevronDown
-          aria-hidden
-          className="size-5 shrink-0 transition group-open:rotate-180"
-        />
-      </summary>
-      <div className="flex flex-col gap-3 px-4 pb-4 text-base leading-relaxed text-grey-1100">
-        {ABOUT_PANEL.map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
-        ))}
-      </div>
-    </details>
-  </div>
+const InfoSection = ({
+  title,
+  paragraphs,
+}: {
+  title: string;
+  paragraphs: string[];
+}) => (
+  <>
+    <p className="text-base font-semibold text-[#018f39]">{title}</p>
+    {paragraphs.map((paragraph) => (
+      <p key={paragraph}>{paragraph}</p>
+    ))}
+  </>
 );
 
-// Fora da página: quem quer o contexto abre no ⓘ do cabeçalho, como nos
-// outros painéis, e os gráficos fecham a página.
-export const WhatIsFne = () => (
-  <PanelInfo label="O que é o FNE?">
+// Os textos "Sobre" e "O que é o FNE?" do ArcGIS ficam no ⓘ do cabeçalho,
+// como o "Saiba mais" dos outros painéis; acima do painel vão os do Contentful.
+export const FneSaibaMais = () => (
+  <PanelInfo label="Saiba mais">
     <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto">
-      <p className="text-base font-semibold text-[#018f39]">O que é o FNE?</p>
-      {WHAT_IS_FNE.map((paragraph) => (
-        <p key={paragraph}>{paragraph}</p>
-      ))}
+      <InfoSection title="Sobre o painel" paragraphs={ABOUT_PANEL} />
+      <InfoSection title="O que é o FNE?" paragraphs={WHAT_IS_FNE} />
       <a
         href={BNB_FNE_URL}
         target="_blank"
