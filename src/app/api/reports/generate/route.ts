@@ -1,3 +1,4 @@
+import { isReportFeatureEnabled } from "@/features/reports/availability";
 import { NextResponse, type NextRequest } from "next/server";
 import {
   buildReportFileName,
@@ -12,6 +13,8 @@ import {
 
 /** Starts generation and, when the backend names the artifact, answers ready. */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  if (!isReportFeatureEnabled()) return new NextResponse(null, { status: 404 });
+
   try {
     const generationUrl = buildAutomaticReportGenerationUrl(
       request.nextUrl.searchParams,
@@ -95,6 +98,8 @@ function buildGenerationReadyResponse(
 
 /** Checks once for a generated PDF. The browser owns the retry interval. */
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  if (!isReportFeatureEnabled()) return new NextResponse(null, { status: 404 });
+
   try {
     // The poller sends the artifact name and version the POST resolved, so the
     // match is by identity rather than by city+macrotheme: a missing `arquivo`

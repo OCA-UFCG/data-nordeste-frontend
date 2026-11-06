@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import type { ReactElement } from "react";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { ReportBuilder } from "@/components/ReportBuilder/ReportBuilder";
 import { buildMetadata } from "@/config/seo";
+import { isReportFeatureEnabled } from "@/features/reports/availability";
 import { getReportPageData } from "@/features/reports/content";
 import type { ContentfulRichTextField } from "@/utils/interfaces";
 import HubTemplate from "@/templates/HubTemplate";
@@ -15,6 +17,9 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function ReportsPage(): Promise<ReactElement> {
+  // Antes de buscar o conteúdo: em prod a página não existe e não gasta cota do Contentful.
+  if (!isReportFeatureEnabled()) notFound();
+
   const { page, themes } = await getReportPageData();
 
   return (

@@ -139,6 +139,9 @@ by `next.config.mjs`. Cache windows come from `REVALIDATE` /
   embedding arbitrary external URLs.
 - Macrotheme slugs use hyphens in URLs and underscores in Contentful IDs; the
   `replace(/-/g, "_")` in `src/app/macrothemes/[slug]/page.tsx` keeps shared links alive.
+- `/relatorio`, its nav link and `/api/reports/*` are off in prod via
+  `isReportFeatureEnabled` (`src/features/reports/availability.ts`). Release the
+  report in prod there, not with a separate branch.
 
 ### Search
 
