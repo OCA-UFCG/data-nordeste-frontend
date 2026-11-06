@@ -13,16 +13,22 @@ export const CONTENTFUL_QUERY_STRING_ROUTES = ["/posts?", "/explore?"];
 // do Contentful, e é por ela que o Google acha os datasets além dos 25 do
 // sitemap.
 
-// Rotas que não devem ser rastreadas em nenhuma variante: /search lê o índice
-// do Contentful a cada termo e /atualizar-conteudo é operacional.
-export const NEVER_CRAWLED_ROUTES = ["/search", "/atualizar-conteudo"];
+// Rotas que não devem ser rastreadas em nenhuma variante: /search é página de
+// resultado de busca (conteúdo duplicado, sem valor no índice; não gasta cota,
+// pois filtra em memória o índice de uma consulta única) e /atualizar-conteudo
+// é operacional. "$" evita bloquear /search-index.json, que o /explore baixa.
+export const NEVER_CRAWLED_ROUTES = [
+  "/search$",
+  "/search?",
+  "/atualizar-conteudo",
+];
 
 const INFRA_ROUTES = ["/api/", "/health"];
 
 /**
- * Monta o robots.txt para o ambiente informado. Beta e gamma bloqueiam tudo;
- * produção libera as páginas canônicas e bloqueia as variantes que gastam
- * cota do Contentful.
+ * Monta o robots.txt para o ambiente informado. Só produção libera as páginas
+ * canônicas, bloqueando as variantes que gastam cota do Contentful; qualquer
+ * outro ambiente (ou variável ausente) bloqueia tudo.
  *
  * @example buildRobotsRules("prod", "https://datanordeste.sudene.gov.br")
  */
@@ -32,7 +38,7 @@ export const buildRobotsRules = (
 ): MetadataRoute.Robots => {
   const sitemap = `${siteUrl}/sitemap.xml`;
 
-  if (appEnv === "beta") {
+  if (appEnv !== "prod") {
     return { rules: { userAgent: "*", disallow: "/" }, sitemap };
   }
 

@@ -92,12 +92,15 @@ outside the repository and rendered through frontend route/component logic.
   origin that served the request.
 - Beta disables search indexing through Next.js metadata robots settings.
 - Production `robots.txt` (`src/features/seo/robotsRules.ts`) blocks
-  `/posts?*`, `/explore?*`, `/search` and `/atualizar-conteudo`. Each
-  query-string combination on those routes is a separate Contentful GraphQL
-  request, and crawlers enumerating them used ~2/3 of the API quota in Oct
-  2026. Canonical pages stay crawlable; `/catalog?page=N` stays open because
-  its pagination comes from Zenodo. Add any new route that turns
-  `searchParams` into Contentful variables.
+  `/posts?*` and `/explore?*` because each query-string combination is a
+  separate Contentful GraphQL request, and crawlers enumerating them used ~2/3
+  of the API quota in Oct 2026. Add any new route that turns `searchParams`
+  into Contentful variables. `/search` is blocked because it is a search
+  result page, not because of quota (it filters a single cached query in
+  memory); `/search-index.json` stays open since `/explore` downloads it.
+  `/atualizar-conteudo` is blocked because it is operational. Canonical pages
+  stay crawlable; `/catalog?page=N` stays open because its pagination comes
+  from Zenodo. Any `appEnv` other than `prod` blocks everything.
 - Google snippets (`<meta name="description">`) for `/data-panel/[id]` and
   `/boletim/[id]` come from the short-text Contentful field `seoDescription`
   on `panels` and `post`. Empty field falls back to the page's rich-text

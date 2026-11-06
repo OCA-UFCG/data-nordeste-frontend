@@ -10,17 +10,22 @@ const prodDisallowList = (): string[] => {
   return [rule.disallow ?? []].flat();
 };
 
-// Nenhuma regra usa curinga, então o casamento do robots.txt é por prefixo.
+// Casamento do robots.txt: prefixo, ou igualdade exata quando a regra termina em "$".
 const isBlocked = (path: string) =>
-  prodDisallowList().some((rule) => path.startsWith(rule));
+  prodDisallowList().some((rule) =>
+    rule.endsWith("$") ? path === rule.slice(0, -1) : path.startsWith(rule),
+  );
 
 describe("buildRobotsRules", () => {
-  it("blocks every path on beta and gamma", () => {
-    expect(buildRobotsRules("beta", SITE_URL)).toEqual({
-      rules: { userAgent: "*", disallow: "/" },
-      sitemap: `${SITE_URL}/sitemap.xml`,
-    });
-  });
+  it.each(["beta", "gamma", undefined])(
+    "blocks every path when appEnv is %s",
+    (env) => {
+      expect(buildRobotsRules(env, SITE_URL)).toEqual({
+        rules: { userAgent: "*", disallow: "/" },
+        sitemap: `${SITE_URL}/sitemap.xml`,
+      });
+    },
+  );
 
   it.each([
     "/posts?page=2",
@@ -38,6 +43,7 @@ describe("buildRobotsRules", () => {
     "/",
     "/posts",
     "/explore",
+    "/search-index.json",
     "/catalog",
     "/catalog?page=3",
     "/catalog/123456",
