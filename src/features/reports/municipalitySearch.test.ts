@@ -46,3 +46,19 @@ describe("filterMunicipalitySuggestions", () => {
     expect(suggestions).toHaveLength(8);
   });
 });
+
+describe("states in the report search", () => {
+  // /api/reports/cities lists the states first, then "City (UF)" names.
+  const PLACES = ["Paraíba", "Pernambuco", "Paraibano (MA)", "Recife (PE)"];
+
+  it("suggests the state above the cities that share its prefix", () => {
+    expect(filterMunicipalitySuggestions("paraiba", PLACES)).toEqual([
+      "Paraíba",
+      "Paraibano (MA)",
+    ]);
+  });
+
+  it("resolves a state name without accents to the state, not to a city", () => {
+    expect(resolveMunicipality("paraiba", PLACES)).toBe("Paraíba");
+  });
+});

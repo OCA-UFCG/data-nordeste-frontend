@@ -49,7 +49,7 @@ describe("ReportBuilder", () => {
     render(<ReportBuilder themes={[]} />);
 
     const municipalitySearch = screen.getByPlaceholderText(
-      "Pesquise o município",
+      "Pesquise o município ou estado",
     );
     await user.type(municipalitySearch, "campina");
 
@@ -64,7 +64,7 @@ describe("ReportBuilder", () => {
       ).toHaveAttribute("aria-expanded", "true"),
     );
     expect(
-      screen.getByRole("button", { name: /Selecione o município/ }),
+      screen.getByRole("button", { name: /Selecione o município ou estado/ }),
     ).toHaveAttribute("aria-expanded", "false");
   });
 
@@ -76,7 +76,7 @@ describe("ReportBuilder", () => {
     render(<ReportBuilder themes={[]} />);
 
     const municipalitySearch = screen.getByPlaceholderText(
-      "Pesquise o município",
+      "Pesquise o município ou estado",
     );
     await user.type(municipalitySearch, "joao");
 
@@ -93,7 +93,7 @@ describe("ReportBuilder", () => {
     render(<ReportBuilder themes={[DEMOGRAFIA_THEME]} />);
 
     const municipalitySearch = screen.getByPlaceholderText(
-      "Pesquise o município",
+      "Pesquise o município ou estado",
     );
     await user.type(municipalitySearch, "campina");
     await user.click(

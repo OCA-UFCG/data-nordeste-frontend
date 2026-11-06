@@ -98,7 +98,7 @@ export function ReportBuilder({
     const request = buildReportRequest(resolvedMunicipality, selectedThemeIds);
     if (!request) {
       setErrorMessage(
-        "Selecione um município e ao menos um macrotema disponível.",
+        "Selecione um município ou estado e ao menos um macrotema disponível.",
       );
 
       return;
@@ -219,7 +219,7 @@ function ReportBuilderLayout({
                 completed={municipalitySelected}
                 number={1}
                 stepId="municipality"
-                title="Selecione o município"
+                title="Selecione o município ou estado"
               >
                 <MunicipalityField
                   cities={cities}
@@ -342,12 +342,12 @@ function MunicipalityField({
       <div className="text-base leading-relaxed text-[#292829]">
         {municipalityText
           ? documentToReactComponents(municipalityText.json)
-          : "Selecione o município para gerar o relatório."}
+          : "Selecione o município ou estado para gerar o relatório."}
       </div>
       <MunicipalitySearch cities={cities} onChange={onChange} value={value} />
       {loadingCities && (
         <p className="mt-2 text-xs leading-5 text-grey-700">
-          Carregando municípios...
+          Carregando municípios e estados...
         </p>
       )}
     </>
