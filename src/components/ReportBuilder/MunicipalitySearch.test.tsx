@@ -32,7 +32,7 @@ describe("MunicipalitySearch", () => {
 
     render(<ControlledMunicipalitySearch onChange={onChange} />);
 
-    const input = screen.getByPlaceholderText("Pesquise o município");
+    const input = screen.getByPlaceholderText("Pesquise o município ou estado");
     await user.type(input, "Presidente Dutra");
     await screen.findByRole("option", { name: "Presidente Dutra (BA)" });
     onChange.mockClear();
@@ -47,7 +47,7 @@ describe("MunicipalitySearch", () => {
 
     render(<ControlledMunicipalitySearch onChange={onChange} />);
 
-    const input = screen.getByPlaceholderText("Pesquise o município");
+    const input = screen.getByPlaceholderText("Pesquise o município ou estado");
     await user.type(input, "Presidente Dutra");
     await screen.findByRole("option", { name: "Presidente Dutra (BA)" });
     await user.keyboard("{ArrowDown}{Enter}");
@@ -61,7 +61,7 @@ describe("MunicipalitySearch", () => {
 
     render(<ControlledMunicipalitySearch onChange={onChange} />);
 
-    const input = screen.getByPlaceholderText("Pesquise o município");
+    const input = screen.getByPlaceholderText("Pesquise o município ou estado");
     await user.type(input, "Presidente Dutra (MA)");
     await screen.findByRole("option", { name: "Presidente Dutra (MA)" });
     await user.keyboard("{Enter}");
@@ -75,7 +75,7 @@ describe("MunicipalitySearch", () => {
 
     render(<ControlledMunicipalitySearch onChange={onChange} />);
 
-    const input = screen.getByPlaceholderText("Pesquise o município");
+    const input = screen.getByPlaceholderText("Pesquise o município ou estado");
     await user.type(input, "Presidente Dutra");
     const option = await screen.findByRole("option", {
       name: "Presidente Dutra (BA)",

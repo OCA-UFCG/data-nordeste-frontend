@@ -87,7 +87,7 @@ export function MunicipalitySearch({
     <Popover onOpenChange={setOpen} open={showSuggestions}>
       <PopoverAnchor asChild>
         <label className="mt-4 flex h-10 w-full items-center gap-2 rounded-lg bg-[#EFEFEF] px-3">
-          <span className="sr-only">Pesquise o município</span>
+          <span className="sr-only">Pesquise o município ou estado</span>
           <input
             ref={inputRef}
             aria-autocomplete="list"
@@ -102,7 +102,7 @@ export function MunicipalitySearch({
             onChange={(event) => handleChange(event.target.value)}
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Pesquise o município"
+            placeholder="Pesquise o município ou estado"
             role="combobox"
             type="search"
             value={value}

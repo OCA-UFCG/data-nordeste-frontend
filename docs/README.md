@@ -51,8 +51,9 @@ outside the repository and rendered through frontend route/component logic.
   `data-story`.
 - `/catalog` lists dataset records from Zenodo community `datane`, with filters
   whose labels/options come from Contentful.
-- `/reports` lets users choose a municipality and supported macrotheme, then
-  opens a generated report through the Automatic-Reporting backend.
+- `/reports` lets users choose a municipality or one of the nine Northeast
+  states and a supported macrotheme, then opens a generated report through the
+  Automatic-Reporting backend.
 - `/data-panel/[id]` loads a Contentful panel by title/id and embeds its Power BI
   source. The optional `pageName` query parameter is appended to the iframe URL.
 - `/data-stories/[id]` embeds an ArcGIS StoryMap. The ID must be a 32-character
@@ -117,7 +118,12 @@ outside the repository and rendered through frontend route/component logic.
   service. The report preview proxies PDF requests through
   `/api/reports/generate` (the proxy triggers generation, polls the report
   index, and streams the PDF back with `Content-Type: application/pdf`), and
-  the municipality list is proxied through `/api/reports/cities`. The server
+  the search list is proxied through `/api/reports/cities`: the backend's
+  `/estados` (the nine Northeast states, listed first) followed by `/cities`.
+  A backend without `/estados` degrades to municipalities only. A state name
+  goes to the same `/relatorio/{nome}` route, which the backend routes to its
+  state report (state Docs + `auto_relatorios_est` matviews, no charts or
+  map yet; Minas Gerais waits for the data team). The server
   reads `NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL`, such as
   `http://127.0.0.1:8000`, to reach the FastAPI service. The `/relatorio`
   route served directly by Automatic-Reporting returns an HTML page, not a
