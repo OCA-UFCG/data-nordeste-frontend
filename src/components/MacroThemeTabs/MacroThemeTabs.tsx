@@ -16,6 +16,9 @@ import {
   listAnalysesYears,
   type AnalysesFilterState,
 } from "./analysesFilters";
+import { resolveInitialTab, type TabType } from "./tabSelection";
+
+export type { TabType };
 
 type MacroThemeTabsProps = {
   dashboards: IPublication[];
@@ -44,10 +47,6 @@ type MacroThemeTabsProps = {
   tabTotals?: ExploreTabTotals;
   clientSideNavigation?: boolean;
 };
-
-export type TabType = "paineis" | "datastories" | "boletins" | "analises";
-
-const TAB_KEYS: TabType[] = ["paineis", "datastories", "boletins", "analises"];
 
 export function MacroThemeTabs({
   dashboards,
@@ -90,12 +89,40 @@ export function MacroThemeTabs({
             ? "boletins"
             : "paineis";
 
+  const tabs: { key: TabType; label: string }[] = [
+    { key: "paineis", label: "Painéis" },
+    { key: "datastories", label: "Narrativas" },
+    { key: "boletins", label: "Boletins" },
+    { key: "analises", label: "Análises" },
+  ];
+
+  // Tabs are hidden when their content array is empty. On the explore page
+  // (tabsOnly=true) the arrays are populated from count queries just to
+  // control visibility — actual content is rendered by the Posts component.
+  const availableTabs = tabs.filter((tab) => {
+    if (tab.key === "paineis") {
+      return tabTotals ? tabTotals.dashboards > 0 : dashboards.length > 0;
+    }
+    if (tab.key === "datastories") {
+      return tabTotals ? tabTotals.datastories > 0 : datastories.length > 0;
+    }
+    if (tab.key === "boletins") {
+      return tabTotals ? tabTotals.publications > 0 : publicacoes.length > 0;
+    }
+
+    // INTENTIONAL: Análises stays visible while there is no content yet, so
+    // the section is announced before the first analysis is published.
+    if (tab.key === "analises") return true;
+
+    return false;
+  });
+
   // Uncontrolled mode (macrotheme page) keeps the tab in `?tab=` so that
   // returning from a post with the browser's back button restores it.
-  const rawTab = params.get("tab");
-  const internalActiveTab: TabType = TAB_KEYS.includes(rawTab as TabType)
-    ? (rawTab as TabType)
-    : "paineis";
+  const internalActiveTab = resolveInitialTab(
+    params.get("tab"),
+    availableTabs.map((tab) => tab.key),
+  );
   const activeTab = tabsOnly
     ? deriveTabFromUrl()
     : controlledActiveTab ?? internalActiveTab;
@@ -198,34 +225,6 @@ export function MacroThemeTabs({
       </section>
     );
   };
-
-  const tabs: { key: TabType; label: string }[] = [
-    { key: "paineis", label: "Painéis" },
-    { key: "datastories", label: "Narrativas" },
-    { key: "boletins", label: "Boletins" },
-    { key: "analises", label: "Análises" },
-  ];
-
-  // Tabs are hidden when their content array is empty. On the explore page
-  // (tabsOnly=true) the arrays are populated from count queries just to
-  // control visibility — actual content is rendered by the Posts component.
-  const availableTabs = tabs.filter((tab) => {
-    if (tab.key === "paineis") {
-      return tabTotals ? tabTotals.dashboards > 0 : dashboards.length > 0;
-    }
-    if (tab.key === "datastories") {
-      return tabTotals ? tabTotals.datastories > 0 : datastories.length > 0;
-    }
-    if (tab.key === "boletins") {
-      return tabTotals ? tabTotals.publications > 0 : publicacoes.length > 0;
-    }
-
-    // INTENTIONAL: Análises stays visible while there is no content yet, so
-    // the section is announced before the first analysis is published.
-    if (tab.key === "analises") return true;
-
-    return false;
-  });
 
   if (availableTabs.length === 0) {
     return null;
