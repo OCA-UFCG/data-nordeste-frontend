@@ -76,7 +76,10 @@ export interface ISectionHeader {
 export interface IPublication {
   sys?: { id: string };
   title: string;
-  link: string;
+
+  // IMPORTANT: Contentful returns null for an entry saved without a link, and
+  // preview builds render drafts. Nullable so every reader has to handle it.
+  link: string | null;
   thumb: {
     url: string;
   };

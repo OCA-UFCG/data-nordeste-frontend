@@ -4,7 +4,10 @@ import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { MunicipalitySearch } from "./MunicipalitySearch";
 
-const CITIES = ["Presidente Dutra (BA)", "Presidente Dutra (MA)"];
+const PLACES = {
+  states: [],
+  cities: ["Presidente Dutra (BA)", "Presidente Dutra (MA)"],
+};
 
 function ControlledMunicipalitySearch({
   onChange,
@@ -15,7 +18,7 @@ function ControlledMunicipalitySearch({
 
   return (
     <MunicipalitySearch
-      cities={CITIES}
+      places={PLACES}
       onChange={(next) => {
         setValue(next);
         onChange(next);
@@ -32,7 +35,7 @@ describe("MunicipalitySearch", () => {
 
     render(<ControlledMunicipalitySearch onChange={onChange} />);
 
-    const input = screen.getByPlaceholderText("Pesquise o município");
+    const input = screen.getByPlaceholderText("Pesquise o município ou estado");
     await user.type(input, "Presidente Dutra");
     await screen.findByRole("option", { name: "Presidente Dutra (BA)" });
     onChange.mockClear();
@@ -47,7 +50,7 @@ describe("MunicipalitySearch", () => {
 
     render(<ControlledMunicipalitySearch onChange={onChange} />);
 
-    const input = screen.getByPlaceholderText("Pesquise o município");
+    const input = screen.getByPlaceholderText("Pesquise o município ou estado");
     await user.type(input, "Presidente Dutra");
     await screen.findByRole("option", { name: "Presidente Dutra (BA)" });
     await user.keyboard("{ArrowDown}{Enter}");
@@ -61,7 +64,7 @@ describe("MunicipalitySearch", () => {
 
     render(<ControlledMunicipalitySearch onChange={onChange} />);
 
-    const input = screen.getByPlaceholderText("Pesquise o município");
+    const input = screen.getByPlaceholderText("Pesquise o município ou estado");
     await user.type(input, "Presidente Dutra (MA)");
     await screen.findByRole("option", { name: "Presidente Dutra (MA)" });
     await user.keyboard("{Enter}");
@@ -75,7 +78,7 @@ describe("MunicipalitySearch", () => {
 
     render(<ControlledMunicipalitySearch onChange={onChange} />);
 
-    const input = screen.getByPlaceholderText("Pesquise o município");
+    const input = screen.getByPlaceholderText("Pesquise o município ou estado");
     await user.type(input, "Presidente Dutra");
     const option = await screen.findByRole("option", {
       name: "Presidente Dutra (BA)",

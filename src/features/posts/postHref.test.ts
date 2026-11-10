@@ -34,7 +34,7 @@ describe("resolvePostHref", () => {
   it("has no destination when the entry has no link", () => {
     const draftWithoutLink: Parameters<typeof resolvePostHref>[0] = {
       type: "data-panel",
-      link: null as unknown as string,
+      link: null,
       sys: { id: "3O7Ylnbn2nk0myHMqMAGIX" },
     };
 

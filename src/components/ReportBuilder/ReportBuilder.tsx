@@ -29,6 +29,11 @@ import {
 import { requestReportPreview } from "@/features/reports/requestReportPreview";
 import { ReportBusyError } from "@/features/reports/reportBusyError";
 import { resolveMunicipality } from "@/features/reports/municipalitySearch";
+import {
+  EMPTY_REPORT_PLACES,
+  parseReportPlaces,
+  type ReportPlaces,
+} from "@/features/reports/reportPlaces";
 import type { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
 import { normalizeKey, sortContentByDesiredOrder } from "@/utils/functions";
 
@@ -49,9 +54,9 @@ export function ReportBuilder({
 }: ReportBuilderProps): ReactElement {
   const [municipality, setMunicipality] = useState("");
   const [selectedThemeIds, setSelectedThemeIds] = useState<string[]>([]);
-  const [cities, setCities] = useState<string[]>([]);
+  const [places, setPlaces] = useState<ReportPlaces>(EMPTY_REPORT_PLACES);
   const [errorMessage, setErrorMessage] = useState("");
-  const [loadingCities, setLoadingCities] = useState(false);
+  const [loadingPlaces, setLoadingPlaces] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [reportPreview, setReportPreview] =
     useState<ReportPreviewDocument | null>(null);
@@ -70,13 +75,13 @@ export function ReportBuilder({
     supportedThemeIds,
   );
 
-  // INTENTIONAL: Resolve the typed municipality against the known city list
-  // using accent- and case-insensitive normalization, so users can type
+  // INTENTIONAL: Resolve the typed municipality against the known places
+  // (states and cities) using accent- and case-insensitive normalization, so users can type
   // "campina grande" or "sao luis" and still select "Campina Grande" / "São Luís".
-  const resolvedMunicipality = resolveMunicipality(municipality, cities);
+  const resolvedMunicipality = resolveMunicipality(municipality, places);
 
   useEffect(() => {
-    void loadReportCities(setCities, setLoadingCities, setErrorMessage);
+    void loadReportPlaces(setPlaces, setLoadingPlaces, setErrorMessage);
   }, []);
 
   const toggleTheme = (themeId: string): void => {
@@ -98,7 +103,7 @@ export function ReportBuilder({
     const request = buildReportRequest(resolvedMunicipality, selectedThemeIds);
     if (!request) {
       setErrorMessage(
-        "Selecione um município e ao menos um macrotema disponível.",
+        "Selecione um município ou estado e ao menos um macrotema disponível.",
       );
 
       return;
@@ -131,10 +136,10 @@ export function ReportBuilder({
     <ReportBuilderLayout
       activeTab={activeTab}
       allThemesSelected={allThemesSelected}
-      cities={cities}
+      places={places}
       errorMessage={errorMessage}
       generatingReport={generatingReport}
-      loadingCities={loadingCities}
+      loadingPlaces={loadingPlaces}
       municipality={municipality}
       municipalityText={municipalityText}
       onClear={clearSelectedThemes}
@@ -154,10 +159,10 @@ export function ReportBuilder({
 function ReportBuilderLayout({
   activeTab,
   allThemesSelected,
-  cities,
+  places,
   errorMessage,
   generatingReport,
-  loadingCities,
+  loadingPlaces,
   municipality,
   municipalityText,
   onClear,
@@ -173,10 +178,10 @@ function ReportBuilderLayout({
 }: {
   activeTab: ReportMobileTab;
   allThemesSelected: boolean;
-  cities: string[];
+  places: ReportPlaces;
   errorMessage: string;
   generatingReport: boolean;
-  loadingCities: boolean;
+  loadingPlaces: boolean;
   municipality: string;
   municipalityText?: ContentfulRichTextField;
   onClear: () => void;
@@ -192,7 +197,7 @@ function ReportBuilderLayout({
 }): ReactElement {
   const [openStep, setOpenStep] = useState<ReportStepId | "">("municipality");
   const municipalitySelected =
-    resolveMunicipality(municipality, cities) !== null;
+    resolveMunicipality(municipality, places) !== null;
   const themesSelected = selectedThemeIds.length > 0;
   const formCompleted = municipalitySelected && themesSelected;
 
@@ -219,11 +224,11 @@ function ReportBuilderLayout({
                 completed={municipalitySelected}
                 number={1}
                 stepId="municipality"
-                title="Selecione o município"
+                title="Selecione o município ou estado"
               >
                 <MunicipalityField
-                  cities={cities}
-                  loadingCities={loadingCities}
+                  places={places}
+                  loadingPlaces={loadingPlaces}
                   municipalityText={municipalityText}
                   onChange={onMunicipalityChange}
                   value={municipality}
@@ -325,14 +330,14 @@ function ReportMobileTabButton({
 }
 
 function MunicipalityField({
-  cities,
-  loadingCities,
+  places,
+  loadingPlaces,
   onChange,
   value,
   municipalityText,
 }: {
-  cities: string[];
-  loadingCities: boolean;
+  places: ReportPlaces;
+  loadingPlaces: boolean;
   onChange: (value: string) => void;
   value: string;
   municipalityText?: ContentfulRichTextField;
@@ -342,12 +347,12 @@ function MunicipalityField({
       <div className="text-base leading-relaxed text-[#292829]">
         {municipalityText
           ? documentToReactComponents(municipalityText.json)
-          : "Selecione o município para gerar o relatório."}
+          : "Selecione o município ou estado para gerar o relatório."}
       </div>
-      <MunicipalitySearch cities={cities} onChange={onChange} value={value} />
-      {loadingCities && (
+      <MunicipalitySearch places={places} onChange={onChange} value={value} />
+      {loadingPlaces && (
         <p className="mt-2 text-xs leading-5 text-grey-700">
-          Carregando municípios...
+          Carregando municípios e estados...
         </p>
       )}
     </>
@@ -546,8 +551,8 @@ function resolveSelectedMacrotheme(selectedThemeIds: string[]): string | null {
   return joinReportSlugs(slugs);
 }
 
-async function loadReportCities(
-  setCities: (cities: string[]) => void,
+async function loadReportPlaces(
+  setPlaces: (places: ReportPlaces) => void,
   setLoading: (loading: boolean) => void,
   setErrorMessage: (message: string) => void,
 ): Promise<void> {
@@ -555,10 +560,11 @@ async function loadReportCities(
   try {
     const response = await fetch("/api/reports/cities");
     if (!response.ok) throw new Error(`status ${response.status}`);
-    const cities = (await response.json()) as string[];
-    setCities(Array.isArray(cities) ? cities : []);
+    setPlaces(parseReportPlaces(await response.json()));
   } catch {
-    setErrorMessage("Não foi possível carregar a lista de municípios.");
+    setErrorMessage(
+      "Não foi possível carregar a lista de municípios e estados.",
+    );
   } finally {
     setLoading(false);
   }

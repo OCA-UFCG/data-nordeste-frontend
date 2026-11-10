@@ -9,16 +9,17 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { filterMunicipalitySuggestions } from "@/features/reports/municipalitySearch";
+import type { ReportPlaces } from "@/features/reports/reportPlaces";
 import { cn } from "@/lib/utils";
 
 type MunicipalitySearchProps = {
-  cities: string[];
+  places: ReportPlaces;
   onChange: (value: string) => void;
   value: string;
 };
 
 export function MunicipalitySearch({
-  cities,
+  places,
   onChange,
   value,
 }: MunicipalitySearchProps): ReactElement {
@@ -28,8 +29,8 @@ export function MunicipalitySearch({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const suggestions = useMemo(
-    () => filterMunicipalitySuggestions(value, cities),
-    [value, cities],
+    () => filterMunicipalitySuggestions(value, places),
+    [value, places],
   );
   const activeIndex = Math.min(highlightedIndex, suggestions.length - 1);
   const showSuggestions = open && suggestions.length > 0;
@@ -87,7 +88,7 @@ export function MunicipalitySearch({
     <Popover onOpenChange={setOpen} open={showSuggestions}>
       <PopoverAnchor asChild>
         <label className="mt-4 flex h-10 w-full items-center gap-2 rounded-lg bg-[#EFEFEF] px-3">
-          <span className="sr-only">Pesquise o município</span>
+          <span className="sr-only">Pesquise o município ou estado</span>
           <input
             ref={inputRef}
             aria-autocomplete="list"
@@ -102,7 +103,7 @@ export function MunicipalitySearch({
             onChange={(event) => handleChange(event.target.value)}
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Pesquise o município"
+            placeholder="Pesquise o município ou estado"
             role="combobox"
             type="search"
             value={value}
