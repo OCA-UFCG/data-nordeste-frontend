@@ -8,6 +8,7 @@ export const MACROTHEME_ICON_BY_ID: { [key: string]: string } = {
   seguranca_hidrica: "drop",
   meio_ambiente: "leaf",
   instrumentos_sudene: "instruments",
+  cultura: "culture",
 };
 
 export const THEMES_NAVIGATION_ORDER = [
@@ -21,6 +22,7 @@ export const THEMES_NAVIGATION_ORDER = [
   "seguranca_hidrica",
   "meio_ambiente",
   "instrumentos_sudene",
+  "cultura",
 ];
 
 export const MACROTHEME_ROUTE_BY_NAME = {
@@ -33,4 +35,5 @@ export const MACROTHEME_ROUTE_BY_NAME = {
   "Segurança Hídrica": "seguranca-hidrica",
   "Meio Ambiente": "meio-ambiente",
   "Instrumentos da Sudene": "instrumentos-sudene",
+  "Cultura": "cultura",
 };
