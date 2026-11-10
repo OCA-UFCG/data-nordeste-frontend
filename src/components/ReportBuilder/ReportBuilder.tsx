@@ -562,7 +562,9 @@ async function loadReportPlaces(
     if (!response.ok) throw new Error(`status ${response.status}`);
     setPlaces(parseReportPlaces(await response.json()));
   } catch {
-    setErrorMessage("Não foi possível carregar a lista de municípios.");
+    setErrorMessage(
+      "Não foi possível carregar a lista de municípios e estados.",
+    );
   } finally {
     setLoading(false);
   }
