@@ -19,7 +19,7 @@ afterEach(() => {
 });
 
 describe("automatic report cities proxy", () => {
-  it("lists the states before the cities, from the API URL configured by the deployment", async () => {
+  it("returns the states and the cities apart, from the API URL configured by the deployment", async () => {
     const automaticReportApi = new AutomaticReportPlacesFetchFake(() =>
       Response.json(["Maranhão", "Paraíba"]),
     );
@@ -29,12 +29,10 @@ describe("automatic report cities proxy", () => {
     const response = await GET();
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual([
-      "Maranhão",
-      "Paraíba",
-      "Recife (PE)",
-      "São Luís (MA)",
-    ]);
+    expect(await response.json()).toEqual({
+      states: ["Maranhão", "Paraíba"],
+      cities: ["Recife (PE)", "São Luís (MA)"],
+    });
     expect(automaticReportApi.fetch).toHaveBeenCalledWith(`${API_URL}/cities`, {
       cache: "no-store",
     });
@@ -55,6 +53,9 @@ describe("automatic report cities proxy", () => {
     const response = await GET();
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual(["Recife (PE)", "São Luís (MA)"]);
+    expect(await response.json()).toEqual({
+      states: [],
+      cities: ["Recife (PE)", "São Luís (MA)"],
+    });
   });
 });

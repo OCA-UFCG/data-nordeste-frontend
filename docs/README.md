@@ -118,9 +118,12 @@ outside the repository and rendered through frontend route/component logic.
   service. The report preview proxies PDF requests through
   `/api/reports/generate` (the proxy triggers generation, polls the report
   index, and streams the PDF back with `Content-Type: application/pdf`), and
-  the search list is proxied through `/api/reports/cities`: the backend's
-  `/estados` (the nine Northeast states, listed first) followed by `/cities`.
-  A backend without `/estados` degrades to municipalities only. A state name
+  the search list is proxied through `/api/reports/cities` as
+  `{ states, cities }`: the backend's `/estados` (the nine Northeast states)
+  and `/cities`, kept apart. An empty search shows every state plus the first
+  eight municipalities; only municipalities are capped, or the nine states
+  would fill the list and hide Bahia. A backend without `/estados` degrades
+  to municipalities only. A state name
   goes to the same `/relatorio/{nome}` route, which the backend routes to its
   state report (state Docs + `auto_relatorios_est` matviews, no charts or
   map yet; Minas Gerais waits for the data team). The server

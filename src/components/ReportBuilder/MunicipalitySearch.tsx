@@ -9,16 +9,17 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { filterMunicipalitySuggestions } from "@/features/reports/municipalitySearch";
+import type { ReportPlaces } from "@/features/reports/reportPlaces";
 import { cn } from "@/lib/utils";
 
 type MunicipalitySearchProps = {
-  cities: string[];
+  places: ReportPlaces;
   onChange: (value: string) => void;
   value: string;
 };
 
 export function MunicipalitySearch({
-  cities,
+  places,
   onChange,
   value,
 }: MunicipalitySearchProps): ReactElement {
@@ -28,8 +29,8 @@ export function MunicipalitySearch({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const suggestions = useMemo(
-    () => filterMunicipalitySuggestions(value, cities),
-    [value, cities],
+    () => filterMunicipalitySuggestions(value, places),
+    [value, places],
   );
   const activeIndex = Math.min(highlightedIndex, suggestions.length - 1);
   const showSuggestions = open && suggestions.length > 0;

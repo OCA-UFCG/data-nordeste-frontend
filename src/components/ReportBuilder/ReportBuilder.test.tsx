@@ -3,11 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ReportBuilder } from "./ReportBuilder";
 
+/** Serves the places list only at its real path, so a renamed fetch URL fails the test. */
 class FakeCitiesApi {
-  fetch = async (): Promise<Response> =>
-    new Response(JSON.stringify(["Campina Grande", "João Pessoa"]), {
-      status: 200,
-    });
+  fetch = async (input: RequestInfo | URL): Promise<Response> =>
+    input.toString().endsWith("/api/reports/cities")
+      ? Response.json({ states: [], cities: ["Campina Grande", "João Pessoa"] })
+      : new Response("Not Found", { status: 404 });
 }
 
 const DEMOGRAFIA_THEME = {
@@ -24,9 +25,7 @@ class FakeReportGenerationApi {
   fetch = async (input: RequestInfo | URL): Promise<Response> => {
     const url = input.toString();
     if (url.includes("/api/reports/cities")) {
-      return new Response(JSON.stringify(["Campina Grande"]), {
-        status: 200,
-      });
+      return Response.json({ states: [], cities: ["Campina Grande"] });
     }
 
     return new Response(null, {

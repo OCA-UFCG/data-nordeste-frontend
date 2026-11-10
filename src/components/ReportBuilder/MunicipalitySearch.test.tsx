@@ -4,7 +4,10 @@ import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { MunicipalitySearch } from "./MunicipalitySearch";
 
-const CITIES = ["Presidente Dutra (BA)", "Presidente Dutra (MA)"];
+const PLACES = {
+  states: [],
+  cities: ["Presidente Dutra (BA)", "Presidente Dutra (MA)"],
+};
 
 function ControlledMunicipalitySearch({
   onChange,
@@ -15,7 +18,7 @@ function ControlledMunicipalitySearch({
 
   return (
     <MunicipalitySearch
-      cities={CITIES}
+      places={PLACES}
       onChange={(next) => {
         setValue(next);
         onChange(next);

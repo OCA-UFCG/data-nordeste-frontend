@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { getAutomaticReportApiBaseUrl } from "@/features/reports/automaticReport";
+import type { ReportPlaces } from "@/features/reports/reportPlaces";
 
 /**
  * Proxies the places a report can be generated for: the Northeast states from
- * Automatic-Reporting `/estados`, followed by its municipalities from `/cities`.
- * Example: `GET /api/reports/cities` → `["Paraíba", …, "Recife (PE)", …]`.
+ * Automatic-Reporting `/estados` and its municipalities from `/cities`, kept
+ * apart so the search can cap municipalities without hiding any state.
+ * Example: `GET /api/reports/cities` → `{ states: ["Paraíba", …], cities: ["Recife (PE)", …] }`.
  */
 export async function GET(): Promise<NextResponse> {
   try {
@@ -41,13 +43,13 @@ async function buildCitiesResponse(
     );
   }
 
-  const cities = (await response.json()) as string[];
+  const cities = (await response.json()) as unknown;
+  const places: ReportPlaces = {
+    states,
+    cities: Array.isArray(cities) ? cities.map(String) : [],
+  };
 
-  // States first: there are only nine, and they are what an empty search shows.
-  return NextResponse.json([
-    ...states,
-    ...(Array.isArray(cities) ? cities : []),
-  ]);
+  return NextResponse.json(places);
 }
 
 // INTENTIONAL: states are optional. A backend deployed before `/estados` existed
