@@ -2,13 +2,8 @@
 
 import type { ReactElement } from "react";
 import { useState } from "react";
-import {
-  Building2,
-  ChevronDown,
-  ChevronUp,
-  MapPinned,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Icon } from "@/components/Icon/Icon";
 import {
   Popover,
   PopoverContent,
@@ -22,9 +17,10 @@ import {
   type ReportScopeId,
 } from "@/features/reports/reportScopes";
 
-const REPORT_SCOPE_ICONS: Record<ReportScopeId, LucideIcon> = {
-  municipio: Building2,
-  estado: MapPinned,
+// Symbol ids in `public/sprite.svg`, drawn from the Figma "Recorte" icons.
+const REPORT_SCOPE_ICON_IDS: Record<ReportScopeId, string> = {
+  municipio: "municipality",
+  estado: "state",
 };
 
 type ReportScopeSelectProps = {
@@ -121,11 +117,14 @@ function ReportScopeOption({ scope }: { scope: ReportScope }): ReactElement {
 }
 
 function ReportScopeLabel({ scope }: { scope: ReportScope }): ReactElement {
-  const ScopeIcon = REPORT_SCOPE_ICONS[scope.id];
-
   return (
     <span className="flex items-center gap-2">
-      <ScopeIcon aria-hidden className="size-4 shrink-0" />
+      <Icon
+        aria-hidden
+        className="shrink-0"
+        id={REPORT_SCOPE_ICON_IDS[scope.id]}
+        size={16}
+      />
       {scope.label}
     </span>
   );
