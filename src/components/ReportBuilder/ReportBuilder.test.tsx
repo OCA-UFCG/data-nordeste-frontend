@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import userEvent, { type UserEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ReportBuilder } from "./ReportBuilder";
 
@@ -7,7 +7,10 @@ import { ReportBuilder } from "./ReportBuilder";
 class FakeCitiesApi {
   fetch = async (input: RequestInfo | URL): Promise<Response> =>
     input.toString().endsWith("/api/reports/cities")
-      ? Response.json({ states: [], cities: ["Campina Grande", "João Pessoa"] })
+      ? Response.json({
+          states: ["Alagoas", "Bahia"],
+          cities: ["Campina Grande", "João Pessoa"],
+        })
       : new Response("Not Found", { status: 404 });
 }
 
@@ -35,6 +38,13 @@ class FakeReportGenerationApi {
   };
 }
 
+async function chooseScope(user: UserEvent, label: string): Promise<void> {
+  await user.click(screen.getByRole("button", { name: /^Recorte:/ }));
+  await user.click(screen.getByRole("radio", { name: new RegExp(label) }));
+}
+
+const MUNICIPALITY_PLACEHOLDER = "Pesquise ou selecione um município";
+
 describe("ReportBuilder", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -46,9 +56,10 @@ describe("ReportBuilder", () => {
     const user = userEvent.setup();
 
     render(<ReportBuilder themes={[]} />);
+    await chooseScope(user, "Município");
 
     const municipalitySearch = screen.getByPlaceholderText(
-      "Pesquise o município ou estado",
+      MUNICIPALITY_PLACEHOLDER,
     );
     await user.type(municipalitySearch, "campina");
 
@@ -63,7 +74,7 @@ describe("ReportBuilder", () => {
       ).toHaveAttribute("aria-expanded", "true"),
     );
     expect(
-      screen.getByRole("button", { name: /Selecione o município ou estado/ }),
+      screen.getByRole("button", { name: /Área de Interesse/ }),
     ).toHaveAttribute("aria-expanded", "false");
   });
 
@@ -73,9 +84,10 @@ describe("ReportBuilder", () => {
     const user = userEvent.setup();
 
     render(<ReportBuilder themes={[]} />);
+    await chooseScope(user, "Município");
 
     const municipalitySearch = screen.getByPlaceholderText(
-      "Pesquise o município ou estado",
+      MUNICIPALITY_PLACEHOLDER,
     );
     await user.type(municipalitySearch, "joao");
 
@@ -90,9 +102,10 @@ describe("ReportBuilder", () => {
     const user = userEvent.setup();
 
     render(<ReportBuilder themes={[DEMOGRAFIA_THEME]} />);
+    await chooseScope(user, "Município");
 
     const municipalitySearch = screen.getByPlaceholderText(
-      "Pesquise o município ou estado",
+      MUNICIPALITY_PLACEHOLDER,
     );
     await user.type(municipalitySearch, "campina");
     await user.click(
@@ -106,5 +119,55 @@ describe("ReportBuilder", () => {
         "O gerador está ocupado no momento. Tente novamente em instantes.",
       ),
     ).toBeInTheDocument();
+  });
+
+  it("lists only states in the territory search after choosing Estado", async () => {
+    const citiesApi = new FakeCitiesApi();
+    vi.stubGlobal("fetch", citiesApi.fetch);
+    const user = userEvent.setup();
+
+    render(<ReportBuilder themes={[]} />);
+    await chooseScope(user, "Estado");
+    await user.click(
+      screen.getByPlaceholderText("Pesquise ou selecione um estado"),
+    );
+
+    expect(
+      await screen.findByRole("option", { name: "Alagoas" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("option", { name: "Campina Grande" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("offers only Município and Estado as scopes", async () => {
+    vi.stubGlobal("fetch", new FakeCitiesApi().fetch);
+    const user = userEvent.setup();
+
+    render(<ReportBuilder themes={[]} />);
+    await user.click(screen.getByRole("button", { name: /^Recorte:/ }));
+
+    const scopeNames = screen
+      .getAllByRole("radio")
+      .map((radio) => radio.getAttribute("value"));
+    expect(scopeNames).toEqual(["municipio", "estado"]);
+    expect(screen.queryByText("Recortes estratégicos")).not.toBeInTheDocument();
+  });
+
+  it("clears the chosen territory when the scope changes", async () => {
+    vi.stubGlobal("fetch", new FakeCitiesApi().fetch);
+    const user = userEvent.setup();
+
+    render(<ReportBuilder themes={[]} />);
+    await chooseScope(user, "Município");
+    await user.type(
+      screen.getByPlaceholderText(MUNICIPALITY_PLACEHOLDER),
+      "campina",
+    );
+    await chooseScope(user, "Estado");
+
+    expect(
+      screen.getByPlaceholderText("Pesquise ou selecione um estado"),
+    ).toHaveValue("");
   });
 });
