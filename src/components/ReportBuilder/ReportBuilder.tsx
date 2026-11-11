@@ -10,7 +10,7 @@ import {
   ReportPreview,
   type ReportPreviewDocument,
 } from "@/components/ReportBuilder/ReportPreview";
-import { MunicipalitySearch } from "@/components/ReportBuilder/MunicipalitySearch";
+import { ReportAreaField } from "@/components/ReportBuilder/ReportAreaField";
 import {
   ReportStep,
   ReportSteps,
@@ -34,6 +34,10 @@ import {
   parseReportPlaces,
   type ReportPlaces,
 } from "@/features/reports/reportPlaces";
+import {
+  selectReportScopePlaces,
+  type ReportScopeId,
+} from "@/features/reports/reportScopes";
 import type { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
 import { normalizeKey, sortContentByDesiredOrder } from "@/utils/functions";
 
@@ -52,6 +56,7 @@ export function ReportBuilder({
   municipalityText,
   themeText,
 }: ReportBuilderProps): ReactElement {
+  const [scopeId, setScopeId] = useState<ReportScopeId | null>(null);
   const [municipality, setMunicipality] = useState("");
   const [selectedThemeIds, setSelectedThemeIds] = useState<string[]>([]);
   const [places, setPlaces] = useState<ReportPlaces>(EMPTY_REPORT_PLACES);
@@ -75,14 +80,28 @@ export function ReportBuilder({
     supportedThemeIds,
   );
 
+  const scopedPlaces = useMemo(
+    () => selectReportScopePlaces(scopeId, places),
+    [scopeId, places],
+  );
+
   // INTENTIONAL: Resolve the typed municipality against the known places
   // (states and cities) using accent- and case-insensitive normalization, so users can type
   // "campina grande" or "sao luis" and still select "Campina Grande" / "São Luís".
-  const resolvedMunicipality = resolveMunicipality(municipality, places);
+  // Only the places of the chosen "Recorte" count, so a state typed while
+  // "Município" is selected does not complete the step.
+  const resolvedMunicipality = resolveMunicipality(municipality, scopedPlaces);
 
   useEffect(() => {
     void loadReportPlaces(setPlaces, setLoadingPlaces, setErrorMessage);
   }, []);
+
+  // A territory from the previous "Recorte" (e.g. a municipality after
+  // switching to "Estado") would never resolve, so it is cleared.
+  const changeScope = (nextScopeId: ReportScopeId): void => {
+    setScopeId(nextScopeId);
+    setMunicipality("");
+  };
 
   const toggleTheme = (themeId: string): void => {
     if (!getAutomaticReportSlug(themeId)) return;
@@ -103,7 +122,7 @@ export function ReportBuilder({
     const request = buildReportRequest(resolvedMunicipality, selectedThemeIds);
     if (!request) {
       setErrorMessage(
-        "Selecione um município ou estado e ao menos um macrotema disponível.",
+        "Selecione o recorte, o território e ao menos um macrotema disponível.",
       );
 
       return;
@@ -136,15 +155,22 @@ export function ReportBuilder({
     <ReportBuilderLayout
       activeTab={activeTab}
       allThemesSelected={allThemesSelected}
-      places={places}
+      areaField={
+        <ReportAreaField
+          introText={municipalityText}
+          loadingPlaces={loadingPlaces}
+          onScopeChange={changeScope}
+          onTerritoryChange={setMunicipality}
+          scopeId={scopeId}
+          scopedPlaces={scopedPlaces}
+          territory={municipality}
+        />
+      }
+      areaSelected={resolvedMunicipality !== null}
       errorMessage={errorMessage}
       generatingReport={generatingReport}
-      loadingPlaces={loadingPlaces}
-      municipality={municipality}
-      municipalityText={municipalityText}
       onClear={clearSelectedThemes}
       onGenerate={generateReport}
-      onMunicipalityChange={setMunicipality}
       onSelectAll={selectEveryTheme}
       onTabChange={setActiveTab}
       onToggleTheme={toggleTheme}
@@ -159,15 +185,12 @@ export function ReportBuilder({
 function ReportBuilderLayout({
   activeTab,
   allThemesSelected,
-  places,
+  areaField,
+  areaSelected,
   errorMessage,
   generatingReport,
-  loadingPlaces,
-  municipality,
-  municipalityText,
   onClear,
   onGenerate,
-  onMunicipalityChange,
   onSelectAll,
   onTabChange,
   onToggleTheme,
@@ -178,15 +201,12 @@ function ReportBuilderLayout({
 }: {
   activeTab: ReportMobileTab;
   allThemesSelected: boolean;
-  places: ReportPlaces;
+  areaField: ReactElement;
+  areaSelected: boolean;
   errorMessage: string;
   generatingReport: boolean;
-  loadingPlaces: boolean;
-  municipality: string;
-  municipalityText?: ContentfulRichTextField;
   onClear: () => void;
   onGenerate: () => void;
-  onMunicipalityChange: (value: string) => void;
   onSelectAll: () => void;
   onTabChange: (tab: ReportMobileTab) => void;
   onToggleTheme: (themeId: string) => void;
@@ -195,16 +215,14 @@ function ReportBuilderLayout({
   themes: ReportTheme[];
   themeText?: ContentfulRichTextField;
 }): ReactElement {
-  const [openStep, setOpenStep] = useState<ReportStepId | "">("municipality");
-  const municipalitySelected =
-    resolveMunicipality(municipality, places) !== null;
+  const [openStep, setOpenStep] = useState<ReportStepId | "">("area");
   const themesSelected = selectedThemeIds.length > 0;
-  const formCompleted = municipalitySelected && themesSelected;
+  const formCompleted = areaSelected && themesSelected;
 
   useEffect(() => {
-    if (!municipalitySelected) return;
+    if (!areaSelected) return;
     setOpenStep("themes");
-  }, [municipalitySelected]);
+  }, [areaSelected]);
 
   return (
     <section className="w-full bg-white">
@@ -221,18 +239,12 @@ function ReportBuilderLayout({
           >
             <ReportSteps onStepChange={setOpenStep} openStep={openStep}>
               <ReportStep
-                completed={municipalitySelected}
+                completed={areaSelected}
                 number={1}
-                stepId="municipality"
-                title="Selecione o município ou estado"
+                stepId="area"
+                title="Área de Interesse"
               >
-                <MunicipalityField
-                  places={places}
-                  loadingPlaces={loadingPlaces}
-                  municipalityText={municipalityText}
-                  onChange={onMunicipalityChange}
-                  value={municipality}
-                />
+                {areaField}
               </ReportStep>
               <ReportStep
                 completed={themesSelected}
@@ -326,36 +338,6 @@ function ReportMobileTabButton({
     >
       {label}
     </button>
-  );
-}
-
-function MunicipalityField({
-  places,
-  loadingPlaces,
-  onChange,
-  value,
-  municipalityText,
-}: {
-  places: ReportPlaces;
-  loadingPlaces: boolean;
-  onChange: (value: string) => void;
-  value: string;
-  municipalityText?: ContentfulRichTextField;
-}): ReactElement {
-  return (
-    <>
-      <div className="text-base leading-relaxed text-[#292829]">
-        {municipalityText
-          ? documentToReactComponents(municipalityText.json)
-          : "Selecione o município ou estado para gerar o relatório."}
-      </div>
-      <MunicipalitySearch places={places} onChange={onChange} value={value} />
-      {loadingPlaces && (
-        <p className="mt-2 text-xs leading-5 text-grey-700">
-          Carregando municípios e estados...
-        </p>
-      )}
-    </>
   );
 }
 

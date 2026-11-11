@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
-export type ReportStepId = "municipality" | "themes";
+export type ReportStepId = "area" | "themes";
 
 type ReportStepsProps = {
   children: ReactNode;
@@ -17,7 +17,7 @@ type ReportStepsProps = {
   openStep: ReportStepId | "";
 };
 
-/** Keeps exactly one report step open. Example: `<ReportSteps openStep="municipality">...</ReportSteps>`. */
+/** Keeps exactly one report step open. Example: `<ReportSteps openStep="area">...</ReportSteps>`. */
 export function ReportSteps({
   children,
   onStepChange,
@@ -49,7 +49,7 @@ type ReportStepProps = {
   title: string;
 };
 
-/** Renders one selectable report step. Example: `<ReportStep number={1} stepId="municipality" ... />`. */
+/** Renders one selectable report step. Example: `<ReportStep number={1} stepId="area" ... />`. */
 export function ReportStep({
   children,
   completed,

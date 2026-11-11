@@ -130,10 +130,14 @@ outside the repository and rendered through frontend route/component logic.
   index, and streams the PDF back with `Content-Type: application/pdf`), and
   the search list is proxied through `/api/reports/cities` as
   `{ states, cities }`: the backend's `/estados` (the nine Northeast states)
-  and `/cities`, kept apart. An empty search shows every state plus the first
-  eight municipalities; only municipalities are capped, or the nine states
-  would fill the list and hide Bahia. A backend without `/estados` degrades
-  to municipalities only. A state name
+  and `/cities`, kept apart. Step 1 ("Área de Interesse") first asks for a
+  "Recorte" (`src/features/reports/reportScopes.ts`): "Município" searches
+  only municipalities, "Estado" only states. The Figma also lists Nordeste,
+  Caatinga, Semiárido and Área de atuação da Sudene; they are hidden by
+  product decision (Nov/2026) until Automatic-Reporting generates those
+  reports. An empty municipality search shows the first eight municipalities;
+  states are never capped. A backend without `/estados` leaves the "Estado"
+  search empty. A state name
   goes to the same `/relatorio/{nome}` route, which the backend routes to its
   state report (state Docs + `auto_relatorios_est` matviews, no charts or
   map yet; Minas Gerais waits for the data team). The server

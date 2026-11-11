@@ -15,12 +15,14 @@ import { cn } from "@/lib/utils";
 type MunicipalitySearchProps = {
   places: ReportPlaces;
   onChange: (value: string) => void;
+  placeholder: string;
   value: string;
 };
 
 export function MunicipalitySearch({
   places,
   onChange,
+  placeholder,
   value,
 }: MunicipalitySearchProps): ReactElement {
   const [open, setOpen] = useState(false);
@@ -87,8 +89,8 @@ export function MunicipalitySearch({
   return (
     <Popover onOpenChange={setOpen} open={showSuggestions}>
       <PopoverAnchor asChild>
-        <label className="mt-4 flex h-10 w-full items-center gap-2 rounded-lg bg-[#EFEFEF] px-3">
-          <span className="sr-only">Pesquise o município ou estado</span>
+        <label className="mt-4 flex h-12 w-full items-center gap-2 rounded-lg bg-[#EFEFEF] px-4">
+          <span className="sr-only">{placeholder}</span>
           <input
             ref={inputRef}
             aria-autocomplete="list"
@@ -103,7 +105,7 @@ export function MunicipalitySearch({
             onChange={(event) => handleChange(event.target.value)}
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Pesquise o município ou estado"
+            placeholder={placeholder}
             role="combobox"
             type="search"
             value={value}
@@ -113,7 +115,7 @@ export function MunicipalitySearch({
       </PopoverAnchor>
       <PopoverContent
         align="start"
-        className="border border-grey-400 bg-white p-0"
+        className="w-(--radix-popover-trigger-width) border border-grey-400 bg-white p-0"
         onOpenAutoFocus={(event) => event.preventDefault()}
         sideOffset={4}
       >
