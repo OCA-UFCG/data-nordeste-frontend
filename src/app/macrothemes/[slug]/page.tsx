@@ -121,6 +121,10 @@ export default async function MacroThemePage({
   );
   const analysesHeader = pageHeadersById.get(SECTION_HEADER_IDS.analyses);
 
+  // IMPORTANT: `theme.id` is the editorial id ("cultura"); `sys.id` is
+  // Contentful's random entry id and never matches the opt-out list.
+  const showAnalysesTab = hasAnalysesTab(theme.id);
+
   return (
     <HubTemplate>
       <MacroThemeBanner content={theme} />
@@ -160,7 +164,7 @@ export default async function MacroThemePage({
           datastories={datastories}
           publicacoes={publicacoes}
           analyses={analyses}
-          showAnalysesTab={hasAnalysesTab(theme.sys.id)}
+          showAnalysesTab={showAnalysesTab}
           headers={{
             dashboards: dashboardsHeader,
             datastories: datastoriesHeader,
