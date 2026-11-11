@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  hasAnalysesTab,
   MACROTHEME_ICON_BY_ID,
   MACROTHEME_ROUTE_BY_NAME,
   THEMES_NAVIGATION_ORDER,
@@ -34,6 +35,19 @@ describe("macrotheme constants", () => {
     "finds the %s symbol in public/sprite.svg",
     (iconId) => {
       expect(SPRITE_SVG).toContain(`<symbol id="${iconId}"`);
+    },
+  );
+});
+
+describe("hasAnalysesTab", () => {
+  it("hides the Análises tab on Cultura", () => {
+    expect(hasAnalysesTab("cultura")).toBe(false);
+  });
+
+  it.each(contentfulIdsFromRoutes.filter((id) => id !== "cultura"))(
+    "keeps the Análises tab on %s",
+    (contentfulId) => {
+      expect(hasAnalysesTab(contentfulId)).toBe(true);
     },
   );
 });

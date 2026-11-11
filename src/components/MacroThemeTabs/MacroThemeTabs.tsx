@@ -39,6 +39,7 @@ type MacroThemeTabsProps = {
   showViewAll?: boolean;
   tabsOnly?: boolean;
   showHeaderInTabsOnly?: boolean;
+  showAnalysesTab?: boolean;
 
   // Rendered on the title row of the active tab (the Análises filters).
   headerActions?: ReactNode;
@@ -58,6 +59,7 @@ export function MacroThemeTabs({
   showViewAll = true,
   tabsOnly = false,
   showHeaderInTabsOnly = false,
+  showAnalysesTab = true,
   headerActions,
   activeTab: controlledActiveTab,
   onTabChange,
@@ -112,7 +114,8 @@ export function MacroThemeTabs({
 
     // INTENTIONAL: Análises stays visible while there is no content yet, so
     // the section is announced before the first analysis is published.
-    if (tab.key === "analises") return true;
+    // Themes listed in MACROTHEMES_WITHOUT_ANALYSES_TAB opt out (Cultura).
+    if (tab.key === "analises") return showAnalysesTab;
 
     return false;
   });
