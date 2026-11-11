@@ -17,6 +17,7 @@ import { buildMetadata } from "@/config/seo";
 import { documentToPlainTextString } from "@contentful/rich-text-plain-text-renderer";
 import { MacroThemeTabs } from "@/components/MacroThemeTabs/MacroThemeTabs";
 import { ANALYSES_TAB_POST_TYPES } from "@/features/posts/postTypes";
+import { hasAnalysesTab } from "@/features/macrothemes/constants";
 
 interface IMacroThemePageContent {
   themeCollection: { items: MacroTheme[] };
@@ -159,6 +160,7 @@ export default async function MacroThemePage({
           datastories={datastories}
           publicacoes={publicacoes}
           analyses={analyses}
+          showAnalysesTab={hasAnalysesTab(theme.sys.id)}
           headers={{
             dashboards: dashboardsHeader,
             datastories: datastoriesHeader,

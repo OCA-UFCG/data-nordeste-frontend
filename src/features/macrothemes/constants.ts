@@ -37,3 +37,14 @@ export const MACROTHEME_ROUTE_BY_NAME = {
   "Instrumentos da Sudene": "instrumentos-sudene",
   "Cultura": "cultura",
 };
+
+// INTENTIONAL: SUDENE asked for Cultura without the Análises tab (Nov 2026).
+// Every other macrotheme keeps the tab visible even while it is still empty.
+export const MACROTHEMES_WITHOUT_ANALYSES_TAB = ["cultura"];
+
+/**
+ * Tells whether the macrotheme page shows the Análises tab, by Contentful id.
+ * Example: `hasAnalysesTab("cultura")` → `false`; `hasAnalysesTab("saude")` → `true`.
+ */
+export const hasAnalysesTab = (themeId: string): boolean =>
+  !MACROTHEMES_WITHOUT_ANALYSES_TAB.includes(themeId);
