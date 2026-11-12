@@ -285,3 +285,45 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   adds or removes a municipality, and the map frames the whole selection. The
   choice is applied when the list closes, so ticking several boxes queries
   once.
+
+## IDH Panel Demo (`/demo/idh`)
+
+- The reference is the navigable prototype ("Painéis Data Nordeste", `idh.html`),
+  reproduced in layout and behaviour: dark cover (back link, breadcrumb,
+  "Publicado em", macrotheme badge, lead), sticky filter bar, left rail of
+  views above 900 px (top tab bar below), cards with footer, ⓘ and ⋯ menu,
+  "Saiba mais sobre o IDH" with "Ler mais" and glossary. It replaced the
+  Power BI-faithful version of `129cef4` (gauges, no ranking).
+- Everything lives in `src/components/IdhDashboard/` and is IDH-only; the
+  shared `Panel/*` components (PIB, Perfil, FNE) are untouched. The prototype
+  CSS was ported to Tailwind with its exact values (`idhStyles.ts` holds the
+  tokens); `max-[700px]`/`max-[900px]`/`max-[1100px]` are its breakpoints.
+- Deliberate deviations: the action green is the theme `green-800`
+  (`#017f35`), not the prototype `#018f39`, which fails 4.5:1 under white
+  text. The cover lead is capped at 1136 px (the prototype's 120ch in its own
+  Inter build).
+- Charts are hand-drawn SVG like the prototype, not ECharts: the line
+  (`idhLineChart.ts` holds the geometry; the 0.4–0.8 axis widens only if a
+  real value leaves it) and the map (`idhStateShapes.ts`, the prototype's nine
+  state outlines in a 600 × 754 box). Colours and font are SVG attributes so
+  "Baixar imagem" (PNG or SVG) serialises them; the ranking and group bars are
+  HTML and only share and open the catalogue.
+- Prototype rules that came from its demo data were not ported (state data
+  only for 2021, "sem dado por estado", the undo toast): the `des_idh` views
+  have the yearly series per state. The empty-state notice of the sex and
+  colour views shows only when the database really has no group data.
+- Card states follow the real app: skeletons while a filter navigation is
+  pending, the error state with "Tentar de novo" (`router.refresh()`) when the
+  query fails (`emptyIdhPanel` keeps the layout).
+- WARNING: "Atualizado em 11/2026" in the card footers is the prototype's
+  fixed text (`IDH_DATA_UPDATED_AT`); the database does not expose a load
+  date yet.
+- Group gaps (`idhGroupCompare.ts`): index points for IDH and Gini, percent
+  for money; money bars end at the next hundred with 10% headroom.
+- Gini cards have the catalogue item disabled ("Este dado ainda não tem
+  página no catálogo"), as in the prototype.
+- Local setup traps met while building it: two `.env` assignments on one line
+  silently corrupt `NEXT_PUBLIC_CONTENTFUL_SPACE`, and either Contentful var
+  missing falls back to `/contentful-api`, which only exists behind production
+  Nginx (the error body is the portal's own 404 HTML). The panel's
+  `DATA_DB_URL` needs the SSH tunnel up, which needs the internal network.
