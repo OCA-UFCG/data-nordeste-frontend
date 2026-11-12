@@ -1,26 +1,30 @@
-import {
-  getAutomaticReportSlug,
-  type AutomaticReportMacrothemeSlug,
-} from "@/features/reports/automaticReport";
+import { getAutomaticReportSlug } from "@/features/reports/automaticReport";
 import {
   EMPTY_REPORT_PLACES,
   type ReportPlaces,
 } from "@/features/reports/reportPlaces";
 
-export type ReportScopeId = "municipio" | "estado";
+export type ReportScopeId =
+  | "municipio"
+  | "estado"
+  | "nordeste"
+  | "caatinga"
+  | "semiarido"
+  | "area-sudene";
 
 export type ReportScopeGroupId = "geopolitico" | "estrategico";
 
 /**
- * One "Recorte" the report can be scoped to.
- * Example: `{ id: "estado", label: "Estado", group: "geopolitico", … }`.
+ * One "Recorte" the report can be scoped to. A search scope lists territories
+ * to pick from; an area scope is itself the territory (the whole Caatinga, the
+ * whole Nordeste), so it carries the area name the backend expects.
+ * Example: `{ id: "caatinga", label: "Caatinga", group: "estrategico", areaName: "Caatinga" }`.
  */
 export type ReportScope = {
   id: ReportScopeId;
   label: string;
   group: ReportScopeGroupId;
-  searchPlaceholder: string;
-};
+} & ({ searchPlaceholder: string } | { areaName: string });
 
 export type ReportScopeGroup = {
   id: ReportScopeGroupId;
@@ -33,11 +37,11 @@ const REPORT_SCOPE_GROUP_LABELS: Record<ReportScopeGroupId, string> = {
   estrategico: "Recortes estratégicos",
 };
 
-// IMPORTANT: the Figma also lists Nordeste and the strategic regions
-// (Caatinga, Semiárido, Área de atuação da Sudene), but Automatic-Reporting
-// only serves `/cities` and `/estados`. Product decided (Nov/2026) to hide
-// them until the backend generates those reports, instead of showing them
-// disabled. Add them here, with their ids, once the backend ships them.
+// IMPORTANT: `areaName` must match Automatic-Reporting `/areas` exactly: it is
+// the name sent to `/relatorio/{name}`. In the Figma, choosing "Nordeste" opens
+// a state search, but that duplicates "Estado" and leaves the whole-Nordeste
+// report unreachable; product decided (12/11/2026) that every area scope,
+// Nordeste included, is the whole area, with no search.
 export const REPORT_SCOPES: ReportScope[] = [
   {
     id: "municipio",
@@ -51,21 +55,62 @@ export const REPORT_SCOPES: ReportScope[] = [
     group: "geopolitico",
     searchPlaceholder: "Pesquise ou selecione um estado",
   },
+  {
+    id: "nordeste",
+    label: "Nordeste",
+    group: "geopolitico",
+    areaName: "Nordeste",
+  },
+  {
+    id: "caatinga",
+    label: "Caatinga",
+    group: "estrategico",
+    areaName: "Caatinga",
+  },
+  {
+    id: "semiarido",
+    label: "Semiárido",
+    group: "estrategico",
+    areaName: "Semiárido",
+  },
+  {
+    id: "area-sudene",
+    label: "Área de atuação da Sudene",
+    group: "estrategico",
+    areaName: "Área de atuação da Sudene",
+  },
 ];
 
 /**
- * Scopes grouped for the "Recorte" menu, in display order. Groups with no
- * scope are left out, so "Recortes estratégicos" only shows once it has one.
- * Example: `groupReportScopes()[0].label` → `"Recortes geopolíticos"`.
+ * The area name of an area scope, or null for a search scope.
+ * Example: `getScopeAreaName(findReportScope("caatinga"))` → `"Caatinga"`.
  */
-export function groupReportScopes(): ReportScopeGroup[] {
+export function getScopeAreaName(scope: ReportScope | null): string | null {
+  return scope && "areaName" in scope ? scope.areaName : null;
+}
+
+/**
+ * Scopes grouped for the "Recorte" menu, in display order. An area scope only
+ * shows when the backend lists that area (`places.areas`): beta and prod run an
+ * Automatic-Reporting without `/areas`, and offering a report that would fail
+ * is worse than hiding it. Empty groups are left out.
+ * Example: `groupReportScopes(["Caatinga"])[1].scopes[0].label` → `"Caatinga"`.
+ */
+export function groupReportScopes(
+  availableAreas: string[],
+): ReportScopeGroup[] {
   const groupIds: ReportScopeGroupId[] = ["geopolitico", "estrategico"];
+  const offered = REPORT_SCOPES.filter((scope) => {
+    const areaName = getScopeAreaName(scope);
+
+    return areaName === null || availableAreas.includes(areaName);
+  });
 
   return groupIds
     .map((groupId) => ({
       id: groupId,
       label: REPORT_SCOPE_GROUP_LABELS[groupId],
-      scopes: REPORT_SCOPES.filter((scope) => scope.group === groupId),
+      scopes: offered.filter((scope) => scope.group === groupId),
     }))
     .filter((group) => group.scopes.length > 0);
 }
@@ -81,44 +126,52 @@ export function findReportScope(
 
 /**
  * Narrows the places to the chosen scope, so the territory search only lists
- * states for "Estado" and municipalities for "Município". No scope means no
- * places.
- * Example: `selectReportScopePlaces("estado", places)` → `{ states, cities: [] }`.
+ * states for "Estado" and municipalities for "Município"; an area scope keeps
+ * only its own area. No scope means no places.
+ * Example: `selectReportScopePlaces("estado", places)` → `{ states, areas: [], cities: [] }`.
  */
 export function selectReportScopePlaces(
   scopeId: ReportScopeId | null,
   places: ReportPlaces,
 ): ReportPlaces {
-  if (scopeId === "estado") return { states: places.states, cities: [] };
-  if (scopeId === "municipio") return { states: [], cities: places.cities };
+  if (scopeId === "estado") {
+    return { ...EMPTY_REPORT_PLACES, states: places.states };
+  }
+  if (scopeId === "municipio") {
+    return { ...EMPTY_REPORT_PLACES, cities: places.cities };
+  }
+  const areaName = getScopeAreaName(findReportScope(scopeId));
+  if (areaName && places.areas.includes(areaName)) {
+    return { ...EMPTY_REPORT_PLACES, areas: [areaName] };
+  }
 
   return EMPTY_REPORT_PLACES;
 }
 
-// IMPORTANT: Automatic-Reporting does not generate the state report for these
-// macrothemes yet, so the "Estado" scope shows them disabled. Remove a slug
-// from here once the backend serves it for states.
-const UNAVAILABLE_REPORT_SLUGS_BY_SCOPE: Record<
-  ReportScopeId,
-  AutomaticReportMacrothemeSlug[]
-> = {
-  municipio: [],
-  estado: ["desenvolvimento-social", "instrumentos-sudene"],
-};
+// INTENTIONAL: Automatic-Reporting has no area matview for these themes
+// (auto_relatorios_areaint, 12/11/2026). Asked for an area, it skips them, or
+// answers 503 when they are the only themes, so the form does not offer them.
+// The state report (auto_relatorios_est) does not cover them yet either, so
+// "Estado" leaves them out too. The form shows them disabled, not hidden, so
+// the user sees the theme exists but not for this "Recorte".
+const THEME_IDS_WITHOUT_REGIONAL_DATA = new Set([
+  "desenvolvimento_social",
+  "instrumentos_sudene",
+]);
 
 /**
- * Whether the macrotheme can go into a report for this scope: it needs a
- * report slug, and the scope must not exclude it. No scope means only the slug
- * matters.
- * Example: `isReportThemeAvailable("instrumentos_sudene", "estado")` → `false`.
+ * Whether the report can include this Data Nordeste theme in the chosen scope:
+ * a theme without a report slug never can, and the state and area scopes leave
+ * out the themes with no regional data. Only "Município" (or no scope yet)
+ * offers every theme with a report.
+ * Example: `isThemeAvailableInScope("desenvolvimento_social", "estado")` → `false`.
  */
-export function isReportThemeAvailable(
+export function isThemeAvailableInScope(
   themeId: string,
   scopeId: ReportScopeId | null,
 ): boolean {
-  const slug = getAutomaticReportSlug(themeId);
-  if (!slug) return false;
-  if (!scopeId) return true;
+  if (!getAutomaticReportSlug(themeId)) return false;
+  if (scopeId === null || scopeId === "municipio") return true;
 
-  return !UNAVAILABLE_REPORT_SLUGS_BY_SCOPE[scopeId].includes(slug);
+  return !THEME_IDS_WITHOUT_REGIONAL_DATA.has(themeId);
 }

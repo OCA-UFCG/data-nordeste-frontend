@@ -4,19 +4,21 @@ import type { ReportPlaces } from "@/features/reports/reportPlaces";
 
 /**
  * Proxies the places a report can be generated for: the Northeast states from
- * Automatic-Reporting `/estados` and its municipalities from `/cities`, kept
- * apart so the search can cap municipalities without hiding any state.
- * Example: `GET /api/reports/cities` → `{ states: ["Paraíba", …], cities: ["Recife (PE)", …] }`.
+ * Automatic-Reporting `/estados`, the areas of interest from `/areas` and the
+ * municipalities from `/cities`, kept apart so the search can cap
+ * municipalities without hiding any state or area.
+ * Example: `GET /api/reports/cities` → `{ states: ["Paraíba", …], areas: ["Caatinga", …], cities: ["Recife (PE)", …] }`.
  */
 export async function GET(): Promise<NextResponse> {
   try {
     const apiBaseUrl = getAutomaticReportApiBaseUrl();
-    const [citiesResponse, states] = await Promise.all([
+    const [citiesResponse, states, areas] = await Promise.all([
       fetch(`${apiBaseUrl}/cities`, { cache: "no-store" }),
-      fetchReportStates(apiBaseUrl),
+      fetchOptionalPlaceList(apiBaseUrl, "/estados", "states"),
+      fetchOptionalPlaceList(apiBaseUrl, "/areas", "areas"),
     ]);
 
-    return await buildCitiesResponse(citiesResponse, states);
+    return await buildCitiesResponse(citiesResponse, states, areas);
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -35,6 +37,7 @@ export async function GET(): Promise<NextResponse> {
 async function buildCitiesResponse(
   response: Response,
   states: string[],
+  areas: string[],
 ): Promise<NextResponse> {
   if (!response.ok) {
     return NextResponse.json(
@@ -46,32 +49,39 @@ async function buildCitiesResponse(
   const cities = (await response.json()) as unknown;
   const places: ReportPlaces = {
     states,
+    areas,
     cities: Array.isArray(cities) ? cities.map(String) : [],
   };
 
   return NextResponse.json(places);
 }
 
-// INTENTIONAL: states are optional. A backend deployed before `/estados` existed
-// answers 404 here, and the municipal search must keep working, so any failure
-// becomes an empty list plus a log line instead of a 502 for the whole search.
-async function fetchReportStates(apiBaseUrl: string): Promise<string[]> {
+// INTENTIONAL: states and areas are optional. A backend deployed before
+// `/estados` or `/areas` existed answers 404 here, and the municipal search must
+// keep working, so any failure becomes an empty list plus a log line instead of
+// a 502 for the whole search.
+// Example: `await fetchOptionalPlaceList(apiBaseUrl, "/areas", "areas")` → `["Caatinga", …]`.
+async function fetchOptionalPlaceList(
+  apiBaseUrl: string,
+  path: "/estados" | "/areas",
+  kind: "states" | "areas",
+): Promise<string[]> {
   try {
-    const response = await fetch(`${apiBaseUrl}/estados`, {
+    const response = await fetch(`${apiBaseUrl}${path}`, {
       cache: "no-store",
     });
     if (!response.ok) {
       throw new Error(
-        `Automatic report states returned ${response.status}; expected 200 with a JSON array of state names.`,
+        `Automatic report ${kind} returned ${response.status}; expected 200 with a JSON array of names.`,
       );
     }
-    const states = (await response.json()) as unknown;
+    const names = (await response.json()) as unknown;
 
-    return Array.isArray(states) ? states.map(String) : [];
+    return Array.isArray(names) ? names.map(String) : [];
   } catch (error) {
     console.warn(
       JSON.stringify({
-        event: "automatic_report_states_unavailable",
+        event: `automatic_report_${kind}_unavailable`,
         error: error instanceof Error ? error.message : String(error),
       }),
     );
