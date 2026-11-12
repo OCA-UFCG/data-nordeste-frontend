@@ -253,10 +253,6 @@ const describeIdhPlace = ({
   ufs.find((item) => item.sigla === filters.uf)?.nome ??
   "Média dos estados do Nordeste";
 
-export const describeIdhSelection = (
-  data: Pick<IdhPanelData, "filters" | "ufs">,
-): string => `${describeIdhPlace(data)} · ${data.filters.ano}`;
-
 /**
  * Subtítulo da série anual: de quem é a linha e o período que ela cobre.
  *

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   buildIdhSearch,
-  describeIdhSelection,
   describeIdhSerie,
   describeIdhShareChips,
   emptyIdhPanel,
@@ -129,9 +128,7 @@ describe("loadIdhPanel", () => {
     });
 
     expect(panel.filters).toEqual({ ano: 2021, visao: "cor" });
-    expect(describeIdhSelection(panel)).toBe(
-      "Média dos estados do Nordeste · 2021",
-    );
+    expect(idhPlaceName(panel)).toBe("Nordeste");
   });
 });
 
