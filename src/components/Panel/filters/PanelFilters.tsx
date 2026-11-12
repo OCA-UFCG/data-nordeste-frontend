@@ -1,8 +1,9 @@
 "use client";
 
 import { Funnel, FunnelX, LoaderCircle, MapPin } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode } from "react";
 import { InsideDialogContext } from "@/components/Panel/filters/MultiSelectCombobox";
+import { useSiteHeaderHeight } from "@/components/Panel/layout/useSiteHeaderHeight";
 import {
   Sheet,
   SheetContent,
@@ -37,24 +38,6 @@ const CompactClearButton = ({ onClear }: { onClear: () => void }) => (
     <FunnelX aria-hidden className="size-5" />
   </button>
 );
-
-// Altura do cabeçalho do site (sticky): a barra do local fica logo abaixo dele.
-const useSiteHeaderHeight = () => {
-  const [height, setHeight] = useState(0);
-
-  useEffect(() => {
-    const header = document.querySelector("header");
-
-    if (!header) return;
-    const observer = new ResizeObserver(() => setHeight(header.offsetHeight));
-
-    observer.observe(header);
-
-    return () => observer.disconnect();
-  }, []);
-
-  return height;
-};
 
 const FiltersSheet = ({
   summary,
