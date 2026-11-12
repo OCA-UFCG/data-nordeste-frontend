@@ -71,16 +71,16 @@ export function ReportBuilder({
 
   const [activeTab, setActiveTab] = useState<ReportMobileTab>("config");
   const sortedThemes = useMemo(
-    () => sortThemes(getSupportedThemes(themes, scopeId)),
-    [themes, scopeId],
+    () => sortThemes(getSupportedThemes(themes)),
+    [themes],
   );
-  const supportedThemeIds = useMemo(
-    () => getSupportedThemeIds(sortedThemes),
-    [sortedThemes],
+  const availableThemeIds = useMemo(
+    () => getAvailableThemeIds(sortedThemes, scopeId),
+    [sortedThemes, scopeId],
   );
   const allThemesSelected = hasSelectedAllThemes(
     selectedThemeIds,
-    supportedThemeIds,
+    availableThemeIds,
   );
 
   const scopedPlaces = useMemo(
@@ -107,7 +107,7 @@ export function ReportBuilder({
     setMunicipality(getScopeAreaName(findReportScope(nextScopeId)) ?? "");
 
     // A theme the new "Recorte" has no data for (e.g. Desenvolvimento Social
-    // in Caatinga) leaves the selection with its card.
+    // in Caatinga or Estado) leaves the selection; its card stays, disabled.
     setSelectedThemeIds((currentIds) =>
       currentIds.filter((themeId) =>
         isThemeAvailableInScope(themeId, nextScopeId),
@@ -116,14 +116,13 @@ export function ReportBuilder({
   };
 
   const toggleTheme = (themeId: string): void => {
-    if (!getAutomaticReportSlug(themeId)) return;
     setSelectedThemeIds((currentIds) =>
-      toggleThemeId(currentIds, themeId, supportedThemeIds),
+      toggleThemeId(currentIds, themeId, availableThemeIds),
     );
   };
 
   const selectEveryTheme = (): void => {
-    setSelectedThemeIds(supportedThemeIds);
+    setSelectedThemeIds(availableThemeIds);
   };
 
   const clearSelectedThemes = (): void => {
@@ -180,6 +179,7 @@ export function ReportBuilder({
         />
       }
       areaSelected={resolvedMunicipality !== null}
+      availableThemeIds={availableThemeIds}
       errorMessage={errorMessage}
       generatingReport={generatingReport}
       onClear={clearSelectedThemes}
@@ -200,6 +200,7 @@ function ReportBuilderLayout({
   allThemesSelected,
   areaField,
   areaSelected,
+  availableThemeIds,
   errorMessage,
   generatingReport,
   onClear,
@@ -216,6 +217,7 @@ function ReportBuilderLayout({
   allThemesSelected: boolean;
   areaField: ReactElement;
   areaSelected: boolean;
+  availableThemeIds: string[];
   errorMessage: string;
   generatingReport: boolean;
   onClear: () => void;
@@ -267,6 +269,7 @@ function ReportBuilderLayout({
               >
                 <ReportThemesField
                   allThemesSelected={allThemesSelected}
+                  availableThemeIds={availableThemeIds}
                   onClear={onClear}
                   onSelectAll={onSelectAll}
                   onToggleTheme={onToggleTheme}
@@ -356,6 +359,7 @@ function ReportMobileTabButton({
 
 function ReportThemesField({
   allThemesSelected,
+  availableThemeIds,
   onClear,
   onSelectAll,
   onToggleTheme,
@@ -364,6 +368,7 @@ function ReportThemesField({
   themeText,
 }: {
   allThemesSelected: boolean;
+  availableThemeIds: string[];
   onClear: () => void;
   onSelectAll: () => void;
   onToggleTheme: (themeId: string) => void;
@@ -383,6 +388,7 @@ function ReportThemesField({
         onClick={onSelectAll}
       />
       <ReportThemeList
+        availableThemeIds={availableThemeIds}
         onToggleTheme={onToggleTheme}
         selectedThemeIds={selectedThemeIds}
         themes={themes}
@@ -412,10 +418,12 @@ function ReportThemeActions({
 }
 
 function ReportThemeList({
+  availableThemeIds,
   onToggleTheme,
   selectedThemeIds,
   themes,
 }: {
+  availableThemeIds: string[];
   onToggleTheme: (themeId: string) => void;
   selectedThemeIds: string[];
   themes: ReportTheme[];
@@ -425,7 +433,7 @@ function ReportThemeList({
       {themes.map((theme) => {
         const iconKey = normalizeKey(theme.name);
         const iconId = MACROTHEME_ICON_BY_ID[iconKey] || "list";
-        const disabled = !getAutomaticReportSlug(theme.id);
+        const disabled = !availableThemeIds.includes(theme.id);
 
         return (
           <ThemeFilterCard
@@ -497,9 +505,9 @@ function sortThemes(themes: ReportTheme[]): ReportTheme[] {
 function toggleThemeId(
   currentIds: string[],
   themeId: string,
-  supportedThemeIds: string[],
+  availableThemeIds: string[],
 ): string[] {
-  if (!supportedThemeIds.includes(themeId)) return currentIds;
+  if (!availableThemeIds.includes(themeId)) return currentIds;
   if (currentIds.includes(themeId)) {
     return currentIds.filter((id) => id !== themeId);
   }
@@ -507,26 +515,28 @@ function toggleThemeId(
   return [...currentIds, themeId];
 }
 
-function getSupportedThemeIds(themes: ReportTheme[]): string[] {
-  return themes
-    .map((theme) => theme.id)
-    .filter((themeId) => Boolean(getAutomaticReportSlug(themeId)));
+// Themes with a report in some "Recorte": they always show, so a theme the
+// current scope cannot generate appears disabled instead of vanishing.
+function getSupportedThemes(themes: ReportTheme[]): ReportTheme[] {
+  return themes.filter((theme) => Boolean(getAutomaticReportSlug(theme.id)));
 }
 
-function getSupportedThemes(
+function getAvailableThemeIds(
   themes: ReportTheme[],
   scopeId: ReportScopeId | null,
-): ReportTheme[] {
-  return themes.filter((theme) => isThemeAvailableInScope(theme.id, scopeId));
+): string[] {
+  return themes
+    .map((theme) => theme.id)
+    .filter((themeId) => isThemeAvailableInScope(themeId, scopeId));
 }
 
 function hasSelectedAllThemes(
   selectedThemeIds: string[],
-  supportedThemeIds: string[],
+  availableThemeIds: string[],
 ): boolean {
   return (
-    supportedThemeIds.length > 0 &&
-    supportedThemeIds.every((themeId) => selectedThemeIds.includes(themeId))
+    availableThemeIds.length > 0 &&
+    availableThemeIds.every((themeId) => selectedThemeIds.includes(themeId))
   );
 }
 

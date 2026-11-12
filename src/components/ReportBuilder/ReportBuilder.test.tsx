@@ -61,6 +61,27 @@ async function chooseScope(user: UserEvent, label: string): Promise<void> {
   await user.click(screen.getByRole("radio", { name: new RegExp(label) }));
 }
 
+// Choosing a territory collapses the other step; open it only when closed,
+// since clicking an open accordion step would close it.
+async function openReportStep(user: UserEvent, title: RegExp): Promise<void> {
+  const step = screen.getByRole("button", { name: title });
+  if (step.getAttribute("aria-expanded") === "false") await user.click(step);
+}
+
+// "Município" offers every theme, so it is where a test selects all of them.
+async function selectEveryThemeAsMunicipality(user: UserEvent): Promise<void> {
+  await chooseScope(user, "Município");
+  await openReportStep(user, /Selecione os temas/);
+  await user.click(screen.getByRole("button", { name: "Selecionar todos" }));
+}
+
+const INSTRUMENTOS_SUDENE_THEME = {
+  id: "instrumentos_sudene",
+  name: "Instrumentos Sudene",
+  color: "#00A5CF",
+  sys: { id: "instrumentos-sudene-sys" },
+};
+
 const MUNICIPALITY_PLACEHOLDER = "Pesquise ou selecione um município";
 
 describe("ReportBuilder", () => {
@@ -211,39 +232,9 @@ describe("ReportBuilder", () => {
     );
   });
 
-  it("hides and unselects the themes without area data in an area scope", async () => {
+  it("disables and unselects the themes without area data in an area scope", async () => {
     vi.stubGlobal("fetch", new FakeCitiesApi(BACKEND_AREAS).fetch);
     const user = userEvent.setup();
-
-    // Choosing a territory collapses step 1; reopen it before changing the scope.
-    const openAreaStep = async (): Promise<void> => {
-      const areaStep = screen.getByRole("button", {
-        name: /Área de Interesse/,
-      });
-      if (areaStep.getAttribute("aria-expanded") === "false") {
-        await user.click(areaStep);
-      }
-    };
-
-    // Switching from one chosen territory to another keeps step 2 as it was.
-    const openThemesStep = async (): Promise<void> => {
-      const themesStep = screen.getByRole("button", {
-        name: /Selecione os temas/,
-      });
-      if (themesStep.getAttribute("aria-expanded") === "false") {
-        await user.click(themesStep);
-      }
-    };
-    const chooseAlagoas = async (): Promise<void> => {
-      await openAreaStep();
-      await chooseScope(user, "Estado");
-
-      // The full name resolves the territory, with no click on a suggestion.
-      await user.type(
-        screen.getByPlaceholderText("Pesquise ou selecione um estado"),
-        "alagoas",
-      );
-    };
 
     render(
       <ReportBuilder
@@ -251,27 +242,38 @@ describe("ReportBuilder", () => {
       />,
     );
     await screen.findByRole("button", { name: /^Recorte:/ });
-    await chooseAlagoas();
-    await user.click(
-      await screen.findByRole("checkbox", { name: "Desenvolvimento Social" }),
-    );
-    await openAreaStep();
+    await selectEveryThemeAsMunicipality(user);
+    await openReportStep(user, /Área de Interesse/);
     await user.click(screen.getByRole("button", { name: /^Recorte:/ }));
     await user.click(await screen.findByRole("radio", { name: /Caatinga/ }));
-    await openThemesStep();
+    await openReportStep(user, /Selecione os temas/);
 
-    expect(
-      await screen.findByRole("checkbox", { name: "Demografia" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("checkbox", { name: "Desenvolvimento Social" }),
-    ).not.toBeInTheDocument();
+    const social = screen.getByRole("checkbox", {
+      name: "Desenvolvimento Social",
+    });
+    expect(social).toBeDisabled();
+    expect(social).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Demografia" })).toBeChecked();
+  });
 
-    await chooseAlagoas();
-    await openThemesStep();
-    expect(
-      await screen.findByRole("checkbox", { name: "Desenvolvimento Social" }),
-    ).not.toBeChecked();
+  it("disables and unselects Instrumentos Sudene under Estado", async () => {
+    vi.stubGlobal("fetch", new FakeCitiesApi().fetch);
+    const user = userEvent.setup();
+
+    render(
+      <ReportBuilder themes={[DEMOGRAFIA_THEME, INSTRUMENTOS_SUDENE_THEME]} />,
+    );
+    await selectEveryThemeAsMunicipality(user);
+    await openReportStep(user, /Área de Interesse/);
+    await chooseScope(user, "Estado");
+    await openReportStep(user, /Selecione os temas/);
+
+    const instrumentos = screen.getByRole("checkbox", {
+      name: "Instrumentos Sudene",
+    });
+    expect(instrumentos).toBeDisabled();
+    expect(instrumentos).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Demografia" })).toBeChecked();
   });
 
   it("clears the chosen territory when the scope changes", async () => {

@@ -151,23 +151,27 @@ export function selectReportScopePlaces(
 // INTENTIONAL: Automatic-Reporting has no area matview for these themes
 // (auto_relatorios_areaint, 12/11/2026). Asked for an area, it skips them, or
 // answers 503 when they are the only themes, so the form does not offer them.
-const THEME_IDS_WITHOUT_AREA_DATA = new Set([
+// The state report (auto_relatorios_est) does not cover them yet either, so
+// "Estado" leaves them out too. The form shows them disabled, not hidden, so
+// the user sees the theme exists but not for this "Recorte".
+const THEME_IDS_WITHOUT_REGIONAL_DATA = new Set([
   "desenvolvimento_social",
   "instrumentos_sudene",
 ]);
 
 /**
  * Whether the report can include this Data Nordeste theme in the chosen scope:
- * a theme without a report slug never can, and an area scope leaves out the
- * themes with no area data.
- * Example: `isThemeAvailableInScope("desenvolvimento_social", "caatinga")` → `false`.
+ * a theme without a report slug never can, and the state and area scopes leave
+ * out the themes with no regional data. Only "Município" (or no scope yet)
+ * offers every theme with a report.
+ * Example: `isThemeAvailableInScope("desenvolvimento_social", "estado")` → `false`.
  */
 export function isThemeAvailableInScope(
   themeId: string,
   scopeId: ReportScopeId | null,
 ): boolean {
   if (!getAutomaticReportSlug(themeId)) return false;
-  if (!getScopeAreaName(findReportScope(scopeId))) return true;
+  if (scopeId === null || scopeId === "municipio") return true;
 
-  return !THEME_IDS_WITHOUT_AREA_DATA.has(themeId);
+  return !THEME_IDS_WITHOUT_REGIONAL_DATA.has(themeId);
 }

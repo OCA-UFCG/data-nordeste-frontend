@@ -114,7 +114,7 @@ describe("area scopes", () => {
 });
 
 describe("isThemeAvailableInScope", () => {
-  it("leaves out the themes with no area data only in area scopes", () => {
+  it("leaves out the themes with no area data in area scopes", () => {
     expect(isThemeAvailableInScope("desenvolvimento_social", "caatinga")).toBe(
       false,
     );
@@ -122,10 +122,20 @@ describe("isThemeAvailableInScope", () => {
       false,
     );
     expect(isThemeAvailableInScope("demografia", "caatinga")).toBe(true);
+    expect(isThemeAvailableInScope("desenvolvimento_social", null)).toBe(true);
+  });
+
+  it("leaves out the same themes under Estado and keeps them for Município", () => {
     expect(isThemeAvailableInScope("desenvolvimento_social", "estado")).toBe(
+      false,
+    );
+    expect(isThemeAvailableInScope("instrumentos_sudene", "estado")).toBe(
+      false,
+    );
+    expect(isThemeAvailableInScope("demografia", "estado")).toBe(true);
+    expect(isThemeAvailableInScope("instrumentos_sudene", "municipio")).toBe(
       true,
     );
-    expect(isThemeAvailableInScope("desenvolvimento_social", null)).toBe(true);
   });
 
   it("never offers a theme without a report", () => {
