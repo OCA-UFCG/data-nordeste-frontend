@@ -6,6 +6,7 @@ import { MunicipalitySearch } from "./MunicipalitySearch";
 
 const PLACES = {
   states: [],
+  areas: [],
   cities: ["Presidente Dutra (BA)", "Presidente Dutra (MA)"],
 };
 

@@ -6,7 +6,7 @@ import {
 } from "./municipalitySearch";
 
 const CITIES = ["Campina Grande", "João Pessoa", "São Luís", "Recife"];
-const CITY_PLACES = { states: [], cities: CITIES };
+const CITY_PLACES = { states: [], areas: [], cities: CITIES };
 
 // Same order as the backend's utils/data/estados.py: Bahia comes last.
 const NORTHEAST_STATES = [
@@ -51,7 +51,7 @@ describe("filterMunicipalitySuggestions", () => {
 
   it("preserves the original cities order", () => {
     const shuffled = ["São Luís", "Campina Grande", "Recife", "João Pessoa"];
-    const places = { states: [], cities: shuffled };
+    const places = { states: [], areas: [], cities: shuffled };
     expect(filterMunicipalitySuggestions("", places)).toEqual(shuffled);
     expect(filterMunicipalitySuggestions("sa", places)).toEqual(["São Luís"]);
   });
@@ -63,6 +63,7 @@ describe("filterMunicipalitySuggestions", () => {
     );
     const suggestions = filterMunicipalitySuggestions("", {
       states: [],
+      areas: [],
       cities: manyCities,
     });
 
@@ -73,6 +74,7 @@ describe("filterMunicipalitySuggestions", () => {
 describe("states in the report search", () => {
   const PLACES = {
     states: ["Paraíba", "Pernambuco"],
+    areas: [],
     cities: ["Paraibano (MA)", "Recife (PE)"],
   };
 
@@ -94,6 +96,7 @@ describe("states in the report search", () => {
     );
     const suggestions = filterMunicipalitySuggestions("", {
       states: NORTHEAST_STATES,
+      areas: [],
       cities: manyCities,
     });
 

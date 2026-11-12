@@ -12,6 +12,7 @@ import {
 import type { ContentfulRichTextField } from "@/utils/interfaces";
 
 type ReportAreaFieldProps = {
+  availableAreas: string[];
   introText?: ContentfulRichTextField;
   loadingPlaces: boolean;
   onScopeChange: (scopeId: ReportScopeId) => void;
@@ -23,10 +24,12 @@ type ReportAreaFieldProps = {
 
 /**
  * Step 1 of the report ("Área de Interesse"): pick a "Recorte", then search the
- * territory inside it. The search only appears once a scope is chosen.
+ * territory inside it. The search only appears for a search scope (Município,
+ * Estado); an area scope (Caatinga, Nordeste…) is already the territory.
  * Example: `<ReportAreaField scopeId="estado" scopedPlaces={places} … />`.
  */
 export function ReportAreaField({
+  availableAreas,
   introText,
   loadingPlaces,
   onScopeChange,
@@ -47,8 +50,12 @@ export function ReportAreaField({
       <p className="mt-6 mb-2 text-base font-semibold text-[#292829]">
         Recorte
       </p>
-      <ReportScopeSelect onChange={onScopeChange} value={scopeId} />
-      {scope && (
+      <ReportScopeSelect
+        availableAreas={availableAreas}
+        onChange={onScopeChange}
+        value={scopeId}
+      />
+      {scope && "searchPlaceholder" in scope && (
         <MunicipalitySearch
           onChange={onTerritoryChange}
           places={scopedPlaces}

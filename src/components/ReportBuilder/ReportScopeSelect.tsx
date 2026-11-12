@@ -19,11 +19,16 @@ import {
 
 // Symbol ids in `public/sprite.svg`, drawn from the Figma "Recorte" icons.
 const REPORT_SCOPE_ICON_IDS: Record<ReportScopeId, string> = {
-  municipio: "municipality",
-  estado: "state",
+  "municipio": "municipality",
+  "estado": "state",
+  "nordeste": "nordeste",
+  "caatinga": "caatinga",
+  "semiarido": "semiarido",
+  "area-sudene": "area-sudene",
 };
 
 type ReportScopeSelectProps = {
+  availableAreas: string[];
   onChange: (scopeId: ReportScopeId) => void;
   value: ReportScopeId | null;
 };
@@ -33,6 +38,7 @@ type ReportScopeSelectProps = {
  * Example: `<ReportScopeSelect value={scope} onChange={setScope} />`.
  */
 export function ReportScopeSelect({
+  availableAreas,
   onChange,
   value,
 }: ReportScopeSelectProps): ReactElement {
@@ -57,7 +63,7 @@ export function ReportScopeSelect({
           onValueChange={selectScope}
           value={value ?? ""}
         >
-          {groupReportScopes().map((group) => (
+          {groupReportScopes(availableAreas).map((group) => (
             <div key={group.id} className="flex flex-col">
               <p className="px-2 pt-1 pb-1 text-sm font-semibold text-[#292829]">
                 {group.label}
