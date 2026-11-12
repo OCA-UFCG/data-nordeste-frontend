@@ -6,15 +6,24 @@ import {
 } from "./reportPlaces";
 
 describe("parseReportPlaces", () => {
-  it("reads the states and cities lists from the proxy payload", () => {
+  it("reads the states, areas and cities lists from the proxy payload", () => {
     expect(
-      parseReportPlaces({ states: ["Bahia"], cities: ["Recife (PE)"] }),
-    ).toEqual({ states: ["Bahia"], cities: ["Recife (PE)"] });
+      parseReportPlaces({
+        states: ["Bahia"],
+        areas: ["Caatinga"],
+        cities: ["Recife (PE)"],
+      }),
+    ).toEqual({
+      states: ["Bahia"],
+      areas: ["Caatinga"],
+      cities: ["Recife (PE)"],
+    });
   });
 
   it("turns a missing or malformed list into an empty one", () => {
     expect(parseReportPlaces({ cities: ["Recife (PE)"] })).toEqual({
       states: [],
+      areas: [],
       cities: ["Recife (PE)"],
     });
     expect(parseReportPlaces({ states: "Bahia", cities: null })).toEqual(
@@ -26,9 +35,13 @@ describe("parseReportPlaces", () => {
 });
 
 describe("listReportPlaceNames", () => {
-  it("lists the states before the cities", () => {
+  it("lists the states, then the areas, then the cities", () => {
     expect(
-      listReportPlaceNames({ states: ["Bahia"], cities: ["Recife (PE)"] }),
-    ).toEqual(["Bahia", "Recife (PE)"]);
+      listReportPlaceNames({
+        states: ["Bahia"],
+        areas: ["Caatinga"],
+        cities: ["Recife (PE)"],
+      }),
+    ).toEqual(["Bahia", "Caatinga", "Recife (PE)"]);
   });
 });

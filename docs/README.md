@@ -129,18 +129,25 @@ outside the repository and rendered through frontend route/component logic.
   `/api/reports/generate` (the proxy triggers generation, polls the report
   index, and streams the PDF back with `Content-Type: application/pdf`), and
   the search list is proxied through `/api/reports/cities` as
-  `{ states, cities }`: the backend's `/estados` (the nine Northeast states)
-  and `/cities`, kept apart. Step 1 ("Área de Interesse") first asks for a
-  "Recorte" (`src/features/reports/reportScopes.ts`): "Município" searches
-  only municipalities, "Estado" only states. The Figma also lists Nordeste,
-  Caatinga, Semiárido and Área de atuação da Sudene; they are hidden by
-  product decision (Nov/2026) until Automatic-Reporting generates those
-  reports. An empty municipality search shows the first eight municipalities;
-  states are never capped. A backend without `/estados` leaves the "Estado"
-  search empty. A state name
+  `{ states, areas, cities }`: the backend's `/estados` (the nine Northeast
+  states), `/areas` (the areas of interest) and `/cities`, kept apart. Step 1
+  ("Área de Interesse") first asks for a "Recorte"
+  (`src/features/reports/reportScopes.ts`): "Município" searches only
+  municipalities, "Estado" only states. Nordeste (with the geopolitical
+  scopes), Caatinga, Semiárido and Área de atuação da Sudene (strategic
+  scopes) are area scopes: choosing one picks the whole area, with no search.
+  The Figma opens a state search under Nordeste; product decided (12/11/2026)
+  that Nordeste is the whole region instead. An area scope only shows when
+  `/areas` lists it, so environments whose backend has no `/areas` (beta and
+  prod in Nov/2026) keep only Município and Estado. Area scopes hide
+  Desenvolvimento Social and Instrumentos Sudene, which have no area data in
+  the backend. An empty municipality search shows the first eight
+  municipalities; states are never capped. A backend without `/estados` leaves
+  the "Estado" search empty. A state or area name
   goes to the same `/relatorio/{nome}` route, which the backend routes to its
-  state report (state Docs + `auto_relatorios_est` matviews, no charts or
-  map yet; Minas Gerais waits for the data team). The server
+  state or area report (state/area Docs + `auto_relatorios_est` /
+  `auto_relatorios_areaint` matviews, no charts or map yet; Minas Gerais waits
+  for the data team). The server
   reads `NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL`, such as
   `http://127.0.0.1:8000`, to reach the FastAPI service. The `/relatorio`
   route served directly by Automatic-Reporting returns an HTML page, not a

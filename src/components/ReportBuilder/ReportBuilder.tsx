@@ -35,6 +35,9 @@ import {
   type ReportPlaces,
 } from "@/features/reports/reportPlaces";
 import {
+  findReportScope,
+  getScopeAreaName,
+  isThemeAvailableInScope,
   selectReportScopePlaces,
   type ReportScopeId,
 } from "@/features/reports/reportScopes";
@@ -68,8 +71,8 @@ export function ReportBuilder({
 
   const [activeTab, setActiveTab] = useState<ReportMobileTab>("config");
   const sortedThemes = useMemo(
-    () => sortThemes(getSupportedThemes(themes)),
-    [themes],
+    () => sortThemes(getSupportedThemes(themes, scopeId)),
+    [themes, scopeId],
   );
   const supportedThemeIds = useMemo(
     () => getSupportedThemeIds(sortedThemes),
@@ -97,10 +100,19 @@ export function ReportBuilder({
   }, []);
 
   // A territory from the previous "Recorte" (e.g. a municipality after
-  // switching to "Estado") would never resolve, so it is cleared.
+  // switching to "Estado") would never resolve, so it is cleared. An area
+  // "Recorte" (Caatinga, Nordeste…) is itself the territory, so it fills it in.
   const changeScope = (nextScopeId: ReportScopeId): void => {
     setScopeId(nextScopeId);
-    setMunicipality("");
+    setMunicipality(getScopeAreaName(findReportScope(nextScopeId)) ?? "");
+
+    // A theme the new "Recorte" has no data for (e.g. Desenvolvimento Social
+    // in Caatinga) leaves the selection with its card.
+    setSelectedThemeIds((currentIds) =>
+      currentIds.filter((themeId) =>
+        isThemeAvailableInScope(themeId, nextScopeId),
+      ),
+    );
   };
 
   const toggleTheme = (themeId: string): void => {
@@ -157,6 +169,7 @@ export function ReportBuilder({
       allThemesSelected={allThemesSelected}
       areaField={
         <ReportAreaField
+          availableAreas={places.areas}
           introText={municipalityText}
           loadingPlaces={loadingPlaces}
           onScopeChange={changeScope}
@@ -500,8 +513,11 @@ function getSupportedThemeIds(themes: ReportTheme[]): string[] {
     .filter((themeId) => Boolean(getAutomaticReportSlug(themeId)));
 }
 
-function getSupportedThemes(themes: ReportTheme[]): ReportTheme[] {
-  return themes.filter((theme) => Boolean(getAutomaticReportSlug(theme.id)));
+function getSupportedThemes(
+  themes: ReportTheme[],
+  scopeId: ReportScopeId | null,
+): ReportTheme[] {
+  return themes.filter((theme) => isThemeAvailableInScope(theme.id, scopeId));
 }
 
 function hasSelectedAllThemes(
