@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   findReportScope,
   groupReportScopes,
+  isReportThemeAvailable,
   selectReportScopePlaces,
 } from "@/features/reports/reportScopes";
 
@@ -50,5 +51,29 @@ describe("selectReportScopePlaces", () => {
       states: [],
       cities: [],
     });
+  });
+});
+
+describe("isReportThemeAvailable", () => {
+  it("disables Desenvolvimento Social and Instrumentos Sudene for states", () => {
+    expect(isReportThemeAvailable("desenvolvimento_social", "estado")).toBe(
+      false,
+    );
+    expect(isReportThemeAvailable("instrumentos_sudene", "estado")).toBe(false);
+    expect(isReportThemeAvailable("demografia", "estado")).toBe(true);
+  });
+
+  it("keeps every supported theme for municipalities", () => {
+    expect(isReportThemeAvailable("desenvolvimento_social", "municipio")).toBe(
+      true,
+    );
+    expect(isReportThemeAvailable("instrumentos_sudene", "municipio")).toBe(
+      true,
+    );
+  });
+
+  it("rejects themes without a report slug in any scope", () => {
+    expect(isReportThemeAvailable("cultura", null)).toBe(false);
+    expect(isReportThemeAvailable("cultura", "municipio")).toBe(false);
   });
 });

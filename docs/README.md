@@ -135,7 +135,9 @@ outside the repository and rendered through frontend route/component logic.
   only municipalities, "Estado" only states. The Figma also lists Nordeste,
   Caatinga, Semiárido and Área de atuação da Sudene; they are hidden by
   product decision (Nov/2026) until Automatic-Reporting generates those
-  reports. An empty municipality search shows the first eight municipalities;
+  reports. Under "Estado", Desenvolvimento Social and Instrumentos Sudene are
+  disabled in step 2 (no state report for them yet), and switching to
+  "Estado" drops them from the selection. An empty municipality search shows the first eight municipalities;
   states are never capped. A backend without `/estados` leaves the "Estado"
   search empty. A state name
   goes to the same `/relatorio/{nome}` route, which the backend routes to its

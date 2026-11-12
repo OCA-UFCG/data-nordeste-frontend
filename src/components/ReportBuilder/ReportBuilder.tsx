@@ -35,6 +35,7 @@ import {
   type ReportPlaces,
 } from "@/features/reports/reportPlaces";
 import {
+  isReportThemeAvailable,
   selectReportScopePlaces,
   type ReportScopeId,
 } from "@/features/reports/reportScopes";
@@ -71,13 +72,13 @@ export function ReportBuilder({
     () => sortThemes(getSupportedThemes(themes)),
     [themes],
   );
-  const supportedThemeIds = useMemo(
-    () => getSupportedThemeIds(sortedThemes),
-    [sortedThemes],
+  const availableThemeIds = useMemo(
+    () => getAvailableThemeIds(sortedThemes, scopeId),
+    [sortedThemes, scopeId],
   );
   const allThemesSelected = hasSelectedAllThemes(
     selectedThemeIds,
-    supportedThemeIds,
+    availableThemeIds,
   );
 
   const scopedPlaces = useMemo(
@@ -97,21 +98,25 @@ export function ReportBuilder({
   }, []);
 
   // A territory from the previous "Recorte" (e.g. a municipality after
-  // switching to "Estado") would never resolve, so it is cleared.
+  // switching to "Estado") would never resolve, so it is cleared. Themes the
+  // new scope cannot generate are dropped too, or the request would ask the
+  // backend for a report it does not have.
   const changeScope = (nextScopeId: ReportScopeId): void => {
     setScopeId(nextScopeId);
     setMunicipality("");
+    setSelectedThemeIds((currentIds) =>
+      currentIds.filter((id) => isReportThemeAvailable(id, nextScopeId)),
+    );
   };
 
   const toggleTheme = (themeId: string): void => {
-    if (!getAutomaticReportSlug(themeId)) return;
     setSelectedThemeIds((currentIds) =>
-      toggleThemeId(currentIds, themeId, supportedThemeIds),
+      toggleThemeId(currentIds, themeId, availableThemeIds),
     );
   };
 
   const selectEveryTheme = (): void => {
-    setSelectedThemeIds(supportedThemeIds);
+    setSelectedThemeIds(availableThemeIds);
   };
 
   const clearSelectedThemes = (): void => {
@@ -167,6 +172,7 @@ export function ReportBuilder({
         />
       }
       areaSelected={resolvedMunicipality !== null}
+      availableThemeIds={availableThemeIds}
       errorMessage={errorMessage}
       generatingReport={generatingReport}
       onClear={clearSelectedThemes}
@@ -187,6 +193,7 @@ function ReportBuilderLayout({
   allThemesSelected,
   areaField,
   areaSelected,
+  availableThemeIds,
   errorMessage,
   generatingReport,
   onClear,
@@ -203,6 +210,7 @@ function ReportBuilderLayout({
   allThemesSelected: boolean;
   areaField: ReactElement;
   areaSelected: boolean;
+  availableThemeIds: string[];
   errorMessage: string;
   generatingReport: boolean;
   onClear: () => void;
@@ -254,6 +262,7 @@ function ReportBuilderLayout({
               >
                 <ReportThemesField
                   allThemesSelected={allThemesSelected}
+                  availableThemeIds={availableThemeIds}
                   onClear={onClear}
                   onSelectAll={onSelectAll}
                   onToggleTheme={onToggleTheme}
@@ -343,6 +352,7 @@ function ReportMobileTabButton({
 
 function ReportThemesField({
   allThemesSelected,
+  availableThemeIds,
   onClear,
   onSelectAll,
   onToggleTheme,
@@ -351,6 +361,7 @@ function ReportThemesField({
   themeText,
 }: {
   allThemesSelected: boolean;
+  availableThemeIds: string[];
   onClear: () => void;
   onSelectAll: () => void;
   onToggleTheme: (themeId: string) => void;
@@ -370,6 +381,7 @@ function ReportThemesField({
         onClick={onSelectAll}
       />
       <ReportThemeList
+        availableThemeIds={availableThemeIds}
         onToggleTheme={onToggleTheme}
         selectedThemeIds={selectedThemeIds}
         themes={themes}
@@ -399,10 +411,12 @@ function ReportThemeActions({
 }
 
 function ReportThemeList({
+  availableThemeIds,
   onToggleTheme,
   selectedThemeIds,
   themes,
 }: {
+  availableThemeIds: string[];
   onToggleTheme: (themeId: string) => void;
   selectedThemeIds: string[];
   themes: ReportTheme[];
@@ -412,7 +426,7 @@ function ReportThemeList({
       {themes.map((theme) => {
         const iconKey = normalizeKey(theme.name);
         const iconId = MACROTHEME_ICON_BY_ID[iconKey] || "list";
-        const disabled = !getAutomaticReportSlug(theme.id);
+        const disabled = !availableThemeIds.includes(theme.id);
 
         return (
           <ThemeFilterCard
@@ -484,9 +498,9 @@ function sortThemes(themes: ReportTheme[]): ReportTheme[] {
 function toggleThemeId(
   currentIds: string[],
   themeId: string,
-  supportedThemeIds: string[],
+  availableThemeIds: string[],
 ): string[] {
-  if (!supportedThemeIds.includes(themeId)) return currentIds;
+  if (!availableThemeIds.includes(themeId)) return currentIds;
   if (currentIds.includes(themeId)) {
     return currentIds.filter((id) => id !== themeId);
   }
@@ -494,10 +508,13 @@ function toggleThemeId(
   return [...currentIds, themeId];
 }
 
-function getSupportedThemeIds(themes: ReportTheme[]): string[] {
+function getAvailableThemeIds(
+  themes: ReportTheme[],
+  scopeId: ReportScopeId | null,
+): string[] {
   return themes
     .map((theme) => theme.id)
-    .filter((themeId) => Boolean(getAutomaticReportSlug(themeId)));
+    .filter((themeId) => isReportThemeAvailable(themeId, scopeId));
 }
 
 function getSupportedThemes(themes: ReportTheme[]): ReportTheme[] {
@@ -506,11 +523,11 @@ function getSupportedThemes(themes: ReportTheme[]): ReportTheme[] {
 
 function hasSelectedAllThemes(
   selectedThemeIds: string[],
-  supportedThemeIds: string[],
+  availableThemeIds: string[],
 ): boolean {
   return (
-    supportedThemeIds.length > 0 &&
-    supportedThemeIds.every((themeId) => selectedThemeIds.includes(themeId))
+    availableThemeIds.length > 0 &&
+    availableThemeIds.every((themeId) => selectedThemeIds.includes(themeId))
   );
 }
 

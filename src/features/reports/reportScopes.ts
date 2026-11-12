@@ -1,4 +1,8 @@
 import {
+  getAutomaticReportSlug,
+  type AutomaticReportMacrothemeSlug,
+} from "@/features/reports/automaticReport";
+import {
   EMPTY_REPORT_PLACES,
   type ReportPlaces,
 } from "@/features/reports/reportPlaces";
@@ -89,4 +93,32 @@ export function selectReportScopePlaces(
   if (scopeId === "municipio") return { states: [], cities: places.cities };
 
   return EMPTY_REPORT_PLACES;
+}
+
+// IMPORTANT: Automatic-Reporting does not generate the state report for these
+// macrothemes yet, so the "Estado" scope shows them disabled. Remove a slug
+// from here once the backend serves it for states.
+const UNAVAILABLE_REPORT_SLUGS_BY_SCOPE: Record<
+  ReportScopeId,
+  AutomaticReportMacrothemeSlug[]
+> = {
+  municipio: [],
+  estado: ["desenvolvimento-social", "instrumentos-sudene"],
+};
+
+/**
+ * Whether the macrotheme can go into a report for this scope: it needs a
+ * report slug, and the scope must not exclude it. No scope means only the slug
+ * matters.
+ * Example: `isReportThemeAvailable("instrumentos_sudene", "estado")` → `false`.
+ */
+export function isReportThemeAvailable(
+  themeId: string,
+  scopeId: ReportScopeId | null,
+): boolean {
+  const slug = getAutomaticReportSlug(themeId);
+  if (!slug) return false;
+  if (!scopeId) return true;
+
+  return !UNAVAILABLE_REPORT_SLUGS_BY_SCOPE[scopeId].includes(slug);
 }

@@ -21,6 +21,13 @@ const DEMOGRAFIA_THEME = {
   sys: { id: "demografia-sys" },
 };
 
+const INSTRUMENTOS_SUDENE_THEME = {
+  id: "instrumentos_sudene",
+  name: "Instrumentos Sudene",
+  color: "#00A5CF",
+  sys: { id: "instrumentos-sudene-sys" },
+};
+
 /** Serves the cities list and answers the generation POST with a fixed status, mimicking the backend behind `aguardar=nao`. */
 class FakeReportGenerationApi {
   constructor(private readonly generateStatus: number) {}
@@ -169,5 +176,31 @@ describe("ReportBuilder", () => {
     expect(
       screen.getByPlaceholderText("Pesquise ou selecione um estado"),
     ).toHaveValue("");
+  });
+
+  it("disables Instrumentos Sudene and drops it from the selection under Estado", async () => {
+    vi.stubGlobal("fetch", new FakeCitiesApi().fetch);
+    const user = userEvent.setup();
+
+    render(
+      <ReportBuilder themes={[DEMOGRAFIA_THEME, INSTRUMENTOS_SUDENE_THEME]} />,
+    );
+    await chooseScope(user, "Município");
+    await user.click(
+      screen.getByRole("button", { name: /Selecione os temas/ }),
+    );
+    await user.click(screen.getByRole("button", { name: "Selecionar todos" }));
+    await user.click(screen.getByRole("button", { name: /Área de Interesse/ }));
+    await chooseScope(user, "Estado");
+    await user.click(
+      screen.getByRole("button", { name: /Selecione os temas/ }),
+    );
+
+    const instrumentos = screen.getByRole("checkbox", {
+      name: "Instrumentos Sudene",
+    });
+    expect(instrumentos).toBeDisabled();
+    expect(instrumentos).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Demografia" })).toBeChecked();
   });
 });
