@@ -36,7 +36,36 @@ export type ChoroplethMapProps = {
   background?: string;
 };
 
-export const ChoroplethMap = (props: ChoroplethMapProps) => {
+export type ChoroplethCanvasProps = Pick<
+  ChoroplethMapProps,
+  | "meshUrl"
+  | "regions"
+  | "buckets"
+  | "valueLabel"
+  | "formatValue"
+  | "selectedCode"
+  | "highlightCodes"
+  | "background"
+> & {
+  label: string;
+  fill?: boolean;
+  className?: string;
+
+  // Sem clique: o mapa só mostra (ex.: a legenda por porte).
+  onSelectRegion?: (code: string) => void;
+};
+
+/**
+ * Só o desenho do mapa coroplético: malha, cores e clique em região, sem o
+ * cartão em volta. Quem já está num cartão (o painel de perfil) usa este
+ * direto; o ChoroplethMap o envolve com o título, a tabela e a legenda.
+ *
+ * `className` substitui o tamanho padrão: aí quem chama define a altura e o
+ * mapa não usa a proporção da malha.
+ *
+ * @example <ChoroplethCanvas label="Mapa dos municípios" meshUrl="/maps/municipios-sudene.json" regions={regions} buckets={buckets} valueLabel="População" formatValue={formatPessoas} onSelectRegion={pick} />
+ */
+export const ChoroplethCanvas = (props: ChoroplethCanvasProps) => {
   const { selectedCode, highlightCodes, regions, buckets } = props;
   const { valueLabel, formatValue } = props;
   const codes = useMemo(() => regions.map((region) => region.code), [regions]);
@@ -62,32 +91,62 @@ export const ChoroplethMap = (props: ChoroplethMapProps) => {
     [regions, buckets, valueLabel, formatValue, selectedCode, highlightCodes],
   );
 
-  const map =
-    status === "ready" && areaBounds ? (
-      <EChart
-        option={frameOption}
-        label={`Mapa coroplético: ${props.title}`}
-        className={
-          props.fill
-            ? "aspect-(--map-ratio) w-full xl:aspect-auto xl:min-h-0 xl:flex-1"
-            : "w-full"
-        }
-        style={
-          props.fill
-            ? ({
-                "--map-ratio": aspectRatio,
-                "backgroundColor": props.background,
-              } as CSSProperties)
-            : { aspectRatio, backgroundColor: props.background }
-        }
-        renderer={MAP_RENDERER}
-        morph={false}
-        restyleOption={colorOption}
-        onItemClick={props.onSelectRegion}
-      />
-    ) : (
-      <MeshFallback status={status} />
-    );
+  if (status !== "ready" || !areaBounds) {
+    return <MeshFallback status={status} />;
+  }
+
+  return (
+    <EChart
+      option={frameOption}
+      label={props.label}
+      className={props.className ?? defaultClassName(props.fill)}
+      style={canvasStyle(props, aspectRatio)}
+      renderer={MAP_RENDERER}
+      morph={false}
+      restyleOption={colorOption}
+      onItemClick={props.onSelectRegion}
+    />
+  );
+};
+
+// Sem `fill`, o mapa segue a proporção da malha; com ele, ocupa a altura do pai
+// a partir do xl (ver ChoroplethMap).
+const defaultClassName = (fill?: boolean) =>
+  fill
+    ? "aspect-(--map-ratio) w-full xl:aspect-auto xl:min-h-0 xl:flex-1"
+    : "w-full";
+
+const canvasStyle = (
+  props: Pick<ChoroplethCanvasProps, "fill" | "background" | "className">,
+  aspectRatio: number,
+): CSSProperties => {
+  if (props.className) return { backgroundColor: props.background };
+  if (props.fill) {
+    return {
+      "--map-ratio": aspectRatio,
+      "backgroundColor": props.background,
+    } as CSSProperties;
+  }
+
+  return { aspectRatio, backgroundColor: props.background };
+};
+
+export const ChoroplethMap = (props: ChoroplethMapProps) => {
+  const map = (
+    <ChoroplethCanvas
+      label={`Mapa coroplético: ${props.title}`}
+      meshUrl={props.meshUrl}
+      regions={props.regions}
+      buckets={props.buckets}
+      valueLabel={props.valueLabel}
+      formatValue={props.formatValue}
+      selectedCode={props.selectedCode}
+      highlightCodes={props.highlightCodes}
+      onSelectRegion={props.onSelectRegion}
+      background={props.background}
+      fill={props.fill}
+    />
+  );
 
   if (props.fill) {
     return (

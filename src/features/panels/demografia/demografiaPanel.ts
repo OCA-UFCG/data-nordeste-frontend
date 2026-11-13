@@ -32,19 +32,19 @@ export const DEMOGRAFIA_PORTES: readonly DemografiaPorte[] = [
   {
     max: 5e4,
     label: "Pequeno",
-    color: "#efcfdc",
+    color: "#f6d3e0",
     texto: "Pequeno porte (até 50 mil hab.)",
   },
   {
     max: 1e5,
     label: "Médio",
-    color: "#e7a4bf",
+    color: "#e98dae",
     texto: "Médio porte (50 mil - 100 mil hab.)",
   },
   {
     max: Infinity,
     label: "Grande",
-    color: "#e482a9",
+    color: "#c93c6b",
     texto: "Grande porte (acima de 100 mil hab.)",
   },
 ];

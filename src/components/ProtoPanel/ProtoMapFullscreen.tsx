@@ -199,6 +199,20 @@ const useMapView = () => {
 
 type MapProps = ProtoStateMapProps;
 
+// O palco: o mapa por estado (com zoom e arrasto) ou o que o painel passar em
+// `renderStage` (o mapa de municípios, que tem o próprio zoom).
+type StageProps = MapProps | { renderStage: () => ReactNode };
+
+type FrameProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  subtitle: string;
+  legend: ReactNode;
+};
+
+export type ProtoMapFullscreenProps = FrameProps & StageProps;
+
 const ZoomControls = ({
   view,
   zoom,
@@ -275,13 +289,8 @@ const FullscreenContent = ({
   title,
   subtitle,
   legend,
-  map,
-}: {
-  title: string;
-  subtitle: string;
-  legend: ReactNode;
-  map: MapProps;
-}) => {
+  stage,
+}: Omit<FrameProps, "open" | "onOpenChange"> & { stage: StageProps }) => {
   const mapView = useMapView();
   const tone = useProtoTone();
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -327,7 +336,11 @@ const FullscreenContent = ({
           </svg>
         </DialogClose>
       </div>
-      <MapStage map={map} mapView={mapView} />
+      {"renderStage" in stage ? (
+        stage.renderStage()
+      ) : (
+        <MapStage map={stage} mapView={mapView} />
+      )}
       <div className="mx-1 mt-3">{legend}</div>
       <div className="mx-1 mt-3 flex justify-between gap-3 border-t border-grey-200 pt-3 text-[13px] text-grey-800">
         <span>Fonte: PNAD/IBGE · Data Nordeste</span>
@@ -342,31 +355,20 @@ const FullscreenContent = ({
 /**
  * Mapa em tela cheia (`.mmodal` do protótipo): ampliar, reduzir, ajustar
  * (botões, roda do mouse ou teclas + − 0), arrastar e clicar num estado para
- * filtrar o painel. `legend` é a legenda do painel, já montada.
+ * filtrar o painel. `legend` é a legenda do painel, já montada. Com
+ * `renderStage`, o palco é do painel (ex.: mapa de municípios) e o cabeçalho,
+ * a legenda e o rodapé continuam os mesmos.
  *
  * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" legend={<IdhMapLegend mapa={mapa} />} fillFor={fill} describe={describe} isSelectable={isSelectable} label="Mapa" selectedUf="PE" onSelect={toggleUf} />
  */
-export const ProtoMapFullscreen = ({
-  open,
-  onOpenChange,
-  title,
-  subtitle,
-  legend,
-  ...map
-}: MapProps & {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  subtitle: string;
-  legend: ReactNode;
-}) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    {open ? (
+export const ProtoMapFullscreen = (props: ProtoMapFullscreenProps) => (
+  <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+    {props.open ? (
       <FullscreenContent
-        title={title}
-        subtitle={subtitle}
-        legend={legend}
-        map={map}
+        title={props.title}
+        subtitle={props.subtitle}
+        legend={props.legend}
+        stage={props}
       />
     ) : null}
   </Dialog>

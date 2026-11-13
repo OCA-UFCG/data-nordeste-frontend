@@ -12,13 +12,12 @@ import {
   STATE_PATHS,
 } from "@/features/panels/stateShapes";
 
-// O escolhido vai por último: o contorno grosso dele fica por cima dos vizinhos.
-const drawOrder = (selectedUf?: string) => {
+// Os escolhidos vão por último: o contorno grosso deles fica por cima dos vizinhos.
+const drawOrder = (selected: string[]) => {
   const codes = Object.keys(STATE_PATHS);
+  const chosen = codes.filter((code) => selected.includes(code));
 
-  return selectedUf && codes.includes(selectedUf)
-    ? [...codes.filter((code) => code !== selectedUf), selectedUf]
-    : codes;
+  return [...codes.filter((code) => !selected.includes(code)), ...chosen];
 };
 
 const StatePath = ({
@@ -66,6 +65,9 @@ const StatePath = ({
   );
 };
 
+const chosenCodes = (selectedUf?: string, selectedUfs?: string[]): string[] =>
+  selectedUf ? [selectedUf, ...(selectedUfs ?? [])] : selectedUfs ?? [];
+
 /**
  * Props do mapa por estado: quem decide a cor, o texto e se o estado escolhe
  * (`isSelectable`) fica com o painel; o mapa cuida só do desenho e do toque.
@@ -76,6 +78,9 @@ export type ProtoStateMapProps = {
   isSelectable: (code: string) => boolean;
   label: string;
   selectedUf?: string;
+
+  // Vários estados escolhidos (filtro multivalor); vale junto com `selectedUf`.
+  selectedUfs?: string[];
   onSelect: (code: string) => void;
 };
 
@@ -92,6 +97,7 @@ export const ProtoStateMap = ({
   isSelectable,
   label,
   selectedUf,
+  selectedUfs,
   onSelect,
   svgRef,
   viewBox,
@@ -112,14 +118,14 @@ export const ProtoStateMap = ({
     fontFamily={PROTO_CHART_FONT}
     className={className}
   >
-    {drawOrder(selectedUf).map((code) => (
+    {drawOrder(chosenCodes(selectedUf, selectedUfs)).map((code) => (
       <StatePath
         key={code}
         code={code}
         fill={fillFor(code)}
         label={describe(code)}
         selectable={isSelectable(code)}
-        selected={code === selectedUf}
+        selected={chosenCodes(selectedUf, selectedUfs).includes(code)}
         fullscreen={fullscreen}
         onSelect={onSelect}
       />
