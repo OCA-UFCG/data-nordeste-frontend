@@ -37,9 +37,17 @@ const PerfilFilterFields = ({
   const { filters } = data;
   const id = useId();
 
+  // Desktop: campos flexíveis como `.fb-in .fl` do protótipo; a folha do celular fica com largura toda.
+  const fluid = !wide;
+
   return (
     <>
-      <ProtoSelectField label="Ano" wide={wide}>
+      <ProtoSelectField
+        label="Ano"
+        wide={wide}
+        fluid={fluid}
+        className={fluid ? "max-w-[140px]" : undefined}
+      >
         {(fieldId) => (
           <select
             id={fieldId}
@@ -57,7 +65,7 @@ const PerfilFilterFields = ({
           </select>
         )}
       </ProtoSelectField>
-      <ProtoSelectField label="Área de interesse" wide={wide}>
+      <ProtoSelectField label="Área de interesse" wide={wide} fluid={fluid}>
         {(fieldId) => (
           <select
             id={fieldId}
@@ -86,7 +94,7 @@ const PerfilFilterFields = ({
         values={filters.uf}
         options={data.ufs.map((uf) => ({ value: uf.sigla, label: uf.nome }))}
         onChange={(uf) => onChange({ ...filters, uf })}
-        look={protoFieldLook(wide)}
+        look={protoFieldLook(wide, fluid)}
       />
       <PlaceFilter
         id={`${id}-mun`}
@@ -100,7 +108,7 @@ const PerfilFilterFields = ({
           label: mun.nome,
         }))}
         onChange={(mun) => onChange({ ...filters, mun })}
-        look={protoFieldLook(wide)}
+        look={protoFieldLook(wide, fluid)}
       />
     </>
   );

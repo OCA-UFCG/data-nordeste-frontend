@@ -33,6 +33,12 @@ const ESTADOS_LABEL = "Mapa dos estados do Nordeste";
 const ESTADO_FILL = "#f6d3e0";
 const ESTADO_FILL_SELECTED = "#e98dae";
 
+// 560 px é o `max-height` do mapa no protótipo (`.map-box`). Fixar a altura
+// (em vez da proporção da malha) evita que o card cresça para ~1 200 px; as
+// duas vistas usam a mesma caixa para o card não mudar de tamanho ao alternar.
+const MAP_BOX_CLASS =
+  "h-[560px] w-full max-[1000px]:h-[480px] max-[700px]:h-[360px]";
+
 type MapView = "municipios" | "estados";
 
 const VIEWS: { key: MapView; label: string }[] = [
@@ -161,9 +167,12 @@ export const PerfilPorteMapCard = ({
       <ViewToggle value={view} onChange={setView} />
       <div className="flex flex-1 items-center rounded-[8px] bg-[#d4eef7] p-1 max-[1000px]:p-2">
         {view === "estados" ? (
-          <ProtoStateMap {...estados} />
+          <ProtoStateMap
+            {...estados}
+            className={`mx-auto block max-h-[560px] ${MAP_BOX_CLASS}`}
+          />
         ) : (
-          municipiosCanvas(data, porte.highlightCodes)
+          municipiosCanvas(data, porte.highlightCodes, MAP_BOX_CLASS)
         )}
       </div>
       {legend}
