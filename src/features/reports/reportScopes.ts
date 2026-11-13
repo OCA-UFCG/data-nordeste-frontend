@@ -151,20 +151,24 @@ export function selectReportScopePlaces(
 // INTENTIONAL: Automatic-Reporting has no area matview for these themes
 // (auto_relatorios_areaint, 12/11/2026). Asked for an area, it skips them, or
 // answers 503 when they are the only themes, so the form does not offer them.
-// The state report (auto_relatorios_est) does not cover them yet either, so
-// "Estado" leaves them out too. The form shows them disabled, not hidden, so
-// the user sees the theme exists but not for this "Recorte".
-const THEME_IDS_WITHOUT_REGIONAL_DATA = new Set([
+// The form shows them disabled, not hidden, so the user sees the theme exists
+// but not for this "Recorte".
+const THEME_IDS_WITHOUT_AREA_DATA = new Set([
   "desenvolvimento_social",
   "instrumentos_sudene",
 ]);
 
+// INTENTIONAL: the state report (auto_relatorios_est) has no matview for
+// Instrumentos Sudene. Desenvolvimento Social left this list on 13/11/2026,
+// once `est_desen_social` and DESENVOLVIMENTO_SOCIAL_ESTADO_DOCS_URL existed.
+const THEME_IDS_WITHOUT_STATE_DATA = new Set(["instrumentos_sudene"]);
+
 /**
  * Whether the report can include this Data Nordeste theme in the chosen scope:
- * a theme without a report slug never can, and the state and area scopes leave
- * out the themes with no regional data. Only "Município" (or no scope yet)
- * offers every theme with a report.
- * Example: `isThemeAvailableInScope("desenvolvimento_social", "estado")` → `false`.
+ * a theme without a report slug never can, and the state and area scopes each
+ * leave out the themes their backend report has no data for. Only "Município"
+ * (or no scope yet) offers every theme with a report.
+ * Example: `isThemeAvailableInScope("instrumentos_sudene", "estado")` → `false`.
  */
 export function isThemeAvailableInScope(
   themeId: string,
@@ -172,6 +176,7 @@ export function isThemeAvailableInScope(
 ): boolean {
   if (!getAutomaticReportSlug(themeId)) return false;
   if (scopeId === null || scopeId === "municipio") return true;
+  if (scopeId === "estado") return !THEME_IDS_WITHOUT_STATE_DATA.has(themeId);
 
-  return !THEME_IDS_WITHOUT_REGIONAL_DATA.has(themeId);
+  return !THEME_IDS_WITHOUT_AREA_DATA.has(themeId);
 }

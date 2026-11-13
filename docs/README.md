@@ -139,10 +139,12 @@ outside the repository and rendered through frontend route/component logic.
   The Figma opens a state search under Nordeste; product decided (12/11/2026)
   that Nordeste is the whole region instead. An area scope only shows when
   `/areas` lists it, so environments whose backend has no `/areas` (beta and
-  prod in Nov/2026) keep only Município and Estado. Estado and the area scopes
-  show Desenvolvimento Social and Instrumentos Sudene disabled (no state or
-  area data in the backend yet) and drop them from the selection; only
-  Município offers every theme. An empty municipality search shows the first eight
+  prod in Nov/2026) keep only Município and Estado. The area scopes show
+  Desenvolvimento Social and Instrumentos Sudene disabled (no area data in the
+  backend yet), and Estado shows only Instrumentos Sudene disabled (no
+  `est_*` matview; Desenvolvimento Social got its state report on
+  13/11/2026); disabled themes drop from the selection, and only Município
+  offers every theme. An empty municipality search shows the first eight
   municipalities; states are never capped. A backend without `/estados` leaves
   the "Estado" search empty. A state or area name
   goes to the same `/relatorio/{nome}` route, which the backend routes to its
