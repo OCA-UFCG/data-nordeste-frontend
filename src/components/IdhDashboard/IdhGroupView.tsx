@@ -1,111 +1,198 @@
 "use client";
 
-import { ChartCard, ChartNotice } from "@/components/Panel/cards/ChartCard";
-import { GaugeChart } from "@/components/Panel/charts/GaugeChart";
-import { HorizontalBarChart } from "@/components/Panel/charts/HorizontalBarChart";
-import type {
-  IdhGroupPoint,
-  IdhGroupSerie,
-} from "@/features/panels/idh/idhPanel";
 import {
-  formatIdhCard,
-  formatRenda,
-  IDH_GROUP_COLORS,
-  NO_DATA,
-} from "@/features/panels/idh/idhFormat";
+  IdhCard,
+  IdhCardNotice,
+  type IdhCardState,
+} from "@/components/IdhDashboard/IdhCard";
+import {
+  IDH_CARD_INFO,
+  IdhCardInfo,
+} from "@/components/IdhDashboard/IdhCardInfo";
+import { IdhCardMenu } from "@/components/IdhDashboard/IdhCardMenu";
+import { CARD_SHADOW, IDH_COLORS } from "@/components/IdhDashboard/idhStyles";
+import { formatNumber } from "@/features/panels/format";
+import {
+  compareIdhGroups,
+  type IdhGroupMetric,
+  type IdhGroupValue,
+} from "@/features/panels/idh/idhGroupCompare";
+import { formatIdhCard, formatRenda } from "@/features/panels/idh/idhFormat";
+import {
+  IDH_VISOES,
+  idhPlaceName,
+  type IdhPanelData,
+} from "@/features/panels/idh/idhPanel";
 
-type GroupValue = { label: string; point: IdhGroupPoint };
+type GroupVisao = "sexo" | "cor";
 
-const CHART_HEIGHT = "h-48 w-full sm:h-56";
+// Ordem do protótipo. Gini não tem página no catálogo (o item fica desativado).
+const METRIC_CARDS: readonly {
+  metric: IdhGroupMetric;
+  title: string;
+  catalog: boolean;
+}[] = [
+  { metric: "idh", title: "IDH", catalog: true },
+  { metric: "rendaPerCapita", title: "Renda per capita", catalog: true },
+  { metric: "gini", title: "Índice de Gini", catalog: false },
+  {
+    metric: "rendimento",
+    title: "Rendimento médio dos ocupados",
+    catalog: true,
+  },
+];
 
-const pointsInYear = (groups: IdhGroupSerie[], ano: number): GroupValue[] =>
-  groups.flatMap((group) => {
-    const point = group.serie.find((item) => item.ano === ano);
+// `--sa` e `--sb` do protótipo: o primeiro grupo roxo, o segundo azul.
+const GROUP_COLORS = [IDH_COLORS.accentStrong, IDH_COLORS.groupSecond];
 
-    return point ? [{ label: group.label, point }] : [];
-  });
+const isIndex = (metric: IdhGroupMetric) =>
+  metric === "idh" || metric === "gini";
 
-const GaugePair = ({
-  title,
-  values,
+// `.gi`: rótulo e valor, a barra de 12 px e a escala de 0 ao fim.
+const GroupItem = ({
+  item,
+  color,
+  max,
   metric,
 }: {
-  title: string;
-  values: GroupValue[];
-  metric: "idh" | "gini";
+  item: IdhGroupValue;
+  color: string;
+  max: number;
+  metric: IdhGroupMetric;
 }) => (
-  <ChartCard title={title}>
-    {values.length ? (
-      <div className="grid grid-cols-2 gap-2">
-        {values.map(({ label, point }) => (
-          <GaugeChart
-            key={label}
-            label={`Medidor: ${title} · ${label}`}
-            name={label}
-            value={point[metric]}
-            max={1}
-            color={IDH_GROUP_COLORS[label]}
-            formatValue={formatIdhCard}
-            className={CHART_HEIGHT}
-          />
-        ))}
-      </div>
-    ) : (
-      <ChartNotice>{NO_DATA}</ChartNotice>
-    )}
-  </ChartCard>
-);
-
-const GroupBars = ({
-  title,
-  values,
-  metric,
-}: {
-  title: string;
-  values: GroupValue[];
-  metric: "rendaPerCapita" | "rendimento";
-}) => (
-  <ChartCard title={title}>
-    {values.length ? (
-      <HorizontalBarChart
-        label={`Gráfico de barras: ${title}`}
-        points={values.map(({ label, point }) => ({
-          label,
-          value: point[metric],
-          color: IDH_GROUP_COLORS[label],
-        }))}
-        formatValue={formatRenda}
-        className={CHART_HEIGHT}
+  <div className="mt-2.5 first:mt-1">
+    <div className="flex justify-between text-[13px] leading-[18px]">
+      <span>{item.label}</span>
+      <b className="font-medium tabular-nums">
+        {isIndex(metric) ? formatIdhCard(item.value) : formatRenda(item.value)}
+      </b>
+    </div>
+    <div className="mt-2 h-3 overflow-hidden rounded-[6px] bg-grey-200">
+      <i
+        className="block h-full rounded-[6px] transition-[width] duration-350 motion-reduce:transition-none"
+        style={{
+          width: `${Math.min(item.value / max, 1) * 100}%`,
+          background: color,
+        }}
       />
-    ) : (
-      <ChartNotice>{NO_DATA}</ChartNotice>
-    )}
-  </ChartCard>
+    </div>
+    <div className="mt-1.5 flex justify-between text-[10.5px] text-grey-800 tabular-nums">
+      <span>{isIndex(metric) ? "0,00" : "0"}</span>
+      <span>{isIndex(metric) ? formatIdhCard(max) : formatNumber(max)}</span>
+    </div>
+  </div>
 );
 
-export const IdhGroupView = ({
-  groups,
-  ano,
-}: {
-  groups: IdhGroupSerie[];
-  ano: number;
+const GroupCard = ({
+  title,
+  metric,
+  catalog,
+  visao,
+  data,
+  state,
+  onRetry,
+}: (typeof METRIC_CARDS)[number] & {
+  visao: GroupVisao;
+  data: IdhPanelData;
+  state: IdhCardState;
+  onRetry: () => void;
 }) => {
-  const values = pointsInYear(groups, ano);
+  const { values, max, gap } = compareIdhGroups(
+    data[visao],
+    data.filters.ano,
+    metric,
+  );
+  const place = `${idhPlaceName(data)}, ${data.filters.ano}`;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <GaugePair title="IDH" values={values} metric="idh" />
-      <GroupBars
-        title="Renda per capita"
-        values={values}
-        metric="rendaPerCapita"
-      />
-      <GaugePair title="Índice de Gini" values={values} metric="gini" />
-      <GroupBars
-        title="Rendimento médio dos ocupados"
-        values={values}
-        metric="rendimento"
-      />
+    <IdhCard
+      title={title}
+      subtitle={gap ? `${gap} · ${place}` : place}
+      kind="grp"
+      state={state}
+      onRetry={onRetry}
+      actions={
+        <>
+          <IdhCardInfo title={title} text={IDH_CARD_INFO.groups} />
+          <IdhCardMenu title={title} catalog={catalog} />
+        </>
+      }
+    >
+      {values.map((item, index) => (
+        <GroupItem
+          key={item.label}
+          item={item}
+          color={GROUP_COLORS[index]}
+          max={max}
+          metric={metric}
+        />
+      ))}
+    </IdhCard>
+  );
+};
+
+// Real: só quando o banco não tem o grupo no lugar e no ano escolhidos.
+const NoGroupData = ({
+  visao,
+  data,
+  onReset,
+}: {
+  visao: GroupVisao;
+  data: IdhPanelData;
+  onReset: () => void;
+}) => (
+  <div
+    className={`rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW}`}
+  >
+    <IdhCardNotice
+      tone="warn"
+      action={{ label: "Ver Nordeste, 2021", onClick: onReset }}
+    >
+      <b>ATENÇÃO:</b> não há dados da{" "}
+      {IDH_VISOES.find((item) => item.key === visao)?.label.toLowerCase()} para{" "}
+      {idhPlaceName(data)} em {data.filters.ano}.
+    </IdhCardNotice>
+  </div>
+);
+
+/**
+ * Visão por sexo ou por cor (`.grp` do protótipo): um card por métrica, com
+ * os dois grupos na mesma escala e a diferença entre eles no subtítulo.
+ *
+ * @example <IdhGroupView visao="sexo" data={panel} state="ok" onRetry={retry} onReset={reset} />
+ */
+export const IdhGroupView = ({
+  visao,
+  data,
+  state,
+  onRetry,
+  onReset,
+}: {
+  visao: GroupVisao;
+  data: IdhPanelData;
+  state: IdhCardState;
+  onRetry: () => void;
+  onReset: () => void;
+}) => {
+  const hasData =
+    compareIdhGroups(data[visao], data.filters.ano, "idh").values.length > 0;
+
+  if (state === "ok" && !hasData) {
+    return <NoGroupData visao={visao} data={data} onReset={onReset} />;
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-4 max-[760px]:grid-cols-1">
+      {METRIC_CARDS.map((card) => (
+        <GroupCard
+          key={card.metric}
+          {...card}
+          visao={visao}
+          data={data}
+          state={state}
+          onRetry={onRetry}
+        />
+      ))}
     </div>
   );
 };

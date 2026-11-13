@@ -1,7 +1,6 @@
 import * as echarts from "echarts/core";
 import {
   BarChart,
-  GaugeChart,
   LineChart,
   LinesChart,
   MapChart,
@@ -21,7 +20,6 @@ echarts.use([
   AriaComponent,
   BarChart,
   CanvasRenderer,
-  GaugeChart,
   GeoComponent,
   GridComponent,
 

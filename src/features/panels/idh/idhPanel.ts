@@ -246,12 +246,70 @@ export const loadIdhPanel = async (
   return { filters, ufs, serie, mapa, sexo, cor };
 };
 
-export const describeIdhSelection = ({
+const describeIdhPlace = ({
   filters,
   ufs,
-}: Pick<IdhPanelData, "filters" | "ufs">): string => {
-  const uf = ufs.find((item) => item.sigla === filters.uf);
-  const place = uf ? uf.nome : "Média dos estados do Nordeste";
+}: Pick<IdhPanelData, "filters" | "ufs">): string =>
+  ufs.find((item) => item.sigla === filters.uf)?.nome ??
+  "Média dos estados do Nordeste";
 
-  return `${place} · ${filters.ano}`;
+/**
+ * Subtítulo da série anual: de quem é a linha e o período que ela cobre.
+ *
+ * @example describeIdhSerie(panel) // "Média dos estados do Nordeste · 2012 a 2021"
+ */
+export const describeIdhSerie = (
+  data: Pick<IdhPanelData, "filters" | "ufs" | "serie">,
+): string => {
+  const place = describeIdhPlace(data);
+  const first = data.serie[0]?.ano;
+  const last = data.serie[data.serie.length - 1]?.ano;
+
+  return first === undefined ? place : `${place} · ${first} a ${last}`;
 };
+
+/**
+ * Os filtros que entram no link de compartilhar, em texto, para a pessoa ver o
+ * que vai junto antes de copiar.
+ *
+ * @example describeIdhShareChips(panel, "sexo") // ["Estado: Todos", "Ano: 2021", "Visão por sexo"]
+ */
+export const describeIdhShareChips = (
+  { filters, ufs }: Pick<IdhPanelData, "filters" | "ufs">,
+  visao: IdhVisao,
+): string[] => {
+  const uf = ufs.find((item) => item.sigla === filters.uf);
+  const view = IDH_VISOES.find((item) => item.key === visao);
+
+  return [
+    `Estado: ${uf?.nome ?? "Todos"}`,
+    `Ano: ${filters.ano}`,
+    ...(visao !== DEFAULT_IDH_FILTERS.visao && view ? [view.label] : []),
+  ];
+};
+
+/**
+ * Nome curto do lugar filtrado: o estado, ou "Nordeste" para a média.
+ *
+ * @example idhPlaceName(panel) // "Pernambuco"
+ */
+export const idhPlaceName = ({
+  filters,
+  ufs,
+}: Pick<IdhPanelData, "filters" | "ufs">): string =>
+  ufs.find((item) => item.sigla === filters.uf)?.nome ?? "Nordeste";
+
+/**
+ * Painel vazio com os filtros pedidos, para a página montar o layout quando a
+ * consulta falha (os cards mostram o erro com "Tentar de novo").
+ *
+ * @example emptyIdhPanel({ ano: 2021, visao: "geral" }).serie // []
+ */
+export const emptyIdhPanel = (filters: IdhFilters): IdhPanelData => ({
+  filters,
+  ufs: [],
+  serie: [],
+  mapa: [],
+  sexo: [],
+  cor: [],
+});
