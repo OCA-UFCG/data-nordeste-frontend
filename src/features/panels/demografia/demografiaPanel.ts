@@ -244,3 +244,23 @@ export const loadDemografiaPanel = async (
     mapa,
   };
 };
+
+/**
+ * Painel sem dados: a página o usa quando a consulta falha, para os cards
+ * mostrarem o erro com "Tentar de novo" no lugar dos gráficos.
+ *
+ * @example emptyDemografiaPanel(filters).serie // []
+ */
+export const emptyDemografiaPanel = (
+  filters: TerritorialFilters,
+): DemografiaPanelData => ({
+  filters,
+  ufs: [],
+  municipios: [],
+  serie: [],
+  sexo: { mulheres: 0, homens: 0 },
+  corRaca: [],
+  corRacaAnterior: null,
+  piramide: [],
+  mapa: [],
+});

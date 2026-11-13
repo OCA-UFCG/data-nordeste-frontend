@@ -2,7 +2,11 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
-import { BUTTON, CARD_SHADOW } from "@/components/ProtoPanel/protoStyles";
+import {
+  BUTTON,
+  BUTTON_GHOST,
+  CARD_SHADOW,
+} from "@/components/ProtoPanel/protoStyles";
 
 export type ProtoCardState = "ok" | "loading" | "error";
 
@@ -38,19 +42,37 @@ const CardSkeleton = ({ kind }: { kind: ProtoCardKind }) => (
   </div>
 );
 
+type NoticeAction = { label: string; onClick: () => void };
+
+const NoticeButton = ({
+  action,
+  className,
+}: {
+  action: NoticeAction;
+  className: string;
+}) => (
+  <button type="button" onClick={action.onClick} className={className}>
+    {action.label}
+  </button>
+);
+
 /**
  * Estado de aviso ou de erro de um card (`.empty` do protótipo): ícone, texto
  * e uma ação.
  *
- * @example <ProtoCardNotice tone="error" action={{ label: "Tentar de novo", onClick: retry }}>Não foi possível…</ProtoCardNotice>
+ * `secondaryAction`: um segundo botão, de contorno, ao lado do primeiro.
+ *
+ * @example <ProtoCardNotice tone="warn" action={{ label: "Ver Nordeste · 2022", onClick: reset }} secondaryAction={{ label: "Limpar filtros", onClick: clear }}>…</ProtoCardNotice>
  */
 export const ProtoCardNotice = ({
   tone,
   action,
+  secondaryAction,
   children,
 }: {
   tone: "warn" | "error";
-  action?: { label: string; onClick: () => void };
+  action?: NoticeAction;
+  secondaryAction?: NoticeAction;
   children: ReactNode;
 }) => (
   <div
@@ -63,10 +85,13 @@ export const ProtoCardNotice = ({
       <ProtoIcon name="warn" size={24} />
     </span>
     <p className="max-w-[56ch] text-[15px] leading-[22px]">{children}</p>
-    {action ? (
-      <button type="button" onClick={action.onClick} className={BUTTON}>
-        {action.label}
-      </button>
+    {secondaryAction ? (
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {action ? <NoticeButton action={action} className={BUTTON} /> : null}
+        <NoticeButton action={secondaryAction} className={BUTTON_GHOST} />
+      </div>
+    ) : action ? (
+      <NoticeButton action={action} className={BUTTON} />
     ) : null}
   </div>
 );

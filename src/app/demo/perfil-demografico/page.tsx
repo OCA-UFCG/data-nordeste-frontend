@@ -1,22 +1,31 @@
 import type { Metadata } from "next";
 import { DemografiaDashboard } from "@/components/DemografiaDashboard/DemografiaDashboard";
 import {
-  DEMOGRAFIA_ICON,
-  DEMOGRAFIA_SOURCE,
+  DEMOGRAFIA_MACROTHEME,
   DEMOGRAFIA_TITLE,
 } from "@/components/DemografiaDashboard/demografiaTheme";
-import { PanelPage } from "@/components/Panel/layout/PanelPage";
-import { PanelMessage } from "@/components/Panel/layout/PanelShell";
-import { PanelTextsFrame } from "@/components/Panel/texts/PanelTextsFrame";
+import {
+  PERFIL_LEAD,
+  PERFIL_SAIBA_MAIS_PARAGRAPHS,
+  PERFIL_SAIBA_MAIS_SUMMARY,
+  PERFIL_SAIBA_MAIS_TITLE,
+} from "@/components/DemografiaDashboard/perfilTexts";
+import { ProtoCover } from "@/components/ProtoPanel/ProtoCover";
+import { ProtoSaibaMais } from "@/components/ProtoPanel/ProtoSaibaMais";
+import {
+  getCatalogHref,
+  getMacroThemeHref,
+} from "@/components/Panel/texts/PanelTexts";
+import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedPanelsSection";
 import { buildMetadata } from "@/config/seo";
 import { loadDemografiaPanelContent } from "@/features/panels/demografia/demografiaContent";
 import {
   DEMOGRAFIA_MAX_PLACES,
   DEMOGRAFIA_YEAR_RANGE,
+  emptyDemografiaPanel,
   loadDemografiaPanel,
 } from "@/features/panels/demografia/demografiaPanel";
 import {
-  buildTerritorialSearch,
   parseTerritorialFilters,
   type TerritorialFilters,
 } from "@/features/panels/territorialFilters";
@@ -51,19 +60,10 @@ const loadPanel = async (filters: TerritorialFilters) => {
   }
 };
 
-const LoadFailedMessage = ({ filters }: { filters: TerritorialFilters }) => (
-  <PanelMessage>
-    Não foi possível carregar os dados do painel agora. Tente novamente em
-    alguns minutos.{" "}
-    <a
-      href={`/demo/perfil-demografico${buildTerritorialSearch(filters, DEMOGRAFIA_YEAR_RANGE)}`}
-      className="font-medium text-green-900 underline underline-offset-4"
-    >
-      Tentar novamente
-    </a>
-  </PanelMessage>
-);
-
+// Mesmo layout do IDH: capa, painel, "Saiba mais" e relacionados. Sem o banco,
+// os cards mostram o erro com "Tentar de novo" em vez de derrubar a página.
+// INTENTIONAL: sem o Contentful, a capa usa o macrotema padrão e some só a
+// seção de relacionados.
 export default async function PerfilDemograficoDemoPage({
   searchParams,
 }: {
@@ -78,24 +78,31 @@ export default async function PerfilDemograficoDemoPage({
     loadPanel(filters),
     loadDemografiaPanelContent(),
   ]);
+  const macroTheme = content?.panel.macroTheme ?? DEMOGRAFIA_MACROTHEME;
 
   return (
     <HubTemplate>
-      <PanelTextsFrame content={content}>
-        {panel ? (
-          <DemografiaDashboard data={panel} source={DEMOGRAFIA_SOURCE} />
-        ) : (
-          <PanelPage
-            title={DEMOGRAFIA_TITLE}
-            icon={DEMOGRAFIA_ICON}
-            tone="pink"
-            source={DEMOGRAFIA_SOURCE}
-            fullMobile
-          >
-            <LoadFailedMessage filters={filters} />
-          </PanelPage>
-        )}
-      </PanelTextsFrame>
+      <ProtoCover
+        tone="perfil"
+        icon="users"
+        title={DEMOGRAFIA_TITLE}
+        lead={PERFIL_LEAD}
+        macroTheme={macroTheme}
+        publishedAt={content?.panel.date}
+      />
+      <DemografiaDashboard
+        data={panel ?? emptyDemografiaPanel(filters)}
+        failed={!panel}
+        catalogHref={getCatalogHref(macroTheme)}
+      />
+      <ProtoSaibaMais
+        tone="perfil"
+        title={PERFIL_SAIBA_MAIS_TITLE}
+        summary={PERFIL_SAIBA_MAIS_SUMMARY}
+        paragraphs={[...PERFIL_SAIBA_MAIS_PARAGRAPHS]}
+        themeHref={getMacroThemeHref(macroTheme)}
+      />
+      {content ? <RelatedPanelsSection items={content.relatedItems} /> : null}
     </HubTemplate>
   );
 }

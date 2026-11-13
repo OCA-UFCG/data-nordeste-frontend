@@ -1,15 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  useCallback,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useCallback, useId, useMemo, useRef, useState } from "react";
 import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhCardTexts";
 import type { ProtoCardState } from "@/components/ProtoPanel/ProtoCard";
 import {
@@ -27,6 +19,7 @@ import {
   PROTO_TEXT,
   protoToneStyle,
 } from "@/components/ProtoPanel/protoStyles";
+import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
@@ -59,14 +52,6 @@ const useIdhNavigation = () => {
   );
 
   return { isPending, pathname, applyFilters, showVisao };
-};
-
-// "Tentar de novo" dos cards: o server component consulta o banco outra vez.
-const useRetry = () => {
-  const router = useRouter();
-  const [retrying, startRetry] = useTransition();
-
-  return { retrying, retry: () => startRetry(() => router.refresh()) };
 };
 
 // O link de compartilhar leva a aba aberta, não a da carga da página: trocar de
@@ -139,7 +124,7 @@ export const IdhDashboard = ({
   };
   const [tab, setTab] = useState<IdhVisao>(data.filters.visao);
   const navigation = useIdhNavigation();
-  const { retrying, retry } = useRetry();
+  const { retrying, retry } = useProtoRetry();
   const sticky = useProtoSticky();
   const layoutRef = useRef<HTMLDivElement>(null);
   const cardMenu = useCardMenuValue(
