@@ -363,3 +363,50 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   the map is a canvas and the other cards are HTML.
 - Removed with this rebuild: `DemografiaCharts`, `DemografiaSaibaMais`,
   `PorteLegend`, `PyramidChart`, `ValueBars` and `buildPyramidOption`.
+
+## PIB Panel Demo (`/demo/pib`)
+
+- Same approach as the IDH and demographic profile panels: the reference is
+  the prototype's `pib.html` (same artifact), rebuilt with the shared
+  `ProtoPanel/` pieces in the "pib" tone (orange accent `#e5640f`, total
+  `#f2761c`, per capita `#1e88c7`) and the real `eco_pib.vw_pib_municipal_pbi`
+  data. Cover, sticky filter bar, two big numbers, the yearly line with one
+  axis per series, the state map and the two sector cards, "Saiba mais" and
+  related content.
+- Shared pieces extracted for this panel, so nothing was copied from the
+  profile: `ProtoTerritorialFilters` (Ano, Área, Estado, Município; was
+  `PerfilFilterBar`), `features/panels/territorialPlace.ts` (was
+  `demografia/perfilPlace.ts`), `ProtoSeriesLegend` (the line legend of the
+  IDH) and the `pair` variant of `ProtoStatCards`.
+- Data: the map query sums `pib_total` by state for the whole area and year,
+  ignoring the Estado and Município filters (the chosen state only gets the
+  outline). Sector data (VAB and activities) stops at 2021
+  (`PIB_VAB_LAST_YEAR`); 2022 and 2023 show the notice with "Ver 2021".
+- Deliberate deviations from the prototype:
+  - The map is by state only, as in the prototype. The previous demo's
+    municipal map, its table and the "highlight an activity on the map" list
+    are gone; the activity card shows the three largest, as the prototype does.
+  - Clicking a state adds or removes it from the filter (several states), like
+    the profile panel; the prototype picks one.
+  - The VAB axis unit follows the data (`pibBarUnit`: trilhões, bilhões,
+    milhões, mil) instead of the fixed "R$ bilhões", so a small municipality
+    gets a readable axis.
+  - Money uses the existing formatter ("R$ 45,00 Mi"); the prototype drops
+    decimals in millions. The change pill reads "em relação a 2022" (shared
+    `formatYearChange`), not "vs. 2022".
+  - No "Escolher outro ano" button in the year notice and no "Atualizado em"
+    in the card footers: the database does not say when the PIB was loaded
+    (`PIB_CARD_FOOTER`, marked `INTENTIONAL:`).
+  - Minas Gerais and Espírito Santo (Área da Sudene, Semiárido) have data but
+    no shape in the nine-state map; a hint under the legend says so
+    (`describeStatesOffMap`).
+  - "Saiba mais" keeps the Power BI definitions (PIB, per capita, VAB,
+    participação) as the glossary; the prototype has only the paragraphs.
+- Image download exists for the line and the map (SVG); the sector bars are
+  HTML.
+- Removed with this rebuild: `PibSectorCharts`, `AtividadeList`,
+  `AtividadeHighlightChip`, `PibSaibaMais`, `TrendChart`, `HorizontalBarChart`
+  and `trendOption`. Still exported but unused after it:
+  `buildHorizontalBarOption`, `withCommonFit` and `TerritorialSelects`.
+- Local setup: the tunnel command is not in any repository; ask the team.
+  The Gamma database conventionally sits on local port 5434.
