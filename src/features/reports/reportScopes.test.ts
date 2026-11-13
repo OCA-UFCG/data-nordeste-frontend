@@ -125,9 +125,9 @@ describe("isThemeAvailableInScope", () => {
     expect(isThemeAvailableInScope("desenvolvimento_social", null)).toBe(true);
   });
 
-  it("leaves out the same themes under Estado and keeps them for Município", () => {
+  it("leaves out only Instrumentos Sudene under Estado and keeps it for Município", () => {
     expect(isThemeAvailableInScope("desenvolvimento_social", "estado")).toBe(
-      false,
+      true,
     );
     expect(isThemeAvailableInScope("instrumentos_sudene", "estado")).toBe(
       false,
