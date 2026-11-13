@@ -114,6 +114,16 @@ body {
   --color-grey-900: #484445;
   --color-grey-1000: #3e3c3d;
   --color-grey-1100: #292829;
+
+  /* Brilho do esqueleto de carregamento dos cards do painel de IDH (`.sk` do
+     protótipo dos painéis). */
+  --animate-shimmer: shimmer 1.2s linear infinite;
+
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
 }
 
 @theme inline {
