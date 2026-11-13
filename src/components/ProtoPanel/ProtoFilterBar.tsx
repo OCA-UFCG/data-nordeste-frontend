@@ -21,7 +21,9 @@ const CLEAR_CLASS = cn(
 
 export type ProtoFilterBarProps = {
   summaryTitle: string;
-  summarySubtitle: string;
+
+  // Sem subtítulo, o resumo do celular mostra só o título (perfil demográfico).
+  summarySubtitle?: string;
   renderFields: (wide: boolean) => ReactNode;
   isDefault: boolean;
   onClear: () => void;
@@ -72,7 +74,7 @@ const PhoneSummary = ({
   onOpen,
 }: {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   onOpen: () => void;
 }) => (
   <button
@@ -84,7 +86,9 @@ const PhoneSummary = ({
     <ProtoIcon name="pin" size={20} className="flex-none" />
     <span className="flex min-w-0 flex-col leading-tight">
       <b className="truncate text-sm font-semibold">{title}</b>
-      <small className="text-xs text-grey-1100">{subtitle}</small>
+      {subtitle ? (
+        <small className="text-xs text-grey-1100">{subtitle}</small>
+      ) : null}
     </span>
   </button>
 );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   type ProtoCardState,
   ProtoSkeleton,
@@ -21,18 +21,44 @@ import {
   useCarousel,
 } from "@/components/ui/carousel";
 
+// Variação do mesmo número: a seta verde ou vermelha ao lado da variação.
+export type ProtoStatPill = {
+  text: string;
+  direction: "up" | "down" | "flat";
+};
+
 export type ProtoStatCell = {
   icon: ProtoIconName;
   label: string;
   value: string | null;
   caption?: string;
+  pill?: ProtoStatPill | null;
 };
 
-const CELL_CLASS = `flex h-full min-h-[118px] min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white p-4 ${CARD_SHADOW}`;
+// `hero`: o número de destaque do perfil demográfico, em card único e maior.
+const CELL_BASE = `flex h-full min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white p-4 ${CARD_SHADOW}`;
+const ROW_CELL_CLASS = `${CELL_BASE} min-h-[118px]`;
+const HERO_CELL_CLASS = `${CELL_BASE} min-h-[132px]`;
 
-const CellTop = ({ icon, label }: { icon: ProtoIconName; label: string }) => (
+const cellClass = (hero: boolean) => (hero ? HERO_CELL_CLASS : ROW_CELL_CLASS);
+
+// Cor do ícone do card: o IDH usa o tom do painel; o perfil passa a sua.
+const DEFAULT_ICON_CLASS =
+  "bg-(--proto-accent-soft) text-(--proto-accent-strong)";
+
+const CellTop = ({
+  icon,
+  label,
+  iconClassName,
+}: {
+  icon: ProtoIconName;
+  label: string;
+  iconClassName: string;
+}) => (
   <div className="flex min-h-[34px] items-center gap-2.5">
-    <span className="grid size-8 flex-none place-items-center rounded-[8px] bg-(--proto-accent-soft) text-(--proto-accent-strong)">
+    <span
+      className={`grid size-8 flex-none place-items-center rounded-[8px] ${iconClassName}`}
+    >
       <ProtoIcon name={icon} size={20} />
     </span>
     <div className="min-w-0 text-[13px] leading-[17px] font-medium">
@@ -44,8 +70,34 @@ const CellTop = ({ icon, label }: { icon: ProtoIconName; label: string }) => (
 const VALUE_CLASS =
   "mt-auto pt-2.5 text-[28px] leading-[34px] font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums";
 
-const CellLoading = () => (
-  <div aria-busy="true" className={CELL_CLASS}>
+const HERO_VALUE_CLASS =
+  "mt-auto pt-2.5 text-[30px] leading-9 font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums";
+
+// Verde para alta, vermelho para queda e cinza sem variação, como no protótipo.
+const PILL_CLASS = {
+  up: "bg-[#e3f7ea] text-[#085f2d]",
+  down: "bg-[#ffe1e3] text-[#8f0f18]",
+  flat: "bg-grey-200 text-grey-1000",
+} as const;
+
+const Pill = ({ pill }: { pill: ProtoStatPill }) => (
+  <span
+    className={`mt-2 inline-flex items-center gap-1 self-start rounded-full px-[9px] py-0.5 text-[11.5px] leading-4 font-bold ${PILL_CLASS[pill.direction]}`}
+  >
+    {pill.direction === "flat" ? null : (
+      <ProtoIcon
+        name="up"
+        size={12}
+        stroke={2.6}
+        className={pill.direction === "down" ? "rotate-90" : ""}
+      />
+    )}
+    {pill.text}
+  </span>
+);
+
+const CellLoading = ({ hero }: { hero: boolean }) => (
+  <div aria-busy="true" className={cellClass(hero)}>
     <div className="flex min-h-[34px] items-center gap-2.5">
       <ProtoSkeleton className="size-8" />
       <ProtoSkeleton className="h-3.5 w-[60%]" />
@@ -57,12 +109,20 @@ const CellLoading = () => (
 const CellError = ({
   cell,
   onRetry,
+  hero,
+  iconClassName,
 }: {
   cell: ProtoStatCell;
   onRetry: () => void;
+  hero: boolean;
+  iconClassName: string;
 }) => (
-  <div className={CELL_CLASS}>
-    <CellTop icon={cell.icon} label={cell.label} />
+  <div className={cellClass(hero)}>
+    <CellTop
+      icon={cell.icon}
+      label={cell.label}
+      iconClassName={iconClassName}
+    />
     <div className="mt-auto pt-2.5 text-sm leading-5 font-medium">
       Não foi possível carregar.{" "}
       <button
@@ -76,9 +136,11 @@ const CellError = ({
   </div>
 );
 
-const CellValue = ({ cell }: { cell: ProtoStatCell }) => (
+const CellValue = ({ cell, hero }: { cell: ProtoStatCell; hero: boolean }) => (
   <>
-    <div className={`${VALUE_CLASS} ${cell.value ? "" : "text-[#b7b3b5]"}`}>
+    <div
+      className={`${hero ? HERO_VALUE_CLASS : VALUE_CLASS} ${cell.value ? "" : "text-[#b7b3b5]"}`}
+    >
       {cell.value ?? "—"}
     </div>
     {cell.value === null ? (
@@ -91,6 +153,7 @@ const CellValue = ({ cell }: { cell: ProtoStatCell }) => (
         {cell.caption}
       </div>
     ) : null}
+    {cell.value && cell.pill ? <Pill pill={cell.pill} /> : null}
   </>
 );
 
@@ -98,21 +161,37 @@ const Cell = ({
   cell,
   state,
   onRetry,
+  hero,
+  iconClassName,
 }: {
   cell: ProtoStatCell;
   state: ProtoCardState;
   onRetry: () => void;
+  hero: boolean;
+  iconClassName: string;
 }) => {
-  if (state === "loading") return <CellLoading />;
-  if (state === "error") return <CellError cell={cell} onRetry={onRetry} />;
+  if (state === "loading") return <CellLoading hero={hero} />;
+  if (state === "error")
+    return (
+      <CellError
+        cell={cell}
+        onRetry={onRetry}
+        hero={hero}
+        iconClassName={iconClassName}
+      />
+    );
 
   return (
     <div
       aria-busy={state === "stale"}
-      className={`${CELL_CLASS} ${staleClass(state === "stale")}`}
+      className={`${cellClass(hero)} ${staleClass(state === "stale")}`}
     >
-      <CellTop icon={cell.icon} label={cell.label} />
-      <CellValue cell={cell} />
+      <CellTop
+        icon={cell.icon}
+        label={cell.label}
+        iconClassName={iconClassName}
+      />
+      <CellValue cell={cell} hero={hero} />
     </div>
   );
 };
@@ -210,7 +289,9 @@ const CarouselControls = () => {
 /**
  * Faixa de indicadores (`.bns` do protótipo): cards em grade; abaixo de
  * 1100 px, o carrossel de `ui/carousel` com setas e bolinhas. Os textos e os
- * valores vêm prontos em `cells`; `label` nomeia o carrossel.
+ * valores vêm prontos em `cells`; `label` nomeia o carrossel. `variant="hero"`:
+ * um card só, sem carrossel (o número de destaque do perfil). `iconClassName`:
+ * cor do chip do ícone (padrão: o tom do painel).
  *
  * @example <ProtoStatCards label="Indicadores do IDH" cells={[{ icon: "idh", label: "IDH", value: "0,702" }]} state="ok" onRetry={retry} />
  */
@@ -219,20 +300,47 @@ export const ProtoStatCards = ({
   cells,
   state,
   onRetry,
+  variant = "row",
+  iconClassName = DEFAULT_ICON_CLASS,
 }: {
   label: string;
   cells: ProtoStatCell[];
   state: ProtoCardState;
   onRetry: () => void;
-}) => (
-  <Carousel opts={CAROUSEL_OPTIONS} aria-label={label}>
-    <CarouselContent wrapperClassName="-m-0.5 p-0.5" className={TRACK_CLASS}>
-      {cells.map((cell) => (
-        <CarouselItem key={cell.label} className={ITEM_CLASS}>
-          <Cell cell={cell} state={state} onRetry={onRetry} />
-        </CarouselItem>
-      ))}
-    </CarouselContent>
-    <CarouselControls />
-  </Carousel>
-);
+  variant?: "row" | "hero";
+  iconClassName?: string;
+}) => {
+  const hero = variant === "hero";
+  const renderCell = (cell: ProtoStatCell) => (
+    <Cell
+      cell={cell}
+      state={state}
+      onRetry={onRetry}
+      hero={hero}
+      iconClassName={iconClassName}
+    />
+  );
+
+  if (hero) {
+    return (
+      <div className="grid grid-cols-1">
+        {cells.map((cell) => (
+          <Fragment key={cell.label}>{renderCell(cell)}</Fragment>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <Carousel opts={CAROUSEL_OPTIONS} aria-label={label}>
+      <CarouselContent wrapperClassName="-m-0.5 p-0.5" className={TRACK_CLASS}>
+        {cells.map((cell) => (
+          <CarouselItem key={cell.label} className={ITEM_CLASS}>
+            {renderCell(cell)}
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselControls />
+    </Carousel>
+  );
+};

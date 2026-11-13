@@ -1,7 +1,10 @@
 "use client";
 
 import { useId } from "react";
-import { MultiSelectCombobox } from "@/components/Panel/filters/MultiSelectCombobox";
+import {
+  type ComboboxLook,
+  MultiSelectCombobox,
+} from "@/components/Panel/filters/MultiSelectCombobox";
 import {
   TERRITORIAL_AREAS,
   type TerritorialArea,
@@ -62,7 +65,7 @@ type TerritorialSelectsProps = {
   maxPlaces?: number;
 };
 
-type PlaceFilterProps = {
+export type PlaceFilterProps = {
   id: string;
   label: string;
   plural: string;
@@ -71,19 +74,23 @@ type PlaceFilterProps = {
   values?: string[];
   options: SelectOption[];
   onChange: (values?: string[]) => void;
+  look?: ComboboxLook;
 };
 
 // Lista vazia vira undefined: "Todos" não aparece na URL nem no SQL.
-const PlaceFilter = ({
+// `look`: só a multisseleção aceita; o select nativo segue o visual do PIB.
+export const PlaceFilter = ({
   multiple,
   values,
   options,
   onChange,
+  look,
   ...field
 }: PlaceFilterProps) =>
   multiple ? (
     <MultiSelectCombobox
       {...field}
+      {...look}
       values={values ?? []}
       options={options}
       onChange={(next) => onChange(next.length ? next : undefined)}

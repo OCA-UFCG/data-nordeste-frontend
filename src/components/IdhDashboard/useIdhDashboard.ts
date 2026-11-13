@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useState } from "react";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
+import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { resolveIdhCardStates } from "@/features/panels/idh/idhCardState";
 import {
   buildIdhSearch,
@@ -27,14 +27,6 @@ const useIdhNavigation = () => {
   );
 
   return { isPending, pathname, applyFilters, showVisao };
-};
-
-// "Tentar de novo" dos cards: o server component consulta o banco outra vez.
-const useRetry = () => {
-  const router = useRouter();
-  const [retrying, startRetry] = useTransition();
-
-  return { retrying, retry: () => startRetry(() => router.refresh()) };
 };
 
 // A aba é estado local (trocar de aba só usa replaceState), mas acompanha a
@@ -112,7 +104,7 @@ const useIdhFilterActions = (
 // Navegação, retry, filtros pedidos e o estado de cada card; a aba fica fora.
 const useIdhLoad = (data: IdhPanelData, failed: boolean) => {
   const navigation = useIdhNavigation();
-  const { retrying, retry } = useRetry();
+  const { retrying, retry } = useProtoRetry();
   const filters = usePendingFilters(
     data,
     navigation.applyFilters,
