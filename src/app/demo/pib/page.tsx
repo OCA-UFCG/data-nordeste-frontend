@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
-import { PanelPage } from "@/components/Panel/layout/PanelPage";
-import { PanelMessage } from "@/components/Panel/layout/PanelShell";
-import { PanelTextsFrame } from "@/components/Panel/texts/PanelTextsFrame";
+import {
+  getCatalogHref,
+  getMacroThemeHref,
+} from "@/components/Panel/texts/PanelTexts";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
 import {
-  PIB_ICON,
-  PIB_SOURCE,
-  PIB_TITLE,
-} from "@/components/PibDashboard/pibTheme";
+  PIB_LEAD,
+  PIB_SAIBA_MAIS_GLOSSARY,
+  PIB_SAIBA_MAIS_PARAGRAPHS,
+  PIB_SAIBA_MAIS_SUMMARY,
+  PIB_SAIBA_MAIS_TITLE,
+} from "@/components/PibDashboard/pibTexts";
+import { PIB_MACROTHEME, PIB_TITLE } from "@/components/PibDashboard/pibTheme";
+import { ProtoCover } from "@/components/ProtoPanel/ProtoCover";
+import { ProtoSaibaMais } from "@/components/ProtoPanel/ProtoSaibaMais";
+import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedPanelsSection";
 import { buildMetadata } from "@/config/seo";
+import { loadPibPanelContent } from "@/features/panels/pib/pibContent";
 import {
+  emptyPibPanel,
   loadPibPanel,
   PIB_MAX_PLACES,
   PIB_YEAR_RANGE,
 } from "@/features/panels/pib/pibPanel";
-import { loadPibPanelContent } from "@/features/panels/pib/pibContent";
 import {
-  buildTerritorialSearch,
   parseTerritorialFilters,
   type TerritorialFilters,
 } from "@/features/panels/territorialFilters";
@@ -35,6 +42,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+// Para quem visita: a causa técnica (túnel, DATA_DB_URL) fica no console.error.
 const loadPanel = async (filters: TerritorialFilters) => {
   try {
     return await loadPibPanel(queryDataDb, filters);
@@ -51,21 +59,11 @@ const loadPanel = async (filters: TerritorialFilters) => {
   }
 };
 
-// Para quem visita: a causa técnica (túnel, DATA_DB_URL) fica no console.error.
-// <a>, não <Link>: recarrega a página inteira e refaz a consulta.
-const LoadFailedMessage = ({ filters }: { filters: TerritorialFilters }) => (
-  <PanelMessage>
-    Não foi possível carregar os dados do painel agora. Tente novamente em
-    alguns minutos.{" "}
-    <a
-      href={`/demo/pib${buildTerritorialSearch(filters, PIB_YEAR_RANGE)}`}
-      className="font-medium text-green-900 underline underline-offset-4"
-    >
-      Tentar novamente
-    </a>
-  </PanelMessage>
-);
-
+// Mesmo layout do IDH e do perfil: capa, painel, "Saiba mais" e relacionados.
+// Sem o banco, os cards mostram o erro com "Tentar de novo" em vez de derrubar
+// a página.
+// INTENTIONAL: sem o Contentful, a capa usa o macrotema padrão e some só a
+// seção de relacionados.
 export default async function PibDemoPage({
   searchParams,
 }: {
@@ -80,24 +78,32 @@ export default async function PibDemoPage({
     loadPanel(filters),
     loadPibPanelContent(),
   ]);
+  const macroTheme = content?.panel.macroTheme ?? PIB_MACROTHEME;
 
   return (
     <HubTemplate>
-      <PanelTextsFrame content={content}>
-        {panel ? (
-          <PibDashboard data={panel} source={PIB_SOURCE} />
-        ) : (
-          <PanelPage
-            title={PIB_TITLE}
-            icon={PIB_ICON}
-            tone="orange"
-            source={PIB_SOURCE}
-            fullMobile
-          >
-            <LoadFailedMessage filters={filters} />
-          </PanelPage>
-        )}
-      </PanelTextsFrame>
+      <ProtoCover
+        tone="pib"
+        icon="usd"
+        title={PIB_TITLE}
+        lead={PIB_LEAD}
+        macroTheme={macroTheme}
+        publishedAt={content?.panel.date}
+      />
+      <PibDashboard
+        data={panel ?? emptyPibPanel(filters)}
+        failed={!panel}
+        catalogHref={getCatalogHref(macroTheme)}
+      />
+      <ProtoSaibaMais
+        tone="pib"
+        title={PIB_SAIBA_MAIS_TITLE}
+        summary={PIB_SAIBA_MAIS_SUMMARY}
+        paragraphs={[...PIB_SAIBA_MAIS_PARAGRAPHS]}
+        glossary={PIB_SAIBA_MAIS_GLOSSARY}
+        themeHref={getMacroThemeHref(macroTheme)}
+      />
+      {content ? <RelatedPanelsSection items={content.relatedItems} /> : null}
     </HubTemplate>
   );
 }

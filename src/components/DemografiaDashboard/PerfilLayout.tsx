@@ -10,7 +10,7 @@ import { PerfilSexoCard } from "@/components/DemografiaDashboard/PerfilSexoCard"
 import { ProtoCardNotice } from "@/components/ProtoPanel/ProtoCard";
 import { CARD_SHADOW } from "@/components/ProtoPanel/protoStyles";
 import { DEMOGRAFIA_YEAR_RANGE } from "@/features/panels/demografia/demografiaPanel";
-import { describePerfilDefaultLabel } from "@/features/panels/demografia/perfilPlace";
+import { describeDefaultPlaceLabel } from "@/features/panels/territorialPlace";
 
 type PerfilMapProps = { onSelectUf: (uf: string) => void };
 
@@ -95,7 +95,7 @@ export const PerfilEmptyLayout = ({
       <ProtoCardNotice
         tone="warn"
         action={{
-          label: describePerfilDefaultLabel(DEMOGRAFIA_YEAR_RANGE),
+          label: describeDefaultPlaceLabel(DEMOGRAFIA_YEAR_RANGE),
           onClick: onReset,
         }}
         secondaryAction={{ label: "Limpar filtros", onClick: onReset }}

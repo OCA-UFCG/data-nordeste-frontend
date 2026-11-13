@@ -7,7 +7,7 @@ import type { CSSProperties } from "react";
 // do protótipo: o tema o escureceu para 4,5:1 com texto branco (WCAG 1.4.3).
 // A cor de destaque é uma variável CSS: cada painel define o seu tom em
 // `protoToneStyle` no elemento raiz (portais incluídos, porque saem da árvore).
-export type ProtoTone = "idh" | "perfil";
+export type ProtoTone = "idh" | "perfil" | "pib";
 
 export type ProtoToneColors = {
   accent: string;
@@ -28,6 +28,12 @@ export const PROTO_TONES: Record<ProtoTone, ProtoToneColors> = {
     accentStrong: "#a8264f",
     accentSoft: "#fdeef3",
     accentLine: "#f3c3d4",
+  },
+  pib: {
+    accent: "#e5640f",
+    accentStrong: "#c2570c",
+    accentSoft: "#fff1e4",
+    accentLine: "#fbd8b5",
   },
 };
 
