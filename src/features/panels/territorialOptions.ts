@@ -97,24 +97,79 @@ const describeUfs = (names: string[]) =>
     ? names.join(" e ")
     : `${names.length} estados`;
 
-const areaLabel = (area: TerritorialArea) =>
+/**
+ * Nome da área de interesse, como aparece nos selects ("Área da Sudene").
+ *
+ * @example areaLabel("nordeste") // "Nordeste"
+ */
+export const areaLabel = (area: TerritorialArea): string =>
   TERRITORIAL_AREAS.find((item) => item.value === area)?.label ?? area;
 
-const describePlace = (
-  { filters, ufs, municipios }: TerritorialSelection,
-  nameArea: boolean,
-) => {
-  const munNames = municipios
-    .filter((item) => filters.mun?.includes(item.cdMun))
-    .map((item) => item.nome);
-  const ufNames = ufs
+/**
+ * Nomes dos estados escolhidos, na ordem das opções carregadas.
+ *
+ * @example selectedUfNames(selection) // ["Paraíba", "Pernambuco"]
+ */
+export const selectedUfNames = ({
+  filters,
+  ufs,
+}: TerritorialSelection): string[] =>
+  ufs
     .filter((item) => filters.uf?.includes(item.sigla))
     .map((item) => item.nome);
 
-  if (munNames.length) return describeMunicipios(munNames, filters.uf);
-  if (ufNames.length) return describeUfs(ufNames);
+/**
+ * Nomes dos municípios escolhidos, na ordem das opções carregadas.
+ *
+ * @example selectedMunicipioNames(selection) // ["Recife (PE)"]
+ */
+export const selectedMunicipioNames = ({
+  filters,
+  municipios,
+}: TerritorialSelection): string[] =>
+  municipios
+    .filter((item) => filters.mun?.includes(item.cdMun))
+    .map((item) => item.nome);
 
-  return nameArea ? areaLabel(filters.area) : "Todos os municípios da área";
+/**
+ * Resumo dos estados escolhidos ("Pernambuco", "3 estados"), ou null sem UF.
+ *
+ * @example describeSelectedUfs(selection) // "3 estados"
+ */
+export const describeSelectedUfs = (
+  selection: TerritorialSelection,
+): string | null => {
+  const names = selectedUfNames(selection);
+
+  return names.length ? describeUfs(names) : null;
+};
+
+/**
+ * Resumo dos municípios escolhidos ("Recife (PE)", "3 municípios (PB, PE)"),
+ * ou null sem município.
+ *
+ * @example describeSelectedMunicipios(selection) // "3 municípios (PB, PE)"
+ */
+export const describeSelectedMunicipios = (
+  selection: TerritorialSelection,
+): string | null => {
+  const names = selectedMunicipioNames(selection);
+
+  return names.length ? describeMunicipios(names, selection.filters.uf) : null;
+};
+
+const describePlace = (selection: TerritorialSelection, nameArea: boolean) => {
+  const municipios = describeSelectedMunicipios(selection);
+
+  if (municipios) return municipios;
+
+  const ufs = describeSelectedUfs(selection);
+
+  if (ufs) return ufs;
+
+  return nameArea
+    ? areaLabel(selection.filters.area)
+    : "Todos os municípios da área";
 };
 
 /**

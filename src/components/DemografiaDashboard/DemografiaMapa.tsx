@@ -1,13 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { previewOnMouse } from "@/components/Panel/charts/RankedBars";
-import {
-  municipiosPorPorte,
-  type PorteGrupo,
-} from "@/features/panels/demografia/demografiaAnalise";
+import { municipiosPorPorte } from "@/features/panels/demografia/demografiaAnalise";
 import type { MunicipioPoint } from "@/features/panels/demografia/demografiaPanel";
-import { formatNumber } from "@/features/panels/format";
 
 export const useDemografiaHighlight = (municipios: MunicipioPoint[]) => {
   const grupos = useMemo(() => municipiosPorPorte(municipios), [municipios]);
@@ -38,42 +33,3 @@ export const useDemografiaHighlight = (municipios: MunicipioPoint[]) => {
     highlightCodes,
   };
 };
-
-export const PorteLegend = ({
-  grupos,
-  porte,
-  onSelect,
-  onPreview,
-}: {
-  grupos: PorteGrupo[];
-  porte: string | null;
-  onSelect: (porte: string | null) => void;
-  onPreview: (porte: string | null) => void;
-}) => (
-  <ul
-    className="mt-3 flex flex-wrap gap-1.5"
-    onPointerLeave={previewOnMouse(onPreview, null)}
-  >
-    {grupos.map(({ porte: item, codes }) => (
-      <li key={item.label}>
-        <button
-          type="button"
-          aria-pressed={porte === item.label}
-          title={item.texto}
-          onClick={() => onSelect(porte === item.label ? null : item.label)}
-          onPointerEnter={previewOnMouse(onPreview, item.label)}
-          onFocus={() => onPreview(item.label)}
-          onBlur={() => onPreview(null)}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-grey-200 px-2 text-sm text-grey-1000 hover:bg-pink-100 focus-visible:outline-2 focus-visible:outline-green-800 aria-pressed:border-[#c53d69] aria-pressed:bg-pink-100"
-        >
-          <span
-            aria-hidden
-            className="size-3.5 shrink-0 rounded-full border border-grey-300"
-            style={{ backgroundColor: item.color }}
-          />
-          {item.label} ({formatNumber(codes.length)})
-        </button>
-      </li>
-    ))}
-  </ul>
-);

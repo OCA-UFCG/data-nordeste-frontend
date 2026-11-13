@@ -1,21 +1,13 @@
 "use client";
 
+import { type KeyboardEvent, type MouseEvent, type Ref, useState } from "react";
 import {
-  type KeyboardEvent,
-  type MouseEvent,
-  type Ref,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import {
-  IdhTooltip,
+  ProtoTooltip,
   type TooltipAt,
-} from "@/components/IdhDashboard/IdhTooltip";
-import {
-  IDH_CHART_FONT,
-  IDH_COLORS,
-} from "@/components/IdhDashboard/idhStyles";
+} from "@/components/ProtoPanel/ProtoTooltip";
+import { IDH_COLORS } from "@/components/IdhDashboard/idhColors";
+import { PROTO_CHART_FONT } from "@/components/ProtoPanel/protoStyles";
+import { useElementWidth } from "@/components/ProtoPanel/useElementWidth";
 import { formatIdh } from "@/features/panels/idh/idhFormat";
 import {
   buildIdhLineGeometry,
@@ -47,24 +39,6 @@ const SERIES = [
 ] as const;
 
 type SeriesKey = (typeof SERIES)[number]["key"];
-
-const useElementWidth = () => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
-
-  useEffect(() => {
-    const element = ref.current;
-
-    if (!element) return;
-    const observer = new ResizeObserver(() => setWidth(element.clientWidth));
-
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, width };
-};
 
 // `.legend`: a série escondida fica riscada; a última visível não se esconde.
 const Legend = ({
@@ -298,7 +272,7 @@ export const IdhLineChart = ({
         Clique em um ponto da linha para escolher o ano.
       </p>
       {tooltip ? (
-        <IdhTooltip
+        <ProtoTooltip
           at={tooltip}
           title={String(years[tooltip.index])}
           rows={tooltipRows(serie, tooltip.index, hidden)}
@@ -338,7 +312,7 @@ const LineSvg = ({
       height={height}
       role="group"
       aria-label={`Evolução anual do IDH e do IDH ajustado à desigualdade, ${years[0]?.year} a ${years[years.length - 1]?.year}`}
-      fontFamily={IDH_CHART_FONT}
+      fontFamily={PROTO_CHART_FONT}
       className="block w-full touch-pan-y overflow-visible [font-variant-numeric:tabular-nums]"
     >
       <Axes geometry={geometry} />

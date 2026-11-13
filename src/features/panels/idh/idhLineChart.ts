@@ -158,15 +158,5 @@ export const buildIdhLineGeometry = ({
   };
 };
 
-/**
- * Caminho SVG de uma linha a partir dos pontos.
- *
- * @example linePath([{ x: 0, y: 10, value: 0.7 }, { x: 5, y: 8, value: 0.71 }]) // "M0.0 10.0L5.0 8.0"
- */
-export const linePath = (points: readonly IdhLinePoint[]): string =>
-  points
-    .map(
-      ({ x, y }, index) =>
-        `${index ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`,
-    )
-    .join("");
+// O caminho da linha é comum aos painéis; reexportado para quem já o usa daqui.
+export { linePath } from "@/features/panels/svgPath";
