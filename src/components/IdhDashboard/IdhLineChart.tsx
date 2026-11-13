@@ -6,6 +6,10 @@ import {
   type TooltipAt,
 } from "@/components/ProtoPanel/ProtoTooltip";
 import { IDH_COLORS } from "@/components/IdhDashboard/idhColors";
+import {
+  ProtoSeriesLegend,
+  useHiddenSeries,
+} from "@/components/ProtoPanel/ProtoSeriesLegend";
 import { PROTO_CHART_FONT } from "@/components/ProtoPanel/protoStyles";
 import { useElementWidth } from "@/components/ProtoPanel/useElementWidth";
 import { formatIdh } from "@/features/panels/idh/idhFormat";
@@ -39,38 +43,6 @@ const SERIES = [
 ] as const;
 
 type SeriesKey = (typeof SERIES)[number]["key"];
-
-// `.legend`: a série escondida fica riscada; a última visível não se esconde.
-const Legend = ({
-  hidden,
-  onToggle,
-}: {
-  hidden: Set<SeriesKey>;
-  onToggle: (key: SeriesKey) => void;
-}) => (
-  <div className="mb-1.5 flex flex-wrap gap-x-4 gap-y-2">
-    {SERIES.map((series) => {
-      const visible = !hidden.has(series.key);
-
-      return (
-        <button
-          key={series.key}
-          type="button"
-          aria-pressed={visible}
-          disabled={visible && hidden.size === SERIES.length - 1}
-          onClick={() => onToggle(series.key)}
-          className="inline-flex items-center gap-2 py-0.5 text-xs leading-4 aria-[pressed=false]:opacity-50 disabled:cursor-default [&[aria-pressed=false]_span]:line-through"
-        >
-          <i
-            className="inline-block size-2.5 rounded-full"
-            style={{ background: series.color }}
-          />
-          <span>{series.label}</span>
-        </button>
-      );
-    })}
-  </div>
-);
 
 const Axes = ({ geometry }: { geometry: IdhLineGeometry }) => {
   const { margin, width, height } = geometry;
@@ -213,18 +185,12 @@ export const IdhLineChart = ({
   svgRef?: Ref<SVGSVGElement>;
 }) => {
   const { ref: boxRef, width: boxWidth } = useElementWidth();
-  const [hidden, setHidden] = useState<Set<SeriesKey>>(new Set());
+  const { hidden, toggle } = useHiddenSeries<SeriesKey>();
   const [tooltip, setTooltip] = useState<
     (TooltipAt & { index: number }) | null
   >(null);
   const years = serie.map((point) => point.ano);
   const selectedIndex = Math.max(0, years.indexOf(ano));
-  const toggle = (key: SeriesKey) => {
-    const next = new Set(hidden);
-
-    if (!next.delete(key)) next.add(key);
-    setHidden(next);
-  };
   const handleKeyDown = (event: KeyboardEvent<SVGRectElement>) => {
     const next = stepCategory(years.map(String), String(ano), event.key);
 
@@ -235,7 +201,7 @@ export const IdhLineChart = ({
 
   return (
     <>
-      <Legend hidden={hidden} onToggle={toggle} />
+      <ProtoSeriesLegend series={SERIES} hidden={hidden} onToggle={toggle} />
       <div ref={boxRef} className="relative min-h-[280px]">
         {boxWidth && serie.length ? (
           <LineSvg

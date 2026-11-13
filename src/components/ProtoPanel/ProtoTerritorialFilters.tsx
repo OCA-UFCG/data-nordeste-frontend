@@ -9,28 +9,29 @@ import {
   protoSelectClass,
 } from "@/components/ProtoPanel/ProtoSelectField";
 import {
-  DEMOGRAFIA_MAX_PLACES,
-  DEMOGRAFIA_YEAR_RANGE,
-  type DemografiaPanelData,
-} from "@/features/panels/demografia/demografiaPanel";
-import {
-  listYears,
   TERRITORIAL_AREAS,
   type TerritorialArea,
   type TerritorialFilters,
 } from "@/features/panels/territorialFilters";
-import { describeTerritorialSelection } from "@/features/panels/territorialOptions";
+import {
+  describeTerritorialSelection,
+  type TerritorialSelection,
+} from "@/features/panels/territorialOptions";
 
-const YEARS = listYears(DEMOGRAFIA_YEAR_RANGE);
-
+// `years`: os anos do painel, do mais recente ao mais antigo (`listYears`).
+// `maxPlaces`: quantos municípios o painel aceita no filtro.
 type FieldsProps = {
-  data: DemografiaPanelData;
+  data: TerritorialSelection;
+  years: readonly number[];
+  maxPlaces: number;
   onChange: (filters: TerritorialFilters) => void;
 };
 
 // Ano e Área são selects nativos; Estado e Município, multisseleção com busca.
-const PerfilFilterFields = ({
+const TerritorialFilterFields = ({
   data,
+  years,
+  maxPlaces,
   onChange,
   wide,
 }: FieldsProps & { wide: boolean }) => {
@@ -57,7 +58,7 @@ const PerfilFilterFields = ({
             }
             className={protoSelectClass(wide)}
           >
-            {YEARS.map((year) => (
+            {years.map((year) => (
               <option key={year} value={year}>
                 {year}
               </option>
@@ -101,7 +102,7 @@ const PerfilFilterFields = ({
         label="Município"
         plural="municípios"
         multiple
-        max={DEMOGRAFIA_MAX_PLACES}
+        max={maxPlaces}
         values={filters.mun}
         options={data.municipios.map((mun) => ({
           value: mun.cdMun,
@@ -115,13 +116,16 @@ const PerfilFilterFields = ({
 };
 
 /**
- * Barra de filtros do perfil demográfico: Ano, Área, Estado e Município, com
- * o resumo e a folha no celular (`ProtoFilterBar`).
+ * Barra de filtros territoriais dos painéis do protótipo (perfil demográfico
+ * e PIB): Ano, Área, Estado e Município, com o resumo e a folha no celular
+ * (`ProtoFilterBar`).
  *
- * @example <PerfilFilterBar data={panel} onChange={apply} onClear={reset} isDefault top={80} stuck={false} barRef={ref} />
+ * @example <ProtoTerritorialFilters data={panel} years={listYears(PIB_YEAR_RANGE)} maxPlaces={100} onChange={apply} onClear={reset} isDefault top={80} stuck={false} barRef={ref} />
  */
-export const PerfilFilterBar = ({
+export const ProtoTerritorialFilters = ({
   data,
+  years,
+  maxPlaces,
   onChange,
   onClear,
   isDefault,
@@ -138,7 +142,13 @@ export const PerfilFilterBar = ({
   <ProtoFilterBar
     summaryTitle={describeTerritorialSelection(data, true)}
     renderFields={(wide) => (
-      <PerfilFilterFields data={data} onChange={onChange} wide={wide} />
+      <TerritorialFilterFields
+        data={data}
+        years={years}
+        maxPlaces={maxPlaces}
+        onChange={onChange}
+        wide={wide}
+      />
     )}
     isDefault={isDefault}
     onClear={onClear}

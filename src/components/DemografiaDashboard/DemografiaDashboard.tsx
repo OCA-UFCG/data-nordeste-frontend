@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { PerfilFilterBar } from "@/components/DemografiaDashboard/PerfilFilterBar";
 import {
   PerfilEmptyLayout,
   PerfilGrids,
@@ -19,27 +18,32 @@ import {
   PROTO_TEXT,
   protoToneStyle,
 } from "@/components/ProtoPanel/protoStyles";
+import { ProtoTerritorialFilters } from "@/components/ProtoPanel/ProtoTerritorialFilters";
 import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
 import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
+  DEMOGRAFIA_MAX_PLACES,
   DEMOGRAFIA_YEAR_RANGE,
   type DemografiaPanelData,
 } from "@/features/panels/demografia/demografiaPanel";
 import {
-  describePerfilPlace,
-  describePerfilShareChips,
-  isDefaultPerfilFilters,
-  togglePerfilUf,
-} from "@/features/panels/demografia/perfilPlace";
+  describeTerritorialPlace,
+  describeTerritorialShareChips,
+  isDefaultTerritorialFilters,
+  toggleTerritorialUf,
+} from "@/features/panels/territorialPlace";
 import { findPerfilPopulacao } from "@/features/panels/demografia/perfilPopulacao";
 import {
   buildTerritorialSearch,
   defaultTerritorialFilters,
+  listYears,
   type TerritorialFilters,
 } from "@/features/panels/territorialFilters";
 import { cn } from "@/lib/utils";
+
+const YEARS = listYears(DEMOGRAFIA_YEAR_RANGE);
 
 const buildPerfilSearch = (filters: TerritorialFilters): string =>
   buildTerritorialSearch(filters, DEMOGRAFIA_YEAR_RANGE);
@@ -54,7 +58,7 @@ const useCardMenuValue = (
     () => ({
       share: {
         path: `${pathname}${buildPerfilSearch(data.filters)}`,
-        chips: describePerfilShareChips(data),
+        chips: describeTerritorialShareChips(data),
       },
       catalogHref,
       imageSource: PERFIL_CARD_SOURCE,
@@ -93,21 +97,27 @@ export const DemografiaDashboard = ({
     applyFilters(defaultTerritorialFilters(DEMOGRAFIA_YEAR_RANGE));
   const layout = {
     data,
-    place: describePerfilPlace(data),
+    place: describeTerritorialPlace(data),
     state,
     onRetry: retry,
-    onSelectUf: (uf: string) => applyFilters(togglePerfilUf(data.filters, uf)),
+    onSelectUf: (uf: string) =>
+      applyFilters(toggleTerritorialUf(data.filters, uf)),
     onReset: reset,
   };
   const showEmpty = !failed && findPerfilPopulacao(data) === null;
 
   return (
     <ProtoToneContext.Provider value="perfil">
-      <PerfilFilterBar
+      <ProtoTerritorialFilters
         data={data}
+        years={YEARS}
+        maxPlaces={DEMOGRAFIA_MAX_PLACES}
         onChange={applyFilters}
         onClear={reset}
-        isDefault={isDefaultPerfilFilters(data.filters, DEMOGRAFIA_YEAR_RANGE)}
+        isDefault={isDefaultTerritorialFilters(
+          data.filters,
+          DEMOGRAFIA_YEAR_RANGE,
+        )}
         top={sticky.filterTop}
         stuck={sticky.stuck}
         barRef={sticky.filterRef}

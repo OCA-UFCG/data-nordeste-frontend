@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-  describePerfilDefaultLabel,
-  describePerfilPlace,
-  describePerfilShareChips,
-  isDefaultPerfilFilters,
-  togglePerfilUf,
-} from "@/features/panels/demografia/perfilPlace";
+  describeDefaultPlaceLabel,
+  describeTerritorialPlace,
+  describeTerritorialShareChips,
+  isDefaultTerritorialFilters,
+  toggleTerritorialUf,
+} from "@/features/panels/territorialPlace";
 import { DEMOGRAFIA_YEAR_RANGE } from "@/features/panels/demografia/demografiaPanel";
 
 const OPTIONS = {
@@ -21,11 +21,11 @@ const OPTIONS = {
   ],
 };
 
-describe("describePerfilPlace", () => {
+describe("describeTerritorialPlace", () => {
   it("names only the area when nothing narrower is chosen", () => {
     const filters = { ano: 2022, area: "nordeste" as const };
 
-    expect(describePerfilPlace({ ...OPTIONS, filters })).toBe("Nordeste");
+    expect(describeTerritorialPlace({ ...OPTIONS, filters })).toBe("Nordeste");
   });
 
   it("joins area, states and municipalities with a middle dot", () => {
@@ -36,7 +36,7 @@ describe("describePerfilPlace", () => {
       mun: ["2611606"],
     };
 
-    expect(describePerfilPlace({ ...OPTIONS, filters })).toBe(
+    expect(describeTerritorialPlace({ ...OPTIONS, filters })).toBe(
       "Semiárido · Pernambuco · Recife (PE)",
     );
   });
@@ -49,17 +49,17 @@ describe("describePerfilPlace", () => {
       mun: ["2507507", "2604106", "2611606"],
     };
 
-    expect(describePerfilPlace({ ...OPTIONS, filters })).toBe(
+    expect(describeTerritorialPlace({ ...OPTIONS, filters })).toBe(
       "Nordeste · 3 estados · 3 municípios (PB, PE, RN)",
     );
   });
 });
 
-describe("describePerfilShareChips", () => {
+describe("describeTerritorialShareChips", () => {
   it("lists year, area and 'Todos' when no place is chosen", () => {
     const filters = { ano: 2022, area: "nordeste" as const };
 
-    expect(describePerfilShareChips({ ...OPTIONS, filters })).toEqual([
+    expect(describeTerritorialShareChips({ ...OPTIONS, filters })).toEqual([
       "Ano: 2022",
       "Área: Nordeste",
       "Estado: Todos",
@@ -75,7 +75,7 @@ describe("describePerfilShareChips", () => {
       mun: ["2611606"],
     };
 
-    expect(describePerfilShareChips({ ...OPTIONS, filters })).toEqual([
+    expect(describeTerritorialShareChips({ ...OPTIONS, filters })).toEqual([
       "Ano: 2010",
       "Área: Caatinga",
       "Estado: Paraíba, Pernambuco",
@@ -84,7 +84,7 @@ describe("describePerfilShareChips", () => {
   });
 });
 
-describe("togglePerfilUf", () => {
+describe("toggleTerritorialUf", () => {
   it("adds a state that is not chosen yet and drops the municipality", () => {
     const filters = {
       ano: 2022,
@@ -93,7 +93,7 @@ describe("togglePerfilUf", () => {
       mun: ["2507507"],
     };
 
-    expect(togglePerfilUf(filters, "PE")).toEqual({
+    expect(toggleTerritorialUf(filters, "PE")).toEqual({
       ano: 2022,
       area: "nordeste",
       uf: ["PB", "PE"],
@@ -104,35 +104,35 @@ describe("togglePerfilUf", () => {
   it("removes a state already chosen and clears the list when it was the last", () => {
     const filters = { ano: 2022, area: "nordeste" as const, uf: ["PE"] };
 
-    expect(togglePerfilUf(filters, "PE").uf).toBeUndefined();
+    expect(toggleTerritorialUf(filters, "PE").uf).toBeUndefined();
   });
 });
 
-describe("isDefaultPerfilFilters", () => {
+describe("isDefaultTerritorialFilters", () => {
   it("is true only for the last census, Nordeste, no state and no municipality", () => {
     const range = DEMOGRAFIA_YEAR_RANGE;
 
-    expect(isDefaultPerfilFilters({ ano: 2022, area: "nordeste" }, range)).toBe(
-      true,
-    );
-    expect(isDefaultPerfilFilters({ ano: 2010, area: "nordeste" }, range)).toBe(
-      false,
-    );
     expect(
-      isDefaultPerfilFilters(
+      isDefaultTerritorialFilters({ ano: 2022, area: "nordeste" }, range),
+    ).toBe(true);
+    expect(
+      isDefaultTerritorialFilters({ ano: 2010, area: "nordeste" }, range),
+    ).toBe(false);
+    expect(
+      isDefaultTerritorialFilters(
         { ano: 2022, area: "nordeste", uf: ["PE"] },
         range,
       ),
     ).toBe(false);
-    expect(isDefaultPerfilFilters({ ano: 2022, area: "sudene" }, range)).toBe(
-      false,
-    );
+    expect(
+      isDefaultTerritorialFilters({ ano: 2022, area: "sudene" }, range),
+    ).toBe(false);
   });
 });
 
-describe("describePerfilDefaultLabel", () => {
+describe("describeDefaultPlaceLabel", () => {
   it("names the default place and census for the empty-state button", () => {
-    expect(describePerfilDefaultLabel(DEMOGRAFIA_YEAR_RANGE)).toBe(
+    expect(describeDefaultPlaceLabel(DEMOGRAFIA_YEAR_RANGE)).toBe(
       "Ver Nordeste · 2022",
     );
   });
