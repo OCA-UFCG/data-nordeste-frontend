@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCorRacaGeometry,
   buildSerieGeometry,
+  pyramidBandLabel,
   describePyramidBand,
   formatCompactPeople,
   niceAxis,
@@ -66,6 +67,21 @@ describe("niceAxis", () => {
 
   it("rejects an empty list with the expected shape in the message", () => {
     expect(() => niceAxis([])).toThrow(/at least one value/);
+  });
+});
+
+describe("buildSerieGeometry grid span", () => {
+  it("starts the gridlines at the axis and stops half the right margin short", () => {
+    const geometry = buildSerieGeometry({ width: 800, points: NE_SERIE });
+
+    expect(geometry.grid).toEqual({ x1: 54, x2: 782 });
+  });
+});
+
+describe("pyramidBandLabel", () => {
+  it("shortens closed and open bands", () => {
+    expect(pyramidBandLabel("30 a 39 anos")).toBe("30-39");
+    expect(pyramidBandLabel("80+ anos")).toBe("80+");
   });
 });
 

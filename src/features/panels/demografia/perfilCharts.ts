@@ -97,6 +97,9 @@ export type SerieGeometry = {
   }[];
   yearLabelY: number;
   axisLabelX: number;
+
+  // Trecho horizontal das linhas de grade: do eixo até a borda direita da área.
+  grid: { x1: number; x2: number };
 };
 
 type SerieLayout = {
@@ -178,6 +181,7 @@ export const buildSerieGeometry = ({
     })),
     yearLabelY: layout.h - 10,
     axisLabelX: layout.L - 8,
+    grid: { x1: layout.L, x2: layout.w - layout.R / 2 },
   };
 };
 
@@ -343,6 +347,14 @@ export const pyramidRows = (piramide: PopulacaoPorFaixa[]): PyramidRow[] => {
     homensRatio: ratioOf(row.homens, max),
   }));
 };
+
+/**
+ * Rótulo curto da faixa para o eixo da pirâmide: "30-39" e "80+".
+ *
+ * @example pyramidBandLabel("30 a 39 anos") // "30-39"
+ */
+export const pyramidBandLabel = (label: string): string =>
+  label.replace(" a ", "-").replace(/ anos$/, "");
 
 const OPEN_BAND = /^(\d+)\+ anos$/;
 const CLOSED_BAND = /^(\d+) a (\d+) anos$/;
