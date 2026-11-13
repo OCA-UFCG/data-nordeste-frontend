@@ -181,22 +181,23 @@ const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
+export const ZENODO_HEADERS = {
+  "Content-Type": "application/json",
+  "Accept": "application/json",
+
+  // Cloudflare do Zenodo bloqueia (403) o User-Agent padrao do undici/fetch
+  // do Node. Um UA explicito nao-browser passa; sem isso a pagina /catalog
+  // quebra em prod (SSR) enquanto curl no mesmo host retorna 200.
+  "User-Agent": "data-nordeste-portal/1.0 (+https://datane.lsd.ufcg.edu.br)",
+};
+
 const fetchZenodoData = async (
   url: string,
 ): Promise<ZenodoApiResponse | ZenodoApiRecord> => {
   // PERF: Zenodo catalog data is shared by filters and pagination, so keep a
   // short Next revalidation window instead of refetching every request.
   const res = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-
-      // Cloudflare do Zenodo bloqueia (403) o User-Agent padrao do undici/fetch
-      // do Node. Um UA explicito nao-browser passa; sem isso a pagina /catalog
-      // quebra em prod (SSR) enquanto curl no mesmo host retorna 200.
-      "User-Agent":
-        "data-nordeste-portal/1.0 (+https://datane.lsd.ufcg.edu.br)",
-    },
+    headers: ZENODO_HEADERS,
     next: { revalidate: 300 },
   });
 
