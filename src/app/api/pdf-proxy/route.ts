@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import {
+  fetchThroughAllowedHosts,
   hasPdfSignature,
   parseAllowedPdfUrl,
 } from "@/features/boletim/pdfSource";
-
-// O Drive faz 1 salto (drive.google.com → drive.usercontent.google.com).
-const MAX_REDIRECTS = 3;
-
-type AllowedPdfFetch = { response: Response } | { rejection: string };
 
 /** Streams a boletim PDF from an allowed host. Example: `GET /api/pdf-proxy?url=https://www.gov.br/...pdf`. */
 export async function GET(request: Request) {
@@ -57,29 +53,6 @@ async function proxyAllowedPdf(
   return hasPdfSignature(new Uint8Array(pdfBuffer))
     ? buildPdfResponse(pdfBuffer)
     : rejectPdfRequest(targetUrl, "not_a_pdf", 502);
-}
-
-// IMPORTANT: redirect seguido à mão, conferindo cada salto contra a lista. O
-// redirect automático do fetch levaria a qualquer host que o servidor de fora
-// indicasse, e furaria a lista.
-async function fetchThroughAllowedHosts(url: URL): Promise<AllowedPdfFetch> {
-  let current = url;
-
-  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    const response = await fetch(current, { redirect: "manual" });
-    const location = response.headers.get("Location");
-    if (!isRedirect(response.status) || !location) return { response };
-
-    const next = parseAllowedPdfUrl(new URL(location, current).href);
-    if (!next) return { rejection: "redirect_not_allowed" };
-    current = next;
-  }
-
-  return { rejection: "too_many_redirects" };
-}
-
-function isRedirect(status: number): boolean {
-  return status >= 300 && status < 400;
 }
 
 // WARNING: não repassar o Content-Type de fora nem abrir CORS: só o próprio portal

@@ -205,3 +205,23 @@ export const getContent = createContentfulClient({
   revalidate: REVALIDATE,
   tags: [CONTENTFUL_CACHE_TAG],
 });
+
+// IMPORTANT: sem cache, para chegar de fato ao Contentful; por isso cada chamada
+// conta na cota de 100 mil por mês. Só o /api/metrics usa, uma vez por hora.
+/**
+ * Whether Contentful answers right now, bypassing the cache.
+ *
+ * Usage: await pingContentful(AbortSignal.timeout(8000))
+ */
+export function pingContentful(signal?: AbortSignal): Promise<unknown> {
+  const requestContentful = createContentfulClient({
+    accessToken: CONTENTFUL_ACCESS_TOKEN,
+    endpoint: CONTENTFUL_ENDPOINT,
+    fetcher: (input, init) => fetch(input, { ...init, signal }),
+    preview: USE_PREVIEW,
+    revalidate: 0,
+    tags: [],
+  });
+
+  return requestContentful("query { __typename }");
+}
