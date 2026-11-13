@@ -2,17 +2,24 @@
 
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
-import { IdhIcon, type IdhIconName } from "@/components/IdhDashboard/IdhIcon";
-import { IdhSheet } from "@/components/IdhDashboard/IdhSheet";
-import { ICON_BUTTON } from "@/components/IdhDashboard/idhStyles";
+import {
+  ProtoIcon,
+  type ProtoIconName,
+} from "@/components/ProtoPanel/ProtoIcon";
+import { ProtoSheet } from "@/components/ProtoPanel/ProtoSheet";
+import {
+  ICON_BUTTON,
+  protoToneStyle,
+} from "@/components/ProtoPanel/protoStyles";
 import {
   CardImageScreen,
   type CardImage,
-} from "@/components/IdhDashboard/menu/CardImageScreen";
+} from "@/components/ProtoPanel/menu/CardImageScreen";
 import {
   CardShareScreen,
   type CardShare,
-} from "@/components/IdhDashboard/menu/CardShareScreen";
+} from "@/components/ProtoPanel/menu/CardShareScreen";
+import { useProtoTone } from "@/components/ProtoPanel/protoTone";
 import { useMediaQuery } from "@/components/Panel/layout/useMediaQuery";
 import {
   Popover,
@@ -26,8 +33,8 @@ type MenuScreenKey = "list" | "share" | "image";
 const ITEM_CLASS =
   "flex w-full items-center gap-3 rounded-[6px] px-3 py-2.5 text-left text-sm text-grey-1100 hover:not-disabled:bg-grey-100 focus-visible:bg-grey-100 focus-visible:outline-none disabled:cursor-not-allowed disabled:text-grey-500 max-[700px]:px-2 max-[700px]:py-3.5 max-[700px]:text-base";
 
-const ItemIcon = ({ name }: { name: IdhIconName }) => (
-  <IdhIcon name={name} size={18} className="flex-none text-grey-800" />
+const ItemIcon = ({ name }: { name: ProtoIconName }) => (
+  <ProtoIcon name={name} size={18} className="flex-none text-grey-800" />
 );
 
 const MenuItem = ({
@@ -35,7 +42,7 @@ const MenuItem = ({
   onClick,
   children,
 }: {
-  icon: IdhIconName;
+  icon: ProtoIconName;
   onClick: () => void;
   children: ReactNode;
 }) => (
@@ -121,7 +128,7 @@ const MenuBody = ({
   );
 };
 
-const TriggerIcon = () => <IdhIcon name="dots" size={20} stroke={1.8} />;
+const TriggerIcon = () => <ProtoIcon name="dots" size={20} stroke={1.8} />;
 
 /**
  * Menu ⋯ de um card, como no protótipo dos painéis: compartilhar o link com
@@ -132,6 +139,7 @@ const TriggerIcon = () => <IdhIcon name="dots" size={20} stroke={1.8} />;
  */
 export const CardMenu = (props: CardMenuProps) => {
   const isPhone = useMediaQuery("(max-width: 700px)");
+  const tone = useProtoTone();
   const [open, setOpen] = useState(false);
   const [screen, setScreen] = useState<MenuScreenKey>("list");
   const changeOpen = (next: boolean) => {
@@ -154,9 +162,9 @@ export const CardMenu = (props: CardMenuProps) => {
         >
           <TriggerIcon />
         </button>
-        <IdhSheet open={open} onOpenChange={changeOpen} title={props.title}>
+        <ProtoSheet open={open} onOpenChange={changeOpen} title={props.title}>
           {body}
-        </IdhSheet>
+        </ProtoSheet>
       </>
     );
   }
@@ -173,6 +181,7 @@ export const CardMenu = (props: CardMenuProps) => {
       <PopoverContent
         align="end"
         sideOffset={4}
+        style={protoToneStyle(tone)}
         className="w-[300px] rounded-[8px] border-grey-300 bg-white p-1.5 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.3)]"
       >
         {body}

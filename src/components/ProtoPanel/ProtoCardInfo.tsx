@@ -1,27 +1,19 @@
 "use client";
 
 import { type MouseEvent, useState } from "react";
-import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
-import { IdhSheet } from "@/components/IdhDashboard/IdhSheet";
-import { ICON_BUTTON } from "@/components/IdhDashboard/idhStyles";
+import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
+import { ProtoSheet } from "@/components/ProtoPanel/ProtoSheet";
+import {
+  ICON_BUTTON,
+  protoToneStyle,
+} from "@/components/ProtoPanel/protoStyles";
+import { useProtoTone } from "@/components/ProtoPanel/protoTone";
 import { useMediaQuery } from "@/components/Panel/layout/useMediaQuery";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
-// Textos do ⓘ de cada card, do protótipo. Diferem dele num ponto: no banco há
-// série anual por estado, então a linha não é sempre a média do Nordeste.
-export const IDH_CARD_INFO = {
-  evolution:
-    "Média dos estados do Nordeste ou, com um estado no filtro, a série desse estado, de 2012 a 2021. O IDH ajustado à desigualdade desconta as diferenças entre grupos da população. Clique em um ponto para escolher o ano.",
-  map: "Cada estado recebe a cor da sua faixa de desenvolvimento humano. Clique em um estado para usá-lo como filtro do painel.",
-  ranking:
-    "Estados ordenados do maior para o menor IDH, na cor da faixa. As barras vão de 0 a 1. Clique em uma barra para filtrar o painel.",
-  groups:
-    "Compara os dois grupos no local e no ano escolhidos. O tamanho da barra segue a escala indicada abaixo dela.",
-} as const;
 
 const INFO_LABEL = "Sobre este gráfico";
 
@@ -37,7 +29,7 @@ const InfoButton = (props: {
     className={ICON_BUTTON}
     {...props}
   >
-    <IdhIcon name="info" size={20} stroke={1.8} />
+    <ProtoIcon name="info" size={20} stroke={1.8} />
   </button>
 );
 
@@ -48,9 +40,9 @@ const InfoSheetButton = ({ title, text }: { title: string; text: string }) => {
   return (
     <>
       <InfoButton onClick={() => setOpen(true)} />
-      <IdhSheet open={open} onOpenChange={setOpen} title={title}>
+      <ProtoSheet open={open} onOpenChange={setOpen} title={title}>
         <p className="text-[15px] leading-[22px] text-grey-1100">{text}</p>
-      </IdhSheet>
+      </ProtoSheet>
     </>
   );
 };
@@ -60,6 +52,7 @@ const InfoSheetButton = ({ title, text }: { title: string; text: string }) => {
 const InfoPopoverButton = ({ text }: { text: string }) => {
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const tone = useProtoTone();
   const togglePin = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setPinned(!pinned);
@@ -84,6 +77,7 @@ const InfoPopoverButton = ({ text }: { text: string }) => {
       <PopoverContent
         align="end"
         sideOffset={6}
+        style={protoToneStyle(tone)}
         onOpenAutoFocus={(event) => event.preventDefault()}
         className="w-auto max-w-[280px] rounded-[8px] border-grey-300 bg-white px-3 py-2.5 text-[13px] leading-[19px] text-grey-1100 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.3)]"
       >
@@ -94,11 +88,11 @@ const InfoPopoverButton = ({ text }: { text: string }) => {
 };
 
 /**
- * Botão ⓘ de um card do painel de IDH: balão no desktop, folha no celular.
+ * Botão ⓘ de um card do painel: balão no desktop, folha no celular.
  *
- * @example <IdhCardInfo title="Mapa do IDH por estado" text={IDH_CARD_INFO.map} />
+ * @example <ProtoCardInfo title="Mapa do IDH por estado" text={IDH_CARD_INFO.map} />
  */
-export const IdhCardInfo = ({
+export const ProtoCardInfo = ({
   title,
   text,
 }: {

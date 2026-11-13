@@ -1,29 +1,27 @@
 "use client";
 
 import { createContext, useContext, useRef } from "react";
-import { CardMenu } from "@/components/IdhDashboard/menu/CardMenu";
-import type { CardShare } from "@/components/IdhDashboard/menu/CardShareScreen";
+import { CardMenu } from "@/components/ProtoPanel/menu/CardMenu";
+import type { CardShare } from "@/components/ProtoPanel/menu/CardShareScreen";
 import { svgImageSource } from "@/lib/chartImage";
 
 // O que é igual em todos os cards do painel: o link com os filtros, o catálogo
-// do macrotema e a fonte que vai na imagem baixada.
-export type IdhCardMenuContextValue = {
+// do macrotema e a fonte que vai na imagem baixada. A fonte é do painel (IDH,
+// perfil), por isso vem no contexto e não aqui.
+export type ProtoCardMenuContextValue = {
   share: CardShare;
   catalogHref: string | null;
+  imageSource: string;
 };
 
-export const IdhCardMenuContext = createContext<IdhCardMenuContextValue | null>(
-  null,
-);
-
-// Fonte que vai na imagem baixada, como no rodapé dos cards.
-export const IDH_CARD_SOURCE = "Fonte: PNAD/IBGE · Data Nordeste";
+export const ProtoCardMenuContext =
+  createContext<ProtoCardMenuContextValue | null>(null);
 
 /**
  * Ref para o `<svg>` de um gráfico do card e a fonte de imagem do "Baixar
  * imagem" a partir dele.
  *
- * @example const chart = useSvgChart(); <svg ref={chart.ref} /> <IdhCardMenu title={t} chart={chart} />
+ * @example const chart = useSvgChart(); <svg ref={chart.ref} /> <ProtoCardMenu title={t} chart={chart} />
  */
 export const useSvgChart = () => {
   const ref = useRef<SVGSVGElement | null>(null);
@@ -35,14 +33,14 @@ export const useSvgChart = () => {
 };
 
 /**
- * Menu ⋯ de um card do painel de IDH. Com `chart`, oferece baixar a imagem;
+ * Menu ⋯ de um card do painel. Com `chart`, oferece baixar a imagem;
  * os cards em HTML (ranking, barras de sexo e cor) só compartilham e abrem o
  * catálogo. `catalog={false}`: o dado não tem página no catálogo (Gini, no
  * protótipo).
  *
- * @example <IdhCardMenu title="Índice de Gini" catalog={false} />
+ * @example <ProtoCardMenu title="Índice de Gini" catalog={false} />
  */
-export const IdhCardMenu = ({
+export const ProtoCardMenu = ({
   title,
   chart,
   catalog = true,
@@ -51,7 +49,7 @@ export const IdhCardMenu = ({
   chart?: ReturnType<typeof useSvgChart>;
   catalog?: boolean;
 }) => {
-  const context = useContext(IdhCardMenuContext);
+  const context = useContext(ProtoCardMenuContext);
 
   if (!context) return null;
 
@@ -62,7 +60,7 @@ export const IdhCardMenu = ({
       catalogHref={catalog ? context.catalogHref : null}
       image={
         chart
-          ? { getSource: chart.getSource, source: IDH_CARD_SOURCE }
+          ? { getSource: chart.getSource, source: context.imageSource }
           : undefined
       }
     />

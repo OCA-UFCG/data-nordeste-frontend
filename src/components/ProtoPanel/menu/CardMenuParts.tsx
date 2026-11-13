@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
+import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 import {
   BUTTON,
   ICON_BUTTON,
   SMALL_LABEL,
-} from "@/components/IdhDashboard/idhStyles";
+} from "@/components/ProtoPanel/protoStyles";
 
 // `.mp .btn`: botão principal das telas do menu, na largura toda.
 export const MENU_ACTION_CLASS = `${BUTTON} mt-1 w-full`;
@@ -37,7 +37,7 @@ export const MenuScreen = ({
         aria-label="Voltar"
         className={ICON_BUTTON}
       >
-        <IdhIcon name="back" size={18} />
+        <ProtoIcon name="back" size={18} />
       </button>
       {title}
     </div>

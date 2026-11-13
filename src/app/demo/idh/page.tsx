@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
-import { IdhCover } from "@/components/IdhDashboard/IdhCover";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
-import { IdhSaibaMais } from "@/components/IdhDashboard/IdhSaibaMais";
+import {
+  IDH_SAIBA_MAIS_GLOSSARY,
+  IDH_SAIBA_MAIS_PARAGRAPHS,
+  IDH_SAIBA_MAIS_SUMMARY,
+  IDH_SAIBA_MAIS_TITLE,
+} from "@/components/IdhDashboard/idhSaibaMaisTexts";
 import {
   IDH_LEAD,
   IDH_MACROTHEME,
   IDH_TITLE,
 } from "@/components/IdhDashboard/idhTheme";
+import { ProtoCover } from "@/components/ProtoPanel/ProtoCover";
+import { ProtoSaibaMais } from "@/components/ProtoPanel/ProtoSaibaMais";
 import {
   getCatalogHref,
   getMacroThemeHref,
@@ -71,7 +77,9 @@ export default async function IdhDemoPage({
 
   return (
     <HubTemplate>
-      <IdhCover
+      <ProtoCover
+        tone="idh"
+        icon="idh"
         title={IDH_TITLE}
         lead={IDH_LEAD}
         macroTheme={macroTheme}
@@ -83,7 +91,14 @@ export default async function IdhDemoPage({
         failed={!panel}
         catalogHref={getCatalogHref(macroTheme)}
       />
-      <IdhSaibaMais themeHref={getMacroThemeHref(macroTheme)} />
+      <ProtoSaibaMais
+        tone="idh"
+        title={IDH_SAIBA_MAIS_TITLE}
+        summary={IDH_SAIBA_MAIS_SUMMARY}
+        paragraphs={[...IDH_SAIBA_MAIS_PARAGRAPHS]}
+        glossary={IDH_SAIBA_MAIS_GLOSSARY}
+        themeHref={getMacroThemeHref(macroTheme)}
+      />
       {content ? <RelatedPanelsSection items={content.relatedItems} /> : null}
     </HubTemplate>
   );

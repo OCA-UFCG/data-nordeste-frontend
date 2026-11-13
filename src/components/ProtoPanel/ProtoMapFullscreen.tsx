@@ -5,18 +5,26 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   type PointerEvent,
+  type ReactNode,
   type RefObject,
   type SetStateAction,
   useEffect,
   useRef,
   useState,
 } from "react";
-import { IdhIcon, type IdhIconName } from "@/components/IdhDashboard/IdhIcon";
 import {
-  IdhMapLegend,
-  IdhStateMap,
-} from "@/components/IdhDashboard/IdhStateMap";
-import { ICON_BUTTON } from "@/components/IdhDashboard/idhStyles";
+  ProtoIcon,
+  type ProtoIconName,
+} from "@/components/ProtoPanel/ProtoIcon";
+import {
+  ProtoStateMap,
+  type ProtoStateMapProps,
+} from "@/components/ProtoPanel/ProtoStateMap";
+import {
+  ICON_BUTTON,
+  protoToneStyle,
+} from "@/components/ProtoPanel/protoStyles";
+import { useProtoTone } from "@/components/ProtoPanel/protoTone";
 import {
   Dialog,
   DialogClose,
@@ -24,8 +32,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { ChoroplethRegion } from "@/features/panels/chartOptions";
-import { IDH_MAP_BOX } from "@/features/panels/idh/idhStateShapes";
+import { STATE_MAP_BOX } from "@/features/panels/stateShapes";
 import {
   MAX_MAP_ZOOM,
   panViewBox,
@@ -34,7 +41,7 @@ import {
   zoomViewBox,
 } from "@/features/panels/mapViewBox";
 
-const BASE: ViewBox = { x: 0, y: 0, ...IDH_MAP_BOX };
+const BASE: ViewBox = { x: 0, y: 0, ...STATE_MAP_BOX };
 
 // Passo dos botões e das teclas (1,5×) e da roda do mouse (1,2×).
 const BUTTON_STEP = 1.5;
@@ -149,7 +156,7 @@ const ZoomButton = ({
   onClick,
 }: {
   label: string;
-  icon: IdhIconName;
+  icon: ProtoIconName;
   disabled: boolean;
   onClick: () => void;
 }) => (
@@ -161,7 +168,7 @@ const ZoomButton = ({
     onClick={onClick}
     className="grid size-10 place-items-center border-b border-grey-300 bg-white text-grey-800 last:border-b-0 hover:not-disabled:bg-grey-200 hover:not-disabled:text-grey-1100 disabled:cursor-not-allowed disabled:opacity-40"
   >
-    <IdhIcon name={icon} size={20} stroke={1.75} />
+    <ProtoIcon name={icon} size={20} stroke={1.75} />
   </button>
 );
 
@@ -190,11 +197,7 @@ const useMapView = () => {
   return { view, setView, zoom };
 };
 
-type MapProps = {
-  mapa: ChoroplethRegion[];
-  selectedUf?: string;
-  onSelect: (code: string) => void;
-};
+type MapProps = ProtoStateMapProps;
 
 const ZoomControls = ({
   view,
@@ -252,7 +255,7 @@ const MapStage = ({
       onClickCapture={pan.onClickCapture}
       className="relative h-[min(640px,calc(100vh-250px))] min-h-[300px] cursor-grab touch-none overflow-hidden rounded-[8px] bg-[#d6f1fa] select-none active:cursor-grabbing max-[700px]:h-auto max-[700px]:flex-1"
     >
-      <IdhStateMap
+      <ProtoStateMap
         {...map}
         svgRef={svgRef}
         viewBox={viewBoxAttribute(mapView.view)}
@@ -269,13 +272,18 @@ const MapStage = ({
 
 // Só existe com o diálogo aberto: cada abertura começa no mapa inteiro.
 const FullscreenContent = ({
+  title,
   subtitle,
+  legend,
   map,
 }: {
+  title: string;
   subtitle: string;
+  legend: ReactNode;
   map: MapProps;
 }) => {
   const mapView = useMapView();
+  const tone = useProtoTone();
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const step = ZOOM_KEYS[event.key];
 
@@ -287,13 +295,14 @@ const FullscreenContent = ({
   return (
     <DialogContent
       showCloseButton={false}
+      style={protoToneStyle(tone)}
       onKeyDown={handleKeyDown}
       className="flex max-h-full w-[min(1200px,calc(100%-48px))] max-w-none flex-col gap-0 rounded-[12px] border-0 bg-white px-4 pt-5 pb-3 shadow-[0_12px_32px_rgba(0,0,0,0.25)] sm:max-w-none max-[700px]:inset-0 max-[700px]:h-full max-[700px]:w-full max-[700px]:translate-x-0 max-[700px]:translate-y-0 max-[700px]:rounded-none max-[700px]:p-3"
     >
       <div className="mx-1 mb-3 flex items-start justify-between gap-2">
         <div>
           <DialogTitle className="text-lg font-semibold text-grey-1100">
-            Mapa do IDH por estado
+            {title}
           </DialogTitle>
           <DialogDescription className="mt-0.5 text-[13px] text-grey-800">
             {subtitle}
@@ -319,7 +328,7 @@ const FullscreenContent = ({
         </DialogClose>
       </div>
       <MapStage map={map} mapView={mapView} />
-      <IdhMapLegend mapa={map.mapa} className="mx-1 mt-3" />
+      <div className="mx-1 mt-3">{legend}</div>
       <div className="mx-1 mt-3 flex justify-between gap-3 border-t border-grey-200 pt-3 text-[13px] text-grey-800">
         <span>Fonte: PNAD/IBGE · Data Nordeste</span>
         <span className="max-[700px]:hidden">
@@ -331,23 +340,34 @@ const FullscreenContent = ({
 };
 
 /**
- * Mapa do IDH em tela cheia (`.mmodal` do protótipo): ampliar, reduzir,
- * ajustar (botões, roda do mouse ou teclas + − 0), arrastar e clicar num
- * estado para filtrar o painel.
+ * Mapa em tela cheia (`.mmodal` do protótipo): ampliar, reduzir, ajustar
+ * (botões, roda do mouse ou teclas + − 0), arrastar e clicar num estado para
+ * filtrar o painel. `legend` é a legenda do painel, já montada.
  *
- * @example <IdhMapFullscreen open={open} onOpenChange={setOpen} subtitle="…" mapa={panel.mapa} selectedUf="PE" onSelect={toggleUf} />
+ * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" legend={<IdhMapLegend mapa={mapa} />} fillFor={fill} describe={describe} isSelectable={isSelectable} label="Mapa" selectedUf="PE" onSelect={toggleUf} />
  */
-export const IdhMapFullscreen = ({
+export const ProtoMapFullscreen = ({
   open,
   onOpenChange,
+  title,
   subtitle,
+  legend,
   ...map
 }: MapProps & {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  title: string;
   subtitle: string;
+  legend: ReactNode;
 }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    {open ? <FullscreenContent subtitle={subtitle} map={map} /> : null}
+    {open ? (
+      <FullscreenContent
+        title={title}
+        subtitle={subtitle}
+        legend={legend}
+        map={map}
+      />
+    ) : null}
   </Dialog>
 );

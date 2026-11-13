@@ -2,8 +2,18 @@ import type { ReactNode } from "react";
 
 // Ícones do protótipo dos painéis, com os mesmos traços: os da lucide são
 // parecidos, mas não iguais (o protótipo é a referência visual do painel).
+// Os nomes idh/idhad/gini/renda/rend vêm dos cards de IDH; `users` (perfil)
+// usa o desenho do idh.
 const PATHS_24: Record<string, ReactNode> = {
   idh: (
+    <>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </>
+  ),
+  users: (
     <>
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />
@@ -48,6 +58,13 @@ const PATHS_24: Record<string, ReactNode> = {
       <path d="M12 11v5M12 7.6v.4" />
     </>
   ),
+  infoS: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8h.01M11 12h1v5h1" />
+    </>
+  ),
+  up: <path d="M7 17L17 7M9 7h8v8" />,
   dots: (
     <>
       <circle cx="12" cy="5" r="1.4" />
@@ -102,20 +119,20 @@ const PATHS_20: Record<string, ReactNode> = {
   fit: <path d="M4 8V4h4M12 4h4v4M16 12v4h-4M8 16H4v-4" />,
 };
 
-export type IdhIconName = keyof typeof PATHS_24 | keyof typeof PATHS_20;
+export type ProtoIconName = keyof typeof PATHS_24 | keyof typeof PATHS_20;
 
 /**
  * Ícone do protótipo. `size` em px; `stroke`, a espessura do traço.
  *
- * @example <IdhIcon name="info" size={20} stroke={1.8} />
+ * @example <ProtoIcon name="info" size={20} stroke={1.8} />
  */
-export const IdhIcon = ({
+export const ProtoIcon = ({
   name,
   size = 20,
   stroke = 2,
   className,
 }: {
-  name: IdhIconName;
+  name: ProtoIconName;
   size?: number;
   stroke?: number;
   className?: string;

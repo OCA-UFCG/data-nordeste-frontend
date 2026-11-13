@@ -10,18 +10,24 @@ import {
   useState,
   useTransition,
 } from "react";
-import type { IdhCardState } from "@/components/IdhDashboard/IdhCard";
+import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhCardTexts";
+import type { ProtoCardState } from "@/components/ProtoPanel/ProtoCard";
 import {
-  IdhCardMenuContext,
-  type IdhCardMenuContextValue,
-} from "@/components/IdhDashboard/IdhCardMenu";
+  ProtoCardMenuContext,
+  type ProtoCardMenuContextValue,
+} from "@/components/ProtoPanel/ProtoCardMenu";
+import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
 import { IdhFilterBar } from "@/components/IdhDashboard/IdhFilterBar";
 import { IdhGroupView } from "@/components/IdhDashboard/IdhGroupView";
 import { IdhNextViewButton } from "@/components/IdhDashboard/IdhNextViewButton";
 import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
 import { IdhViewBar, IdhViewRail } from "@/components/IdhDashboard/IdhViewTabs";
-import { BUTTON, IDH_TEXT } from "@/components/IdhDashboard/idhStyles";
-import { useIdhSticky } from "@/components/IdhDashboard/useIdhSticky";
+import {
+  BUTTON,
+  PROTO_TEXT,
+  protoToneStyle,
+} from "@/components/ProtoPanel/protoStyles";
+import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
   buildIdhSearch,
@@ -70,7 +76,7 @@ const useCardMenuValue = (
   tab: IdhVisao,
   pathname: string,
   catalogHref: string | null,
-): IdhCardMenuContextValue =>
+): ProtoCardMenuContextValue =>
   useMemo(
     () => ({
       share: {
@@ -78,6 +84,7 @@ const useCardMenuValue = (
         chips: describeIdhShareChips(data, tab),
       },
       catalogHref,
+      imageSource: IDH_CARD_SOURCE,
     }),
     [data, tab, pathname, catalogHref],
   );
@@ -85,7 +92,7 @@ const useCardMenuValue = (
 type ViewProps = {
   tab: IdhVisao;
   data: IdhPanelData;
-  state: IdhCardState;
+  state: ProtoCardState;
   onRetry: () => void;
   onReset: () => void;
   onSelectUf: (uf: string) => void;
@@ -133,7 +140,7 @@ export const IdhDashboard = ({
   const [tab, setTab] = useState<IdhVisao>(data.filters.visao);
   const navigation = useIdhNavigation();
   const { retrying, retry } = useRetry();
-  const sticky = useIdhSticky();
+  const sticky = useProtoSticky();
   const layoutRef = useRef<HTMLDivElement>(null);
   const cardMenu = useCardMenuValue(
     data,
@@ -141,7 +148,7 @@ export const IdhDashboard = ({
     navigation.pathname,
     catalogHref,
   );
-  const state: IdhCardState = failed
+  const state: ProtoCardState = failed
     ? "error"
     : navigation.isPending || retrying
       ? "loading"
@@ -157,7 +164,7 @@ export const IdhDashboard = ({
   const tabs = { panelId: ids.panel, active: tab, onSelect: selectTab };
 
   return (
-    <>
+    <ProtoToneContext.Provider value="idh">
       <IdhViewBar
         {...tabs}
         idPrefix={ids.bar}
@@ -176,7 +183,8 @@ export const IdhDashboard = ({
       />
       <div
         ref={layoutRef}
-        className={`${IDH_TEXT} mx-auto grid w-full max-w-[1440px] grid-cols-[223px_minmax(0,1fr)] max-[900px]:grid-cols-[minmax(0,1fr)]`}
+        style={protoToneStyle("idh")}
+        className={`${PROTO_TEXT} mx-auto grid w-full max-w-[1440px] grid-cols-[223px_minmax(0,1fr)] max-[900px]:grid-cols-[minmax(0,1fr)]`}
       >
         <IdhViewRail {...tabs} idPrefix={ids.rail} top={sticky.railTop} />
         <div
@@ -185,7 +193,7 @@ export const IdhDashboard = ({
           aria-labelledby={`${ids.rail}-${tab}`}
           className="min-w-0 pt-8 pr-20 pb-10 pl-7 max-[1100px]:pt-6 max-[1100px]:pr-8 max-[1100px]:pl-6 max-[900px]:px-4 max-[900px]:pt-5 max-[900px]:pb-8"
         >
-          <IdhCardMenuContext.Provider value={cardMenu}>
+          <ProtoCardMenuContext.Provider value={cardMenu}>
             <IdhView
               tab={tab}
               data={data}
@@ -200,7 +208,7 @@ export const IdhDashboard = ({
               }
               onSelectYear={(ano) => changeFilters({ ...data.filters, ano })}
             />
-          </IdhCardMenuContext.Provider>
+          </ProtoCardMenuContext.Provider>
           <p className="mt-4 text-xs leading-4 text-grey-1100">
             {PANEL_SOURCE}
           </p>
@@ -219,6 +227,6 @@ export const IdhDashboard = ({
           ) : null}
         </div>
       </div>
-    </>
+    </ProtoToneContext.Provider>
   );
 };

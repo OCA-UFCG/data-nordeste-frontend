@@ -6,7 +6,7 @@ import {
   MenuLabel,
   MenuScreen,
   MenuStatus,
-} from "@/components/IdhDashboard/menu/CardMenuParts";
+} from "@/components/ProtoPanel/menu/CardMenuParts";
 
 // `path`: caminho e busca do painel (ex.: "/demo/idh?uf=PE"); `chips`: os
 // filtros que entram no link, em texto.
@@ -29,7 +29,7 @@ const FilterChips = ({ chips }: { chips: string[] }) => (
       {chips.map((chip) => (
         <li
           key={chip}
-          className="rounded-full border border-[#ded9fb] bg-[#f6f4fe] px-2.5 py-0.5 text-xs font-semibold text-[#6d34cd]"
+          className="rounded-full border border-(--proto-accent-line) bg-(--proto-accent-soft) px-2.5 py-0.5 text-xs font-semibold text-(--proto-accent-strong)"
         >
           {chip}
         </li>

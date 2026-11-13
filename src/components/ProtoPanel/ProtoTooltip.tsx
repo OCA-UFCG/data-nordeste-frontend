@@ -2,6 +2,8 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { protoToneStyle } from "@/components/ProtoPanel/protoStyles";
+import { useProtoTone } from "@/components/ProtoPanel/protoTone";
 
 export type TooltipAt = { x: number; y: number };
 
@@ -26,11 +28,12 @@ const placeTooltip = (
 
 /**
  * Dica escura que segue o ponteiro nos gráficos (`.tip` do protótipo). Vai
- * para o `body`, para nenhum card cortá-la.
+ * para o `body`, para nenhum card cortá-la; por isso leva o tom do painel no
+ * próprio `style`.
  *
- * @example <IdhTooltip at={{ x: 120, y: 80 }} title="2021" rows={[{ color: "#6d34cd", label: "IDH", value: "0,702" }]} />
+ * @example <ProtoTooltip at={{ x: 120, y: 80 }} title="2021" rows={[{ color: "#35b2db", label: "IDH", value: "0,702" }]} />
  */
-export const IdhTooltip = ({
+export const ProtoTooltip = ({
   at,
   title,
   rows,
@@ -40,6 +43,7 @@ export const IdhTooltip = ({
   rows: TooltipRow[];
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const tone = useProtoTone();
   const [position, setPosition] = useState({ left: at.x + 14, top: at.y + 14 });
 
   useLayoutEffect(() => {
@@ -58,7 +62,7 @@ export const IdhTooltip = ({
     <div
       ref={ref}
       role="tooltip"
-      style={position}
+      style={{ ...position, ...protoToneStyle(tone) }}
       className="pointer-events-none fixed z-[120] max-w-[240px] rounded-[8px] bg-[#1b1a1c] px-2.5 py-2 text-[12.5px] leading-[1.4] text-white shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]"
     >
       <b className="mb-0.5 block text-[13px]">{title}</b>

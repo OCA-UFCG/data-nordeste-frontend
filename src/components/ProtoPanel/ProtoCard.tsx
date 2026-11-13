@@ -1,21 +1,17 @@
 "use client";
 
 import type { CSSProperties, ReactNode } from "react";
-import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
-import { BUTTON, CARD_SHADOW } from "@/components/IdhDashboard/idhStyles";
+import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
+import { BUTTON, CARD_SHADOW } from "@/components/ProtoPanel/protoStyles";
 
-export type IdhCardState = "ok" | "loading" | "error";
+export type ProtoCardState = "ok" | "loading" | "error";
 
 // Altura do esqueleto de cada tipo de card, a mesma do protótipo.
 const SKELETON_HEIGHT = { line: 250, map: 380, rank: 380, grp: 90 } as const;
 
-export type IdhCardKind = keyof typeof SKELETON_HEIGHT;
+export type ProtoCardKind = keyof typeof SKELETON_HEIGHT;
 
-// WARNING: o protótipo traz "Atualizado em 11/2026" fixo. O banco não informa
-// quando a PNAD foi carregada; troque por essa data quando houver uma fonte.
-export const IDH_DATA_UPDATED_AT = "11/2026";
-
-export const IdhSkeleton = ({
+export const ProtoSkeleton = ({
   className,
   style,
 }: {
@@ -28,14 +24,17 @@ export const IdhSkeleton = ({
   />
 );
 
-const CardSkeleton = ({ kind }: { kind: IdhCardKind }) => (
+const CardSkeleton = ({ kind }: { kind: ProtoCardKind }) => (
   <div
     aria-busy="true"
     aria-label="Carregando"
     className="flex flex-col gap-3 pt-1"
   >
-    <IdhSkeleton className="h-3.5 w-[45%]" />
-    <IdhSkeleton className="w-full" style={{ height: SKELETON_HEIGHT[kind] }} />
+    <ProtoSkeleton className="h-3.5 w-[45%]" />
+    <ProtoSkeleton
+      className="w-full"
+      style={{ height: SKELETON_HEIGHT[kind] }}
+    />
   </div>
 );
 
@@ -43,9 +42,9 @@ const CardSkeleton = ({ kind }: { kind: IdhCardKind }) => (
  * Estado de aviso ou de erro de um card (`.empty` do protótipo): ícone, texto
  * e uma ação.
  *
- * @example <IdhCardNotice tone="error" action={{ label: "Tentar de novo", onClick: retry }}>Não foi possível…</IdhCardNotice>
+ * @example <ProtoCardNotice tone="error" action={{ label: "Tentar de novo", onClick: retry }}>Não foi possível…</ProtoCardNotice>
  */
-export const IdhCardNotice = ({
+export const ProtoCardNotice = ({
   tone,
   action,
   children,
@@ -61,7 +60,7 @@ export const IdhCardNotice = ({
     <span
       className={`grid size-11 place-items-center rounded-full border ${tone === "error" ? "border-[#efb8bd] bg-[#ffe1e3] text-[#bf1621]" : "border-[#ebcb78] bg-[#fff7e0] text-[#8a6200]"}`}
     >
-      <IdhIcon name="warn" size={24} />
+      <ProtoIcon name="warn" size={24} />
     </span>
     <p className="max-w-[56ch] text-[15px] leading-[22px]">{children}</p>
     {action ? (
@@ -83,16 +82,20 @@ const Responsive = ({ wide, narrow }: { wide: string; narrow?: string }) =>
     wide
   );
 
-export type IdhCardProps = {
+// Rodapé com a fonte; sem `footer`, o card não mostra rodapé.
+export type ProtoCardFooter = { source: string; updatedAt?: string };
+
+export type ProtoCardProps = {
   title: string;
   mobileTitle?: string;
   subtitle: string;
   mobileSubtitle?: string;
   actions: ReactNode;
-  state: IdhCardState;
-  kind: IdhCardKind;
+  state: ProtoCardState;
+  kind: ProtoCardKind;
   onRetry: () => void;
   bodyClassName?: string;
+  footer?: ProtoCardFooter;
   children: ReactNode;
 };
 
@@ -101,29 +104,39 @@ const CardBody = ({
   kind,
   onRetry,
   children,
-}: Pick<IdhCardProps, "state" | "kind" | "onRetry" | "children">) => {
+}: Pick<ProtoCardProps, "state" | "kind" | "onRetry" | "children">) => {
   if (state === "loading") return <CardSkeleton kind={kind} />;
   if (state === "error") {
     return (
-      <IdhCardNotice
+      <ProtoCardNotice
         tone="error"
         action={{ label: "Tentar de novo", onClick: onRetry }}
       >
         Não foi possível carregar os dados deste gráfico.
-      </IdhCardNotice>
+      </ProtoCardNotice>
     );
   }
 
   return children;
 };
 
+const CardFooter = ({ footer }: { footer: ProtoCardFooter }) => (
+  <div className="mt-3.5 flex justify-between gap-3 text-[11px] leading-4 text-grey-1100">
+    <span>{footer.source}</span>
+    {footer.updatedAt ? (
+      <span className="text-grey-800">Atualizado em {footer.updatedAt}</span>
+    ) : null}
+  </div>
+);
+
 /**
  * Card de gráfico do painel ("Caixa do gráfico" do protótipo): cabeçalho com
- * ações, corpo com os estados carregando e erro, e o rodapé com a fonte.
+ * ações, corpo com os estados carregando e erro, e o rodapé com a fonte
+ * (quando `footer` é dado).
  *
- * @example <IdhCard title="Mapa do IDH por estado" subtitle="…" actions={…} state="ok" kind="map" onRetry={retry}>…</IdhCard>
+ * @example <ProtoCard title="Mapa do IDH por estado" subtitle="…" actions={…} state="ok" kind="map" onRetry={retry} footer={{ source: "Fonte: …" }}>…</ProtoCard>
  */
-export const IdhCard = (props: IdhCardProps) => (
+export const ProtoCard = (props: ProtoCardProps) => (
   <article
     className={`flex min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW} max-[700px]:p-4`}
   >
@@ -143,9 +156,6 @@ export const IdhCard = (props: IdhCardProps) => (
         {props.children}
       </CardBody>
     </div>
-    <div className="mt-3.5 flex justify-between gap-3 text-[11px] leading-4 text-grey-1100">
-      <span>Fonte: PNAD/IBGE · Data Nordeste</span>
-      <span className="text-grey-800">Atualizado em {IDH_DATA_UPDATED_AT}</span>
-    </div>
+    {props.footer ? <CardFooter footer={props.footer} /> : null}
   </article>
 );
