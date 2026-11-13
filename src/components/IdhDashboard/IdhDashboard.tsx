@@ -2,21 +2,27 @@
 
 import Link from "next/link";
 import { useId, useMemo, useRef } from "react";
-import {
-  IdhCardMenuContext,
-  type IdhCardMenuContextValue,
-} from "@/components/IdhDashboard/IdhCardMenu";
 import { IdhFilterBar } from "@/components/IdhDashboard/IdhFilterBar";
 import { IdhGroupView } from "@/components/IdhDashboard/IdhGroupView";
 import { IdhNextViewButton } from "@/components/IdhDashboard/IdhNextViewButton";
 import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
 import { IdhViewBar, IdhViewRail } from "@/components/IdhDashboard/IdhViewTabs";
-import { BUTTON, IDH_TEXT } from "@/components/IdhDashboard/idhStyles";
+import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import {
   type IdhDashboardModel,
   useIdhDashboard,
 } from "@/components/IdhDashboard/useIdhDashboard";
-import { useIdhSticky } from "@/components/IdhDashboard/useIdhSticky";
+import {
+  ProtoCardMenuContext,
+  type ProtoCardMenuContextValue,
+} from "@/components/ProtoPanel/ProtoCardMenu";
+import {
+  BUTTON,
+  PROTO_TEXT,
+  protoToneStyle,
+} from "@/components/ProtoPanel/protoStyles";
+import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
+import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import {
   buildIdhSearch,
   DEFAULT_IDH_FILTERS,
@@ -32,7 +38,7 @@ const PANEL_SOURCE =
   "Fonte dos dados: Pesquisa Nacional por Amostra de Domicílios Contínua (PNAD/IBGE) · Data Nordeste";
 
 // Coluna lateral das visões e o conteúdo; abaixo de 900 px, uma coluna só.
-const LAYOUT_CLASS = `${IDH_TEXT} mx-auto grid w-full max-w-[1440px] grid-cols-[223px_minmax(0,1fr)] max-[900px]:grid-cols-[minmax(0,1fr)]`;
+const LAYOUT_CLASS = `${PROTO_TEXT} mx-auto grid w-full max-w-[1440px] grid-cols-[223px_minmax(0,1fr)] max-[900px]:grid-cols-[minmax(0,1fr)]`;
 
 const TAB_PANEL_CLASS =
   "min-w-0 pt-8 pr-20 pb-10 pl-7 max-[1100px]:pt-6 max-[1100px]:pr-8 max-[1100px]:pl-6 max-[900px]:px-4 max-[900px]:pt-5 max-[900px]:pb-8";
@@ -44,7 +50,7 @@ const useCardMenuValue = (
   tab: IdhVisao,
   pathname: string,
   catalogHref: string | null,
-): IdhCardMenuContextValue =>
+): ProtoCardMenuContextValue =>
   useMemo(
     () => ({
       share: {
@@ -52,6 +58,7 @@ const useCardMenuValue = (
         chips: describeIdhShareChips(data, tab),
       },
       catalogHref,
+      imageSource: IDH_CARD_SOURCE,
     }),
     [data, tab, pathname, catalogHref],
   );
@@ -100,7 +107,7 @@ const isDefaultFilters = ({ filters }: IdhPanelData) =>
 const visaoLabel = (tab: IdhVisao) =>
   IDH_VISOES.find((item) => item.key === tab)?.label ?? "";
 
-type IdhStickyBars = ReturnType<typeof useIdhSticky>;
+type IdhStickyBars = ReturnType<typeof useProtoSticky>;
 
 type PanelProps = ViewProps & { ids: IdhTabIds; catalogHref: string | null };
 
@@ -176,9 +183,9 @@ const IdhCardsWithMenu = ({ data, dashboard, catalogHref }: PanelProps) => {
   const cardMenu = useCardMenuValue(data, tab, pathname, catalogHref);
 
   return (
-    <IdhCardMenuContext.Provider value={cardMenu}>
+    <ProtoCardMenuContext.Provider value={cardMenu}>
       <IdhView data={data} dashboard={dashboard} />
-    </IdhCardMenuContext.Provider>
+    </ProtoCardMenuContext.Provider>
   );
 };
 
@@ -209,7 +216,7 @@ type IdhDashboardProps = {
  */
 export const IdhDashboard = (props: IdhDashboardProps) => {
   const ids = useIdhTabIds();
-  const sticky = useIdhSticky();
+  const sticky = useProtoSticky();
   const layoutRef = useRef<HTMLDivElement>(null);
   const reveal = () => sticky.reveal(layoutRef.current);
   const dashboard = useIdhDashboard(props.data, !!props.failed, reveal);
@@ -217,12 +224,16 @@ export const IdhDashboard = (props: IdhDashboardProps) => {
   const panel = { data, catalogHref, dashboard, ids };
 
   return (
-    <>
+    <ProtoToneContext.Provider value="idh">
       <IdhDashboardBars {...panel} sticky={sticky} />
-      <div ref={layoutRef} className={LAYOUT_CLASS}>
+      <div
+        ref={layoutRef}
+        style={protoToneStyle("idh")}
+        className={LAYOUT_CLASS}
+      >
         <IdhDashboardRail {...panel} top={sticky.railTop} />
         <IdhTabPanel {...panel} />
       </div>
-    </>
+    </ProtoToneContext.Provider>
   );
 };

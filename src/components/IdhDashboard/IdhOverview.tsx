@@ -2,24 +2,27 @@
 
 import { useState } from "react";
 import { IdhBigNumbers } from "@/components/IdhDashboard/IdhBigNumbers";
-import { IdhCard, type IdhCardState } from "@/components/IdhDashboard/IdhCard";
-import {
-  IDH_CARD_INFO,
-  IdhCardInfo,
-} from "@/components/IdhDashboard/IdhCardInfo";
-import {
-  IdhCardMenu,
-  useSvgChart,
-} from "@/components/IdhDashboard/IdhCardMenu";
-import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
 import { IdhLineChart } from "@/components/IdhDashboard/IdhLineChart";
-import { IdhMapFullscreen } from "@/components/IdhDashboard/IdhMapFullscreen";
+import { IdhMapLegend } from "@/components/IdhDashboard/IdhMapLegend";
+import { buildIdhMapProps } from "@/components/IdhDashboard/idhMapProps";
+import {
+  IDH_CARD_FOOTER,
+  IDH_CARD_INFO,
+} from "@/components/IdhDashboard/idhCardTexts";
 import { IdhRankingBars } from "@/components/IdhDashboard/IdhRanking";
 import {
-  IdhMapLegend,
-  IdhStateMap,
-} from "@/components/IdhDashboard/IdhStateMap";
-import { ICON_BUTTON } from "@/components/IdhDashboard/idhStyles";
+  ProtoCard,
+  type ProtoCardState,
+} from "@/components/ProtoPanel/ProtoCard";
+import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
+import {
+  ProtoCardMenu,
+  useSvgChart,
+} from "@/components/ProtoPanel/ProtoCardMenu";
+import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
+import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
+import { ProtoStateMap } from "@/components/ProtoPanel/ProtoStateMap";
+import { ICON_BUTTON } from "@/components/ProtoPanel/protoStyles";
 import {
   type IdhCardStates,
   showsIdhData,
@@ -31,7 +34,7 @@ import {
   type IdhPanelData,
 } from "@/features/panels/idh/idhPanel";
 
-type CardStatus = { state: IdhCardState; onRetry: () => void };
+type CardStatus = { state: ProtoCardState; onRetry: () => void };
 
 // `selection`: os filtros pedidos. O ano da série e o estado destacado no mapa
 // e no ranking seguem o clique na hora, antes de o servidor responder.
@@ -57,16 +60,20 @@ const EvolutionCard = ({
   const chart = useSvgChart();
 
   return (
-    <IdhCard
+    <ProtoCard
       {...status}
+      footer={IDH_CARD_FOOTER}
       title={EVOLUTION_TITLE}
       mobileTitle="Evolução anual do IDH"
       subtitle={describeIdhSerie(data)}
       kind="line"
       actions={
         <>
-          <IdhCardInfo title={EVOLUTION_TITLE} text={IDH_CARD_INFO.evolution} />
-          <IdhCardMenu title={EVOLUTION_TITLE} chart={chart} />
+          <ProtoCardInfo
+            title={EVOLUTION_TITLE}
+            text={IDH_CARD_INFO.evolution}
+          />
+          <ProtoCardMenu title={EVOLUTION_TITLE} chart={chart} />
         </>
       }
     >
@@ -76,7 +83,7 @@ const EvolutionCard = ({
         onSelectYear={onSelectYear}
         svgRef={chart.ref}
       />
-    </IdhCard>
+    </ProtoCard>
   );
 };
 
@@ -89,13 +96,15 @@ const MapCard = ({
   const chart = useSvgChart();
   const [fullscreen, setFullscreen] = useState(false);
   const subtitle = `Faixas de desenvolvimento humano · ${data.filters.ano}`;
+  const mapProps = buildIdhMapProps(data.mapa, selection.uf, onSelectUf);
 
-  // IMPORTANT: o diálogo fica fora do IdhCard. Dentro dos children, o
+  // IMPORTANT: o diálogo fica fora do ProtoCard. Dentro dos children, o
   // esqueleto do "carregando" o desmontaria a cada estado clicado em tela cheia.
   return (
     <>
-      <IdhCard
+      <ProtoCard
         {...status}
+        footer={IDH_CARD_FOOTER}
         title={MAP_TITLE}
         subtitle={subtitle}
         kind="map"
@@ -111,30 +120,25 @@ const MapCard = ({
               onClick={() => setFullscreen(true)}
               className={ICON_BUTTON}
             >
-              <IdhIcon name="fullscreen" size={18} stroke={1.7} />
+              <ProtoIcon name="fullscreen" size={18} stroke={1.7} />
             </button>
-            <IdhCardInfo title={MAP_TITLE} text={IDH_CARD_INFO.map} />
-            <IdhCardMenu title={MAP_TITLE} chart={chart} />
+            <ProtoCardInfo title={MAP_TITLE} text={IDH_CARD_INFO.map} />
+            <ProtoCardMenu title={MAP_TITLE} chart={chart} />
           </>
         }
       >
         <div className="relative rounded-[8px] bg-[#d6f1fa] p-1">
-          <IdhStateMap
-            mapa={data.mapa}
-            selectedUf={selection.uf}
-            onSelect={onSelectUf}
-            svgRef={chart.ref}
-          />
+          <ProtoStateMap {...mapProps} svgRef={chart.ref} />
         </div>
         <IdhMapLegend mapa={data.mapa} />
-      </IdhCard>
-      <IdhMapFullscreen
+      </ProtoCard>
+      <ProtoMapFullscreen
+        {...mapProps}
         open={fullscreen}
         onOpenChange={setFullscreen}
+        title="Mapa do IDH por estado"
         subtitle={subtitle}
-        mapa={data.mapa}
-        selectedUf={selection.uf}
-        onSelect={onSelectUf}
+        legend={<IdhMapLegend mapa={data.mapa} className="" />}
       />
     </>
   );
@@ -146,8 +150,9 @@ const RankingCard = ({
   onSelectUf,
   ...status
 }: CardProps & { onSelectUf: (uf: string) => void }) => (
-  <IdhCard
+  <ProtoCard
     {...status}
+    footer={IDH_CARD_FOOTER}
     title={RANKING_TITLE}
     mobileTitle="Comparação entre os estados"
     subtitle={`Do maior para o menor · barras de 0 a 1 · ${data.filters.ano}`}
@@ -156,8 +161,8 @@ const RankingCard = ({
     bodyClassName="flex flex-col"
     actions={
       <>
-        <IdhCardInfo title={RANKING_TITLE} text={IDH_CARD_INFO.ranking} />
-        <IdhCardMenu title={RANKING_TITLE} />
+        <ProtoCardInfo title={RANKING_TITLE} text={IDH_CARD_INFO.ranking} />
+        <ProtoCardMenu title={RANKING_TITLE} />
       </>
     }
   >
@@ -166,7 +171,7 @@ const RankingCard = ({
       selectedUf={selection.uf}
       onSelect={onSelectUf}
     />
-  </IdhCard>
+  </ProtoCard>
 );
 
 /**

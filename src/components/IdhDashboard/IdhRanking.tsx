@@ -1,6 +1,6 @@
 "use client";
 
-import { FOCUS_RING } from "@/components/IdhDashboard/idhStyles";
+import { FOCUS_RING } from "@/components/ProtoPanel/protoStyles";
 import type { IdhRankedState } from "@/features/panels/idh/idhClasses";
 import { formatIdh } from "@/features/panels/idh/idhFormat";
 

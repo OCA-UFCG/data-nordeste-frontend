@@ -1,7 +1,15 @@
 import Link from "next/link";
-import { IdhBackLink } from "@/components/IdhDashboard/IdhBackLink";
-import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
-import { IDH_TEXT, WRAP } from "@/components/IdhDashboard/idhStyles";
+import { ProtoBackLink } from "@/components/ProtoPanel/ProtoBackLink";
+import {
+  ProtoIcon,
+  type ProtoIconName,
+} from "@/components/ProtoPanel/ProtoIcon";
+import {
+  PROTO_TEXT,
+  protoToneStyle,
+  type ProtoTone,
+  WRAP,
+} from "@/components/ProtoPanel/protoStyles";
 import { cn } from "@/lib/utils";
 
 const CRUMB_LINK =
@@ -18,7 +26,7 @@ const formatPublishedAt = (date: string) =>
   });
 
 const Separator = () => (
-  <IdhIcon
+  <ProtoIcon
     name="chevronRight"
     size={16}
     stroke={2.4}
@@ -50,24 +58,31 @@ const Breadcrumbs = ({ title }: { title: string }) => (
 
 /**
  * Capa do painel (`.cover` do protótipo, em "Cinza Dados 800"): voltar,
- * trilha, data de publicação, macrotema, título e texto de abertura.
+ * trilha, data de publicação, macrotema, título e texto de abertura. É usada
+ * pela página (servidor), então recebe o `tone` e o `icon` em vez de ler o
+ * contexto.
  *
- * @example <IdhCover title={IDH_TITLE} lead={IDH_LEAD} macroTheme="Desenvolvimento Social" publishedAt="2025-05-14" />
+ * @example <ProtoCover tone="idh" icon="idh" title={IDH_TITLE} lead={IDH_LEAD} macroTheme="Desenvolvimento Social" publishedAt="2025-05-14" />
  */
-export const IdhCover = ({
+export const ProtoCover = ({
   title,
   lead,
   macroTheme,
   publishedAt,
+  icon,
+  tone,
 }: {
   title: string;
   lead: string;
   macroTheme: string;
   publishedAt?: string;
+  icon: ProtoIconName;
+  tone: ProtoTone;
 }) => (
   <section
+    style={protoToneStyle(tone)}
     className={cn(
-      IDH_TEXT,
+      PROTO_TEXT,
       "relative w-full overflow-hidden bg-grey-1000 text-white",
     )}
   >
@@ -75,17 +90,17 @@ export const IdhCover = ({
       className={`${WRAP} relative pt-6 pb-[58px] max-[700px]:pt-4 max-[700px]:pb-6`}
     >
       <div className="mb-5 flex min-h-10 items-center gap-4">
-        <IdhBackLink />
+        <ProtoBackLink />
         <Breadcrumbs title={title} />
         {publishedAt ? (
-          <span className="ml-auto rounded-full border border-[#ded9fb] bg-[#f6f4fe] px-3 py-px text-xs leading-5 font-semibold whitespace-nowrap text-[#6d34cd]">
+          <span className="ml-auto rounded-full border border-(--proto-accent-line) bg-(--proto-accent-soft) px-3 py-px text-xs leading-5 font-semibold whitespace-nowrap text-(--proto-accent-strong)">
             Publicado em: {formatPublishedAt(publishedAt)}
           </span>
         ) : null}
       </div>
       <div className="flex items-center gap-3 text-[20px] leading-[30px] font-medium max-[700px]:text-base">
-        <span className="grid size-11 flex-none place-items-center rounded-[6px] bg-[#7c46e1] max-[700px]:size-9">
-          <IdhIcon name="idh" size={26} />
+        <span className="grid size-11 flex-none place-items-center rounded-[6px] bg-(--proto-accent) max-[700px]:size-9">
+          <ProtoIcon name={icon} size={26} />
         </span>
         Painel de {macroTheme}
       </div>

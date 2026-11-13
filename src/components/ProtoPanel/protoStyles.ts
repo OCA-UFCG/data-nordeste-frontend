@@ -1,31 +1,66 @@
+import type { CSSProperties } from "react";
+
 // Classes do protótipo dos painéis ("Painéis Data Nordeste · Protótipo
 // navegável"), em Tailwind. Cores que o tema já tem usam o token: grey-1100 é o
 // texto, grey-800 o texto de apoio, grey-300 a linha, grey-200 a linha suave e
 // grey-100 o fundo cinza. O verde de ação é o green-800 do tema, não o #018f39
 // do protótipo: o tema o escureceu para 4,5:1 com texto branco (WCAG 1.4.3).
-// As cores roxas são as do IDH no protótipo.
-export const IDH_COLORS = {
-  accent: "#7c46e1",
-  accentStrong: "#6d34cd",
-  accentSecond: "#a993f2",
-  accentSecondInk: "#6b52c8",
-  accentSoft: "#f6f4fe",
-  accentLine: "#ded9fb",
-  groupSecond: "#35b2db",
-  sea: "#d6f1fa",
-  ink: "#292829",
-  inkStrong: "#1b1a1c",
-  muted: "#595557",
-  line: "#dcdbdc",
-} as const;
+// A cor de destaque é uma variável CSS: cada painel define o seu tom em
+// `protoToneStyle` no elemento raiz (portais incluídos, porque saem da árvore).
+export type ProtoTone = "idh" | "perfil";
+
+export type ProtoToneColors = {
+  accent: string;
+  accentStrong: string;
+  accentSoft: string;
+  accentLine: string;
+};
+
+export const PROTO_TONES: Record<ProtoTone, ProtoToneColors> = {
+  idh: {
+    accent: "#7c46e1",
+    accentStrong: "#6d34cd",
+    accentSoft: "#f6f4fe",
+    accentLine: "#ded9fb",
+  },
+  perfil: {
+    accent: "#d6537f",
+    accentStrong: "#a8264f",
+    accentSoft: "#fdeef3",
+    accentLine: "#f3c3d4",
+  },
+};
+
+/**
+ * Variáveis CSS do tom de um painel. Vai como `style` no elemento raiz; quem
+ * está num portal (folha, balão, diálogo) recebe o mesmo estilo, porque o
+ * portal sai da árvore de elementos do painel.
+ *
+ * @example <section style={protoToneStyle("perfil")}>…</section>
+ */
+export const protoToneStyle = (tone: ProtoTone): CSSProperties => {
+  const colors = PROTO_TONES[tone];
+  const style: Record<string, string> = {
+    "--proto-accent": colors.accent,
+    "--proto-accent-strong": colors.accentStrong,
+    "--proto-accent-soft": colors.accentSoft,
+    "--proto-accent-line": colors.accentLine,
+  };
+
+  return style as CSSProperties;
+};
 
 // Fonte dos gráficos em SVG: vai como atributo para a imagem baixada levar a
 // mesma letra da tela.
-export const IDH_CHART_FONT =
+export const PROTO_CHART_FONT =
   "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
 
+// Tinta dos mapas e dos rótulos: cinzas neutros, iguais em todos os painéis.
+export const PROTO_INK = "#292829";
+export const PROTO_INK_STRONG = "#1b1a1c";
+
 export const FOCUS_RING =
-  "focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-[#7c46e1]";
+  "focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-(--proto-accent)";
 
 // `.wrap`: 80 px de margem, 32 px até 1100 px e 16 px no celular.
 export const WRAP =
@@ -42,7 +77,7 @@ export const ICON_BUTTON = `grid size-8 place-items-center rounded-[6px] text-gr
 
 // `body` do protótipo: 15 px, altura de linha 1,5 e a cor do texto. O site usa
 // 16 px; cada bloco do painel define o seu para o que herda sair igual.
-export const IDH_TEXT = "text-[15px] leading-normal text-grey-1100";
+export const PROTO_TEXT = "text-[15px] leading-normal text-grey-1100";
 
 export const CARD_SHADOW = "shadow-[0_2px_4px_-2px_rgba(0,0,0,0.1)]";
 

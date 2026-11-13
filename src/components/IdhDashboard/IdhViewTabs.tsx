@@ -8,12 +8,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
+import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 import {
   FOCUS_RING,
-  IDH_TEXT,
+  PROTO_TEXT,
+  protoToneStyle,
   WRAP,
-} from "@/components/IdhDashboard/idhStyles";
+} from "@/components/ProtoPanel/protoStyles";
 import { IDH_VISOES, type IdhVisao } from "@/features/panels/idh/idhPanel";
 
 const NEXT_KEYS: Record<string, number> = {
@@ -157,7 +158,7 @@ const ScrollArrow = ({
     onClick={onClick}
     className={`absolute top-1/2 z-[3] hidden size-[30px] -translate-y-1/2 place-items-center rounded-full border border-grey-300 bg-white p-0 text-grey-1100 shadow-[0_2px_6px_-2px_rgba(0,0,0,0.25)] hover:bg-grey-100 ${side === "left" ? "left-0.5" : "right-0.5"} ${visible ? "pointer-fine:grid" : ""}`}
   >
-    <IdhIcon
+    <ProtoIcon
       name={side === "left" ? "chevronLeft" : "chevronRight"}
       size={16}
       stroke={2.4}
@@ -189,8 +190,8 @@ export const IdhViewBar = ({
   return (
     <div
       ref={barRef}
-      style={{ top }}
-      className={`${IDH_TEXT} sticky z-[46] hidden w-full border-b border-grey-300 bg-white max-[900px]:block max-[700px]:static`}
+      style={{ top, ...protoToneStyle("idh") }}
+      className={`${PROTO_TEXT} sticky z-[46] hidden w-full border-b border-grey-300 bg-white max-[900px]:block max-[700px]:static`}
     >
       <div className={`${WRAP} relative flex items-center`}>
         <span

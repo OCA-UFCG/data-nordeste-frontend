@@ -6,7 +6,7 @@ import {
   MenuLabel,
   MenuScreen,
   MenuStatus,
-} from "@/components/IdhDashboard/menu/CardMenuParts";
+} from "@/components/ProtoPanel/menu/CardMenuParts";
 import type { ChartImageFormat } from "@/features/panels/chartImage";
 import { type ChartImageSource, downloadChartImage } from "@/lib/chartImage";
 
@@ -42,7 +42,7 @@ const ImagePreview = ({
     className="rounded-[6px] border border-grey-300 bg-white p-2.5 text-[11px]"
   >
     {framed ? <div className="text-xs font-semibold">{title}</div> : null}
-    <div className="my-2 h-14 rounded bg-[repeating-linear-gradient(90deg,#f6f4fe_0_18px,#fff_18px_22px)]" />
+    <div className="my-2 h-14 rounded bg-[repeating-linear-gradient(90deg,var(--proto-accent-soft)_0_18px,#fff_18px_22px)]" />
     {framed ? <div>{source}</div> : null}
   </div>
 );

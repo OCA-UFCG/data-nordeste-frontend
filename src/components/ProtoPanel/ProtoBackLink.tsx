@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
-import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
+import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 
 // Veio de outra página do portal: volta para ela. Sem histórico do portal
 // (link aberto direto), o href leva a "Explorar dados".
@@ -14,9 +14,9 @@ const cameFromPortal = () =>
 /**
  * Botão "Voltar" da capa (`.backbtn` do protótipo).
  *
- * @example <IdhBackLink />
+ * @example <ProtoBackLink />
  */
-export const IdhBackLink = () => {
+export const ProtoBackLink = () => {
   const router = useRouter();
   const goBack = (event: MouseEvent<HTMLAnchorElement>) => {
     if (!cameFromPortal()) return;
@@ -30,7 +30,7 @@ export const IdhBackLink = () => {
       onClick={goBack}
       className="inline-flex items-center gap-2.5 rounded-[6px] py-1.5 pr-2 text-sm font-semibold text-white no-underline hover:underline hover:underline-offset-3 focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-white"
     >
-      <IdhIcon name="back" size={20} stroke={2.2} />
+      <ProtoIcon name="back" size={20} stroke={2.2} />
       Voltar
     </Link>
   );

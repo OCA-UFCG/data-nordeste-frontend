@@ -32,9 +32,9 @@ const useMeasure = (measure: () => void) => {
  * abas (até 900 px), barra de filtros e a coluna lateral 16 px abaixo dela.
  * `stuck` liga a sombra da barra de filtros quando ela gruda.
  *
- * @example const sticky = useIdhSticky(); <IdhFilterBar barRef={sticky.filterRef} top={sticky.filterTop} stuck={sticky.stuck} />
+ * @example const sticky = useProtoSticky(); <ProtoFilterBar barRef={sticky.filterRef} top={sticky.filterTop} stuck={sticky.stuck} />
  */
-export const useIdhSticky = () => {
+export const useProtoSticky = () => {
   const header = useSiteHeaderHeight();
   const tabsRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);

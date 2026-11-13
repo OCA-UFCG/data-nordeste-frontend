@@ -1,20 +1,21 @@
 "use client";
 
 import {
-  IdhCard,
-  IdhCardNotice,
-  type IdhCardState,
-} from "@/components/IdhDashboard/IdhCard";
-import {
+  IDH_CARD_FOOTER,
   IDH_CARD_INFO,
-  IdhCardInfo,
-} from "@/components/IdhDashboard/IdhCardInfo";
-import { IdhCardMenu } from "@/components/IdhDashboard/IdhCardMenu";
+} from "@/components/IdhDashboard/idhCardTexts";
+import { IDH_COLORS } from "@/components/IdhDashboard/idhColors";
+import {
+  ProtoCard,
+  ProtoCardNotice,
+  type ProtoCardState,
+} from "@/components/ProtoPanel/ProtoCard";
+import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
+import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
 import {
   CARD_SHADOW,
-  IDH_COLORS,
   staleClass,
-} from "@/components/IdhDashboard/idhStyles";
+} from "@/components/ProtoPanel/protoStyles";
 import { showsIdhData } from "@/features/panels/idh/idhCardState";
 import { formatNumber } from "@/features/panels/format";
 import {
@@ -100,7 +101,7 @@ const GroupCard = ({
 }: (typeof METRIC_CARDS)[number] & {
   visao: GroupVisao;
   data: IdhPanelData;
-  state: IdhCardState;
+  state: ProtoCardState;
   onRetry: () => void;
 }) => {
   const { values, max, gap } = compareIdhGroups(
@@ -111,7 +112,8 @@ const GroupCard = ({
   const place = `${idhPlaceName(data)}, ${data.filters.ano}`;
 
   return (
-    <IdhCard
+    <ProtoCard
+      footer={IDH_CARD_FOOTER}
       title={title}
       subtitle={gap ? `${gap} · ${place}` : place}
       kind="grp"
@@ -119,8 +121,8 @@ const GroupCard = ({
       onRetry={onRetry}
       actions={
         <>
-          <IdhCardInfo title={title} text={IDH_CARD_INFO.groups} />
-          <IdhCardMenu title={title} catalog={catalog} />
+          <ProtoCardInfo title={title} text={IDH_CARD_INFO.groups} />
+          <ProtoCardMenu title={title} catalog={catalog} />
         </>
       }
     >
@@ -133,7 +135,7 @@ const GroupCard = ({
           metric={metric}
         />
       ))}
-    </IdhCard>
+    </ProtoCard>
   );
 };
 
@@ -153,7 +155,7 @@ const NoGroupData = ({
     aria-busy={stale}
     className={`rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW} ${staleClass(stale)}`}
   >
-    <IdhCardNotice
+    <ProtoCardNotice
       tone="warn"
       action={{
         label: `Ver Nordeste, ${DEFAULT_IDH_FILTERS.ano}`,
@@ -163,7 +165,7 @@ const NoGroupData = ({
       <b>ATENÇÃO:</b> não há dados da{" "}
       {IDH_VISOES.find((item) => item.key === visao)?.label.toLowerCase()} para{" "}
       {idhPlaceName(data)} em {data.filters.ano}.
-    </IdhCardNotice>
+    </ProtoCardNotice>
   </div>
 );
 
@@ -182,7 +184,7 @@ export const IdhGroupView = ({
 }: {
   visao: GroupVisao;
   data: IdhPanelData;
-  state: IdhCardState;
+  state: ProtoCardState;
   onRetry: () => void;
   onReset: () => void;
 }) => {

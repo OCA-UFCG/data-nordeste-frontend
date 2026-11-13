@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CardMenu } from "@/components/IdhDashboard/menu/CardMenu";
+import { CardMenu } from "@/components/ProtoPanel/menu/CardMenu";
 
 class ClipboardFake {
   readonly written: string[] = [];
