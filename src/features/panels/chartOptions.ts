@@ -24,10 +24,6 @@ export {
   type ChartPoint,
   type ValueFormatter,
 } from "@/features/panels/chartBase";
-export {
-  buildTrendOption,
-  type TrendConfig,
-} from "@/features/panels/trendOption";
 
 export type BarPoint = ChartPoint & { color?: string };
 
