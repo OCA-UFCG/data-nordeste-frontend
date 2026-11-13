@@ -16,6 +16,7 @@ import {
   type ProtoIconName,
 } from "@/components/ProtoPanel/ProtoIcon";
 import { CARD_SHADOW, FOCUS_RING } from "@/components/ProtoPanel/protoStyles";
+import { cn } from "@/lib/utils";
 
 // Variação do mesmo número: a seta verde ou vermelha ao lado da variação.
 export type ProtoStatPill = {
@@ -31,12 +32,27 @@ export type ProtoStatCell = {
   pill?: ProtoStatPill | null;
 };
 
-// `hero`: o número de destaque do perfil demográfico, em card único e maior.
-const CELL_BASE = `flex min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white p-4 ${CARD_SHADOW}`;
-const ROW_CELL_CLASS = `${CELL_BASE} min-h-[118px] max-[1099px]:flex-[0_0_calc((100%-24px)/3)] max-[1099px]:snap-start max-[700px]:flex-[0_0_100%]`;
-const HERO_CELL_CLASS = `${CELL_BASE} min-h-[132px]`;
+// `row`: a faixa de cinco indicadores do IDH. `hero`: o número de destaque do
+// perfil demográfico, em card único e maior. `pair`: os dois números do PIB
+// (`.pib .bns`), do tamanho do `hero`, lado a lado até 700 px e em carrossel
+// no celular.
+export type ProtoStatVariant = "row" | "hero" | "pair";
 
-const cellClass = (hero: boolean) => (hero ? HERO_CELL_CLASS : ROW_CELL_CLASS);
+const CELL_BASE = `flex min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white p-4 ${CARD_SHADOW}`;
+
+const CELL_CLASS: Record<ProtoStatVariant, string> = {
+  row: `${CELL_BASE} min-h-[118px] max-[1099px]:flex-[0_0_calc((100%-24px)/3)] max-[1099px]:snap-start max-[700px]:flex-[0_0_100%]`,
+  hero: `${CELL_BASE} min-h-[132px]`,
+  pair: `${CELL_BASE} min-h-[132px] max-[700px]:flex-[0_0_100%] max-[700px]:snap-start`,
+};
+
+const HIDE_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
+
+const GRID_CLASS: Record<ProtoStatVariant, string> = {
+  row: `grid grid-cols-5 gap-4 max-[1099px]:-m-0.5 max-[1099px]:flex max-[1099px]:snap-x max-[1099px]:snap-mandatory max-[1099px]:gap-3 max-[1099px]:overflow-x-auto max-[1099px]:p-0.5 ${HIDE_SCROLLBAR}`,
+  hero: "grid grid-cols-1",
+  pair: `grid grid-cols-2 gap-4 max-[700px]:-m-0.5 max-[700px]:flex max-[700px]:snap-x max-[700px]:snap-mandatory max-[700px]:gap-3 max-[700px]:overflow-x-auto max-[700px]:p-0.5 ${HIDE_SCROLLBAR}`,
+};
 
 // Cor do ícone do card: o IDH usa o tom do painel; o perfil passa a sua.
 const DEFAULT_ICON_CLASS =
@@ -52,8 +68,12 @@ const CellTop = ({
   iconClassName: string;
 }) => (
   <div className="flex min-h-[34px] items-center gap-2.5">
+    {/* cn: o painel pode trocar o canto do chip (o PIB usa um círculo). */}
     <span
-      className={`grid size-8 flex-none place-items-center rounded-[8px] ${iconClassName}`}
+      className={cn(
+        "grid size-8 flex-none place-items-center rounded-[8px]",
+        iconClassName,
+      )}
     >
       <ProtoIcon name={icon} size={20} />
     </span>
@@ -68,6 +88,9 @@ const VALUE_CLASS =
 
 const HERO_VALUE_CLASS =
   "mt-auto pt-2.5 text-[30px] leading-9 font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums";
+
+const valueClass = (variant: ProtoStatVariant) =>
+  variant === "row" ? VALUE_CLASS : HERO_VALUE_CLASS;
 
 // Verde para alta, vermelho para queda e cinza sem variação, como no protótipo.
 const PILL_CLASS = {
@@ -92,8 +115,8 @@ const Pill = ({ pill }: { pill: ProtoStatPill }) => (
   </span>
 );
 
-const CellLoading = ({ hero }: { hero: boolean }) => (
-  <div aria-busy="true" className={cellClass(hero)}>
+const CellLoading = ({ variant }: { variant: ProtoStatVariant }) => (
+  <div aria-busy="true" className={CELL_CLASS[variant]}>
     <div className="flex min-h-[34px] items-center gap-2.5">
       <ProtoSkeleton className="size-8" />
       <ProtoSkeleton className="h-3.5 w-[60%]" />
@@ -105,15 +128,15 @@ const CellLoading = ({ hero }: { hero: boolean }) => (
 const CellError = ({
   cell,
   onRetry,
-  hero,
+  variant,
   iconClassName,
 }: {
   cell: ProtoStatCell;
   onRetry: () => void;
-  hero: boolean;
+  variant: ProtoStatVariant;
   iconClassName: string;
 }) => (
-  <div className={cellClass(hero)}>
+  <div className={CELL_CLASS[variant]}>
     <CellTop
       icon={cell.icon}
       label={cell.label}
@@ -132,10 +155,16 @@ const CellError = ({
   </div>
 );
 
-const CellValue = ({ cell, hero }: { cell: ProtoStatCell; hero: boolean }) => (
+const CellValue = ({
+  cell,
+  variant,
+}: {
+  cell: ProtoStatCell;
+  variant: ProtoStatVariant;
+}) => (
   <>
     <div
-      className={`${hero ? HERO_VALUE_CLASS : VALUE_CLASS} ${cell.value ? "" : "text-[#b7b3b5]"}`}
+      className={`${valueClass(variant)} ${cell.value ? "" : "text-[#b7b3b5]"}`}
     >
       {cell.value ?? "—"}
     </div>
@@ -157,34 +186,34 @@ const Cell = ({
   cell,
   state,
   onRetry,
-  hero,
+  variant,
   iconClassName,
 }: {
   cell: ProtoStatCell;
   state: ProtoCardState;
   onRetry: () => void;
-  hero: boolean;
+  variant: ProtoStatVariant;
   iconClassName: string;
 }) => {
-  if (state === "loading") return <CellLoading hero={hero} />;
+  if (state === "loading") return <CellLoading variant={variant} />;
   if (state === "error")
     return (
       <CellError
         cell={cell}
         onRetry={onRetry}
-        hero={hero}
+        variant={variant}
         iconClassName={iconClassName}
       />
     );
 
   return (
-    <div className={cellClass(hero)}>
+    <div className={CELL_CLASS[variant]}>
       <CellTop
         icon={cell.icon}
         label={cell.label}
         iconClassName={iconClassName}
       />
-      <CellValue cell={cell} hero={hero} />
+      <CellValue cell={cell} variant={variant} />
     </div>
   );
 };
@@ -196,8 +225,9 @@ export type ProtoCarouselState = {
   canNext: boolean;
 };
 
-// Abaixo de 1100 px os cards rolam de lado; as setas e bolinhas só aparecem
-// quando há o que rolar.
+// Quando a faixa vira carrossel (abaixo de 1100 px no `row`, de 700 px no
+// `pair`), os cards rolam de lado; as setas e bolinhas só aparecem quando há o
+// que rolar.
 export const useProtoCarousel = (ref: RefObject<HTMLDivElement | null>) => {
   const [state, setState] = useState<ProtoCarouselState>({
     overflow: false,
@@ -287,8 +317,9 @@ const CarouselControls = ({
  * Faixa de indicadores (`.bns` do protótipo): cards em grade; abaixo de
  * 1100 px, um carrossel com setas e bolinhas. Os textos e os valores vêm
  * prontos em `cells`. `variant="hero"`: um card só, sem carrossel (o número
- * de destaque do perfil). `iconClassName`: cor do chip do ícone (padrão: o
- * tom do painel).
+ * de destaque do perfil). `variant="pair"`: dois cards grandes lado a lado,
+ * com carrossel só no celular (o PIB). `iconClassName`: cor do chip do ícone
+ * (padrão: o tom do painel).
  *
  * @example <ProtoStatCards cells={[{ icon: "idh", label: "IDH", value: "0,702" }]} state="ok" onRetry={retry} />
  */
@@ -302,10 +333,9 @@ export const ProtoStatCards = ({
   cells: ProtoStatCell[];
   state: ProtoCardState;
   onRetry: () => void;
-  variant?: "row" | "hero";
+  variant?: ProtoStatVariant;
   iconClassName?: string;
 }) => {
-  const hero = variant === "hero";
   const ref = useRef<HTMLDivElement>(null);
   const carousel = useProtoCarousel(ref);
   const step = (direction: -1 | 1) => {
@@ -319,26 +349,19 @@ export const ProtoStatCards = ({
 
   return (
     <div className="relative">
-      <div
-        ref={ref}
-        className={
-          hero
-            ? "grid grid-cols-1"
-            : "grid grid-cols-5 gap-4 max-[1099px]:-m-0.5 max-[1099px]:flex max-[1099px]:snap-x max-[1099px]:snap-mandatory max-[1099px]:gap-3 max-[1099px]:overflow-x-auto max-[1099px]:p-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        }
-      >
+      <div ref={ref} className={GRID_CLASS[variant]}>
         {cells.map((cell) => (
           <Cell
             key={cell.label}
             cell={cell}
             state={state}
             onRetry={onRetry}
-            hero={hero}
+            variant={variant}
             iconClassName={iconClassName}
           />
         ))}
       </div>
-      {carousel.overflow && !hero ? (
+      {carousel.overflow && variant !== "hero" ? (
         <CarouselControls
           count={cells.length}
           carousel={carousel}

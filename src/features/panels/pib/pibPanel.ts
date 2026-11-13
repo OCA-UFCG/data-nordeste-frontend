@@ -1,8 +1,4 @@
-import type { ChoroplethBucket } from "@/features/panels/choropleth";
-import type {
-  ChartPoint,
-  ChoroplethRegion,
-} from "@/features/panels/chartOptions";
+import type { ChartPoint } from "@/features/panels/chartBase";
 import type {
   TerritorialFilters,
   YearRange,
@@ -23,40 +19,48 @@ export const PIB_YEAR_RANGE: YearRange = { first: 2010, last: 2023 };
 // Limita o tamanho da URL e do array do `= ANY($n)`.
 export const PIB_MAX_PLACES = 100;
 
-// Último ano com VAB publicado pelo IBGE; o aviso do Power BI cita 2022 e 2023.
+// Último ano com VAB publicado pelo IBGE; o aviso do painel cita 2022 e 2023.
 export const PIB_VAB_LAST_YEAR = 2021;
 
-// Faixas, rótulos e cores da legenda do mapa no Power BI.
-export const PIB_MAP_BUCKETS: readonly ChoroplethBucket[] = [
-  { max: 5e8, label: "< 500 Mi", color: "#fff7ed" },
-  { max: 1e9, label: "500 Mi - 1 Bi", color: "#fcd9ac" },
-  { max: 5e9, label: "1 Bi - 5 Bi", color: "#f79339" },
-  { max: 1e10, label: "5 Bi - 10 Bi", color: "#e65e10" },
-  { max: 2e10, label: "10 Bi - 20 Bi", color: "#be4610" },
-  { max: 3.5e10, label: "20 Bi - 35 Bi", color: "#7a3014" },
-  { max: Infinity, label: "> 35 Bi", color: "#421608" },
-];
+/**
+ * Anos do painel que ainda não têm VAB (os posteriores a `PIB_VAB_LAST_YEAR`),
+ * para o aviso dos cards de setor.
+ *
+ * @example listPibYearsWithoutVab() // [2022, 2023]
+ */
+export const listPibYearsWithoutVab = (): number[] =>
+  Array.from(
+    { length: PIB_YEAR_RANGE.last - PIB_VAB_LAST_YEAR },
+    (_, index) => PIB_VAB_LAST_YEAR + 1 + index,
+  );
 
 export type PibYearPoint = { ano: number; pib: number; perCapita: number };
 
-export type PibMapRegion = ChoroplethRegion & { atividade?: string };
+// PIB total de um estado dentro da área de interesse, no ano do filtro.
+export type PibStateRegion = { code: string; name: string; value: number };
 
 export type PibPanelData = TerritorialSelection & {
   serie: PibYearPoint[];
-  mapa: PibMapRegion[];
+  estados: PibStateRegion[];
   vab: ChartPoint[] | null;
   atividades: ChartPoint[];
 };
 
 /**
- * Nenhum dos dois gráficos de setor (VAB e participação) tem dados no filtro:
- * o painel mostra um aviso só, em vez de dois iguais.
+ * Painel sem dados: a página o usa quando a consulta falha, para os cards
+ * mostrarem o erro com "Tentar de novo" no lugar dos gráficos.
  *
- * @example lacksSectorData({ ...panel, vab: null, atividades: [] }) // true
+ * @example emptyPibPanel(filters).serie // []
  */
-export const lacksSectorData = (
-  data: Pick<PibPanelData, "vab" | "atividades">,
-): boolean => !data.vab && data.atividades.length === 0;
+export const emptyPibPanel = (filters: TerritorialFilters): PibPanelData => ({
+  filters,
+  ufs: [],
+  municipios: [],
+  serie: [],
+  estados: [],
+  vab: null,
+  atividades: [],
+});
 
 const PIB_VIEW = "eco_pib.vw_pib_municipal_pbi";
 
@@ -85,30 +89,29 @@ const loadSerie = async (query: SqlQuery, filters: TerritorialFilters) => {
   }));
 };
 
-const loadMapa = async (query: SqlQuery, filters: TerritorialFilters) => {
-  const where = buildTerritorialWhere(filters, {
-    byYear: true,
-    byMunicipality: false,
-  });
+// O mapa mostra todos os estados da área, com ou sem estado no filtro: o
+// estado escolhido só ganha o contorno. Por isso a consulta ignora UF e
+// município e soma os municípios de cada estado.
+const loadEstados = async (query: SqlQuery, filters: TerritorialFilters) => {
+  const where = buildTerritorialWhere(
+    { ano: filters.ano, area: filters.area },
+    { byYear: true, byMunicipality: false },
+  );
   const rows = await query<{
-    cd_mun: string;
-    nome_municipio: string;
     sigla_uf: string;
-    pib_total: NumericCell;
-    atividade_maior_vab: string | null;
+    estado_uf: string;
+    pib: NumericCell;
   }>(
-    `SELECT TRIM(cd_mun) AS cd_mun, nome_municipio, sigla_uf, pib_total,
-       atividade_maior_vab
-     FROM ${PIB_VIEW} WHERE ${where.sql}`,
+    `SELECT sigla_uf, estado_uf, SUM(pib_total) AS pib
+     FROM ${PIB_VIEW} WHERE ${where.sql}
+     GROUP BY sigla_uf, estado_uf ORDER BY estado_uf`,
     where.params,
   );
 
   return rows.map((row) => ({
-    code: row.cd_mun,
-    name: row.nome_municipio,
-    uf: row.sigla_uf,
-    value: toNumber(row.pib_total),
-    atividade: row.atividade_maior_vab ?? undefined,
+    code: row.sigla_uf.trim(),
+    name: row.estado_uf,
+    value: toNumber(row.pib),
   }));
 };
 
@@ -170,12 +173,12 @@ export const loadPibPanel = async (
     requested,
   );
   const { filters } = selection;
-  const [serie, mapa, vab, atividades] = await Promise.all([
+  const [serie, estados, vab, atividades] = await Promise.all([
     loadSerie(query, filters),
-    loadMapa(query, filters),
+    loadEstados(query, filters),
     loadVab(query, filters),
     loadAtividades(query, filters),
   ]);
 
-  return { ...selection, serie, mapa, vab, atividades };
+  return { ...selection, serie, estados, vab, atividades };
 };

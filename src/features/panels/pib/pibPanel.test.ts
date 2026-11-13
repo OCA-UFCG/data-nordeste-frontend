@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { lacksSectorData, loadPibPanel } from "@/features/panels/pib/pibPanel";
+import {
+  emptyPibPanel,
+  listPibYearsWithoutVab,
+  loadPibPanel,
+} from "@/features/panels/pib/pibPanel";
 
 type RecordedQuery = { sql: string; params: unknown[] };
 
@@ -49,6 +53,12 @@ class PibDatabaseFake {
       ];
     }
     if (sql.includes("municipio_uf FROM")) return municipiosIn(params);
+    if (sql.includes("GROUP BY sigla_uf, estado_uf")) {
+      return [
+        { sigla_uf: "PB", estado_uf: "Paraíba", pib: "62397000000" },
+        { sigla_uf: "PE", estado_uf: "Pernambuco", pib: "181610000000" },
+      ];
+    }
     if (sql.includes("GROUP BY ano")) {
       return [{ ano: 2017, pib: "953430000000", per_capita: "16652.57" }];
     }
@@ -117,19 +127,21 @@ describe("loadPibPanel", () => {
     expect(serie.params).toEqual(["PE", "2611606"]);
   });
 
-  it("keeps the map at area and state level when a municipality is selected", async () => {
+  it("sums the map by state for the whole area, ignoring the place filters", async () => {
     const db = new PibDatabaseFake();
-
-    await loadPibPanel(db.query, {
+    const panel = await loadPibPanel(db.query, {
       ano: 2017,
-      area: "nordeste",
+      area: "semiarido",
       uf: ["PE"],
       mun: ["2611606"],
     });
+    const estados = db.callFor("GROUP BY sigla_uf, estado_uf");
 
-    expect(db.callFor("nome_municipio, sigla_uf, pib_total").params).toEqual([
-      2017,
-      "PE",
+    expect(estados.sql).toContain("semiarido = 'Sim'");
+    expect(estados.params).toEqual([2017]);
+    expect(panel.estados).toEqual([
+      { code: "PB", name: "Paraíba", value: 62397000000 },
+      { code: "PE", name: "Pernambuco", value: 181610000000 },
     ]);
   });
 
@@ -166,10 +178,6 @@ describe("loadPibPanel", () => {
       ["PB", "PE"],
       ["2611606", "2507507"],
     ]);
-    expect(db.callFor("nome_municipio, sigla_uf, pib_total").params).toEqual([
-      2017,
-      ["PB", "PE"],
-    ]);
   });
 
   it("drops municipalities outside the selected states", async () => {
@@ -186,12 +194,24 @@ describe("loadPibPanel", () => {
   });
 });
 
-describe("lacksSectorData", () => {
-  const atividades = [{ label: "Demais serviços", value: 26.77 }];
+describe("emptyPibPanel", () => {
+  it("keeps the requested filters and carries no data", () => {
+    const filters = { ano: 2023, area: "nordeste" as const, uf: ["PE"] };
 
-  it("is true only when both sector charts are empty", () => {
-    expect(lacksSectorData({ vab: null, atividades: [] })).toBe(true);
-    expect(lacksSectorData({ vab: null, atividades })).toBe(false);
-    expect(lacksSectorData({ vab: atividades, atividades: [] })).toBe(false);
+    expect(emptyPibPanel(filters)).toEqual({
+      filters,
+      ufs: [],
+      municipios: [],
+      serie: [],
+      estados: [],
+      vab: null,
+      atividades: [],
+    });
+  });
+});
+
+describe("listPibYearsWithoutVab", () => {
+  it("lists the years after the last VAB release", () => {
+    expect(listPibYearsWithoutVab()).toEqual([2022, 2023]);
   });
 });

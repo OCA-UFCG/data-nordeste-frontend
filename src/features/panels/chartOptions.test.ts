@@ -8,8 +8,17 @@ import {
 import { formatReaisCompact } from "@/features/panels/format";
 import type { MapBounds } from "@/features/panels/mapFraming";
 import type { ChartOption } from "@/lib/echarts";
-import { PIB_MAP_BUCKETS } from "@/features/panels/pib/pibPanel";
-import { rankRegions } from "@/features/panels/choropleth";
+import {
+  rankRegions,
+  type ChoroplethBucket,
+} from "@/features/panels/choropleth";
+
+// Faixas de PIB por município, só para o teste.
+const BUCKETS: readonly ChoroplethBucket[] = [
+  { max: 2e10, label: "< 20 Bi", color: "#be4610" },
+  { max: 3.5e10, label: "20 Bi - 35 Bi", color: "#7a3014" },
+  { max: Infinity, label: "> 35 Bi", color: "#421608" },
+];
 
 // Repassa ao ranking real, só para contar as chamadas.
 vi.mock("@/features/panels/choropleth", async (importOriginal) => {
@@ -24,7 +33,7 @@ const COLORS = {
     { code: "2611606", name: "Recife", uf: "PE", value: 6e10 },
     { code: "2507507", name: "João Pessoa", uf: "PB", value: 2e10 },
   ],
-  buckets: PIB_MAP_BUCKETS,
+  buckets: BUCKETS,
   valueLabel: "PIB",
   formatValue: (value: number) => formatReaisCompact(value),
 };
