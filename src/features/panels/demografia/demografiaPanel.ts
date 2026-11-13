@@ -125,8 +125,9 @@ const cell = (row: AnoRow | undefined, column: string) =>
 const corRacaDe = (row: AnoRow | undefined): ChartPoint[] =>
   COR_RACA.map(({ column, label }) => ({ label, value: cell(row, column) }));
 
-// O Figma agrupa a pirâmide por décadas; a tabela tem 12 faixas
-// (0-4, 5-9, ..., 25-29 de 5 em 5 anos, depois 30-39 ... 70-79 e 80+).
+// A tabela de origem tem 12 faixas (0-4, 5-9, ..., 25-29 de 5 em 5 anos,
+// depois 30-39 ... 70-79 e 80+). O Figma as junta em 9 décadas (0-9 ... 80+),
+// e são essas 9 que FAIXAS_DECENAIS rotula.
 const FAIXAS_DECENAIS = [
   "0 a 9 anos",
   "10 a 19 anos",
