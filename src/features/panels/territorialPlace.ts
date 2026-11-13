@@ -16,9 +16,11 @@ import {
  * Lugar dos subtítulos dos cards: a área, depois os estados e os municípios
  * escolhidos, separados por " · ". Com muitos, resume como o "Mostrando".
  *
- * @example describePerfilPlace(selection) // "Semiárido · Pernambuco · Recife (PE)"
+ * @example describeTerritorialPlace(selection) // "Semiárido · Pernambuco · Recife (PE)"
  */
-export const describePerfilPlace = (selection: TerritorialSelection): string =>
+export const describeTerritorialPlace = (
+  selection: TerritorialSelection,
+): string =>
   [
     areaLabel(selection.filters.area),
     describeSelectedUfs(selection),
@@ -34,9 +36,9 @@ const listOrAll = (names: string[]): string =>
  * Chips do "Compartilhar" do card: ano, área, estados e municípios, com
  * "Todos" quando o filtro está vazio.
  *
- * @example describePerfilShareChips(selection) // ["Ano: 2022", "Área: Nordeste", "Estado: Todos", "Município: Todos"]
+ * @example describeTerritorialShareChips(selection) // ["Ano: 2022", "Área: Nordeste", "Estado: Todos", "Município: Todos"]
  */
-export const describePerfilShareChips = (
+export const describeTerritorialShareChips = (
   selection: TerritorialSelection,
 ): string[] => [
   `Ano: ${selection.filters.ano}`,
@@ -49,9 +51,9 @@ export const describePerfilShareChips = (
  * Clicar num estado no mapa: entra ou sai da lista de UFs. O município some,
  * porque ele pode não pertencer ao novo conjunto de estados.
  *
- * @example togglePerfilUf({ ano: 2022, area: "nordeste", uf: ["PB"] }, "PE").uf // ["PB", "PE"]
+ * @example toggleTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB"] }, "PE").uf // ["PB", "PE"]
  */
-export const togglePerfilUf = (
+export const toggleTerritorialUf = (
   filters: TerritorialFilters,
   uf: string,
 ): TerritorialFilters => {
@@ -64,12 +66,12 @@ export const togglePerfilUf = (
 };
 
 /**
- * Os filtros estão no padrão (Nordeste, último censo, sem estado nem município)?
+ * Os filtros estão no padrão (Nordeste, último ano, sem estado nem município)?
  * Decide se o "Limpar filtros" fica desligado.
  *
- * @example isDefaultPerfilFilters({ ano: 2022, area: "nordeste" }, range) // true
+ * @example isDefaultTerritorialFilters({ ano: 2022, area: "nordeste" }, range) // true
  */
-export const isDefaultPerfilFilters = (
+export const isDefaultTerritorialFilters = (
   filters: TerritorialFilters,
   range: YearRange,
 ): boolean => {
@@ -86,11 +88,11 @@ export const isDefaultPerfilFilters = (
 /**
  * Texto do botão "Ver …" do aviso de dados vazios: o padrão do painel.
  *
- * @example describePerfilDefaultLabel(range) // "Ver Nordeste · 2022"
+ * @example describeDefaultPlaceLabel(range) // "Ver Nordeste · 2022"
  */
-export const describePerfilDefaultLabel = (range: YearRange): string => {
+export const describeDefaultPlaceLabel = (range: YearRange): string => {
   const defaults = defaultTerritorialFilters(range);
-  const place = describePerfilPlace({
+  const place = describeTerritorialPlace({
     filters: defaults,
     ufs: [],
     municipios: [],

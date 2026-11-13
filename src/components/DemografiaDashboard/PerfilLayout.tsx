@@ -12,7 +12,7 @@ import {
   ProtoCardNotice,
 } from "@/components/ProtoPanel/ProtoCard";
 import { DEMOGRAFIA_YEAR_RANGE } from "@/features/panels/demografia/demografiaPanel";
-import { describePerfilDefaultLabel } from "@/features/panels/demografia/perfilPlace";
+import { describeDefaultPlaceLabel } from "@/features/panels/territorialPlace";
 
 type PerfilMapProps = { onSelectUf: (uf: string) => void };
 
@@ -96,7 +96,7 @@ export const PerfilEmptyLayout = ({
       <ProtoCardNotice
         tone="warn"
         action={{
-          label: describePerfilDefaultLabel(DEMOGRAFIA_YEAR_RANGE),
+          label: describeDefaultPlaceLabel(DEMOGRAFIA_YEAR_RANGE),
           onClick: onReset,
         }}
       >
