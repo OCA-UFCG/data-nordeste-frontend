@@ -41,14 +41,14 @@ const REPORT_TTL_MS = 30_000;
 /**
  * Cada ida ao Contentful conta na cota de 100 mil por mês do space, que chegou a
  * 99% em 28/10/2026. A falha também fica guardada: com a cota estourada, testar
- * a cada minuto só gastaria mais. Em prod são 24 chamadas por dia.
+ * a cada minuto só gastaria mais. São 24 chamadas por dia, só em prod.
  */
 const CONTENTFUL_TTL_MS = 60 * 60_000;
 const ZENODO_OK_TTL_MS = 15 * 60_000;
 
 /**
  * São 18 PDFs no gov.br (01/11/2026): a cada 15 min dá ~1,7 mil pedidos por dia,
- * cada um lendo só os primeiros bytes.
+ * só em prod, cada um lendo só os primeiros bytes.
  */
 const BOLETINS_TTL_MS = 15 * 60_000;
 
@@ -173,18 +173,25 @@ async function checkBoletins() {
   return { list, boletins };
 }
 
+// IMPORTANT: só onde EXTERNAL_CHECKS=1 (prod). Contentful, Zenodo e os links dos
+// boletins são os mesmos para prod e failover; testar nos dois só dobraria os
+// pedidos ao gov.br e a cota do Contentful. No failover, o /api/metrics serve
+// só para dizer que o site responde (o `up` do Prometheus).
+function runsExternalChecks(): boolean {
+  return process.env.EXTERNAL_CHECKS === "1";
+}
+
 async function runChecks(): Promise<MetricsReport> {
-  // Só em prod: o failover usa o mesmo space, e testar nele gastaria cota à toa.
-  const checksContentful = process.env.CONTENTFUL_HEALTH_CHECK === "1";
+  if (!runsExternalChecks()) return { dependencies: {}, boletins: [] };
+
   const [contentful, zenodo, { list, boletins }] = await Promise.all([
-    checksContentful ? checkContentful() : null,
+    checkContentful(),
     checkZenodo(),
     checkBoletins(),
   ]);
-  const dependencies = { zenodo, lista_de_boletins: list };
 
   return {
-    dependencies: contentful ? { contentful, ...dependencies } : dependencies,
+    dependencies: { contentful, zenodo, lista_de_boletins: list },
     boletins,
   };
 }

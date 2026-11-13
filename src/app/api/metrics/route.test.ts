@@ -34,8 +34,12 @@ const readMetrics = async () =>
   (await GET(metricsRequest(`Bearer ${TOKEN}`))).text();
 
 beforeEach(() => {
+  // O restoreAllMocks do vitest.setup não zera as chamadas dos vi.fn() do
+  // vi.mock acima; sem isto, as contagens de um teste vazam para o seguinte.
+  vi.clearAllMocks();
   resetMetricsChecks();
   vi.stubEnv("METRICS_TOKEN", TOKEN);
+  vi.stubEnv("EXTERNAL_CHECKS", "1");
   vi.stubGlobal("fetch", new ExternalHostsFetchFake().fetch);
   vi.mocked(getContent).mockResolvedValue({
     postCollection: {
@@ -79,13 +83,19 @@ describe("GET /api/metrics", () => {
     );
   });
 
-  it("only pings Contentful where CONTENTFUL_HEALTH_CHECK=1", async () => {
-    expect(await readMetrics()).not.toContain('dependency="contentful"');
+  it("runs no external check where EXTERNAL_CHECKS is off (failover)", async () => {
+    vi.stubEnv("EXTERNAL_CHECKS", "");
+
+    const response = await GET(metricsRequest(`Bearer ${TOKEN}`));
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).not.toContain("datane_boletim_up{");
     expect(pingContentful).not.toHaveBeenCalled();
+    expect(getContent).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("reports Contentful down and keeps the failure to spare the quota", async () => {
-    vi.stubEnv("CONTENTFUL_HEALTH_CHECK", "1");
     vi.mocked(pingContentful).mockRejectedValue(new Error("HTTP 429"));
     vi.useFakeTimers({ toFake: ["Date"] });
 
