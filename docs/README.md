@@ -294,10 +294,16 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   views above 900 px (top tab bar below), cards with footer, ⓘ and ⋯ menu,
   "Saiba mais sobre o IDH" with "Ler mais" and glossary. It replaced the
   Power BI-faithful version of `129cef4` (gauges, no ranking).
-- Everything lives in `src/components/IdhDashboard/` and is IDH-only; the
-  shared `Panel/*` components (PIB, Perfil, FNE) are untouched. The prototype
-  CSS was ported to Tailwind with its exact values (`idhStyles.ts` holds the
-  tokens); `max-[700px]`/`max-[900px]`/`max-[1100px]` are its breakpoints.
+- The prototype building blocks (card, sheet, ⓘ, ⋯ menu, cover, filter bar
+  shell, stat cards, state map and its fullscreen, "Saiba mais", sticky chain)
+  live in `src/components/ProtoPanel/` and are shared with the demographic
+  profile; IDH-only pieces stay in `src/components/IdhDashboard/`. The
+  prototype CSS was ported to Tailwind with its exact values (`protoStyles.ts`
+  holds the tokens); `max-[700px]`/`max-[900px]`/`max-[1100px]` are its
+  breakpoints. Each panel sets its accent through CSS variables
+  (`protoToneStyle`, `ProtoToneContext`): roots rendered by the server page
+  take a `tone` prop, portals (sheet, popovers, dialog, tooltip) re-apply it
+  because they render outside the panel tree.
 - Deliberate deviations: the action green is the theme `green-800`
   (`#017f35`), not the prototype `#018f39`, which fails 4.5:1 under white
   text. The cover lead is capped at 1136 px (the prototype's 120ch in its own
@@ -327,3 +333,33 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   missing falls back to `/contentful-api`, which only exists behind production
   Nginx (the error body is the portal's own 404 HTML). The panel's
   `DATA_DB_URL` needs the SSH tunnel up, which needs the internal network.
+
+## Demographic Profile Panel Demo (`/demo/perfil-demografico`)
+
+- Same approach as the IDH panel: the reference is the prototype's
+  `perfil.html` (same artifact), rebuilt with the shared `ProtoPanel/` pieces
+  in the "perfil" tone (pink accent `#d6537f`, women `#c2395f`, men `#96b02e`)
+  and the real `dem_demografia.final_demografia` data. Cover, sticky filter
+  bar, the `.dg` grid (big number, municipalities, map, sex, age pyramid) and
+  `.dg2` (census series, colour or race), "Saiba mais" without glossary.
+- Deliberate deviations from the prototype:
+  - The map shows both views: "Municípios" (default, the real municipal mesh
+    coloured by size band, ECharts canvas for performance through
+    `ChoroplethCanvas`) and "Estados" (the prototype's nine-state SVG, click
+    to filter). The prototype itself notes it draws states "em vez de
+    contornos municipais".
+  - Estado and Município keep multiple selection (up to 100, as before),
+    styled like the prototype selects; links with several places still work.
+  - Axis and labels come from the data (`perfilCharts.ts`: `niceAxis`,
+    `formatCompactPeople`), not the prototype's fixed 40–60 Mi, so a single
+    municipality gets a readable scale.
+  - The change pill is green above zero, red below and neutral at 0,0%
+    (`perfilChangeTone`); no pill for 2000, which has no previous census.
+  - The empty state appears only when the database has no population for the
+    chosen place and year.
+- Field widths follow the perfil prototype (`.fb-in .fl`: flexible 110–240 px,
+  Ano up to 140 px); the IDH bar keeps its fixed 204 px.
+- Image download exists for the series and the colour or race chart (SVG);
+  the map is a canvas and the other cards are HTML.
+- Removed with this rebuild: `DemografiaCharts`, `DemografiaSaibaMais`,
+  `PorteLegend`, `PyramidChart`, `ValueBars` and `buildPyramidOption`.
