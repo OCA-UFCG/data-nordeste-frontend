@@ -104,6 +104,9 @@ const PyramidRowButton = ({
 }) => {
   const short = pyramidBandLabel(row.label);
 
+  // A linha tem a altura da barra (26 px, como no protótipo): sem padding vertical,
+  // que somava 2 px. O contorno da faixa escolhida sai da barra, mas nada aqui tem
+  // overflow oculto, então não é cortado.
   return (
     <button
       type="button"
@@ -112,7 +115,7 @@ const PyramidRowButton = ({
       onClick={onSelect}
       onPointerEnter={(event) => mouseOnly(event, () => onHover(row.label))}
       onPointerLeave={(event) => mouseOnly(event, () => onHover(null))}
-      className="grid grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-center rounded-[6px] py-px hover:bg-grey-100 max-[700px]:grid-cols-[minmax(0,1fr)_44px_minmax(0,1fr)]"
+      className="grid h-[26px] grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-center rounded-[6px] p-0 hover:bg-grey-100 max-[700px]:grid-cols-[minmax(0,1fr)_44px_minmax(0,1fr)]"
     >
       <span className="flex min-w-0 items-center justify-end gap-1.5">
         <ValueLabel value={row.mulheres} selected={selected} />
