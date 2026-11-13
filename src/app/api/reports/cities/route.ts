@@ -1,3 +1,4 @@
+import { isReportFeatureEnabled } from "@/features/reports/availability";
 import { NextResponse } from "next/server";
 import { getAutomaticReportApiBaseUrl } from "@/features/reports/automaticReport";
 import type { ReportPlaces } from "@/features/reports/reportPlaces";
@@ -10,6 +11,8 @@ import type { ReportPlaces } from "@/features/reports/reportPlaces";
  * Example: `GET /api/reports/cities` → `{ states: ["Paraíba", …], areas: ["Caatinga", …], cities: ["Recife (PE)", …] }`.
  */
 export async function GET(): Promise<NextResponse> {
+  if (!isReportFeatureEnabled()) return new NextResponse(null, { status: 404 });
+
   try {
     const apiBaseUrl = getAutomaticReportApiBaseUrl();
     const [citiesResponse, states, areas] = await Promise.all([

@@ -1,9 +1,12 @@
+import { isReportFeatureEnabled } from "@/features/reports/availability";
 import { NextResponse, type NextRequest } from "next/server";
 import { buildReportFileName } from "@/features/reports/automaticReport";
 import { findAvailableAutomaticReport } from "@/features/reports/reportGateway";
 
 /** Streams a ready report through the same origin used by pdf.js. */
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  if (!isReportFeatureEnabled()) return new NextResponse(null, { status: 404 });
+
   try {
     // `arquivo` carries the exact name the generation route got from the backend.
     // The name is only ever resolved against the backend index, so it cannot

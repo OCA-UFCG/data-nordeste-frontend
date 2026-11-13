@@ -154,6 +154,11 @@ outside the repository and rendered through frontend route/component logic.
   route served directly by Automatic-Reporting returns an HTML page, not a
   PDF, and is intentionally not used by the frontend preview; pointing pdf.js
   at it would fail to render.
+- The custom report is off in prod (`NEXT_PUBLIC_APP_ENV=prod`) until the
+  reports are considered ready: `isReportFeatureEnabled` returns 404 for
+  `/relatorio` and `/api/reports/*` and hides the nav link. Before this, prod
+  ran from `hotfix/prod-contentful`, where the feature was deleted (f6da15d),
+  and any `v*` tag cut from `main` brought it back.
 - The deploy `failover-runner` (`aws-datane-failover`) is arm64/Graviton. That
   is why `deploy-gamma.yml` and `deploy-prod.yml` build
   `linux/amd64,linux/arm64` while `deploy-beta.yml` does not. Dropping
