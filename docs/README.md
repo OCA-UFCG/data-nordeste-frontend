@@ -140,8 +140,11 @@ outside the repository and rendered through frontend route/component logic.
   that Nordeste is the whole region instead. An area scope only shows when
   `/areas` lists it, so environments whose backend has no `/areas` (beta and
   prod in Nov/2026) keep only Município and Estado. The area scopes show
-  Desenvolvimento Social and Instrumentos Sudene disabled (no area data in the
-  backend yet), and Estado shows only Instrumentos Sudene disabled (no
+  Instrumentos Sudene disabled (no area data in the backend yet), and
+  Desenvolvimento Social (IDH) is offered only in Nordeste (14/11/2026; the
+  backend still lacks its area matview and Doc); Caatinga, Semiárido and Área
+  de atuação da Sudene show it disabled with a "!" that explains, on hover,
+  focus or tap, why the IDH does not apply to them. Estado shows only Instrumentos Sudene disabled (no
   `est_*` matview; Desenvolvimento Social got its state report on
   13/11/2026); disabled themes drop from the selection, and only Município
   offers every theme. An empty municipality search shows the first eight

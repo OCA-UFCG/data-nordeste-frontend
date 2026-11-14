@@ -37,6 +37,7 @@ import {
 import {
   findReportScope,
   getScopeAreaName,
+  getThemeScopeNotice,
   isThemeAvailableInScope,
   selectReportScopePlaces,
   type ReportScopeId,
@@ -45,6 +46,9 @@ import type { ContentfulRichTextField, MacroTheme } from "@/utils/interfaces";
 import { normalizeKey, sortContentByDesiredOrder } from "@/utils/functions";
 
 type ReportTheme = Pick<MacroTheme, "id" | "name" | "color" | "sys">;
+
+/** A theme as the list shows it: `notice` says why it cannot be chosen. */
+type ListedReportTheme = ReportTheme & { notice: string | null };
 type ReportMobileTab = "config" | "report";
 
 type ReportBuilderProps = {
@@ -76,6 +80,14 @@ export function ReportBuilder({
   );
   const availableThemeIds = useMemo(
     () => getAvailableThemeIds(sortedThemes, scopeId),
+    [sortedThemes, scopeId],
+  );
+  const listedThemes = useMemo(
+    () =>
+      sortedThemes.map((theme) => ({
+        ...theme,
+        notice: getThemeScopeNotice(theme.id, scopeId),
+      })),
     [sortedThemes, scopeId],
   );
   const allThemesSelected = hasSelectedAllThemes(
@@ -189,7 +201,7 @@ export function ReportBuilder({
       onToggleTheme={toggleTheme}
       reportPreview={reportPreview}
       selectedThemeIds={selectedThemeIds}
-      themes={sortedThemes}
+      themes={listedThemes}
       themeText={themeText}
     />
   );
@@ -227,7 +239,7 @@ function ReportBuilderLayout({
   onToggleTheme: (themeId: string) => void;
   reportPreview: ReportPreviewDocument | null;
   selectedThemeIds: string[];
-  themes: ReportTheme[];
+  themes: ListedReportTheme[];
   themeText?: ContentfulRichTextField;
 }): ReactElement {
   const [openStep, setOpenStep] = useState<ReportStepId | "">("area");
@@ -373,7 +385,7 @@ function ReportThemesField({
   onSelectAll: () => void;
   onToggleTheme: (themeId: string) => void;
   selectedThemeIds: string[];
-  themes: ReportTheme[];
+  themes: ListedReportTheme[];
   themeText?: ContentfulRichTextField;
 }): ReactElement {
   return (
@@ -426,7 +438,7 @@ function ReportThemeList({
   availableThemeIds: string[];
   onToggleTheme: (themeId: string) => void;
   selectedThemeIds: string[];
-  themes: ReportTheme[];
+  themes: ListedReportTheme[];
 }): ReactElement {
   return (
     <div className="mt-4 flex flex-col gap-2">
@@ -444,6 +456,7 @@ function ReportThemeList({
             href={`/macrothemes/${theme.id.replace(/_/g, "-")}`}
             checked={selectedThemeIds.includes(theme.id)}
             disabled={disabled}
+            notice={theme.notice ?? undefined}
             className="w-full"
             onCheckedChange={() => !disabled && onToggleTheme(theme.id)}
           />

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   findReportScope,
   getScopeAreaName,
+  getThemeScopeNotice,
   groupReportScopes,
   isThemeAvailableInScope,
   selectReportScopePlaces,
@@ -140,5 +141,29 @@ describe("isThemeAvailableInScope", () => {
 
   it("never offers a theme without a report", () => {
     expect(isThemeAvailableInScope("cultura", "municipio")).toBe(false);
+  });
+
+  it("offers Desenvolvimento Social in Nordeste, the only area with it", () => {
+    expect(isThemeAvailableInScope("desenvolvimento_social", "nordeste")).toBe(
+      true,
+    );
+    expect(isThemeAvailableInScope("desenvolvimento_social", "semiarido")).toBe(
+      false,
+    );
+  });
+});
+
+describe("getThemeScopeNotice", () => {
+  it("explains the missing IDH only in the areas without it", () => {
+    for (const scopeId of ["caatinga", "semiarido", "area-sudene"] as const) {
+      expect(getThemeScopeNotice("desenvolvimento_social", scopeId)).toMatch(
+        /^O tema aborda o Índice de Desenvolvimento Humano/,
+      );
+    }
+    expect(
+      getThemeScopeNotice("desenvolvimento_social", "nordeste"),
+    ).toBeNull();
+    expect(getThemeScopeNotice("desenvolvimento_social", "estado")).toBeNull();
+    expect(getThemeScopeNotice("instrumentos_sudene", "caatinga")).toBeNull();
   });
 });
