@@ -8,6 +8,9 @@ export interface ThemeFilterCardProps {
   checked?: boolean;
   disabled?: boolean;
   className?: string;
+
+  /** Why the theme cannot be chosen; shows as a "!" with this text on hover. */
+  notice?: string;
   onCheckedChange?: (checked: boolean) => void;
 }
 

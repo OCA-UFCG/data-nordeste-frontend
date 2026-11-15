@@ -158,6 +158,27 @@ const THEME_IDS_WITHOUT_AREA_DATA = new Set([
   "instrumentos_sudene",
 ]);
 
+// Desenvolvimento Social is built on the IDH, published for states and
+// municipalities only. Product decided (14/11/2026) that among the areas only
+// Nordeste offers it; the other areas explain why with this notice.
+const DESENVOLVIMENTO_SOCIAL_AREA_NOTICE =
+  "O tema aborda o Índice de Desenvolvimento Humano (IDH), indicador disponibilizado para estados e municípios, não sendo metodologicamente recomendada sua aplicação direta a outros recortes territoriais. Assim, até o momento, não há dados específicos disponíveis para o Semiárido, o bioma Caatinga e a área de atuação da Sudene.";
+
+/**
+ * Why this theme cannot be chosen in this scope, shown next to its disabled
+ * card, or null when there is nothing to explain.
+ * Example: `getThemeScopeNotice("desenvolvimento_social", "caatinga")` → the IDH notice.
+ */
+export function getThemeScopeNotice(
+  themeId: string,
+  scopeId: ReportScopeId | null,
+): string | null {
+  const isArea = Boolean(getScopeAreaName(findReportScope(scopeId)));
+  if (themeId !== "desenvolvimento_social" || !isArea) return null;
+
+  return scopeId === "nordeste" ? null : DESENVOLVIMENTO_SOCIAL_AREA_NOTICE;
+}
+
 // INTENTIONAL: the state report (auto_relatorios_est) has no matview for
 // Instrumentos Sudene. Desenvolvimento Social left this list on 13/11/2026,
 // once `est_desen_social` and DESENVOLVIMENTO_SOCIAL_ESTADO_DOCS_URL existed.
@@ -177,6 +198,12 @@ export function isThemeAvailableInScope(
   if (!getAutomaticReportSlug(themeId)) return false;
   if (scopeId === null || scopeId === "municipio") return true;
   if (scopeId === "estado") return !THEME_IDS_WITHOUT_STATE_DATA.has(themeId);
+
+  // ponytail: Nordeste DS needs an area matview + Doc in Automatic-Reporting;
+  // until they exist the backend skips it (or answers 503 when it is alone).
+  if (scopeId === "nordeste" && themeId === "desenvolvimento_social") {
+    return true;
+  }
 
   return !THEME_IDS_WITHOUT_AREA_DATA.has(themeId);
 }
