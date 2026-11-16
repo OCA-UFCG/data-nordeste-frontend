@@ -2,12 +2,41 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildReportFileName,
   buildReportProxyUrl,
+  getAutomaticReportApiBaseUrl,
   getAutomaticReportSlug,
   parseAutomaticReportSlug,
 } from "./automaticReport";
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
+
+describe("automatic report API base URL", () => {
+  // IMPORTANT: deploys rely on this precedence to keep server calls on the
+  // Docker network. Beta reports broke in Nov/2026 while beta only had the
+  // public URL, which loops back through the LSD front door.
+  it("prefers the internal URL over the public one", () => {
+    vi.stubEnv("AUTOMATIC_REPORT_API_URL", "http://automatic-reporting:8000/");
+    vi.stubEnv(
+      "NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL",
+      "https://reports.example.org",
+    );
+
+    expect(getAutomaticReportApiBaseUrl()).toBe(
+      "http://automatic-reporting:8000",
+    );
+  });
+
+  it("falls back to the public URL when no internal URL is set", () => {
+    vi.stubEnv("AUTOMATIC_REPORT_API_URL", undefined);
+    vi.stubEnv(
+      "NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL",
+      "https://reports.example.org",
+    );
+
+    expect(getAutomaticReportApiBaseUrl()).toBe("https://reports.example.org");
+  });
 });
 
 describe("automatic report proxy URL", () => {

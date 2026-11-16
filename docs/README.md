@@ -153,9 +153,13 @@ outside the repository and rendered through frontend route/component logic.
   goes to the same `/relatorio/{nome}` route, which the backend routes to its
   state or area report (state/area Docs + `auto_relatorios_est` /
   `auto_relatorios_areaint` matviews, no charts or map yet; Minas Gerais waits
-  for the data team). The server
-  reads `NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL`, such as
-  `http://127.0.0.1:8000`, to reach the FastAPI service. The `/relatorio`
+  for the data team). To reach the FastAPI service, the server reads
+  `AUTOMATIC_REPORT_API_URL` and falls back to
+  `NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL`, such as `http://127.0.0.1:8000`.
+  Every deploy sets `AUTOMATIC_REPORT_API_URL` to the backend's Docker-network
+  address. From inside the VM, the public URL loops back through the LSD front
+  door. In Nov/2026 the front door stopped allowing that, which broke beta
+  reports until beta got the internal address too. The `/relatorio`
   route served directly by Automatic-Reporting returns an HTML page, not a
   PDF, and is intentionally not used by the frontend preview; pointing pdf.js
   at it would fail to render.
