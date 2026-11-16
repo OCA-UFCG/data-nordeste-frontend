@@ -80,6 +80,16 @@ function DialogContent({
   );
 }
 
+// IMPORTANT: adição deste projeto, fora do que o shadcn gera. É o Content do
+// Radix sem as classes do DialogContent (centralizado, com zoom), para quem
+// desenha o próprio painel, como a folha inferior do IDH (IdhSheet), sem
+// importar o Radix direto. Ao regenerar este arquivo, mantenha esta função.
+function DialogUnstyledContent(
+  props: React.ComponentProps<typeof DialogPrimitive.Content>,
+) {
+  return <DialogPrimitive.Content data-slot="dialog-content" {...props} />;
+}
+
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -140,4 +150,5 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
+  DialogUnstyledContent,
 };

@@ -1,6 +1,5 @@
 "use client";
 
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 import type { ReactNode } from "react";
 import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
 import { FOCUS_RING } from "@/components/IdhDashboard/idhStyles";
@@ -10,15 +9,17 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
+  DialogUnstyledContent,
 } from "@/components/ui/dialog";
 
 // `.sheet` do protótipo: sobe de baixo, com a alça no topo. O diálogo do Radix
 // cuida do foco preso, do Esc e do fundo escurecido.
-// INTENTIONAL: o conteúdo é o `DialogPrimitive.Content` puro, não o
-// `DialogContent` do shadcn (centralizado, com zoom) com classes que anulam as
-// dele, que quebrariam sem aviso ao regenerar a primitiva. O `ui/sheet.tsx`
-// também não serve: desenha sempre um cabeçalho fixo de 80 px com o X à
-// esquerda, diferente da folha do protótipo (revisão da PR #397).
+// INTENTIONAL: o conteúdo é o `DialogUnstyledContent` (o Content do Radix
+// puro, exposto por ui/dialog), não o `DialogContent` do shadcn (centralizado,
+// com zoom) com classes que anulam as dele, que quebrariam sem aviso ao
+// regenerar a primitiva. O `ui/sheet.tsx` também não serve: desenha sempre um
+// cabeçalho fixo de 80 px com o X à esquerda, diferente da folha do protótipo
+// (revisão da PR #397).
 const SHEET_CLASS =
   "fixed inset-x-0 bottom-0 z-50 grid max-h-[88vh] w-full overflow-auto rounded-t-2xl bg-white px-4 pt-0 pb-5 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.25)] duration-250 data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom";
 
@@ -41,7 +42,7 @@ export const IdhSheet = ({
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogPortal>
       <DialogOverlay />
-      <DialogPrimitive.Content
+      <DialogUnstyledContent
         aria-describedby={undefined}
         className={SHEET_CLASS}
       >
@@ -57,7 +58,7 @@ export const IdhSheet = ({
           </DialogClose>
         </div>
         {children}
-      </DialogPrimitive.Content>
+      </DialogUnstyledContent>
     </DialogPortal>
   </Dialog>
 );
