@@ -6,7 +6,11 @@ import {
   type IdhCardState,
 } from "@/components/IdhDashboard/IdhCard";
 import { IdhIcon, type IdhIconName } from "@/components/IdhDashboard/IdhIcon";
-import { CARD_SHADOW, FOCUS_RING } from "@/components/IdhDashboard/idhStyles";
+import {
+  CARD_SHADOW,
+  FOCUS_RING,
+  staleClass,
+} from "@/components/IdhDashboard/idhStyles";
 import {
   Carousel,
   CarouselContent,
@@ -100,7 +104,10 @@ const Cell = ({
   }
 
   return (
-    <div className={CELL_CLASS}>
+    <div
+      aria-busy={state === "stale"}
+      className={`${CELL_CLASS} ${staleClass(state === "stale")}`}
+    >
       <CellTop icon={cell.icon} label={cell.label} />
       {state === "error" ? (
         <div className="mt-auto pt-2.5 text-sm leading-5 font-medium">

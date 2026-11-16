@@ -48,3 +48,11 @@ export const CARD_SHADOW = "shadow-[0_2px_4px_-2px_rgba(0,0,0,0.1)]";
 
 // `.lab`: rótulos das telas do menu e dos filtros.
 export const SMALL_LABEL = "text-xs leading-4 font-semibold";
+
+// Card com dado anterior enquanto o filtro pedido não chega: esmaece em vez
+// de trocar pelo esqueleto. A transição só vale ao sair, para o esmaecer
+// aparecer na hora e não parecer atraso do clique.
+export const staleClass = (stale: boolean) =>
+  stale
+    ? "opacity-45"
+    : "transition-opacity duration-200 motion-reduce:transition-none";

@@ -10,7 +10,12 @@ import {
   IdhCardInfo,
 } from "@/components/IdhDashboard/IdhCardInfo";
 import { IdhCardMenu } from "@/components/IdhDashboard/IdhCardMenu";
-import { CARD_SHADOW, IDH_COLORS } from "@/components/IdhDashboard/idhStyles";
+import {
+  CARD_SHADOW,
+  IDH_COLORS,
+  staleClass,
+} from "@/components/IdhDashboard/idhStyles";
+import { showsIdhData } from "@/features/panels/idh/idhCardState";
 import { formatNumber } from "@/features/panels/format";
 import {
   compareIdhGroups,
@@ -136,14 +141,17 @@ const GroupCard = ({
 const NoGroupData = ({
   visao,
   data,
+  stale,
   onReset,
 }: {
   visao: GroupVisao;
   data: IdhPanelData;
+  stale: boolean;
   onReset: () => void;
 }) => (
   <div
-    className={`rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW}`}
+    aria-busy={stale}
+    className={`rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW} ${staleClass(stale)}`}
   >
     <IdhCardNotice
       tone="warn"
@@ -181,8 +189,15 @@ export const IdhGroupView = ({
   const hasData =
     compareIdhGroups(data[visao], data.filters.ano, "idh").values.length > 0;
 
-  if (state === "ok" && !hasData) {
-    return <NoGroupData visao={visao} data={data} onReset={onReset} />;
+  if (showsIdhData(state) && !hasData) {
+    return (
+      <NoGroupData
+        visao={visao}
+        data={data}
+        stale={state === "stale"}
+        onReset={onReset}
+      />
+    );
   }
 
   return (

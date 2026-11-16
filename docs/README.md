@@ -312,10 +312,14 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   only for 2021, "sem dado por estado", the undo toast): the `des_idh` views
   have the yearly series per state. The empty-state notice of the sex and
   colour views shows only when the database really has no group data.
-- Card states follow the real app: skeletons while a filter navigation or a
-  retry is pending (retrying wins over the error, `resolveIdhCardState`), the
-  error state with "Tentar de novo" (`router.refresh()`) when the query fails
-  (`emptyIdhPanel` keeps the layout).
+- Card states (`resolveIdhCardStates` in `idhCardState.ts`): while a filter
+  navigation is pending, only the cards whose data depends on the changed
+  filter keep their previous data dimmed (`stale`); a UF change leaves the map
+  and ranking alone, a year change leaves the yearly series alone. The
+  selection (map/ranking highlight, chart year, selects) follows the requested
+  filters at once, and the next filter starts from them. Skeletons only when
+  there is no previous data: retrying or navigating away from a failed query
+  (`emptyIdhPanel` keeps the layout); "Tentar de novo" runs `router.refresh()`.
 - Contentful texts: the cover lead is the entry's `abovePanelDescription`
   (`IDH_LEAD` only as fallback) and the long `description` renders before
   "Saiba mais". The title stays `IDH_TITLE`: the "panels" entry `title` is the

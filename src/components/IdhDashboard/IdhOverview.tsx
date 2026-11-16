@@ -20,16 +20,25 @@ import {
   IdhStateMap,
 } from "@/components/IdhDashboard/IdhStateMap";
 import { ICON_BUTTON } from "@/components/IdhDashboard/idhStyles";
+import {
+  type IdhCardStates,
+  showsIdhData,
+} from "@/features/panels/idh/idhCardState";
 import { rankIdhStates } from "@/features/panels/idh/idhClasses";
 import {
   describeIdhSerie,
+  type IdhFilters,
   type IdhPanelData,
 } from "@/features/panels/idh/idhPanel";
 
 type CardStatus = { state: IdhCardState; onRetry: () => void };
 
-type OverviewProps = CardStatus & {
-  data: IdhPanelData;
+// `selection`: os filtros pedidos. O ano da série e o estado destacado no mapa
+// e no ranking seguem o clique na hora, antes de o servidor responder.
+type CardProps = CardStatus & { data: IdhPanelData; selection: IdhFilters };
+
+type OverviewProps = Omit<CardProps, "state"> & {
+  states: IdhCardStates;
   onSelectUf: (uf: string) => void;
   onSelectYear: (ano: number) => void;
 };
@@ -41,9 +50,10 @@ const RANKING_TITLE = "Ranking do IDH por estado";
 
 const EvolutionCard = ({
   data,
+  selection,
   onSelectYear,
   ...status
-}: Omit<OverviewProps, "onSelectUf">) => {
+}: CardProps & { onSelectYear: (ano: number) => void }) => {
   const chart = useSvgChart();
 
   return (
@@ -62,7 +72,7 @@ const EvolutionCard = ({
     >
       <IdhLineChart
         serie={data.serie}
-        ano={data.filters.ano}
+        ano={selection.ano}
         onSelectYear={onSelectYear}
         svgRef={chart.ref}
       />
@@ -72,9 +82,10 @@ const EvolutionCard = ({
 
 const MapCard = ({
   data,
+  selection,
   onSelectUf,
   ...status
-}: Omit<OverviewProps, "onSelectYear">) => {
+}: CardProps & { onSelectUf: (uf: string) => void }) => {
   const chart = useSvgChart();
   const [fullscreen, setFullscreen] = useState(false);
   const subtitle = `Faixas de desenvolvimento humano · ${data.filters.ano}`;
@@ -96,7 +107,7 @@ const MapCard = ({
               aria-haspopup="dialog"
               aria-label="Abrir mapa em tela cheia"
               title="Tela cheia"
-              disabled={status.state !== "ok"}
+              disabled={!showsIdhData(status.state)}
               onClick={() => setFullscreen(true)}
               className={ICON_BUTTON}
             >
@@ -110,7 +121,7 @@ const MapCard = ({
         <div className="relative rounded-[8px] bg-[#d6f1fa] p-1">
           <IdhStateMap
             mapa={data.mapa}
-            selectedUf={data.filters.uf}
+            selectedUf={selection.uf}
             onSelect={onSelectUf}
             svgRef={chart.ref}
           />
@@ -122,7 +133,7 @@ const MapCard = ({
         onOpenChange={setFullscreen}
         subtitle={subtitle}
         mapa={data.mapa}
-        selectedUf={data.filters.uf}
+        selectedUf={selection.uf}
         onSelect={onSelectUf}
       />
     </>
@@ -131,9 +142,10 @@ const MapCard = ({
 
 const RankingCard = ({
   data,
+  selection,
   onSelectUf,
   ...status
-}: Omit<OverviewProps, "onSelectYear">) => (
+}: CardProps & { onSelectUf: (uf: string) => void }) => (
   <IdhCard
     {...status}
     title={RANKING_TITLE}
@@ -151,7 +163,7 @@ const RankingCard = ({
   >
     <IdhRankingBars
       states={rankIdhStates(data.mapa)}
-      selectedUf={data.filters.uf}
+      selectedUf={selection.uf}
       onSelect={onSelectUf}
     />
   </IdhCard>
@@ -159,11 +171,13 @@ const RankingCard = ({
 
 /**
  * Visão geral do painel (`#v-geral` do protótipo): indicadores, a série anual
- * e, lado a lado, o mapa e o ranking dos estados.
+ * e, lado a lado, o mapa e o ranking dos estados. Cada card tem o próprio
+ * estado: trocar a UF não esmaece o mapa nem o ranking.
  *
- * @example <IdhOverview data={panel} state="ok" onRetry={retry} onSelectUf={toggleUf} onSelectYear={pickYear} />
+ * @example <IdhOverview data={panel} selection={panel.filters} states={states} onRetry={retry} onSelectUf={toggleUf} onSelectYear={pickYear} />
  */
 export const IdhOverview = ({
+  states,
   onSelectYear,
   onSelectUf,
   ...props
@@ -171,13 +185,17 @@ export const IdhOverview = ({
   <div className="flex flex-col gap-4">
     <IdhBigNumbers
       data={props.data}
-      state={props.state}
+      state={states.bigNumbers}
       onRetry={props.onRetry}
     />
-    <EvolutionCard {...props} onSelectYear={onSelectYear} />
+    <EvolutionCard
+      {...props}
+      state={states.evolution}
+      onSelectYear={onSelectYear}
+    />
     <div className="grid grid-cols-2 items-stretch gap-6 max-[1000px]:grid-cols-1 max-[1000px]:gap-4">
-      <MapCard {...props} onSelectUf={onSelectUf} />
-      <RankingCard {...props} onSelectUf={onSelectUf} />
+      <MapCard {...props} state={states.map} onSelectUf={onSelectUf} />
+      <RankingCard {...props} state={states.ranking} onSelectUf={onSelectUf} />
     </div>
   </div>
 );

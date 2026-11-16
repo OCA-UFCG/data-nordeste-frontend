@@ -55,13 +55,17 @@ const Field = ({
   );
 };
 
+// `selection`: os filtros pedidos, que os selects mostram já antes de o
+// servidor responder (e de onde parte o próximo filtro).
 type FilterProps = {
   data: IdhPanelData;
+  selection: IdhFilters;
   onChange: (filters: IdhFilters) => void;
 };
 
 const FilterFields = ({
   data,
+  selection,
   onChange,
   wide,
 }: FilterProps & { wide?: boolean }) => {
@@ -74,9 +78,9 @@ const FilterFields = ({
         {(id) => (
           <select
             id={id}
-            value={data.filters.uf ?? ""}
+            value={selection.uf ?? ""}
             onChange={(event) =>
-              onChange({ ...data.filters, uf: event.target.value || undefined })
+              onChange({ ...selection, uf: event.target.value || undefined })
             }
             className={selectClass}
           >
@@ -93,9 +97,9 @@ const FilterFields = ({
         {(id) => (
           <select
             id={id}
-            value={data.filters.ano}
+            value={selection.ano}
             onChange={(event) =>
-              onChange({ ...data.filters, ano: Number(event.target.value) })
+              onChange({ ...selection, ano: Number(event.target.value) })
             }
             className={selectClass}
           >
@@ -159,10 +163,12 @@ const FiltersSheet = ({
 // No celular, o resumo do filtro abre a folha (`.fb-sum`).
 const PhoneSummary = ({
   data,
+  selection,
   visaoLabel,
   onOpen,
 }: {
   data: IdhPanelData;
+  selection: IdhFilters;
   visaoLabel: string;
   onOpen: () => void;
 }) => (
@@ -175,7 +181,7 @@ const PhoneSummary = ({
     <IdhIcon name="pin" size={20} className="flex-none" />
     <span className="flex min-w-0 flex-col leading-tight">
       <b className="truncate text-sm font-semibold">
-        {idhPlaceName(data)} · {data.filters.ano}
+        {idhPlaceName({ ufs: data.ufs, filters: selection })} · {selection.ano}
       </b>
       <small className="text-xs text-grey-1100">{visaoLabel}</small>
     </span>
@@ -186,7 +192,7 @@ const PhoneSummary = ({
  * Barra de filtros do painel (`.fb` do protótipo): Estado e Ano no desktop,
  * resumo e folha no celular, e o "Limpar filtros". Gruda no topo ao rolar.
  *
- * @example <IdhFilterBar data={panel} visaoLabel="Visão geral" onChange={apply} onClear={reset} isDefault top={80} stuck={false} barRef={ref} />
+ * @example <IdhFilterBar data={panel} selection={panel.filters} visaoLabel="Visão geral" onChange={apply} onClear={reset} isDefault top={80} stuck={false} barRef={ref} />
  */
 export const IdhFilterBar = ({
   visaoLabel,
@@ -217,6 +223,7 @@ export const IdhFilterBar = ({
       >
         <PhoneSummary
           data={props.data}
+          selection={props.selection}
           visaoLabel={visaoLabel}
           onOpen={() => setSheetOpen(true)}
         />

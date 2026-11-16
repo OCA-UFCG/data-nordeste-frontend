@@ -10,7 +10,6 @@ import {
   useState,
   useTransition,
 } from "react";
-import type { IdhCardState } from "@/components/IdhDashboard/IdhCard";
 import {
   IdhCardMenuContext,
   type IdhCardMenuContextValue,
@@ -32,7 +31,10 @@ import {
   type IdhPanelData,
   type IdhVisao,
 } from "@/features/panels/idh/idhPanel";
-import { resolveIdhCardState } from "@/features/panels/idh/idhCardState";
+import {
+  type IdhCardStates,
+  resolveIdhCardStates,
+} from "@/features/panels/idh/idhCardState";
 import { cn } from "@/lib/utils";
 
 // Fonte do painel no protótipo, abaixo dos cards.
@@ -103,7 +105,8 @@ const useCardMenuValue = (
 type ViewProps = {
   tab: IdhVisao;
   data: IdhPanelData;
-  state: IdhCardState;
+  selection: IdhFilters;
+  states: IdhCardStates;
   onRetry: () => void;
   onReset: () => void;
   onSelectUf: (uf: string) => void;
@@ -117,7 +120,7 @@ const IdhView = ({ tab, onReset, ...props }: ViewProps) =>
     <IdhGroupView
       visao={tab}
       data={props.data}
-      state={props.state}
+      state={props.states.groups}
       onRetry={props.onRetry}
       onReset={onReset}
     />
@@ -126,25 +129,43 @@ const IdhView = ({ tab, onReset, ...props }: ViewProps) =>
 const isDefaultFilters = ({ filters }: IdhPanelData) =>
   filters.ano === DEFAULT_IDH_FILTERS.ano && !filters.uf;
 
+// Guarda os filtros pedidos enquanto o servidor não responde. A seleção
+// (estado destacado, ano, selects) já mostra o pedido, e cada card sabe se o
+// dado dele vai mudar. Filtrar parte da seleção, não de `data.filters`: assim
+// escolher o ano logo depois do estado não descarta o estado ainda pendente.
+const usePendingFilters = (
+  data: IdhPanelData,
+  applyFilters: (filters: IdhFilters) => void,
+  isPending: boolean,
+) => {
+  const [requested, setRequested] = useState<IdhFilters | null>(null);
+  const pending = isPending ? requested : null;
+  const request = (next: IdhFilters) => {
+    setRequested(next);
+    applyFilters(next);
+  };
+
+  return { pending, selection: pending ?? data.filters, request };
+};
+
 // Ações dos cards e da barra de filtros. Filtrar leva a aba aberta para a URL:
 // é ela que o servidor devolve em `data.filters.visao`.
 const useIdhFilterActions = (
-  data: IdhPanelData,
+  selection: IdhFilters,
   tab: IdhVisao,
-  applyFilters: (filters: IdhFilters) => void,
+  request: (filters: IdhFilters) => void,
 ) => {
-  const changeFilters = (next: IdhFilters) =>
-    applyFilters({ ...next, visao: tab });
+  const changeFilters = (next: IdhFilters) => request({ ...next, visao: tab });
 
   return {
     changeFilters,
     reset: () => changeFilters(DEFAULT_IDH_FILTERS),
     selectUf: (uf: string) =>
       changeFilters({
-        ...data.filters,
-        uf: data.filters.uf === uf ? undefined : uf,
+        ...selection,
+        uf: selection.uf === uf ? undefined : uf,
       }),
-    selectYear: (ano: number) => changeFilters({ ...data.filters, ano }),
+    selectYear: (ano: number) => changeFilters({ ...selection, ano }),
   };
 };
 
@@ -157,22 +178,28 @@ const useIdhDashboard = (
   const [tab, setTab] = useIdhTab(data.filters.visao);
   const navigation = useIdhNavigation();
   const { retrying, retry } = useRetry();
+  const { pending, selection, request } = usePendingFilters(
+    data,
+    navigation.applyFilters,
+    navigation.isPending,
+  );
   const selectTab = (visao: IdhVisao) => {
     if (visao === tab) return;
     setTab(visao);
-    navigation.showVisao({ ...data.filters, visao });
+    navigation.showVisao({ ...selection, visao });
     revealPanel();
   };
-  const state = resolveIdhCardState({
-    failed,
-    loading: navigation.isPending || retrying,
-  });
-  const actions = useIdhFilterActions(data, tab, navigation.applyFilters);
+  const states = resolveIdhCardStates(
+    { failed, retrying, pending },
+    data.filters,
+  );
+  const actions = useIdhFilterActions(selection, tab, request);
 
   return {
     tab,
     selectTab,
-    state,
+    selection,
+    states,
     retry,
     pathname: navigation.pathname,
     actions,
@@ -259,6 +286,7 @@ export const IdhDashboard = ({
       />
       <IdhFilterBar
         data={data}
+        selection={dashboard.selection}
         visaoLabel={IDH_VISOES.find((item) => item.key === tab)?.label ?? ""}
         onChange={actions.changeFilters}
         onClear={actions.reset}
@@ -282,7 +310,8 @@ export const IdhDashboard = ({
             <IdhView
               tab={tab}
               data={data}
-              state={dashboard.state}
+              selection={dashboard.selection}
+              states={dashboard.states}
               onRetry={dashboard.retry}
               onReset={actions.reset}
               onSelectUf={actions.selectUf}

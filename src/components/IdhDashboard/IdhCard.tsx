@@ -2,7 +2,11 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
-import { BUTTON, CARD_SHADOW } from "@/components/IdhDashboard/idhStyles";
+import {
+  BUTTON,
+  CARD_SHADOW,
+  staleClass,
+} from "@/components/IdhDashboard/idhStyles";
 import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import type { IdhCardState } from "@/features/panels/idh/idhCardState";
 
@@ -121,7 +125,8 @@ const CardBody = ({
 
 /**
  * Card de gráfico do painel ("Caixa do gráfico" do protótipo): cabeçalho com
- * ações, corpo com os estados carregando e erro, e o rodapé com a fonte.
+ * ações, corpo com os estados (esmaecido com o dado anterior, carregando e
+ * erro) e o rodapé com a fonte.
  *
  * @example <IdhCard title="Mapa do IDH por estado" subtitle="…" actions={…} state="ok" kind="map" onRetry={retry}>…</IdhCard>
  */
@@ -140,7 +145,10 @@ export const IdhCard = (props: IdhCardProps) => (
       </div>
       <div className="-mt-1 -mr-2 flex flex-none gap-0.5">{props.actions}</div>
     </div>
-    <div className={`min-w-0 flex-1 ${props.bodyClassName ?? ""}`}>
+    <div
+      aria-busy={props.state === "stale" || props.state === "loading"}
+      className={`min-w-0 flex-1 ${props.bodyClassName ?? ""} ${staleClass(props.state === "stale")}`}
+    >
       <CardBody state={props.state} kind={props.kind} onRetry={props.onRetry}>
         {props.children}
       </CardBody>
