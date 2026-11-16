@@ -10,6 +10,7 @@ import {
 import {
   getCatalogHref,
   getMacroThemeHref,
+  PanelDescriptionSection,
 } from "@/components/Panel/texts/PanelTexts";
 import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedPanelsSection";
 import { buildMetadata } from "@/config/seo";
@@ -51,10 +52,13 @@ const loadPanel = async (filters: IdhFilters) => {
   }
 };
 
-// Layout do protótipo dos painéis: capa, painel, "Saiba mais" e relacionados.
-// INTENTIONAL: sem o Contentful, a capa usa o macrotema do IDH e some só a
-// seção de relacionados; sem o banco, os cards mostram o erro com "Tentar de
-// novo" em vez de derrubar a página.
+// Layout do protótipo dos painéis: capa, painel, descrição do Contentful,
+// "Saiba mais" e relacionados.
+// INTENTIONAL: sem o Contentful, a capa usa o macrotema e o texto de abertura
+// do IDH e somem a descrição e os relacionados; sem o banco, os cards mostram o
+// erro com "Tentar de novo" em vez de derrubar a página.
+// IMPORTANT: o título fica constante. O `title` da entrada "panels" é a chave
+// da consulta ("idh"), não um texto para exibir (ver `createPanelEntryReader`).
 export default async function IdhDemoPage({
   searchParams,
 }: {
@@ -71,7 +75,7 @@ export default async function IdhDemoPage({
     <HubTemplate>
       <IdhCover
         title={IDH_TITLE}
-        lead={IDH_LEAD}
+        lead={content?.panel.abovePanelDescription || IDH_LEAD}
         macroTheme={macroTheme}
         publishedAt={content?.panel.date}
       />
@@ -80,6 +84,7 @@ export default async function IdhDemoPage({
         failed={!panel}
         catalogHref={getCatalogHref(macroTheme)}
       />
+      {content ? <PanelDescriptionSection panel={content.panel} /> : null}
       <IdhSaibaMais themeHref={getMacroThemeHref(macroTheme)} />
       {content ? <RelatedPanelsSection items={content.relatedItems} /> : null}
     </HubTemplate>

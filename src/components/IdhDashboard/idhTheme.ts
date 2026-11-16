@@ -1,7 +1,8 @@
 // Fora do módulo "use client": a página server e o loading também usam.
 export const IDH_TITLE = "Índice de Desenvolvimento Humano (IDH)";
 
-// Texto de abertura da capa, do protótipo dos painéis.
+// Texto de abertura da capa, do protótipo dos painéis. Fallback do
+// `abovePanelDescription` do Contentful, que vence quando existe.
 export const IDH_LEAD =
   "O IDH resume educação, longevidade e renda em um número de 0 a 1. Aqui você acompanha a média dos estados do Nordeste ao longo do tempo, compara os estados e vê as diferenças por sexo e por cor.";
 

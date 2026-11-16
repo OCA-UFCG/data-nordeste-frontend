@@ -316,6 +316,10 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   retry is pending (retrying wins over the error, `resolveIdhCardState`), the
   error state with "Tentar de novo" (`router.refresh()`) when the query fails
   (`emptyIdhPanel` keeps the layout).
+- Contentful texts: the cover lead is the entry's `abovePanelDescription`
+  (`IDH_LEAD` only as fallback) and the long `description` renders before
+  "Saiba mais". The title stays `IDH_TITLE`: the "panels" entry `title` is the
+  lookup key (`"idh"`), not display text.
 - Switching views only calls `replaceState`; the active tab is local state that
   follows `data.filters.visao` when it changes. Do not put a `key` on
   `IdhDashboard`: it remounted the panel on the first filter after a tab
