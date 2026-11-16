@@ -1,14 +1,11 @@
+import {
+  resolvePanelCardState,
+  type PanelCardState,
+} from "@/features/panels/panelCardState";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 
-/**
- * - `ok`: dado atual.
- * - `stale`: um filtro de que o card depende está a caminho; o card mostra o
- *   dado anterior esmaecido em vez do esqueleto.
- * - `loading`: não há dado anterior para mostrar (consulta falhou e está sendo
- *   refeita), então o card mostra o esqueleto.
- * - `error`: a consulta falhou; o card mostra "Tentar de novo".
- */
-export type IdhCardState = "ok" | "stale" | "loading" | "error";
+// Estados documentados em PanelCardState; o IDH usa a mesma regra dos demais painéis.
+export type IdhCardState = PanelCardState;
 
 type IdhFilterKey = "uf" | "ano";
 
@@ -42,7 +39,12 @@ const resolveCardState = (
 ): IdhCardState => {
   // Recarregar vence o erro: sem essa prioridade o "Tentar de novo" nunca
   // mostraria o esqueleto nem desabilitaria o botão (revisão da PR #397).
-  if (failed) return retrying || pending ? "loading" : "error";
+  if (failed) {
+    return resolvePanelCardState({
+      failed,
+      loading: retrying || pending !== null,
+    });
+  }
   if (!pending) return "ok";
 
   return dependsOn.some((key) => pending[key] !== current[key])

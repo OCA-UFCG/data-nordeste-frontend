@@ -34,6 +34,7 @@ import {
   togglePerfilUf,
 } from "@/features/panels/demografia/perfilPlace";
 import { findPerfilPopulacao } from "@/features/panels/demografia/perfilPopulacao";
+import { resolvePanelCardState } from "@/features/panels/panelCardState";
 import {
   buildTerritorialSearch,
   defaultTerritorialFilters,
@@ -84,11 +85,10 @@ export const DemografiaDashboard = ({
   const { retrying, retry } = useProtoRetry();
   const sticky = useProtoSticky();
   const cardMenu = useCardMenuValue(data, pathname, catalogHref);
-  const state: ProtoCardState = failed
-    ? "error"
-    : isPending || retrying
-      ? "loading"
-      : "ok";
+  const state: ProtoCardState = resolvePanelCardState({
+    failed,
+    loading: isPending || retrying,
+  });
   const reset = () =>
     applyFilters(defaultTerritorialFilters(DEMOGRAFIA_YEAR_RANGE));
   const layout = {
