@@ -179,27 +179,32 @@ const useSnapCount = () => {
 
 const ARROW_CLASS = `grid size-8 place-items-center rounded-[6px] bg-green-800 p-0 text-white disabled:cursor-default disabled:bg-[#9ed3b2] ${FOCUS_RING}`;
 
+const ARROW_LABEL = {
+  back: "Indicador anterior",
+  forward: "Próximo indicador",
+} as const;
+
+// Seta do carrossel: lê do embla se ainda há para onde rolar.
 const CarouselArrow = ({
   direction,
-  disabled,
-  onClick,
 }: {
-  direction: "back" | "forward";
-  disabled: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    type="button"
-    aria-label={
-      direction === "back" ? "Indicador anterior" : "Próximo indicador"
-    }
-    disabled={disabled}
-    onClick={onClick}
-    className={ARROW_CLASS}
-  >
-    <IdhIcon name={direction} size={16} stroke={2.6} />
-  </button>
-);
+  direction: keyof typeof ARROW_LABEL;
+}) => {
+  const carousel = useCarousel();
+  const back = direction === "back";
+
+  return (
+    <button
+      type="button"
+      aria-label={ARROW_LABEL[direction]}
+      disabled={back ? !carousel.canScrollPrev : !carousel.canScrollNext}
+      onClick={back ? carousel.scrollPrev : carousel.scrollNext}
+      className={ARROW_CLASS}
+    >
+      <IdhIcon name={direction} size={16} stroke={2.6} />
+    </button>
+  );
+};
 
 const CarouselDots = ({ count, active }: { count: number; active: number }) => (
   <div aria-hidden="true" className="flex gap-2">
@@ -214,24 +219,16 @@ const CarouselDots = ({ count, active }: { count: number; active: number }) => (
 
 // Setas e bolinhas só abaixo de 1100 px e quando há o que rolar.
 const CarouselControls = () => {
-  const carousel = useCarousel();
+  const { canScrollPrev, canScrollNext, currentItem } = useCarousel();
   const snapCount = useSnapCount();
 
-  if (!carousel.canScrollPrev && !carousel.canScrollNext) return null;
+  if (!canScrollPrev && !canScrollNext) return null;
 
   return (
     <div className="mt-3 flex items-center justify-center gap-6 min-[1100px]:hidden">
-      <CarouselArrow
-        direction="back"
-        disabled={!carousel.canScrollPrev}
-        onClick={carousel.scrollPrev}
-      />
-      <CarouselDots count={snapCount} active={carousel.currentItem} />
-      <CarouselArrow
-        direction="forward"
-        disabled={!carousel.canScrollNext}
-        onClick={carousel.scrollNext}
-      />
+      <CarouselArrow direction="back" />
+      <CarouselDots count={snapCount} active={currentItem} />
+      <CarouselArrow direction="forward" />
     </div>
   );
 };
