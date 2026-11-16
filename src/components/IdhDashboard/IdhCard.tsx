@@ -3,6 +3,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
 import { BUTTON, CARD_SHADOW } from "@/components/IdhDashboard/idhStyles";
+import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 
 export type IdhCardState = "ok" | "loading" | "error";
 
@@ -144,7 +145,7 @@ export const IdhCard = (props: IdhCardProps) => (
       </CardBody>
     </div>
     <div className="mt-3.5 flex justify-between gap-3 text-[11px] leading-4 text-grey-1100">
-      <span>Fonte: PNAD/IBGE · Data Nordeste</span>
+      <span>{IDH_CARD_SOURCE}</span>
       <span className="text-grey-800">Atualizado em {IDH_DATA_UPDATED_AT}</span>
     </div>
   </article>

@@ -1,5 +1,6 @@
 import type { ChoroplethRegion } from "@/features/panels/chartOptions";
 import { getBucket, type ChoroplethBucket } from "@/features/panels/choropleth";
+import { formatIdh } from "@/features/panels/idh/idhFormat";
 import {
   IDH_MAP_BUCKETS,
   type IdhPanelData,
@@ -56,13 +57,19 @@ export const describeIdhClass = ({
   return `${uf.nome} · faixa ${idhClassFor(point.idh).label.toLowerCase()}`;
 };
 
-// Intervalos da legenda do protótipo, um por faixa do PNUD.
-const CLASS_RANGES: Record<string, string> = {
-  "Muito baixo": "< 0,500",
-  "Baixo": "0,500–0,599",
-  "Médio": "0,600–0,699",
-  "Alto": "0,700–0,799",
-  "Muito alto": "≥ 0,800",
+// O IDH tem três casas: o fim de uma faixa é o limite da próxima menos 0,001.
+const IDH_STEP = 0.001;
+
+// Intervalo da legenda do protótipo ("0,700–0,799"), tirado dos limites do
+// próprio IDH_MAP_BUCKETS para os dois não divergirem.
+const describeClassRange = (index: number): string => {
+  const { max } = IDH_MAP_BUCKETS[index];
+  const min = IDH_MAP_BUCKETS[index - 1]?.max;
+
+  if (min === undefined) return `< ${formatIdh(max)}`;
+  if (max === Infinity) return `≥ ${formatIdh(min)}`;
+
+  return `${formatIdh(min)}–${formatIdh(max - IDH_STEP)}`;
 };
 
 export type IdhLegendItem = {
@@ -79,9 +86,9 @@ export type IdhLegendItem = {
  * @example buildIdhLegend(panel.mapa)[3] // { label: "Alto", range: "0,700–0,799", color: "#00bd47", count: 4 }
  */
 export const buildIdhLegend = (mapa: ChoroplethRegion[]): IdhLegendItem[] =>
-  IDH_MAP_BUCKETS.map((bucket) => ({
+  IDH_MAP_BUCKETS.map((bucket, index) => ({
     label: bucket.label,
-    range: CLASS_RANGES[bucket.label],
+    range: describeClassRange(index),
     color: bucket.color,
     count: mapa.filter((region) => idhClassFor(region.value) === bucket).length,
   }));

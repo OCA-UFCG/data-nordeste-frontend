@@ -14,11 +14,13 @@ import { CARD_SHADOW, IDH_COLORS } from "@/components/IdhDashboard/idhStyles";
 import { formatNumber } from "@/features/panels/format";
 import {
   compareIdhGroups,
+  INDEX_METRICS,
   type IdhGroupMetric,
   type IdhGroupValue,
 } from "@/features/panels/idh/idhGroupCompare";
 import { formatIdhCard, formatRenda } from "@/features/panels/idh/idhFormat";
 import {
+  DEFAULT_IDH_FILTERS,
   IDH_VISOES,
   idhPlaceName,
   type IdhPanelData,
@@ -45,8 +47,7 @@ const METRIC_CARDS: readonly {
 // `--sa` e `--sb` do protótipo: o primeiro grupo roxo, o segundo azul.
 const GROUP_COLORS = [IDH_COLORS.accentStrong, IDH_COLORS.groupSecond];
 
-const isIndex = (metric: IdhGroupMetric) =>
-  metric === "idh" || metric === "gini";
+const isIndex = (metric: IdhGroupMetric) => INDEX_METRICS.has(metric);
 
 // `.gi`: rótulo e valor, a barra de 12 px e a escala de 0 ao fim.
 const GroupItem = ({
@@ -146,7 +147,10 @@ const NoGroupData = ({
   >
     <IdhCardNotice
       tone="warn"
-      action={{ label: "Ver Nordeste, 2021", onClick: onReset }}
+      action={{
+        label: `Ver Nordeste, ${DEFAULT_IDH_FILTERS.ano}`,
+        onClick: onReset,
+      }}
     >
       <b>ATENÇÃO:</b> não há dados da{" "}
       {IDH_VISOES.find((item) => item.key === visao)?.label.toLowerCase()} para{" "}

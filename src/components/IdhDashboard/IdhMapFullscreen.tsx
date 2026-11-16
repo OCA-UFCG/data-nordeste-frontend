@@ -17,6 +17,7 @@ import {
   IdhStateMap,
 } from "@/components/IdhDashboard/IdhStateMap";
 import { ICON_BUTTON } from "@/components/IdhDashboard/idhStyles";
+import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import {
   Dialog,
   DialogClose,
@@ -321,7 +322,7 @@ const FullscreenContent = ({
       <MapStage map={map} mapView={mapView} />
       <IdhMapLegend mapa={map.mapa} className="mx-1 mt-3" />
       <div className="mx-1 mt-3 flex justify-between gap-3 border-t border-grey-200 pt-3 text-[13px] text-grey-800">
-        <span>Fonte: PNAD/IBGE · Data Nordeste</span>
+        <span>{IDH_CARD_SOURCE}</span>
         <span className="max-[700px]:hidden">
           Clique em um estado para filtrar o painel
         </span>

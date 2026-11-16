@@ -3,6 +3,7 @@
 import { createContext, useContext, useRef } from "react";
 import { CardMenu } from "@/components/IdhDashboard/menu/CardMenu";
 import type { CardShare } from "@/components/IdhDashboard/menu/CardShareScreen";
+import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import { svgImageSource } from "@/lib/chartImage";
 
 // O que é igual em todos os cards do painel: o link com os filtros, o catálogo
@@ -15,9 +16,6 @@ export type IdhCardMenuContextValue = {
 export const IdhCardMenuContext = createContext<IdhCardMenuContextValue | null>(
   null,
 );
-
-// Fonte que vai na imagem baixada, como no rodapé dos cards.
-export const IDH_CARD_SOURCE = "Fonte: PNAD/IBGE · Data Nordeste";
 
 /**
  * Ref para o `<svg>` de um gráfico do card e a fonte de imagem do "Baixar

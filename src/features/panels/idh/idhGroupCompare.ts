@@ -13,7 +13,11 @@ export type IdhGroupComparison = {
   gap?: string;
 };
 
-const INDEX_METRICS: ReadonlySet<IdhGroupMetric> = new Set(["idh", "gini"]);
+// Índices de 0 a 1 (IDH e Gini); as outras métricas são valores em reais.
+export const INDEX_METRICS: ReadonlySet<IdhGroupMetric> = new Set([
+  "idh",
+  "gini",
+]);
 
 // Sinal de menos tipográfico (U+2212), como no protótipo: o hífen some ao lado
 // do número.

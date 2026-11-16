@@ -8,3 +8,6 @@ export const IDH_LEAD =
 // Macrotema do painel quando o Contentful não responde (o selo da capa e os
 // links de catálogo e de "Ver mais sobre o tema" dependem dele).
 export const IDH_MACROTHEME = "Desenvolvimento Social";
+
+// Fonte do rodapé dos cards, do mapa em tela cheia e da imagem baixada.
+export const IDH_CARD_SOURCE = "Fonte: PNAD/IBGE · Data Nordeste";

@@ -77,4 +77,14 @@ describe("buildIdhLegend", () => {
     ]);
     expect(legend[3].range).toBe("0,700–0,799");
   });
+
+  it("derives every legend range from the map buckets", () => {
+    expect(buildIdhLegend([]).map(({ range }) => range)).toEqual([
+      "< 0,500",
+      "0,500–0,599",
+      "0,600–0,699",
+      "0,700–0,799",
+      "≥ 0,800",
+    ]);
+  });
 });
