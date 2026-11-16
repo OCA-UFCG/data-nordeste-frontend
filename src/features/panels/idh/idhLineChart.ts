@@ -1,3 +1,7 @@
+import { stepCategory } from "@/features/panels/lineInteraction";
+
+const ARROW_KEYS = { ArrowLeft: true, ArrowRight: true };
+
 export type IdhLineSeries = {
   key: string;
   values: readonly number[];
@@ -20,7 +24,9 @@ export type IdhLineGeometry = {
   margin: { left: number; right: number; top: number; bottom: number };
   ticks: { value: number; y: number }[];
   years: { year: number; x: number; show: boolean; selected: boolean }[];
-  selectedX: number;
+
+  // Null quando o ano filtrado não está na série: nada fica destacado.
+  selectedX: number | null;
   points: Record<string, IdhLinePoint[]>;
   labels: Record<string, IdhLineLabel[]>;
 };
@@ -76,7 +82,9 @@ const seriesLabels = (
   selectedIndex: number,
 ): IdhLineLabel[] => {
   const last = series.values.length - 1;
-  const indexes = [...new Set([0, selectedIndex, last])].sort((a, b) => a - b);
+  const indexes = [...new Set([0, selectedIndex, last])]
+    .filter((index) => index >= 0)
+    .sort((a, b) => a - b);
 
   return indexes.map((index) => ({
     index,
@@ -117,6 +125,9 @@ const byKey = <Value>(
  * Geometria do gráfico de linhas do painel de IDH, com as medidas do
  * protótipo: margens, escala, anos no eixo e os rótulos de valor.
  *
+ * `selectedIndex` -1: o ano filtrado não está na série (lacuna na carga), e
+ * nenhum ano fica destacado.
+ *
  * @example buildIdhLineGeometry({ width: 800, years, series, selectedIndex: 9 }).points.idh[0]
  */
 export const buildIdhLineGeometry = ({
@@ -146,7 +157,7 @@ export const buildIdhLineGeometry = ({
       show: !frame.narrow || index % 3 === 0,
       selected: index === selectedIndex,
     })),
-    selectedX: scales.x(selectedIndex),
+    selectedX: selectedIndex < 0 ? null : scales.x(selectedIndex),
     points: byKey(series, (item) =>
       item.values.map((value, index) => ({
         value,
@@ -170,3 +181,29 @@ export const linePath = (points: readonly IdhLinePoint[]): string =>
         `${index ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`,
     )
     .join("");
+
+const nearestYear = (years: readonly number[], ano: number, key: string) => {
+  if (key === "ArrowLeft") return years.filter((year) => year < ano).at(-1);
+  if (key === "ArrowRight") return years.find((year) => year > ano);
+
+  return undefined;
+};
+
+/**
+ * Ano para onde uma tecla leva no gráfico. Quando o ano filtrado não está na
+ * série, as setas vão ao ano vizinho mais próximo em vez de se perderem.
+ *
+ * @example stepIdhYear([2019, 2021], 2020, "ArrowLeft") // 2019
+ */
+export const stepIdhYear = (
+  years: readonly number[],
+  ano: number,
+  key: string,
+): number | null => {
+  if (!years.includes(ano) && key in ARROW_KEYS) {
+    return nearestYear(years, ano, key) ?? null;
+  }
+  const next = stepCategory(years.map(String), String(ano), key);
+
+  return next === null ? null : Number(next);
+};

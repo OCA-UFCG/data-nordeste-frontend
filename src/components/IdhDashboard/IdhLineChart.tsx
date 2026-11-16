@@ -21,8 +21,8 @@ import {
   buildIdhLineGeometry,
   type IdhLineGeometry,
   linePath,
+  stepIdhYear,
 } from "@/features/panels/idh/idhLineChart";
-import { stepCategory } from "@/features/panels/lineInteraction";
 import type { IdhYearPoint } from "@/features/panels/idh/idhPanel";
 
 const SERIES = [
@@ -139,16 +139,18 @@ const Axes = ({ geometry }: { geometry: IdhLineGeometry }) => {
           </text>
         ) : null,
       )}
-      <line
-        x1={geometry.selectedX}
-        x2={geometry.selectedX}
-        y1={margin.top}
-        y2={height - margin.bottom}
-        stroke={IDH_COLORS.accent}
-        strokeWidth="1.2"
-        strokeDasharray="4 4"
-        opacity="0.55"
-      />
+      {geometry.selectedX === null ? null : (
+        <line
+          x1={geometry.selectedX}
+          x2={geometry.selectedX}
+          y1={margin.top}
+          y2={height - margin.bottom}
+          stroke={IDH_COLORS.accent}
+          strokeWidth="1.2"
+          strokeDasharray="4 4"
+          opacity="0.55"
+        />
+      )}
     </>
   );
 };
@@ -244,7 +246,10 @@ export const IdhLineChart = ({
     (TooltipAt & { index: number }) | null
   >(null);
   const years = serie.map((point) => point.ano);
-  const selectedIndex = Math.max(0, years.indexOf(ano));
+
+  // -1 quando o ano filtrado falta na série: nenhum ponto fica destacado, em
+  // vez de destacar o primeiro ano enquanto os cards mostram outro.
+  const selectedIndex = years.indexOf(ano);
   const toggle = (key: SeriesKey) => {
     const next = new Set(hidden);
 
@@ -252,11 +257,11 @@ export const IdhLineChart = ({
     setHidden(next);
   };
   const handleKeyDown = (event: KeyboardEvent<SVGRectElement>) => {
-    const next = stepCategory(years.map(String), String(ano), event.key);
+    const next = stepIdhYear(years, ano, event.key);
 
-    if (!next) return;
+    if (next === null) return;
     event.preventDefault();
-    onSelectYear(Number(next));
+    onSelectYear(next);
   };
 
   return (
