@@ -1,18 +1,18 @@
 "use client";
 
-import {
-  type RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import {
   IdhSkeleton,
   type IdhCardState,
 } from "@/components/IdhDashboard/IdhCard";
 import { IdhIcon, type IdhIconName } from "@/components/IdhDashboard/IdhIcon";
 import { CARD_SHADOW, FOCUS_RING } from "@/components/IdhDashboard/idhStyles";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  useCarousel,
+} from "@/components/ui/carousel";
 import { describeIdhClass } from "@/features/panels/idh/idhClasses";
 import { formatIdhCard, formatRenda } from "@/features/panels/idh/idhFormat";
 import type {
@@ -62,7 +62,7 @@ const bigNumbers = (data: IdhPanelData): BigNumber[] => {
   ];
 };
 
-const CELL_CLASS = `flex min-h-[118px] min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white p-4 ${CARD_SHADOW} max-[1099px]:flex-[0_0_calc((100%-24px)/3)] max-[1099px]:snap-start max-[700px]:flex-[0_0_100%]`;
+const CELL_CLASS = `flex h-full min-h-[118px] min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white p-4 ${CARD_SHADOW}`;
 
 const CellTop = ({ icon, label }: { icon: IdhIconName; label: string }) => (
   <div className="flex min-h-[34px] items-center gap-2.5">
@@ -136,103 +136,102 @@ const Cell = ({
   );
 };
 
-type CarouselState = {
-  overflow: boolean;
-  index: number;
-  canPrev: boolean;
-  canNext: boolean;
-};
+// Do 1100 px em diante o embla desliga e os cards viram a grade de cinco.
+const CAROUSEL_OPTIONS = {
+  align: "start",
+  breakpoints: { "(min-width: 1100px)": { active: false } },
+} as const;
 
-// Abaixo de 1100 px os cards rolam de lado; as setas e bolinhas só aparecem
-// quando há o que rolar.
-const useCarousel = (ref: RefObject<HTMLDivElement | null>) => {
-  const [state, setState] = useState<CarouselState>({
-    overflow: false,
-    index: 0,
-    canPrev: false,
-    canNext: false,
-  });
-  const update = useCallback(() => {
-    const element = ref.current;
-    const first = element?.children[0] as HTMLElement | undefined;
+// Espaço entre os cards: no carrossel é o padding do item (o embla mede os
+// slides, não o `gap`), por isso o passo acompanha a classe sem número fixo.
+const TRACK_CLASS =
+  "-ml-3 min-[1100px]:ml-0 min-[1100px]:grid min-[1100px]:grid-cols-5 min-[1100px]:gap-4";
+const ITEM_CLASS =
+  "basis-1/3 pl-3 max-[700px]:basis-full min-[1100px]:basis-auto min-[1100px]:pl-0";
 
-    if (!element || !first) return;
-    const step = first.offsetWidth + 12;
-
-    setState({
-      overflow: element.scrollWidth > element.clientWidth + 2,
-      index: Math.min(
-        element.children.length - 1,
-        Math.round(element.scrollLeft / step),
-      ),
-      canPrev: element.scrollLeft > 2,
-      canNext:
-        element.scrollLeft + element.clientWidth < element.scrollWidth - 2,
-    });
-  }, [ref]);
+// Quantas paradas o carrossel tem: três cards por vez no tablet dão três
+// paradas, não cinco. Muda quando a largura troca de faixa.
+const useSnapCount = () => {
+  const { api } = useCarousel();
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const element = ref.current;
+    if (!api) return;
+    const update = () => setCount(api.scrollSnapList().length);
 
-    if (!element) return;
-    const observer = new ResizeObserver(update);
-
-    observer.observe(element);
-    element.addEventListener("scroll", update, { passive: true });
+    update();
+    api.on("reInit", update);
 
     return () => {
-      observer.disconnect();
-      element.removeEventListener("scroll", update);
+      api.off("reInit", update);
     };
-  }, [ref, update]);
+  }, [api]);
 
-  return state;
+  return count;
 };
 
 const ARROW_CLASS = `grid size-8 place-items-center rounded-[6px] bg-green-800 p-0 text-white disabled:cursor-default disabled:bg-[#9ed3b2] ${FOCUS_RING}`;
 
-const CarouselControls = ({
-  count,
-  carousel,
-  onStep,
+const CarouselArrow = ({
+  direction,
+  disabled,
+  onClick,
 }: {
-  count: number;
-  carousel: CarouselState;
-  onStep: (direction: -1 | 1) => void;
+  direction: "back" | "forward";
+  disabled: boolean;
+  onClick: () => void;
 }) => (
-  <div className="mt-3 flex items-center justify-center gap-6">
-    <button
-      type="button"
-      aria-label="Indicador anterior"
-      disabled={!carousel.canPrev}
-      onClick={() => onStep(-1)}
-      className={ARROW_CLASS}
-    >
-      <IdhIcon name="back" size={16} stroke={2.6} />
-    </button>
-    <div aria-hidden="true" className="flex gap-2">
-      {Array.from({ length: count }, (_, index) => (
-        <i
-          key={index}
-          className={`size-2 rounded-full transition-colors duration-200 ${index === carousel.index ? "bg-green-1000" : "bg-grey-300"}`}
-        />
-      ))}
-    </div>
-    <button
-      type="button"
-      aria-label="Próximo indicador"
-      disabled={!carousel.canNext}
-      onClick={() => onStep(1)}
-      className={ARROW_CLASS}
-    >
-      <IdhIcon name="forward" size={16} stroke={2.6} />
-    </button>
+  <button
+    type="button"
+    aria-label={
+      direction === "back" ? "Indicador anterior" : "Próximo indicador"
+    }
+    disabled={disabled}
+    onClick={onClick}
+    className={ARROW_CLASS}
+  >
+    <IdhIcon name={direction} size={16} stroke={2.6} />
+  </button>
+);
+
+const CarouselDots = ({ count, active }: { count: number; active: number }) => (
+  <div aria-hidden="true" className="flex gap-2">
+    {Array.from({ length: count }, (_, index) => (
+      <i
+        key={index}
+        className={`size-2 rounded-full transition-colors duration-200 ${index === active ? "bg-green-1000" : "bg-grey-300"}`}
+      />
+    ))}
   </div>
 );
 
+// Setas e bolinhas só abaixo de 1100 px e quando há o que rolar.
+const CarouselControls = () => {
+  const carousel = useCarousel();
+  const snapCount = useSnapCount();
+
+  if (!carousel.canScrollPrev && !carousel.canScrollNext) return null;
+
+  return (
+    <div className="mt-3 flex items-center justify-center gap-6 min-[1100px]:hidden">
+      <CarouselArrow
+        direction="back"
+        disabled={!carousel.canScrollPrev}
+        onClick={carousel.scrollPrev}
+      />
+      <CarouselDots count={snapCount} active={carousel.currentItem} />
+      <CarouselArrow
+        direction="forward"
+        disabled={!carousel.canScrollNext}
+        onClick={carousel.scrollNext}
+      />
+    </div>
+  );
+};
+
 /**
  * Indicadores do topo da visão geral (`.bns` do protótipo): cinco cards em
- * grade; abaixo de 1100 px, um carrossel com setas e bolinhas.
+ * grade; abaixo de 1100 px, o carrossel de `ui/carousel` com setas e bolinhas.
  *
  * @example <IdhBigNumbers data={panel} state="ok" onRetry={retry} />
  */
@@ -244,36 +243,15 @@ export const IdhBigNumbers = ({
   data: IdhPanelData;
   state: IdhCardState;
   onRetry: () => void;
-}) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const carousel = useCarousel(ref);
-  const cells = bigNumbers(data);
-  const step = (direction: -1 | 1) => {
-    const first = ref.current?.children[0] as HTMLElement | undefined;
-
-    ref.current?.scrollBy({
-      left: direction * ((first?.offsetWidth ?? 0) + 12),
-      behavior: "smooth",
-    });
-  };
-
-  return (
-    <div className="relative">
-      <div
-        ref={ref}
-        className="grid grid-cols-5 gap-4 max-[1099px]:-m-0.5 max-[1099px]:flex max-[1099px]:snap-x max-[1099px]:snap-mandatory max-[1099px]:gap-3 max-[1099px]:overflow-x-auto max-[1099px]:p-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {cells.map((cell) => (
-          <Cell key={cell.label} cell={cell} state={state} onRetry={onRetry} />
-        ))}
-      </div>
-      {carousel.overflow ? (
-        <CarouselControls
-          count={cells.length}
-          carousel={carousel}
-          onStep={step}
-        />
-      ) : null}
-    </div>
-  );
-};
+}) => (
+  <Carousel opts={CAROUSEL_OPTIONS} aria-label="Indicadores do IDH">
+    <CarouselContent wrapperClassName="-m-0.5 p-0.5" className={TRACK_CLASS}>
+      {bigNumbers(data).map((cell) => (
+        <CarouselItem key={cell.label} className={ITEM_CLASS}>
+          <Cell cell={cell} state={state} onRetry={onRetry} />
+        </CarouselItem>
+      ))}
+    </CarouselContent>
+    <CarouselControls />
+  </Carousel>
+);
