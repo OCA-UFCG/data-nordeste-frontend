@@ -208,8 +208,22 @@ type FrameProps = {
   onOpenChange: (open: boolean) => void;
   title: string;
   subtitle: string;
-  legend: ReactNode;
+  legend?: ReactNode;
+
+  // Fonte exibida no rodapé do diálogo.
+  source: string;
+
+  // Dica de uso no rodapé; sem ela, o rodapé não mostra a dica.
+  hint?: string;
 };
+
+// Dica do rodapé quando o mapa filtra o painel ao clicar num estado.
+export const MAP_SELECT_HINT = "Clique em um estado para filtrar o painel";
+
+// Moldura do palco: altura do mapa e cantos. O mapa por estado e o de
+// municípios somam só cor e interação por cima disso.
+export const MAP_STAGE_FRAME =
+  "relative h-[min(640px,calc(100vh-250px))] min-h-[300px] overflow-hidden rounded-[8px] max-[700px]:h-auto max-[700px]:flex-1";
 
 export type ProtoMapFullscreenProps = FrameProps & StageProps;
 
@@ -267,7 +281,7 @@ const MapStage = ({
       onPointerCancel={pan.onPointerEnd}
       onPointerLeave={pan.onPointerEnd}
       onClickCapture={pan.onClickCapture}
-      className="relative h-[min(640px,calc(100vh-250px))] min-h-[300px] cursor-grab touch-none overflow-hidden rounded-[8px] bg-[#d6f1fa] select-none active:cursor-grabbing max-[700px]:h-auto max-[700px]:flex-1"
+      className={`${MAP_STAGE_FRAME} cursor-grab touch-none bg-[#d6f1fa] select-none active:cursor-grabbing`}
     >
       <ProtoStateMap
         {...map}
@@ -289,6 +303,8 @@ const FullscreenContent = ({
   title,
   subtitle,
   legend,
+  source,
+  hint,
   stage,
 }: Omit<FrameProps, "open" | "onOpenChange"> & { stage: StageProps }) => {
   const mapView = useMapView();
@@ -337,16 +353,14 @@ const FullscreenContent = ({
         </DialogClose>
       </div>
       {"renderStage" in stage ? (
-        stage.renderStage()
+        <div className={MAP_STAGE_FRAME}>{stage.renderStage()}</div>
       ) : (
         <MapStage map={stage} mapView={mapView} />
       )}
-      <div className="mx-1 mt-3">{legend}</div>
+      {legend ? <div className="mx-1 mt-3">{legend}</div> : null}
       <div className="mx-1 mt-3 flex justify-between gap-3 border-t border-grey-200 pt-3 text-[13px] text-grey-800">
-        <span>Fonte: PNAD/IBGE · Data Nordeste</span>
-        <span className="max-[700px]:hidden">
-          Clique em um estado para filtrar o painel
-        </span>
+        <span>{source}</span>
+        {hint ? <span className="max-[700px]:hidden">{hint}</span> : null}
       </div>
     </DialogContent>
   );
@@ -355,11 +369,12 @@ const FullscreenContent = ({
 /**
  * Mapa em tela cheia (`.mmodal` do protótipo): ampliar, reduzir, ajustar
  * (botões, roda do mouse ou teclas + − 0), arrastar e clicar num estado para
- * filtrar o painel. `legend` é a legenda do painel, já montada. Com
- * `renderStage`, o palco é do painel (ex.: mapa de municípios) e o cabeçalho,
- * a legenda e o rodapé continuam os mesmos.
+ * filtrar o painel. `legend` (opcional) é a legenda do painel, já montada;
+ * `source` é a fonte do rodapé e `hint` (ex.: `MAP_SELECT_HINT`) a dica de
+ * uso. Com `renderStage`, o palco é do painel (ex.: mapa de municípios) e o
+ * cabeçalho, a legenda e o rodapé continuam os mesmos.
  *
- * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" legend={<IdhMapLegend mapa={mapa} />} fillFor={fill} describe={describe} isSelectable={isSelectable} label="Mapa" selectedUf="PE" onSelect={toggleUf} />
+ * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" legend={<IdhMapLegend mapa={mapa} />} source={IDH_CARD_SOURCE} hint={MAP_SELECT_HINT} fillFor={fill} describe={describe} isSelectable={isSelectable} label="Mapa" selectedUf="PE" onSelect={toggleUf} />
  */
 export const ProtoMapFullscreen = (props: ProtoMapFullscreenProps) => (
   <Dialog open={props.open} onOpenChange={props.onOpenChange}>
@@ -368,6 +383,8 @@ export const ProtoMapFullscreen = (props: ProtoMapFullscreenProps) => (
         title={props.title}
         subtitle={props.subtitle}
         legend={props.legend}
+        source={props.source}
+        hint={props.hint}
         stage={props}
       />
     ) : null}

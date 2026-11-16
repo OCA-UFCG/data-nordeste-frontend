@@ -4,7 +4,6 @@ import type { CSSProperties, ReactNode } from "react";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 import {
   BUTTON,
-  BUTTON_GHOST,
   CARD_SHADOW,
   staleClass,
 } from "@/components/ProtoPanel/protoStyles";
@@ -12,6 +11,9 @@ import {
 // `stale`: o card mostra o dado anterior esmaecido enquanto o filtro pedido
 // não chega (ver `resolveIdhCardStates`).
 export type ProtoCardState = "ok" | "stale" | "loading" | "error";
+
+// Moldura do card do protótipo; reaproveitada por quem desenha um card sem cabeçalho.
+export const PROTO_CARD_CLASS = `flex min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW} max-[700px]:p-4`;
 
 // Altura do esqueleto de cada tipo de card, a mesma do protótipo.
 const SKELETON_HEIGHT = { line: 250, map: 380, rank: 380, grp: 90 } as const;
@@ -61,21 +63,17 @@ const NoticeButton = ({
 
 /**
  * Estado de aviso ou de erro de um card (`.empty` do protótipo): ícone, texto
- * e uma ação.
+ * e, quando `action` é dado, um único botão.
  *
- * `secondaryAction`: um segundo botão, de contorno, ao lado do primeiro.
- *
- * @example <ProtoCardNotice tone="warn" action={{ label: "Ver Nordeste · 2022", onClick: reset }} secondaryAction={{ label: "Limpar filtros", onClick: clear }}>…</ProtoCardNotice>
+ * @example <ProtoCardNotice tone="warn" action={{ label: "Ver Nordeste · 2022", onClick: reset }}>…</ProtoCardNotice>
  */
 export const ProtoCardNotice = ({
   tone,
   action,
-  secondaryAction,
   children,
 }: {
   tone: "warn" | "error";
   action?: NoticeAction;
-  secondaryAction?: NoticeAction;
   children: ReactNode;
 }) => (
   <div
@@ -88,14 +86,7 @@ export const ProtoCardNotice = ({
       <ProtoIcon name="warn" size={24} />
     </span>
     <p className="max-w-[56ch] text-[15px] leading-[22px]">{children}</p>
-    {secondaryAction ? (
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        {action ? <NoticeButton action={action} className={BUTTON} /> : null}
-        <NoticeButton action={secondaryAction} className={BUTTON_GHOST} />
-      </div>
-    ) : action ? (
-      <NoticeButton action={action} className={BUTTON} />
-    ) : null}
+    {action ? <NoticeButton action={action} className={BUTTON} /> : null}
   </div>
 );
 
@@ -124,6 +115,11 @@ export type ProtoCardProps = {
   onRetry: () => void;
   bodyClassName?: string;
   footer?: ProtoCardFooter;
+
+  // IMPORTANT: o que vai em `overlay` (como o mapa em tela cheia) fica fora do
+  // CardBody: dentro dos children, o esqueleto do carregando o desmontaria a
+  // cada filtro (revisão da PR #401).
+  overlay?: ReactNode;
   children: ReactNode;
 };
 
@@ -160,14 +156,14 @@ const CardFooter = ({ footer }: { footer: ProtoCardFooter }) => (
 /**
  * Card de gráfico do painel ("Caixa do gráfico" do protótipo): cabeçalho com
  * ações, corpo com os estados (esmaecido com o dado anterior, carregando e
- * erro) e o rodapé com a fonte (quando `footer` é dado).
+ * erro) e o rodapé com a fonte (quando `footer` é dado). `overlay` é renderizado
+ * depois do rodapé, fora do corpo, e sobrevive aos estados (ex.: diálogo em
+ * tela cheia).
  *
- * @example <ProtoCard title="Mapa do IDH por estado" subtitle="…" actions={…} state="ok" kind="map" onRetry={retry} footer={{ source: "Fonte: …" }}>…</ProtoCard>
+ * @example <ProtoCard title="Mapa do IDH por estado" subtitle="…" actions={…} state="ok" kind="map" onRetry={retry} footer={{ source: "Fonte: …" }} overlay={<ProtoMapFullscreen … />}>…</ProtoCard>
  */
 export const ProtoCard = (props: ProtoCardProps) => (
-  <article
-    className={`flex min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW} max-[700px]:p-4`}
-  >
+  <article className={PROTO_CARD_CLASS}>
     <div className="mb-3 flex items-start justify-between gap-2">
       <div className="min-w-0">
         <h3 className="text-base leading-[22px] font-semibold text-grey-1100">
@@ -188,5 +184,6 @@ export const ProtoCard = (props: ProtoCardProps) => (
       </CardBody>
     </div>
     {props.footer ? <CardFooter footer={props.footer} /> : null}
+    {props.overlay}
   </article>
 );

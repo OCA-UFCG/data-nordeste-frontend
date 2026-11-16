@@ -1,15 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
+import { useDemografiaHighlight } from "@/components/DemografiaDashboard/DemografiaMapa";
 import { PerfilPorteToggles } from "@/components/DemografiaDashboard/PerfilPorteToggles";
 import type { PerfilCardProps } from "@/components/DemografiaDashboard/perfilCardProps";
-import { useDemografiaHighlight } from "@/components/DemografiaDashboard/DemografiaMapa";
+import { PERFIL_CARD_SOURCE } from "@/components/DemografiaDashboard/perfilTexts";
+import { DataTable } from "@/components/Panel/cards/DataTable";
 import { ChoroplethCanvas } from "@/components/Panel/charts/ChoroplethMap";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
-import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
+import {
+  MAP_SELECT_HINT,
+  ProtoMapFullscreen,
+} from "@/components/ProtoPanel/ProtoMapFullscreen";
 import {
   ProtoStateMap,
   type ProtoStateMapProps,
@@ -20,6 +25,7 @@ import {
   populacaoPorMunicipio,
   type DemografiaPanelData,
 } from "@/features/panels/demografia/demografiaPanel";
+import { buildPerfilPorteTable } from "@/features/panels/demografia/perfilPorteTable";
 import { formatPessoas } from "@/features/panels/format";
 
 const TITLE = "Porte dos municípios";
@@ -39,7 +45,12 @@ const ESTADO_FILL_SELECTED = "#e98dae";
 const MAP_BOX_CLASS =
   "h-[560px] w-full max-[1000px]:h-[480px] max-[700px]:h-[360px]";
 
+// Fundo azul do mar: o palco da tela cheia recebe só a cor, a moldura é dele.
+const MUNICIPIOS_STAGE_CLASS = "size-full bg-[#d4eef7]";
+
 type MapView = "municipios" | "estados";
+type PorteHighlight = ReturnType<typeof useDemografiaHighlight>;
+type PorteStage = ProtoStateMapProps | { renderStage: () => ReactNode };
 
 const VIEWS: { key: MapView; label: string }[] = [
   { key: "municipios", label: "Municípios" },
@@ -108,6 +119,101 @@ const municipiosCanvas = (
   />
 );
 
+// A tela cheia do mapa de estados é o próprio `ProtoStateMap`; a de municípios
+// recebe o palco pronto, que tem o próprio zoom.
+const porteStage = (
+  view: MapView,
+  data: DemografiaPanelData,
+  porte: PorteHighlight,
+  estados: ProtoStateMapProps,
+): PorteStage =>
+  view === "estados"
+    ? estados
+    : {
+        renderStage: () =>
+          municipiosCanvas(data, porte.highlightCodes, MUNICIPIOS_STAGE_CLASS),
+      };
+
+const PorteLegend = ({ porte }: { porte: PorteHighlight }) => (
+  <PerfilPorteToggles
+    grupos={porte.grupos}
+    porte={porte.porte}
+    onSelect={porte.setPorte}
+    onPreview={porte.setPortePreview}
+  />
+);
+
+const usePorteMapData = (
+  data: DemografiaPanelData,
+  onSelectUf: (uf: string) => void,
+) => {
+  const municipios = useMemo(
+    () => populacaoPorMunicipio(data.mapa),
+    [data.mapa],
+  );
+  const porte = useDemografiaHighlight(municipios);
+  const table = useMemo(() => buildPerfilPorteTable(data), [data]);
+
+  return { porte, table, estados: estadosMap(data, onSelectUf) };
+};
+
+type PorteMapData = ReturnType<typeof usePorteMapData>;
+
+// O mapa da vista escolhida. Na de municípios, o canvas não tem texto para
+// leitores de tela: a tabela escondida ocupa o lugar da que o ChoroplethMap
+// anterior tinha (revisão da PR #401).
+const PorteMapBox = ({
+  view,
+  data,
+  map,
+}: {
+  view: MapView;
+  data: DemografiaPanelData;
+  map: PorteMapData;
+}) => (
+  <>
+    <div className="flex flex-1 items-center rounded-[8px] bg-[#d4eef7] p-1 max-[1000px]:p-2">
+      {view === "estados" ? (
+        <ProtoStateMap
+          {...map.estados}
+          className={`mx-auto block max-h-[560px] ${MAP_BOX_CLASS}`}
+        />
+      ) : (
+        municipiosCanvas(data, map.porte.highlightCodes, MAP_BOX_CLASS)
+      )}
+    </div>
+    {view === "municipios" ? (
+      <div className="sr-only">
+        <DataTable content={map.table} className="" />
+      </div>
+    ) : null}
+  </>
+);
+
+const PorteCardActions = ({
+  state,
+  onOpen,
+}: {
+  state: PerfilCardProps["state"];
+  onOpen: () => void;
+}) => (
+  <>
+    <button
+      type="button"
+      aria-haspopup="dialog"
+      aria-label="Abrir mapa em tela cheia"
+      title="Tela cheia"
+      disabled={state !== "ok"}
+      onClick={onOpen}
+      className={ICON_BUTTON}
+    >
+      <ProtoIcon name="fullscreen" size={18} stroke={1.7} />
+    </button>
+    <ProtoCardInfo title={TITLE} text={INFO} />
+    <ProtoCardMenu title={TITLE} />
+  </>
+);
+
 /**
  * Card "Porte dos municípios": mapa dos municípios por faixa de população ou
  * mapa dos estados, que filtra o painel ao ser clicado. A legenda por porte
@@ -122,22 +228,16 @@ export const PerfilPorteMapCard = ({
   const { data, place, state } = props;
   const [view, setView] = useState<MapView>("municipios");
   const [fullscreen, setFullscreen] = useState(false);
-  const municipios = useMemo(
-    () => populacaoPorMunicipio(data.mapa),
-    [data.mapa],
-  );
-  const porte = useDemografiaHighlight(municipios);
-  const estados = estadosMap(data, onSelectUf);
+  const map = usePorteMapData(data, onSelectUf);
+  const { porte, estados } = map;
   const subtitle = `${place} · ${data.filters.ano}`;
-  const legend = (
-    <PerfilPorteToggles
-      grupos={porte.grupos}
-      porte={porte.porte}
-      onSelect={porte.setPorte}
-      onPreview={porte.setPortePreview}
-    />
-  );
 
+  // A legenda por porte só destaca municípios; no mapa de estados não teria
+  // efeito, então some (revisão da PR #401).
+  const legend = view === "municipios" ? <PorteLegend porte={porte} /> : null;
+
+  // O diálogo fica no `overlay` do card: dentro do corpo, o esqueleto do
+  // carregando o desmontaria a cada estado clicado em tela cheia.
   return (
     <ProtoCard
       title={TITLE}
@@ -147,51 +247,24 @@ export const PerfilPorteMapCard = ({
       onRetry={props.onRetry}
       bodyClassName="flex flex-col"
       actions={
-        <>
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            aria-label="Abrir mapa em tela cheia"
-            title="Tela cheia"
-            disabled={state !== "ok"}
-            onClick={() => setFullscreen(true)}
-            className={ICON_BUTTON}
-          >
-            <ProtoIcon name="fullscreen" size={18} stroke={1.7} />
-          </button>
-          <ProtoCardInfo title={TITLE} text={INFO} />
-          <ProtoCardMenu title={TITLE} />
-        </>
+        <PorteCardActions state={state} onOpen={() => setFullscreen(true)} />
+      }
+      overlay={
+        <ProtoMapFullscreen
+          open={fullscreen}
+          onOpenChange={setFullscreen}
+          title={TITLE}
+          subtitle={subtitle}
+          legend={legend}
+          source={PERFIL_CARD_SOURCE}
+          hint={view === "estados" ? MAP_SELECT_HINT : undefined}
+          {...porteStage(view, data, porte, estados)}
+        />
       }
     >
       <ViewToggle value={view} onChange={setView} />
-      <div className="flex flex-1 items-center rounded-[8px] bg-[#d4eef7] p-1 max-[1000px]:p-2">
-        {view === "estados" ? (
-          <ProtoStateMap
-            {...estados}
-            className={`mx-auto block max-h-[560px] ${MAP_BOX_CLASS}`}
-          />
-        ) : (
-          municipiosCanvas(data, porte.highlightCodes, MAP_BOX_CLASS)
-        )}
-      </div>
+      <PorteMapBox view={view} data={data} map={map} />
       {legend}
-      <ProtoMapFullscreen
-        open={fullscreen}
-        onOpenChange={setFullscreen}
-        title={TITLE}
-        subtitle={subtitle}
-        legend={legend}
-        {...(view === "estados"
-          ? estados
-          : {
-              renderStage: () => (
-                <div className="relative h-[min(640px,calc(100vh-250px))] min-h-[300px] rounded-[8px] bg-[#d4eef7] max-[700px]:h-[70vh]">
-                  {municipiosCanvas(data, porte.highlightCodes, "size-full")}
-                </div>
-              ),
-            })}
-      />
     </ProtoCard>
   );
 };

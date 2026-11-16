@@ -7,8 +7,10 @@ import { PerfilPiramideCard } from "@/components/DemografiaDashboard/PerfilPiram
 import { PerfilPorteMapCard } from "@/components/DemografiaDashboard/PerfilPorteMapCard";
 import { PerfilSerieCard } from "@/components/DemografiaDashboard/PerfilSerieCard";
 import { PerfilSexoCard } from "@/components/DemografiaDashboard/PerfilSexoCard";
-import { ProtoCardNotice } from "@/components/ProtoPanel/ProtoCard";
-import { CARD_SHADOW } from "@/components/ProtoPanel/protoStyles";
+import {
+  PROTO_CARD_CLASS,
+  ProtoCardNotice,
+} from "@/components/ProtoPanel/ProtoCard";
 import { DEMOGRAFIA_YEAR_RANGE } from "@/features/panels/demografia/demografiaPanel";
 import { describePerfilDefaultLabel } from "@/features/panels/demografia/perfilPlace";
 
@@ -82,23 +84,21 @@ export const PerfilGrids = ({
   </div>
 );
 
-// Sem população no ano escolhido: um aviso com os dois atalhos e o mapa sozinho.
+// Sem população no ano escolhido: um aviso com o atalho para o padrão e o
+// mapa sozinho.
 export const PerfilEmptyLayout = ({
   onSelectUf,
   onReset,
   ...card
 }: PerfilLayoutProps) => (
   <div>
-    <article
-      className={`flex min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW} max-[700px]:p-4`}
-    >
+    <article className={PROTO_CARD_CLASS}>
       <ProtoCardNotice
         tone="warn"
         action={{
           label: describePerfilDefaultLabel(DEMOGRAFIA_YEAR_RANGE),
           onClick: onReset,
         }}
-        secondaryAction={{ label: "Limpar filtros", onClick: onReset }}
       >
         <b>ATENÇÃO:</b> não há dados para{" "}
         <b>{`${card.place} · ${card.data.filters.ano}`}</b>.

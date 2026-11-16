@@ -6,16 +6,14 @@ import {
 } from "@/components/IdhDashboard/idhCardTexts";
 import { IDH_COLORS } from "@/components/IdhDashboard/idhColors";
 import {
+  PROTO_CARD_CLASS,
   ProtoCard,
   ProtoCardNotice,
   type ProtoCardState,
 } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
-import {
-  CARD_SHADOW,
-  staleClass,
-} from "@/components/ProtoPanel/protoStyles";
+import { staleClass } from "@/components/ProtoPanel/protoStyles";
 import { showsIdhData } from "@/features/panels/idh/idhCardState";
 import { formatNumber } from "@/features/panels/format";
 import {
@@ -151,10 +149,7 @@ const NoGroupData = ({
   stale: boolean;
   onReset: () => void;
 }) => (
-  <div
-    aria-busy={stale}
-    className={`rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW} ${staleClass(stale)}`}
-  >
+  <div aria-busy={stale} className={`${PROTO_CARD_CLASS} ${staleClass(stale)}`}>
     <ProtoCardNotice
       tone="warn"
       action={{
