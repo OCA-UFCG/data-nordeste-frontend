@@ -79,40 +79,44 @@ const MapCard = ({
   const [fullscreen, setFullscreen] = useState(false);
   const subtitle = `Faixas de desenvolvimento humano · ${data.filters.ano}`;
 
+  // IMPORTANT: o diálogo fica fora do IdhCard. Dentro dos children, o
+  // esqueleto do "carregando" o desmontaria a cada estado clicado em tela cheia.
   return (
-    <IdhCard
-      {...status}
-      title={MAP_TITLE}
-      subtitle={subtitle}
-      kind="map"
-      bodyClassName="flex flex-col"
-      actions={
-        <>
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            aria-label="Abrir mapa em tela cheia"
-            title="Tela cheia"
-            disabled={status.state !== "ok"}
-            onClick={() => setFullscreen(true)}
-            className={ICON_BUTTON}
-          >
-            <IdhIcon name="fullscreen" size={18} stroke={1.7} />
-          </button>
-          <IdhCardInfo title={MAP_TITLE} text={IDH_CARD_INFO.map} />
-          <IdhCardMenu title={MAP_TITLE} chart={chart} />
-        </>
-      }
-    >
-      <div className="relative rounded-[8px] bg-[#d6f1fa] p-1">
-        <IdhStateMap
-          mapa={data.mapa}
-          selectedUf={data.filters.uf}
-          onSelect={onSelectUf}
-          svgRef={chart.ref}
-        />
-      </div>
-      <IdhMapLegend mapa={data.mapa} />
+    <>
+      <IdhCard
+        {...status}
+        title={MAP_TITLE}
+        subtitle={subtitle}
+        kind="map"
+        bodyClassName="flex flex-col"
+        actions={
+          <>
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              aria-label="Abrir mapa em tela cheia"
+              title="Tela cheia"
+              disabled={status.state !== "ok"}
+              onClick={() => setFullscreen(true)}
+              className={ICON_BUTTON}
+            >
+              <IdhIcon name="fullscreen" size={18} stroke={1.7} />
+            </button>
+            <IdhCardInfo title={MAP_TITLE} text={IDH_CARD_INFO.map} />
+            <IdhCardMenu title={MAP_TITLE} chart={chart} />
+          </>
+        }
+      >
+        <div className="relative rounded-[8px] bg-[#d6f1fa] p-1">
+          <IdhStateMap
+            mapa={data.mapa}
+            selectedUf={data.filters.uf}
+            onSelect={onSelectUf}
+            svgRef={chart.ref}
+          />
+        </div>
+        <IdhMapLegend mapa={data.mapa} />
+      </IdhCard>
       <IdhMapFullscreen
         open={fullscreen}
         onOpenChange={setFullscreen}
@@ -121,7 +125,7 @@ const MapCard = ({
         selectedUf={data.filters.uf}
         onSelect={onSelectUf}
       />
-    </IdhCard>
+    </>
   );
 };
 
