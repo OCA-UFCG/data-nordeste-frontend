@@ -312,9 +312,14 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   only for 2021, "sem dado por estado", the undo toast): the `des_idh` views
   have the yearly series per state. The empty-state notice of the sex and
   colour views shows only when the database really has no group data.
-- Card states follow the real app: skeletons while a filter navigation is
-  pending, the error state with "Tentar de novo" (`router.refresh()`) when the
-  query fails (`emptyIdhPanel` keeps the layout).
+- Card states follow the real app: skeletons while a filter navigation or a
+  retry is pending (retrying wins over the error, `resolveIdhCardState`), the
+  error state with "Tentar de novo" (`router.refresh()`) when the query fails
+  (`emptyIdhPanel` keeps the layout).
+- Switching views only calls `replaceState`; the active tab is local state that
+  follows `data.filters.visao` when it changes. Do not put a `key` on
+  `IdhDashboard`: it remounted the panel on the first filter after a tab
+  switch and closed the mobile filter sheet (PR #397 review).
 - WARNING: "Atualizado em 11/2026" in the card footers is the prototype's
   fixed text (`IDH_DATA_UPDATED_AT`); the database does not expose a load
   date yet.

@@ -67,8 +67,6 @@ export default async function IdhDemoPage({
   ]);
   const macroTheme = content?.panel.macroTheme ?? IDH_MACROTHEME;
 
-  // A key remonta as abas quando um link muda ?visao= sem trocar de página.
-
   return (
     <HubTemplate>
       <IdhCover
@@ -78,7 +76,6 @@ export default async function IdhDemoPage({
         publishedAt={content?.panel.date}
       />
       <IdhDashboard
-        key={filters.visao}
         data={panel ?? emptyIdhPanel(filters)}
         failed={!panel}
         catalogHref={getCatalogHref(macroTheme)}

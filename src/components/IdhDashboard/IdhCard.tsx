@@ -4,8 +4,9 @@ import type { CSSProperties, ReactNode } from "react";
 import { IdhIcon } from "@/components/IdhDashboard/IdhIcon";
 import { BUTTON, CARD_SHADOW } from "@/components/IdhDashboard/idhStyles";
 import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
+import type { IdhCardState } from "@/features/panels/idh/idhCardState";
 
-export type IdhCardState = "ok" | "loading" | "error";
+export type { IdhCardState };
 
 // Altura do esqueleto de cada tipo de card, a mesma do protótipo.
 const SKELETON_HEIGHT = { line: 250, map: 380, rank: 380, grp: 90 } as const;

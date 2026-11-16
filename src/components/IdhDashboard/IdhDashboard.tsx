@@ -32,6 +32,7 @@ import {
   type IdhPanelData,
   type IdhVisao,
 } from "@/features/panels/idh/idhPanel";
+import { resolveIdhCardState } from "@/features/panels/idh/idhCardState";
 import { cn } from "@/lib/utils";
 
 // Fonte do painel no protótipo, abaixo dos cards.
@@ -61,6 +62,23 @@ const useRetry = () => {
   const [retrying, startRetry] = useTransition();
 
   return { retrying, retry: () => startRetry(() => router.refresh()) };
+};
+
+// A aba é estado local (trocar de aba só usa replaceState), mas acompanha a
+// `visao` do servidor quando um link muda ?visao= sem trocar de página.
+// INTENTIONAL: compara com a visão anterior em vez de usar `key` na página. A
+// `key` remontava o painel no primeiro filtro depois de trocar de aba e fechava
+// a folha de filtros do celular (revisão da PR #397).
+const useIdhTab = (serverVisao: IdhVisao) => {
+  const [tab, setTab] = useState<IdhVisao>(serverVisao);
+  const [lastServerVisao, setLastServerVisao] = useState(serverVisao);
+
+  if (serverVisao !== lastServerVisao) {
+    setLastServerVisao(serverVisao);
+    setTab(serverVisao);
+  }
+
+  return [tab, setTab] as const;
 };
 
 // O link de compartilhar leva a aba aberta, não a da carga da página: trocar de
@@ -108,6 +126,99 @@ const IdhView = ({ tab, onReset, ...props }: ViewProps) =>
 const isDefaultFilters = ({ filters }: IdhPanelData) =>
   filters.ano === DEFAULT_IDH_FILTERS.ano && !filters.uf;
 
+// Ações dos cards e da barra de filtros. Filtrar leva a aba aberta para a URL:
+// é ela que o servidor devolve em `data.filters.visao`.
+const useIdhFilterActions = (
+  data: IdhPanelData,
+  tab: IdhVisao,
+  applyFilters: (filters: IdhFilters) => void,
+) => {
+  const changeFilters = (next: IdhFilters) =>
+    applyFilters({ ...next, visao: tab });
+
+  return {
+    changeFilters,
+    reset: () => changeFilters(DEFAULT_IDH_FILTERS),
+    selectUf: (uf: string) =>
+      changeFilters({
+        ...data.filters,
+        uf: data.filters.uf === uf ? undefined : uf,
+      }),
+    selectYear: (ano: number) => changeFilters({ ...data.filters, ano }),
+  };
+};
+
+// `revealPanel`: no celular, rola até o início das visões ao trocar de aba.
+const useIdhDashboard = (
+  data: IdhPanelData,
+  failed: boolean,
+  revealPanel: () => void,
+) => {
+  const [tab, setTab] = useIdhTab(data.filters.visao);
+  const navigation = useIdhNavigation();
+  const { retrying, retry } = useRetry();
+  const selectTab = (visao: IdhVisao) => {
+    if (visao === tab) return;
+    setTab(visao);
+    navigation.showVisao({ ...data.filters, visao });
+    revealPanel();
+  };
+  const state = resolveIdhCardState({
+    failed,
+    loading: navigation.isPending || retrying,
+  });
+  const actions = useIdhFilterActions(data, tab, navigation.applyFilters);
+
+  return {
+    tab,
+    selectTab,
+    state,
+    retry,
+    pathname: navigation.pathname,
+    actions,
+  };
+};
+
+const useIdhTabIds = () => {
+  const idPrefix = useId();
+
+  return {
+    rail: `${idPrefix}-rail`,
+    bar: `${idPrefix}-tab`,
+    panel: `${idPrefix}-panel`,
+  };
+};
+
+// Fonte, link do catálogo e, na visão geral, o convite para a próxima visão.
+const IdhPanelFooter = ({
+  tab,
+  catalogHref,
+  nextViewTabIds,
+  onSelectTab,
+}: {
+  tab: IdhVisao;
+  catalogHref: string | null;
+  nextViewTabIds: string[];
+  onSelectTab: (visao: IdhVisao) => void;
+}) => (
+  <>
+    <p className="mt-4 text-xs leading-4 text-grey-1100">{PANEL_SOURCE}</p>
+    <Link
+      href={catalogHref ?? "/catalog"}
+      className={cn(BUTTON, "mt-4 flex w-full")}
+    >
+      Acessar o catálogo de dados
+    </Link>
+    {tab === "geral" ? (
+      <IdhNextViewButton
+        visao="sexo"
+        tabIds={nextViewTabIds}
+        onSelect={onSelectTab}
+      />
+    ) : null}
+  </>
+);
+
 /**
  * Painel de IDH no formato do protótipo: barra de abas (celular e tablet),
  * barra de filtros, coluna lateral das visões e o conteúdo da visão. `failed`:
@@ -124,37 +235,19 @@ export const IdhDashboard = ({
   failed?: boolean;
   catalogHref: string | null;
 }) => {
-  const idPrefix = useId();
-  const ids = {
-    rail: `${idPrefix}-rail`,
-    bar: `${idPrefix}-tab`,
-    panel: `${idPrefix}-panel`,
-  };
-  const [tab, setTab] = useState<IdhVisao>(data.filters.visao);
-  const navigation = useIdhNavigation();
-  const { retrying, retry } = useRetry();
+  const ids = useIdhTabIds();
   const sticky = useIdhSticky();
   const layoutRef = useRef<HTMLDivElement>(null);
-  const cardMenu = useCardMenuValue(
-    data,
-    tab,
-    navigation.pathname,
-    catalogHref,
+  const dashboard = useIdhDashboard(data, failed, () =>
+    sticky.reveal(layoutRef.current),
   );
-  const state: IdhCardState = failed
-    ? "error"
-    : navigation.isPending || retrying
-      ? "loading"
-      : "ok";
-  const selectTab = (visao: IdhVisao) => {
-    if (visao === tab) return;
-    setTab(visao);
-    navigation.showVisao({ ...data.filters, visao });
-    sticky.reveal(layoutRef.current);
+  const { tab, actions } = dashboard;
+  const cardMenu = useCardMenuValue(data, tab, dashboard.pathname, catalogHref);
+  const tabs = {
+    panelId: ids.panel,
+    active: tab,
+    onSelect: dashboard.selectTab,
   };
-  const changeFilters = (next: IdhFilters) =>
-    navigation.applyFilters({ ...next, visao: tab });
-  const tabs = { panelId: ids.panel, active: tab, onSelect: selectTab };
 
   return (
     <>
@@ -167,8 +260,8 @@ export const IdhDashboard = ({
       <IdhFilterBar
         data={data}
         visaoLabel={IDH_VISOES.find((item) => item.key === tab)?.label ?? ""}
-        onChange={changeFilters}
-        onClear={() => changeFilters(DEFAULT_IDH_FILTERS)}
+        onChange={actions.changeFilters}
+        onClear={actions.reset}
         isDefault={isDefaultFilters(data)}
         top={sticky.filterTop}
         stuck={sticky.stuck}
@@ -189,34 +282,19 @@ export const IdhDashboard = ({
             <IdhView
               tab={tab}
               data={data}
-              state={state}
-              onRetry={retry}
-              onReset={() => changeFilters(DEFAULT_IDH_FILTERS)}
-              onSelectUf={(uf) =>
-                changeFilters({
-                  ...data.filters,
-                  uf: data.filters.uf === uf ? undefined : uf,
-                })
-              }
-              onSelectYear={(ano) => changeFilters({ ...data.filters, ano })}
+              state={dashboard.state}
+              onRetry={dashboard.retry}
+              onReset={actions.reset}
+              onSelectUf={actions.selectUf}
+              onSelectYear={actions.selectYear}
             />
           </IdhCardMenuContext.Provider>
-          <p className="mt-4 text-xs leading-4 text-grey-1100">
-            {PANEL_SOURCE}
-          </p>
-          <Link
-            href={catalogHref ?? "/catalog"}
-            className={cn(BUTTON, "mt-4 flex w-full")}
-          >
-            Acessar o catálogo de dados
-          </Link>
-          {tab === "geral" ? (
-            <IdhNextViewButton
-              visao="sexo"
-              tabIds={[`${ids.bar}-sexo`, `${ids.rail}-sexo`]}
-              onSelect={selectTab}
-            />
-          ) : null}
+          <IdhPanelFooter
+            tab={tab}
+            catalogHref={catalogHref}
+            nextViewTabIds={[`${ids.bar}-sexo`, `${ids.rail}-sexo`]}
+            onSelectTab={dashboard.selectTab}
+          />
         </div>
       </div>
     </>
