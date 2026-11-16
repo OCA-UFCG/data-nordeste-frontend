@@ -60,11 +60,19 @@ jobs:
       - name: Stop existing container
         run: sudo docker rm -f ${{ vars.CONTAINER_NAME_BETA }} || true
 
+      # IMPORTANT: the server reaches Automatic-Reporting over the Docker
+      # network (AUTOMATIC_REPORT_API_URL), as gamma and prod already do. The
+      # public URL makes the VM call itself through the LSD front door. The
+      # front door stopped allowing that after the VM recovery in Nov/2026,
+      # which broke beta reports with ERR_SSL_TLSV1_UNRECOGNIZED_NAME.
+      # Create vars.AUTOMATIC_REPORT_API_URL_BETA before deploying: an empty
+      # value is not nullish, so the server would not fall back and would throw.
       - name: Run new container
         run: |
           sudo docker run \
             --name ${{ vars.CONTAINER_NAME_BETA }} \
             --restart unless-stopped \
+            -e AUTOMATIC_REPORT_API_URL="${{ vars.AUTOMATIC_REPORT_API_URL_BETA }}" \
             -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" \
             -e CONTENT_CACHE_PASSWORD="${{ secrets.CONTENT_CACHE_PASSWORD }}" \
             -p ${{ vars.HOST_PORT_BETA }}:${{ vars.CONTAINER_PORT }} \
