@@ -376,3 +376,21 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   the map is a canvas and the other cards are HTML.
 - Removed with this rebuild: `DemografiaCharts`, `DemografiaSaibaMais`,
   `PorteLegend`, `PyramidChart`, `ValueBars` and `buildPyramidOption`.
+- Card state: `resolvePanelCardState` (`src/features/panels/panelCardState.ts`)
+  picks "loading", "error" or "ok", and loading beats error, so "Tentar de
+  novo" shows the skeleton while the query runs again. The IDH reuses it in
+  `resolveIdhCardStates` for its failed branch.
+- Dialogs that must survive the loading state (the porte map fullscreen, the
+  IDH map fullscreen) go in `ProtoCard`'s `overlay` slot, outside the body:
+  inside it, the loading skeleton unmounted the dialog on every filter.
+- Changing "Área de interesse" keeps the chosen states and municipalities, as
+  the prototype's `norm()` does. The server drops the ones outside the new
+  area (`keepKnown` in `src/features/panels/territorialOptions.ts`), which
+  keeps the multi-state selection. PIB clears both instead.
+- The fullscreen map receives `source` (the panel's source line) and an
+  optional `hint`: `MAP_SELECT_HINT` only shows on the states map, which
+  filters on click. The porte legend only shows in the "Municípios" view, in
+  the card and in the fullscreen.
+- The municipalities map is a canvas with no text for screen readers, so it
+  carries an `sr-only` table built by `buildPerfilPorteTable`, replacing the
+  table `ChoroplethMap` used to provide.

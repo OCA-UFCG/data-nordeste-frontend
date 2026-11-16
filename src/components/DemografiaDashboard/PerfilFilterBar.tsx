@@ -65,6 +65,15 @@ const PerfilFilterFields = ({
           </select>
         )}
       </ProtoSelectField>
+
+      {/*
+       * INTENTIONAL: trocar a área mantém Estado e Município escolhidos,
+       * diferente do `TerritorialSelects` do PIB, que zera os dois. É o que faz
+       * o `norm()` do protótipo, que só descarta a UF que sai da área. Quem
+       * descarta UFs e municípios fora da área nova é o servidor (`keepKnown`
+       * em `src/features/panels/territorialOptions.ts`), o que preserva a
+       * seleção de vários estados (revisão da PR #401).
+       */}
       <ProtoSelectField label="Área de interesse" wide={wide} fluid={fluid}>
         {(fieldId) => (
           <select
