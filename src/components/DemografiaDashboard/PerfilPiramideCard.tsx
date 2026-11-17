@@ -89,6 +89,29 @@ const ValueLabel = ({
   </span>
 );
 
+// Um lado da faixa: a barra parte do rótulo do meio e o número fica por fora.
+// `flex-row-reverse` espelha o lado das mulheres sem repetir a marcação.
+const PyramidSide = ({
+  value,
+  ratio,
+  color,
+  selected,
+  mirrored,
+}: {
+  value: number;
+  ratio: number;
+  color: string;
+  selected: boolean;
+  mirrored: boolean;
+}) => (
+  <span
+    className={`flex min-w-0 items-center gap-1.5 ${mirrored ? "flex-row-reverse" : ""}`}
+  >
+    <Bar ratio={ratio} color={color} selected={selected} />
+    <ValueLabel value={value} selected={selected} />
+  </span>
+);
+
 // Uma faixa: mulheres à esquerda (cresce para a esquerda), rótulo no meio,
 // homens à direita.
 const PyramidRowButton = ({
@@ -117,23 +140,25 @@ const PyramidRowButton = ({
       onPointerLeave={(event) => mouseOnly(event, () => onHover(null))}
       className="grid h-[26px] grid-cols-[minmax(0,1fr)_56px_minmax(0,1fr)] items-center rounded-[6px] p-0 hover:bg-grey-100 max-[700px]:grid-cols-[minmax(0,1fr)_44px_minmax(0,1fr)]"
     >
-      <span className="flex min-w-0 items-center justify-end gap-1.5">
-        <ValueLabel value={row.mulheres} selected={selected} />
-        <Bar
-          ratio={row.mulheresRatio}
-          color={MULHER_COLOR}
-          selected={selected}
-        />
-      </span>
+      <PyramidSide
+        value={row.mulheres}
+        ratio={row.mulheresRatio}
+        color={MULHER_COLOR}
+        selected={selected}
+        mirrored
+      />
       <span
         className={`text-center text-[12px] ${selected ? "font-bold" : ""}`}
       >
         {short}
       </span>
-      <span className="flex min-w-0 items-center gap-1.5">
-        <Bar ratio={row.homensRatio} color={HOMEM_COLOR} selected={selected} />
-        <ValueLabel value={row.homens} selected={selected} />
-      </span>
+      <PyramidSide
+        value={row.homens}
+        ratio={row.homensRatio}
+        color={HOMEM_COLOR}
+        selected={selected}
+        mirrored={false}
+      />
     </button>
   );
 };

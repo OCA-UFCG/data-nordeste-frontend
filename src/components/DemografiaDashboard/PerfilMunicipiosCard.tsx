@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
 import type { PerfilCardProps } from "@/components/DemografiaDashboard/perfilCardProps";
@@ -52,9 +53,13 @@ const MunicipiosList = ({ items }: { items: MunicipioPoint[] }) => {
  */
 export const PerfilMunicipiosCard = (props: PerfilCardProps) => {
   const { data, place } = props;
-  const items = populacaoPorMunicipio(data.mapa, data.filters.mun).slice(
-    0,
-    TOP_COUNT,
+
+  // PERF: o mapa tem ~1 800 municípios; sem o memo, cada render do dashboard
+  // (o sticky ao rolar, a navegação) refazia a ordenação só para pegar 15.
+  const items = useMemo(
+    () =>
+      populacaoPorMunicipio(data.mapa, data.filters.mun).slice(0, TOP_COUNT),
+    [data.mapa, data.filters.mun],
   );
 
   return (
