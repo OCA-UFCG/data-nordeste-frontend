@@ -6,7 +6,6 @@ import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNav
 import { PibEmptyLayout, PibGrids } from "@/components/PibDashboard/PibLayout";
 import { PIB_CARD_SOURCE } from "@/components/PibDashboard/pibTexts";
 import { PIB_SOURCE } from "@/components/PibDashboard/pibTheme";
-import type { ProtoCardState } from "@/components/ProtoPanel/ProtoCard";
 import {
   ProtoCardMenuContext,
   type ProtoCardMenuContextValue,
@@ -18,8 +17,10 @@ import {
 } from "@/components/ProtoPanel/protoStyles";
 import { ProtoTerritorialFilters } from "@/components/ProtoPanel/ProtoTerritorialFilters";
 import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
+import { usePendingFilters } from "@/components/ProtoPanel/usePendingFilters";
 import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
+import { resolvePibCardStates } from "@/features/panels/pib/pibCardState";
 import {
   PIB_MAX_PLACES,
   PIB_YEAR_RANGE,
@@ -35,7 +36,7 @@ import {
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
-  toggleTerritorialUf,
+  selectOnlyTerritorialUf,
 } from "@/features/panels/territorialPlace";
 import { cn } from "@/lib/utils";
 
@@ -84,32 +85,39 @@ export const PibDashboard = ({
   const { retrying, retry } = useProtoRetry();
   const sticky = useProtoSticky();
   const cardMenu = useCardMenuValue(data, pathname, catalogHref);
-  const state: ProtoCardState = failed
-    ? "error"
-    : isPending || retrying
-      ? "loading"
-      : "ok";
-  const reset = () => applyFilters(defaultTerritorialFilters(PIB_YEAR_RANGE));
+
+  // Como no IDH: a seleção mostra o filtro pedido na hora, e só o card cujo
+  // dado muda fica esmaecido, sem o painel inteiro virar esqueleto.
+  const { pending, selection, request } = usePendingFilters(
+    data.filters,
+    applyFilters,
+    isPending,
+  );
+  const states = resolvePibCardStates(
+    { failed, retrying, pending },
+    data.filters,
+  );
+  const reset = () => request(defaultTerritorialFilters(PIB_YEAR_RANGE));
   const layout = {
     data,
+    selection,
     place: describeTerritorialPlace(data),
-    state,
+    states,
     onRetry: retry,
-    onSelectUf: (uf: string) =>
-      applyFilters(toggleTerritorialUf(data.filters, uf)),
-    onSelectYear: (ano: number) => applyFilters({ ...data.filters, ano }),
+    onSelectUf: (uf: string) => request(selectOnlyTerritorialUf(selection, uf)),
+    onSelectYear: (ano: number) => request({ ...selection, ano }),
   };
   const showEmpty = !failed && data.serie.length === 0;
 
   return (
     <ProtoToneContext.Provider value="pib">
       <ProtoTerritorialFilters
-        data={data}
+        data={{ ...data, filters: selection }}
         years={YEARS}
         maxPlaces={PIB_MAX_PLACES}
-        onChange={applyFilters}
+        onChange={request}
         onClear={reset}
-        isDefault={isDefaultTerritorialFilters(data.filters, PIB_YEAR_RANGE)}
+        isDefault={isDefaultTerritorialFilters(selection, PIB_YEAR_RANGE)}
         top={sticky.filterTop}
         stuck={sticky.stuck}
         barRef={sticky.filterRef}

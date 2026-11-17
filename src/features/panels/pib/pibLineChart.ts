@@ -17,9 +17,9 @@ export type PibLineGeometry = {
   margin: { left: number; right: number; top: number; bottom: number };
   ticks: PibLineTick[];
   years: { year: number; x: number; show: boolean; selected: boolean }[];
-  selectedX: number;
+  selectedX: number | null;
   points: Record<PibLineKey, PibLinePoint[]>;
-  labels: Record<PibLineKey, PibLineLabel>;
+  labels: Record<PibLineKey, PibLineLabel> | null;
 };
 
 // Medidas do protótipo (`drawLine`): abaixo de 560 px o gráfico encolhe e
@@ -121,6 +121,9 @@ const buildLabels = (
  * seu eixo (PIB total à esquerda, per capita à direita), com as medidas do
  * protótipo. `serie` precisa de ao menos um ano.
  *
+ * `selectedIndex` -1: o ano filtrado não está na série, e nenhum ano fica
+ * destacado nem leva rótulo.
+ *
  * @example buildPibLineGeometry({ width: 820, serie, selectedIndex: 13 }).ticks[4].pib // 1.6e12
  */
 export const buildPibLineGeometry = ({
@@ -132,9 +135,9 @@ export const buildPibLineGeometry = ({
   serie: readonly PibYearPoint[];
   selectedIndex: number;
 }): PibLineGeometry => {
-  if (!serie[selectedIndex]) {
+  if (selectedIndex !== -1 && !serie[selectedIndex]) {
     throw new Error(
-      `buildPibLineGeometry got selectedIndex ${selectedIndex} for a series of ${serie.length} years; expected an index inside the series.`,
+      `buildPibLineGeometry got selectedIndex ${selectedIndex} for a series of ${serie.length} years; expected an index inside the series or -1.`,
     );
   }
   const width = Math.max(MIN_WIDTH, availableWidth);
@@ -172,8 +175,11 @@ export const buildPibLineGeometry = ({
       show: !frame.narrow || index % 4 === 1,
       selected: index === selectedIndex,
     })),
-    selectedX: x(selectedIndex),
+    selectedX: selectedIndex < 0 ? null : x(selectedIndex),
     points,
-    labels: buildLabels(points, selectedIndex, frame.margin.left + 44),
+    labels:
+      selectedIndex < 0
+        ? null
+        : buildLabels(points, selectedIndex, frame.margin.left + 44),
   };
 };

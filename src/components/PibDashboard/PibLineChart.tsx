@@ -1,18 +1,19 @@
 "use client";
 
-import { type KeyboardEvent, type MouseEvent, type Ref, useState } from "react";
+import { type Ref, useMemo } from "react";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
+import {
+  type LineYearHandlers,
+  ProtoYearSlider,
+  useLineYear,
+} from "@/components/ProtoPanel/ProtoLineYear";
 import {
   ProtoSeriesLegend,
   useHiddenSeries,
 } from "@/components/ProtoPanel/ProtoSeriesLegend";
-import {
-  ProtoTooltip,
-  type TooltipAt,
-} from "@/components/ProtoPanel/ProtoTooltip";
+import { ProtoTooltip } from "@/components/ProtoPanel/ProtoTooltip";
 import { PROTO_CHART_FONT } from "@/components/ProtoPanel/protoStyles";
 import { useElementWidth } from "@/components/ProtoPanel/useElementWidth";
-import { stepCategory } from "@/features/panels/lineInteraction";
 import { formatPibAxis, formatPibReais } from "@/features/panels/pib/pibFormat";
 import {
   buildPibLineGeometry,
@@ -114,15 +115,17 @@ const YearAxis = ({ geometry }: { geometry: PibLineGeometry }) => (
         </text>
       ) : null,
     )}
-    <line
-      x1={geometry.selectedX}
-      x2={geometry.selectedX}
-      y1={geometry.margin.top}
-      y2={geometry.height - geometry.margin.bottom}
-      stroke={PIB_COLORS.inkStrong}
-      strokeOpacity="0.25"
-      strokeDasharray="4 4"
-    />
+    {geometry.selectedX === null ? null : (
+      <line
+        x1={geometry.selectedX}
+        x2={geometry.selectedX}
+        y1={geometry.margin.top}
+        y2={geometry.height - geometry.margin.bottom}
+        stroke={PIB_COLORS.inkStrong}
+        strokeOpacity="0.25"
+        strokeDasharray="4 4"
+      />
+    )}
   </>
 );
 
@@ -136,7 +139,7 @@ const Line = ({
   selectedIndex: number;
 }) => {
   const points = geometry.points[series.key];
-  const label = geometry.labels[series.key];
+  const label = geometry.labels?.[series.key];
 
   return (
     <g>
@@ -163,55 +166,23 @@ const Line = ({
           />
         );
       })}
-      <text
-        x={label.x}
-        y={label.y}
-        textAnchor={label.anchor}
-        fontSize="13"
-        fontWeight="700"
-        fill={series.ink}
-        stroke="#ffffff"
-        strokeWidth="4"
-        strokeLinejoin="round"
-        paintOrder="stroke"
-      >
-        {formatPibReais(label.value)}
-      </text>
+      {label ? (
+        <text
+          x={label.x}
+          y={label.y}
+          textAnchor={label.anchor}
+          fontSize="13"
+          fontWeight="700"
+          fill={series.ink}
+          stroke="#ffffff"
+          strokeWidth="4"
+          strokeLinejoin="round"
+          paintOrder="stroke"
+        >
+          {formatPibReais(label.value)}
+        </text>
+      ) : null}
     </g>
-  );
-};
-
-type HitHandlers = {
-  onPointerMove: (event: MouseEvent<SVGRectElement>) => void;
-  onPointerLeave: () => void;
-  onClick: (event: MouseEvent<SVGRectElement>) => void;
-  onKeyDown: (event: KeyboardEvent<SVGRectElement>) => void;
-};
-
-// Área do gráfico que recebe o ponteiro e o teclado: é um `slider` do ano.
-const HitArea = ({
-  geometry,
-  ano,
-  ...handlers
-}: HitHandlers & { geometry: PibLineGeometry; ano: number }) => {
-  const { margin, width, height, years } = geometry;
-
-  return (
-    <rect
-      x={margin.left}
-      y={margin.top}
-      width={width - margin.left - margin.right}
-      height={height - margin.top - margin.bottom}
-      fill="transparent"
-      tabIndex={0}
-      role="slider"
-      aria-label="Ano selecionado"
-      aria-valuemin={years[0]?.year}
-      aria-valuemax={years[years.length - 1]?.year}
-      aria-valuenow={ano}
-      className="cursor-pointer outline-none focus-visible:stroke-[#e5640f] focus-visible:stroke-2"
-      {...handlers}
-    />
   );
 };
 
@@ -222,7 +193,7 @@ const LineSvg = ({
   selectedIndex,
   ano,
   ...handlers
-}: HitHandlers & {
+}: LineYearHandlers & {
   geometry: PibLineGeometry;
   svgRef?: Ref<SVGSVGElement>;
   hidden: Set<PibLineKey>;
@@ -251,17 +222,15 @@ const LineSvg = ({
           selectedIndex={selectedIndex}
         />
       ))}
-      <HitArea geometry={geometry} ano={ano} {...handlers} />
+      <ProtoYearSlider
+        frame={geometry}
+        years={years.map((year) => year.year)}
+        ano={ano}
+        focusClassName="focus-visible:stroke-[#e5640f]"
+        {...handlers}
+      />
     </svg>
   );
-};
-
-// Posição do ponteiro na área do gráfico vira o índice do ano mais próximo.
-const yearIndexAt = (event: MouseEvent<SVGRectElement>, count: number) => {
-  const rect = event.currentTarget.getBoundingClientRect();
-  const fraction = (event.clientX - rect.left) / rect.width;
-
-  return Math.min(count - 1, Math.max(0, Math.round(fraction * (count - 1))));
 };
 
 const tooltipRows = (point: PibYearPoint, hidden: Set<PibLineKey>) =>
@@ -270,8 +239,6 @@ const tooltipRows = (point: PibYearPoint, hidden: Set<PibLineKey>) =>
     label: series.shortLabel,
     value: formatPibReais(series.pick(point)),
   }));
-
-type LineTooltip = TooltipAt & { index: number };
 
 /**
  * Gráfico "Evolução anual do PIB" (`#lineBox` do protótipo), em SVG: PIB
@@ -293,55 +260,47 @@ export const PibLineChart = ({
 }) => {
   const { ref: boxRef, width: boxWidth } = useElementWidth();
   const { hidden, toggle } = useHiddenSeries<PibLineKey>();
-  const [tooltip, setTooltip] = useState<LineTooltip | null>(null);
-  const years = serie.map((point) => point.ano);
-  const selectedIndex = Math.max(0, years.indexOf(ano));
-  const handleKeyDown = (event: KeyboardEvent<SVGRectElement>) => {
-    const next = stepCategory(years.map(String), String(ano), event.key);
+  const years = useMemo(() => serie.map((point) => point.ano), [serie]);
+  const { selectedIndex, hover, handlers } = useLineYear({
+    years,
+    ano,
+    onSelectYear,
+  });
 
-    if (!next) return;
-    event.preventDefault();
-    onSelectYear(Number(next));
-  };
+  // PERF: o tooltip muda a cada movimento do ponteiro; a geometria só muda
+  // com a largura, a série ou o ano.
+  const geometry = useMemo(
+    () =>
+      boxWidth && serie.length
+        ? buildPibLineGeometry({ width: boxWidth, serie, selectedIndex })
+        : null,
+    [boxWidth, serie, selectedIndex],
+  );
+  const hoverPoint = hover && serie.find((point) => point.ano === hover.ano);
 
   return (
     <>
       <ProtoSeriesLegend series={SERIES} hidden={hidden} onToggle={toggle} />
       <div ref={boxRef} className="relative min-h-[300px]">
-        {boxWidth && serie.length ? (
+        {geometry ? (
           <LineSvg
-            geometry={buildPibLineGeometry({
-              width: boxWidth,
-              serie,
-              selectedIndex,
-            })}
+            geometry={geometry}
             svgRef={svgRef}
             hidden={hidden}
             selectedIndex={selectedIndex}
             ano={ano}
-            onPointerMove={(event) =>
-              setTooltip({
-                x: event.clientX,
-                y: event.clientY,
-                index: yearIndexAt(event, years.length),
-              })
-            }
-            onPointerLeave={() => setTooltip(null)}
-            onClick={(event) =>
-              onSelectYear(years[yearIndexAt(event, years.length)])
-            }
-            onKeyDown={handleKeyDown}
+            {...handlers}
           />
         ) : null}
       </div>
       <p className="mt-2 text-xs text-grey-800">
         Clique em um ponto da linha para escolher o ano.
       </p>
-      {tooltip ? (
+      {hover && hoverPoint ? (
         <ProtoTooltip
-          at={tooltip}
-          title={String(years[tooltip.index])}
-          rows={tooltipRows(serie[tooltip.index], hidden)}
+          at={hover}
+          title={String(hoverPoint.ano)}
+          rows={tooltipRows(hoverPoint, hidden)}
         />
       ) : null}
     </>

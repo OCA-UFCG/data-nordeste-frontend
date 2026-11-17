@@ -24,12 +24,11 @@ import {
   type ProtoStateMapProps,
 } from "@/components/ProtoPanel/ProtoStateMap";
 import { ICON_BUTTON } from "@/components/ProtoPanel/protoStyles";
-import { formatPibReais } from "@/features/panels/pib/pibFormat";
 import type { PibPanelData } from "@/features/panels/pib/pibPanel";
 import {
+  buildPibStateLookup,
   describeStatesOffMap,
   PIB_STATE_BINS,
-  pibStateBin,
 } from "@/features/panels/pib/pibStates";
 import { areaLabel } from "@/features/panels/territorialOptions";
 
@@ -38,31 +37,23 @@ const TITLE = "Mapa do PIB por estado";
 /**
  * Ligação do mapa do PIB: a cor é a faixa do PIB total do estado e só estado
  * da área de interesse escolhe. Usado pelo mapa do card e pelo de tela cheia.
+ * `selectedUfs`: os estados do filtro pedido, contornados na hora.
  *
- * @example <ProtoStateMap {...buildPibMapProps(panel, toggleUf)} />
+ * @example <ProtoStateMap {...buildPibMapProps(panel, ["PE"], selectUf)} />
  */
 export const buildPibMapProps = (
   data: PibPanelData,
+  selectedUfs: string[],
   onSelect: (code: string) => void,
 ): ProtoStateMapProps => {
-  const byCode = new Map(data.estados.map((estado) => [estado.code, estado]));
+  const lookup = buildPibStateLookup(data.estados);
 
   return {
-    fillFor: (code) => {
-      const estado = byCode.get(code);
-
-      return estado ? pibStateBin(estado.value).color : PIB_COLORS.offArea;
-    },
-    describe: (code) => {
-      const estado = byCode.get(code);
-
-      return estado
-        ? `${estado.name}, ${formatPibReais(estado.value)}`
-        : `${code}, fora da área`;
-    },
-    isSelectable: (code) => byCode.has(code),
+    fillFor: (code) => lookup.binFor(code)?.color ?? PIB_COLORS.offArea,
+    describe: lookup.describe,
+    isSelectable: lookup.isSelectable,
     label: `${TITLE}, ${areaLabel(data.filters.area)}`,
-    selectedUfs: data.filters.uf ?? [],
+    selectedUfs,
     onSelect,
   };
 };
@@ -106,19 +97,23 @@ const FullscreenButton = ({
 
 /**
  * Card "Mapa do PIB por estado": cada estado na cor da faixa do seu PIB
- * total na área de interesse. Clicar num estado o põe ou tira do filtro.
+ * total na área de interesse. Clicar num estado deixa só ele no filtro.
  *
- * @example <PibMapCard data={panel} place="Nordeste" state="ok" onRetry={retry} onSelectUf={toggleUf} />
+ * @example <PibMapCard data={panel} selectedUfs={["PE"]} state="ok" onRetry={retry} onSelectUf={selectUf} />
  */
 export const PibMapCard = ({
   data,
+  selectedUfs,
   onSelectUf,
   ...status
-}: Omit<PibCardProps, "place"> & { onSelectUf: (uf: string) => void }) => {
+}: Omit<PibCardProps, "place"> & {
+  selectedUfs: string[];
+  onSelectUf: (uf: string) => void;
+}) => {
   const chart = useSvgChart();
   const [fullscreen, setFullscreen] = useState(false);
   const subtitle = `PIB total por estado · ${areaLabel(data.filters.area)} · ${data.filters.ano}`;
-  const mapProps = buildPibMapProps(data, onSelectUf);
+  const mapProps = buildPibMapProps(data, selectedUfs, onSelectUf);
   const offMap = describeStatesOffMap(data.estados);
 
   return (
@@ -129,10 +124,22 @@ export const PibMapCard = ({
       subtitle={subtitle}
       kind="map"
       bodyClassName="flex flex-col"
+      overlay={
+        <ProtoMapFullscreen
+          {...mapProps}
+          open={fullscreen}
+          onOpenChange={setFullscreen}
+          title={TITLE}
+          subtitle={subtitle}
+          legend={<MapLegend className="" />}
+          source={PIB_CARD_SOURCE}
+          hint={MAP_SELECT_HINT}
+        />
+      }
       actions={
         <>
           <FullscreenButton
-            disabled={status.state !== "ok"}
+            disabled={status.state === "loading" || status.state === "error"}
             onClick={() => setFullscreen(true)}
           />
           <ProtoCardInfo title={TITLE} text={PIB_CARD_INFO.map} />
@@ -149,16 +156,6 @@ export const PibMapCard = ({
       </div>
       <MapLegend />
       {offMap ? <p className="mt-2 text-xs text-grey-800">{offMap}</p> : null}
-      <ProtoMapFullscreen
-        {...mapProps}
-        open={fullscreen}
-        onOpenChange={setFullscreen}
-        title={TITLE}
-        subtitle={subtitle}
-        legend={<MapLegend className="" />}
-        source={PIB_CARD_SOURCE}
-        hint={MAP_SELECT_HINT}
-      />
     </ProtoCard>
   );
 };

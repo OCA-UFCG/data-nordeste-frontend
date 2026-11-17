@@ -74,12 +74,12 @@ describe("buildPibLineGeometry", () => {
       selectedIndex: 13,
     });
 
-    expect(labels.pib).toMatchObject({
+    expect(labels?.pib).toMatchObject({
       anchor: "end",
       x: points.pib[13].x - 4,
       y: points.pib[13].y - 12,
     });
-    expect(labels.perCapita.y).toBe(points.perCapita[13].y + 36);
+    expect(labels?.perCapita.y).toBe(points.perCapita[13].y + 36);
   });
 
   it("centres the labels of an earlier year without crossing the left axis", () => {
@@ -89,8 +89,8 @@ describe("buildPibLineGeometry", () => {
       selectedIndex: 0,
     });
 
-    expect(labels.pib).toMatchObject({ anchor: "middle", x: 72 + 44 });
-    expect(labels.perCapita.y).toBe(points.perCapita[0].y + 22);
+    expect(labels?.pib).toMatchObject({ anchor: "middle", x: 72 + 44 });
+    expect(labels?.perCapita.y).toBe(points.perCapita[0].y + 22);
   });
 
   it("shrinks below 560 px and shows one year in four", () => {
@@ -117,6 +117,18 @@ describe("buildPibLineGeometry", () => {
 
     expect(geometry.width).toBe(300);
     expect(geometry.years[0].x).toBe(56 + (300 - 56 - 52) / 2);
+  });
+
+  it("highlights no year when the filtered one is missing from the series", () => {
+    const geometry = buildPibLineGeometry({
+      width: 820,
+      serie: SERIE,
+      selectedIndex: -1,
+    });
+
+    expect(geometry.selectedX).toBeNull();
+    expect(geometry.labels).toBeNull();
+    expect(geometry.years.some((year) => year.selected)).toBe(false);
   });
 
   it("rejects a selected index outside the series", () => {

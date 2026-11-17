@@ -8,10 +8,17 @@ import {
 } from "@/components/PibDashboard/PibSectorCards";
 import { ProtoCardNotice } from "@/components/ProtoPanel/ProtoCard";
 import { CARD_SHADOW } from "@/components/ProtoPanel/protoStyles";
+import type { PibCardStates } from "@/features/panels/pib/pibCardState";
 import { PIB_YEAR_RANGE } from "@/features/panels/pib/pibPanel";
+import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 import { describeDefaultPlaceLabel } from "@/features/panels/territorialPlace";
 
-export type PibLayoutProps = PibCardProps & {
+export type PibLayoutProps = Omit<PibCardProps, "state"> & {
+  states: PibCardStates;
+
+  // Filtros pedidos (iguais a `data.filters` fora da navegação): o ano da
+  // série e os estados destacados no mapa já mostram o pedido.
+  selection: TerritorialFilters;
   onSelectUf: (uf: string) => void;
   onSelectYear: (ano: number) => void;
   onReset: () => void;
@@ -28,26 +35,46 @@ const SECTOR_COLUMN =
  * Grade do painel do PIB (`.pib-stack` do protótipo): números de destaque, a
  * série anual e, lado a lado, o mapa e os dois cards de setor.
  *
- * @example <PibGrids data={panel} place="Nordeste" state="ok" onRetry={retry} onSelectUf={toggleUf} onSelectYear={pickYear} />
+ * @example <PibGrids data={panel} selection={filters} place="Nordeste" states={states} onRetry={retry} onSelectUf={selectUf} onSelectYear={pickYear} />
  */
 export const PibGrids = ({
+  selection,
+  states,
   onSelectUf,
   onSelectYear,
   ...card
 }: Omit<PibLayoutProps, "onReset">) => (
   <div className="flex flex-col gap-4">
-    <PibBigNumbers data={card.data} state={card.state} onRetry={card.onRetry} />
-    <PibEvolutionCard {...card} onSelectYear={onSelectYear} />
+    <PibBigNumbers
+      data={card.data}
+      state={states.bigNumbers}
+      onRetry={card.onRetry}
+    />
+    <PibEvolutionCard
+      {...card}
+      state={states.evolution}
+      ano={selection.ano}
+      onSelectYear={onSelectYear}
+    />
     <div className={BOTTOM_GRID}>
       <PibMapCard
         data={card.data}
-        state={card.state}
+        selectedUfs={selection.uf ?? []}
+        state={states.map}
         onRetry={card.onRetry}
         onSelectUf={onSelectUf}
       />
       <div className={SECTOR_COLUMN}>
-        <PibVabCard {...card} onSelectYear={onSelectYear} />
-        <PibAtividadeCard {...card} onSelectYear={onSelectYear} />
+        <PibVabCard
+          {...card}
+          state={states.sectors}
+          onSelectYear={onSelectYear}
+        />
+        <PibAtividadeCard
+          {...card}
+          state={states.sectors}
+          onSelectYear={onSelectYear}
+        />
       </div>
     </div>
   </div>
@@ -57,9 +84,11 @@ export const PibGrids = ({
  * Sem PIB para o território e o ano escolhidos: um aviso com o atalho para o
  * padrão do painel e o mapa sozinho (`.pgrid.solo` do protótipo).
  *
- * @example <PibEmptyLayout data={panel} place="Caatinga" state="ok" onRetry={retry} onSelectUf={toggleUf} onSelectYear={pickYear} onReset={reset} />
+ * @example <PibEmptyLayout data={panel} selection={filters} place="Caatinga" states={states} onRetry={retry} onSelectUf={selectUf} onSelectYear={pickYear} onReset={reset} />
  */
 export const PibEmptyLayout = ({
+  selection,
+  states,
   onSelectUf,
   onReset,
   ...card
@@ -81,7 +110,8 @@ export const PibEmptyLayout = ({
     </article>
     <PibMapCard
       data={card.data}
-      state={card.state}
+      selectedUfs={selection.uf ?? []}
+      state={states.map}
       onRetry={card.onRetry}
       onSelectUf={onSelectUf}
     />

@@ -21,16 +21,17 @@ const describeSpan = (years: number[]): string =>
 
 /**
  * Card "Evolução anual do PIB": a série do território em linha, com o PIB
- * total e o per capita.
+ * total e o per capita. `ano`: o ano pedido, destacado na hora.
  *
- * @example <PibEvolutionCard data={panel} place="Nordeste" state="ok" onRetry={retry} onSelectYear={pickYear} />
+ * @example <PibEvolutionCard data={panel} place="Nordeste" state="ok" ano={2021} onRetry={retry} onSelectYear={pickYear} />
  */
 export const PibEvolutionCard = ({
   data,
   place,
+  ano,
   onSelectYear,
   ...status
-}: PibCardProps & { onSelectYear: (ano: number) => void }) => {
+}: PibCardProps & { ano: number; onSelectYear: (ano: number) => void }) => {
   const chart = useSvgChart();
   const span = describeSpan(data.serie.map((point) => point.ano));
 
@@ -50,7 +51,7 @@ export const PibEvolutionCard = ({
     >
       <PibLineChart
         serie={data.serie}
-        ano={data.filters.ano}
+        ano={ano}
         onSelectYear={onSelectYear}
         svgRef={chart.ref}
       />
