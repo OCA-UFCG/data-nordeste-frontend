@@ -1,5 +1,5 @@
-import { IdhSkeleton } from "@/components/IdhDashboard/IdhCard";
-import { CARD_SHADOW, WRAP } from "@/components/IdhDashboard/idhStyles";
+import { ProtoSkeleton } from "@/components/ProtoPanel/ProtoCard";
+import { CARD_SHADOW, WRAP } from "@/components/ProtoPanel/protoStyles";
 import HubTemplate from "@/templates/HubTemplate";
 
 const CARD = `rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW}`;
@@ -20,8 +20,8 @@ const CoverBones = () => (
 const FilterBones = () => (
   <div className="w-full border-b border-grey-300 bg-white">
     <div className={`${WRAP} flex min-h-[88px] items-end gap-4 py-3`}>
-      <IdhSkeleton className="h-10 w-[204px]" />
-      <IdhSkeleton className="h-10 w-[204px] max-[700px]:hidden" />
+      <ProtoSkeleton className="h-10 w-[204px]" />
+      <ProtoSkeleton className="h-10 w-[204px] max-[700px]:hidden" />
     </div>
   </div>
 );
@@ -32,21 +32,21 @@ const PanelBones = () => (
     <div className="flex min-w-0 flex-col gap-4 pt-8 pr-20 pb-10 pl-7 max-[1100px]:pr-8 max-[1100px]:pl-6 max-[900px]:px-4">
       <div className="grid grid-cols-5 gap-4 max-[1099px]:grid-cols-3 max-[700px]:grid-cols-1">
         {Array.from({ length: 5 }, (_, index) => (
-          <IdhSkeleton
+          <ProtoSkeleton
             key={index}
             className={`h-[118px] ${index > 2 ? "max-[1099px]:hidden" : ""} ${index > 0 ? "max-[700px]:hidden" : ""}`}
           />
         ))}
       </div>
       <div className={CARD}>
-        <IdhSkeleton className="h-[330px]" />
+        <ProtoSkeleton className="h-[330px]" />
       </div>
       <div className="grid grid-cols-2 gap-6 max-[1000px]:grid-cols-1">
         <div className={CARD}>
-          <IdhSkeleton className="h-[460px]" />
+          <ProtoSkeleton className="h-[460px]" />
         </div>
         <div className={CARD}>
-          <IdhSkeleton className="h-[460px]" />
+          <ProtoSkeleton className="h-[460px]" />
         </div>
       </div>
     </div>

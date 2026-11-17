@@ -1,0 +1,130 @@
+import {
+  defaultTerritorialFilters,
+  type TerritorialFilters,
+  type YearRange,
+} from "@/features/panels/territorialFilters";
+import {
+  areaLabel,
+  describeSelectedMunicipios,
+  describeSelectedUfs,
+  selectedMunicipioNames,
+  selectedUfNames,
+  type TerritorialSelection,
+} from "@/features/panels/territorialOptions";
+
+/**
+ * Lugar dos subtítulos dos cards: a área, depois os estados e os municípios
+ * escolhidos, separados por " · ". Com muitos, resume como o "Mostrando".
+ *
+ * @example describeTerritorialPlace(selection) // "Semiárido · Pernambuco · Recife (PE)"
+ */
+export const describeTerritorialPlace = (
+  selection: TerritorialSelection,
+): string =>
+  [
+    areaLabel(selection.filters.area),
+    describeSelectedUfs(selection),
+    describeSelectedMunicipios(selection),
+  ]
+    .filter((part): part is string => part !== null)
+    .join(" · ");
+
+const listOrAll = (names: string[]): string =>
+  names.length ? names.join(", ") : "Todos";
+
+/**
+ * Chips do "Compartilhar" do card: ano, área, estados e municípios, com
+ * "Todos" quando o filtro está vazio.
+ *
+ * @example describeTerritorialShareChips(selection) // ["Ano: 2022", "Área: Nordeste", "Estado: Todos", "Município: Todos"]
+ */
+export const describeTerritorialShareChips = (
+  selection: TerritorialSelection,
+): string[] => [
+  `Ano: ${selection.filters.ano}`,
+  `Área: ${areaLabel(selection.filters.area)}`,
+  `Estado: ${listOrAll(selectedUfNames(selection))}`,
+  `Município: ${listOrAll(selectedMunicipioNames(selection))}`,
+];
+
+/**
+ * Clicar num estado no mapa: entra ou sai da lista de UFs, sem passar de
+ * `maxPlaces` (o limite que o select de Estado e `parseTerritorialFilters` já
+ * respeitam). O município some, porque pode não ser do novo conjunto.
+ *
+ * @example toggleTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB"] }, "PE", 9).uf // ["PB", "PE"]
+ */
+export const toggleTerritorialUf = (
+  filters: TerritorialFilters,
+  uf: string,
+  maxPlaces: number,
+): TerritorialFilters => {
+  const current = filters.uf ?? [];
+
+  if (current.includes(uf)) {
+    const next = current.filter((item) => item !== uf);
+
+    return { ...filters, uf: next.length ? next : undefined, mun: undefined };
+  }
+
+  // No limite, fica só o estado clicado, como no mapa do PIB e do IDH: o
+  // clique nunca parece quebrado, e com `maxPlaces = 1` vira o filtro de valor
+  // único. Sem isso, o servidor cortava o excesso em silêncio (revisão da PR #400).
+  if (current.length >= maxPlaces) return selectOnlyTerritorialUf(filters, uf);
+
+  const next = [...current, uf];
+
+  return { ...filters, uf: next, mun: undefined };
+};
+
+/**
+ * Clicar num estado no mapa do PIB: o filtro fica só com ele. Clicar de novo
+ * no único escolhido limpa o filtro, como no mapa do IDH. O município some,
+ * porque pode não ser do estado novo.
+ *
+ * @example selectOnlyTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB", "PE"] }, "PE").uf // ["PE"]
+ */
+export const selectOnlyTerritorialUf = (
+  filters: TerritorialFilters,
+  uf: string,
+): TerritorialFilters => {
+  const alreadyOnly = filters.uf?.length === 1 && filters.uf[0] === uf;
+
+  return { ...filters, uf: alreadyOnly ? undefined : [uf], mun: undefined };
+};
+
+/**
+ * Os filtros estão no padrão (Nordeste, último ano, sem estado nem município)?
+ * Decide se o "Limpar filtros" fica desligado.
+ *
+ * @example isDefaultTerritorialFilters({ ano: 2022, area: "nordeste" }, range) // true
+ */
+export const isDefaultTerritorialFilters = (
+  filters: TerritorialFilters,
+  range: YearRange,
+): boolean => {
+  const defaults = defaultTerritorialFilters(range);
+
+  return (
+    filters.ano === defaults.ano &&
+    filters.area === defaults.area &&
+    !filters.uf &&
+    !filters.mun
+  );
+};
+
+/**
+ * Texto do botão "Ver …" do aviso de dados vazios: o padrão do painel.
+ *
+ * @example describeDefaultPlaceLabel(range) // "Ver Nordeste · 2022"
+ */
+export const describeDefaultPlaceLabel = (range: YearRange): string => {
+  const defaults = defaultTerritorialFilters(range);
+  const place = describeTerritorialPlace({
+    filters: defaults,
+    ufs: [],
+    municipios: [],
+  });
+
+  return `Ver ${place} · ${defaults.ano}`;
+};

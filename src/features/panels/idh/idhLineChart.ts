@@ -1,7 +1,3 @@
-import { stepCategory } from "@/features/panels/lineInteraction";
-
-const ARROW_KEYS = { ArrowLeft: true, ArrowRight: true };
-
 export type IdhLineSeries = {
   key: string;
   values: readonly number[];
@@ -169,41 +165,5 @@ export const buildIdhLineGeometry = ({
   };
 };
 
-/**
- * Caminho SVG de uma linha a partir dos pontos.
- *
- * @example linePath([{ x: 0, y: 10, value: 0.7 }, { x: 5, y: 8, value: 0.71 }]) // "M0.0 10.0L5.0 8.0"
- */
-export const linePath = (points: readonly IdhLinePoint[]): string =>
-  points
-    .map(
-      ({ x, y }, index) =>
-        `${index ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`,
-    )
-    .join("");
-
-const nearestYear = (years: readonly number[], ano: number, key: string) => {
-  if (key === "ArrowLeft") return years.filter((year) => year < ano).at(-1);
-  if (key === "ArrowRight") return years.find((year) => year > ano);
-
-  return undefined;
-};
-
-/**
- * Ano para onde uma tecla leva no gráfico. Quando o ano filtrado não está na
- * série, as setas vão ao ano vizinho mais próximo em vez de se perderem.
- *
- * @example stepIdhYear([2019, 2021], 2020, "ArrowLeft") // 2019
- */
-export const stepIdhYear = (
-  years: readonly number[],
-  ano: number,
-  key: string,
-): number | null => {
-  if (!years.includes(ano) && key in ARROW_KEYS) {
-    return nearestYear(years, ano, key) ?? null;
-  }
-  const next = stepCategory(years.map(String), String(ano), key);
-
-  return next === null ? null : Number(next);
-};
+// O caminho da linha é comum aos painéis; reexportado para quem já o usa daqui.
+export { linePath } from "@/features/panels/svgPath";

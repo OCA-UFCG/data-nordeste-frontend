@@ -1,27 +1,24 @@
 "use client";
 
+import { type Ref, useMemo } from "react";
+import { IDH_COLORS } from "@/components/IdhDashboard/idhColors";
 import {
-  type KeyboardEvent,
-  type MouseEvent,
-  type Ref,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+  type LineYearHandlers,
+  ProtoYearSlider,
+  useLineYear,
+} from "@/components/ProtoPanel/ProtoLineYear";
+import { ProtoTooltip } from "@/components/ProtoPanel/ProtoTooltip";
 import {
-  IdhTooltip,
-  type TooltipAt,
-} from "@/components/IdhDashboard/IdhTooltip";
-import {
-  IDH_CHART_FONT,
-  IDH_COLORS,
-} from "@/components/IdhDashboard/idhStyles";
+  ProtoSeriesLegend,
+  useHiddenSeries,
+} from "@/components/ProtoPanel/ProtoSeriesLegend";
+import { PROTO_CHART_FONT } from "@/components/ProtoPanel/protoStyles";
+import { useElementWidth } from "@/components/ProtoPanel/useElementWidth";
 import { formatIdh } from "@/features/panels/idh/idhFormat";
 import {
   buildIdhLineGeometry,
   type IdhLineGeometry,
   linePath,
-  stepIdhYear,
 } from "@/features/panels/idh/idhLineChart";
 import type { IdhYearPoint } from "@/features/panels/idh/idhPanel";
 
@@ -47,56 +44,6 @@ const SERIES = [
 ] as const;
 
 type SeriesKey = (typeof SERIES)[number]["key"];
-
-const useElementWidth = () => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
-
-  useEffect(() => {
-    const element = ref.current;
-
-    if (!element) return;
-    const observer = new ResizeObserver(() => setWidth(element.clientWidth));
-
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, width };
-};
-
-// `.legend`: a série escondida fica riscada; a última visível não se esconde.
-const Legend = ({
-  hidden,
-  onToggle,
-}: {
-  hidden: Set<SeriesKey>;
-  onToggle: (key: SeriesKey) => void;
-}) => (
-  <div className="mb-1.5 flex flex-wrap gap-x-4 gap-y-2">
-    {SERIES.map((series) => {
-      const visible = !hidden.has(series.key);
-
-      return (
-        <button
-          key={series.key}
-          type="button"
-          aria-pressed={visible}
-          disabled={visible && hidden.size === SERIES.length - 1}
-          onClick={() => onToggle(series.key)}
-          className="inline-flex items-center gap-2 py-0.5 text-xs leading-4 aria-[pressed=false]:opacity-50 disabled:cursor-default [&[aria-pressed=false]_span]:line-through"
-        >
-          <i
-            className="inline-block size-2.5 rounded-full"
-            style={{ background: series.color }}
-          />
-          <span>{series.label}</span>
-        </button>
-      );
-    })}
-  </div>
-);
 
 const Axes = ({ geometry }: { geometry: IdhLineGeometry }) => {
   const { margin, width, height } = geometry;
@@ -204,24 +151,17 @@ const Line = ({
   </g>
 );
 
-const tooltipRows = (
-  serie: IdhYearPoint[],
-  index: number,
-  hidden: Set<SeriesKey>,
-) =>
+const tooltipRows = (point: IdhYearPoint, hidden: Set<SeriesKey>) =>
   SERIES.filter((series) => !hidden.has(series.key)).map((series) => ({
     color: series.color,
     label: series.shortLabel,
-    value: formatIdh(series.pick(serie[index])),
+    value: formatIdh(series.pick(point)),
   }));
 
-// Posição do ponteiro na área do gráfico vira o índice do ano mais próximo.
-const yearIndexAt = (event: MouseEvent<SVGRectElement>, count: number) => {
-  const rect = event.currentTarget.getBoundingClientRect();
-  const fraction = (event.clientX - rect.left - 10) / (rect.width - 20);
+// Folga da área de clique além do primeiro e do último ponto.
+const HIT_PAD = { x: 10, bottom: 8 };
 
-  return Math.min(count - 1, Math.max(0, Math.round(fraction * (count - 1))));
-};
+// Posição do ponteiro na área do gráfico vira o índice do ano mais próximo.
 
 /**
  * Gráfico de linhas do IDH e do IDH ajustado (`#lineBox` do protótipo), em
@@ -241,83 +181,62 @@ export const IdhLineChart = ({
   svgRef?: Ref<SVGSVGElement>;
 }) => {
   const { ref: boxRef, width: boxWidth } = useElementWidth();
-  const [hidden, setHidden] = useState<Set<SeriesKey>>(new Set());
-  const [tooltip, setTooltip] = useState<
-    (TooltipAt & { index: number }) | null
-  >(null);
-  const years = serie.map((point) => point.ano);
+  const { hidden, toggle } = useHiddenSeries<SeriesKey>();
+  const years = useMemo(() => serie.map((point) => point.ano), [serie]);
+  const { selectedIndex, hover, handlers } = useLineYear({
+    years,
+    ano,
+    onSelectYear,
+    hitPad: HIT_PAD.x,
+  });
 
-  // -1 quando o ano filtrado falta na série: nenhum ponto fica destacado, em
-  // vez de destacar o primeiro ano enquanto os cards mostram outro.
-  const selectedIndex = years.indexOf(ano);
-  const toggle = (key: SeriesKey) => {
-    const next = new Set(hidden);
-
-    if (!next.delete(key)) next.add(key);
-    setHidden(next);
-  };
-  const handleKeyDown = (event: KeyboardEvent<SVGRectElement>) => {
-    const next = stepIdhYear(years, ano, event.key);
-
-    if (next === null) return;
-    event.preventDefault();
-    onSelectYear(next);
-  };
+  // PERF: o tooltip muda a cada movimento do ponteiro; a geometria só muda
+  // com a largura, a série ou o ano.
+  const geometry = useMemo(
+    () =>
+      boxWidth && serie.length
+        ? buildIdhLineGeometry({
+            width: boxWidth,
+            years,
+            series: SERIES.map((series) => ({
+              key: series.key,
+              labelOffset: series.labelOffset,
+              values: serie.map(series.pick),
+            })),
+            selectedIndex,
+          })
+        : null,
+    [boxWidth, serie, years, selectedIndex],
+  );
+  const hoverPoint = hover && serie.find((point) => point.ano === hover.ano);
 
   return (
     <>
-      <Legend hidden={hidden} onToggle={toggle} />
+      <ProtoSeriesLegend series={SERIES} hidden={hidden} onToggle={toggle} />
       <div ref={boxRef} className="relative min-h-[280px]">
-        {boxWidth && serie.length ? (
+        {geometry ? (
           <LineSvg
-            geometry={buildIdhLineGeometry({
-              width: boxWidth,
-              years,
-              series: SERIES.map((series) => ({
-                key: series.key,
-                labelOffset: series.labelOffset,
-                values: serie.map(series.pick),
-              })),
-              selectedIndex,
-            })}
+            geometry={geometry}
             svgRef={svgRef}
             hidden={hidden}
             selectedIndex={selectedIndex}
             ano={ano}
-            onPointerMove={(event) =>
-              setTooltip({
-                x: event.clientX,
-                y: event.clientY,
-                index: yearIndexAt(event, years.length),
-              })
-            }
-            onPointerLeave={() => setTooltip(null)}
-            onClick={(event) =>
-              onSelectYear(years[yearIndexAt(event, years.length)])
-            }
-            onKeyDown={handleKeyDown}
+            {...handlers}
           />
         ) : null}
       </div>
       <p className="mt-2 text-xs text-grey-800">
         Clique em um ponto da linha para escolher o ano.
       </p>
-      {tooltip ? (
-        <IdhTooltip
-          at={tooltip}
-          title={String(years[tooltip.index])}
-          rows={tooltipRows(serie, tooltip.index, hidden)}
+      {hover && hoverPoint ? (
+        <ProtoTooltip
+          at={hover}
+          title={String(hoverPoint.ano)}
+          rows={tooltipRows(hoverPoint, hidden)}
         />
       ) : null}
     </>
   );
-};
-
-type HitHandlers = {
-  onPointerMove: (event: MouseEvent<SVGRectElement>) => void;
-  onPointerLeave: () => void;
-  onClick: (event: MouseEvent<SVGRectElement>) => void;
-  onKeyDown: (event: KeyboardEvent<SVGRectElement>) => void;
 };
 
 const LineSvg = ({
@@ -327,14 +246,14 @@ const LineSvg = ({
   selectedIndex,
   ano,
   ...handlers
-}: HitHandlers & {
+}: LineYearHandlers & {
   geometry: IdhLineGeometry;
   svgRef?: Ref<SVGSVGElement>;
   hidden: Set<SeriesKey>;
   selectedIndex: number;
   ano: number;
 }) => {
-  const { margin, width, height, years } = geometry;
+  const { width, height, years } = geometry;
 
   return (
     <svg
@@ -343,7 +262,7 @@ const LineSvg = ({
       height={height}
       role="group"
       aria-label={`Evolução anual do IDH e do IDH ajustado à desigualdade, ${years[0]?.year} a ${years[years.length - 1]?.year}`}
-      fontFamily={IDH_CHART_FONT}
+      fontFamily={PROTO_CHART_FONT}
       className="block w-full touch-pan-y overflow-visible [font-variant-numeric:tabular-nums]"
     >
       <Axes geometry={geometry} />
@@ -355,19 +274,12 @@ const LineSvg = ({
           selectedIndex={selectedIndex}
         />
       ))}
-      <rect
-        x={margin.left - 10}
-        y={margin.top}
-        width={width - margin.left - margin.right + 20}
-        height={height - margin.top - margin.bottom + 8}
-        fill="transparent"
-        tabIndex={0}
-        role="slider"
-        aria-label="Ano selecionado"
-        aria-valuemin={years[0]?.year}
-        aria-valuemax={years[years.length - 1]?.year}
-        aria-valuenow={ano}
-        className="cursor-pointer outline-none focus-visible:stroke-[#7c46e1] focus-visible:stroke-2"
+      <ProtoYearSlider
+        frame={geometry}
+        years={years.map((year) => year.year)}
+        ano={ano}
+        pad={HIT_PAD}
+        focusClassName="focus-visible:stroke-[#7c46e1]"
         {...handlers}
       />
     </svg>

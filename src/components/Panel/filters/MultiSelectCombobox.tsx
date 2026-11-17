@@ -188,19 +188,25 @@ const useComboboxSelection = (
   return { selected, full, update, toggle, flush };
 };
 
+// Padrão do filtro do PIB; o painel do protótipo troca a classe inteira por `triggerClassName`.
+const TRIGGER_CLASS =
+  "flex h-11 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-grey-300 bg-white px-3 text-left text-base text-grey-1100 focus:outline-2 focus:outline-green-800";
+
 const ComboboxTrigger = ({
   id,
   labelId,
   summary,
+  className,
 }: {
   id: string;
   labelId: string;
   summary: string;
+  className?: string;
 }) => (
   <PopoverTrigger
     id={id}
     aria-labelledby={`${labelId} ${id}`}
-    className="flex h-11 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-grey-300 bg-white px-3 text-left text-base text-grey-1100 focus:outline-2 focus:outline-green-800"
+    className={className ?? TRIGGER_CLASS}
   >
     <span className="truncate">{summary}</span>
     <ChevronDown aria-hidden className="size-4 shrink-0" />
@@ -236,7 +242,15 @@ const ClearSelectionButton = ({ onClear }: { onClear: () => void }) => (
   </button>
 );
 
-type MultiSelectComboboxProps = {
+// Classes opcionais para o filtro caber no layout de outro painel (o do
+// protótipo). Sem elas, vale o visual do PIB.
+export type ComboboxLook = {
+  fieldClassName?: string;
+  labelClassName?: string;
+  triggerClassName?: string;
+};
+
+type MultiSelectComboboxProps = ComboboxLook & {
   id: string;
   label: string;
   plural: string;
@@ -322,8 +336,13 @@ export const MultiSelectCombobox = (props: MultiSelectComboboxProps) => {
   const summary = summarize(selection.selected, props.options, props.plural);
 
   return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <span id={labelId} className="text-sm font-semibold text-grey-1100">
+    <div className={props.fieldClassName ?? "flex min-w-0 flex-col gap-1"}>
+      <span
+        id={labelId}
+        className={
+          props.labelClassName ?? "text-sm font-semibold text-grey-1100"
+        }
+      >
         {props.label}
       </span>
       <Popover
@@ -331,7 +350,12 @@ export const MultiSelectCombobox = (props: MultiSelectComboboxProps) => {
         open={popover.open}
         onOpenChange={popover.handleOpenChange}
       >
-        <ComboboxTrigger id={props.id} labelId={labelId} summary={summary} />
+        <ComboboxTrigger
+          id={props.id}
+          labelId={labelId}
+          summary={summary}
+          className={props.triggerClassName}
+        />
         <ComboboxPanel
           label={props.label}
           plural={props.plural}

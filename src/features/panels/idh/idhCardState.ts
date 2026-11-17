@@ -1,14 +1,15 @@
+import {
+  type PanelCardState,
+  type PanelLoadRequest,
+  resolveDependentCardStates,
+} from "@/features/panels/panelCardState";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 
-/**
- * - `ok`: dado atual.
- * - `stale`: um filtro de que o card depende está a caminho; o card mostra o
- *   dado anterior esmaecido em vez do esqueleto.
- * - `loading`: não há dado anterior para mostrar (consulta falhou e está sendo
- *   refeita), então o card mostra o esqueleto.
- * - `error`: a consulta falhou; o card mostra "Tentar de novo".
- */
-export type IdhCardState = "ok" | "stale" | "loading" | "error";
+// Estados documentados em PanelCardState; o IDH usa a mesma regra dos demais
+// painéis. No IDH, `stale` quer dizer que um filtro de que o card depende está
+// a caminho, e `loading` só aparece quando não há dado anterior para mostrar
+// (a consulta falhou e está sendo refeita).
+export type IdhCardState = PanelCardState;
 
 type IdhFilterKey = "uf" | "ano";
 
@@ -27,28 +28,7 @@ export type IdhCardKey = keyof typeof IDH_CARD_DEPENDENCIES;
 
 export type IdhCardStates = Record<IdhCardKey, IdhCardState>;
 
-export type IdhLoadStatus = {
-  failed: boolean;
-  retrying: boolean;
-
-  // Filtros pedidos enquanto a navegação está pendente; null fora dela.
-  pending: IdhFilters | null;
-};
-
-const resolveCardState = (
-  { failed, retrying, pending }: IdhLoadStatus,
-  current: IdhFilters,
-  dependsOn: readonly IdhFilterKey[],
-): IdhCardState => {
-  // Recarregar vence o erro: sem essa prioridade o "Tentar de novo" nunca
-  // mostraria o esqueleto nem desabilitaria o botão (revisão da PR #397).
-  if (failed) return retrying || pending ? "loading" : "error";
-  if (!pending) return "ok";
-
-  return dependsOn.some((key) => pending[key] !== current[key])
-    ? "stale"
-    : "ok";
-};
+export type IdhLoadStatus = PanelLoadRequest<IdhFilters>;
 
 /**
  * Estado de cada card do painel. Só esmaece o card cujo dado muda com o
@@ -59,16 +39,8 @@ const resolveCardState = (
 export const resolveIdhCardStates = (
   status: IdhLoadStatus,
   current: IdhFilters,
-): IdhCardStates => {
-  const keys = Object.keys(IDH_CARD_DEPENDENCIES) as IdhCardKey[];
-
-  return Object.fromEntries(
-    keys.map((key) => [
-      key,
-      resolveCardState(status, current, IDH_CARD_DEPENDENCIES[key]),
-    ]),
-  ) as IdhCardStates;
-};
+): IdhCardStates =>
+  resolveDependentCardStates(status, current, IDH_CARD_DEPENDENCIES);
 
 /**
  * O card tem dado para mostrar (atual ou anterior esmaecido).

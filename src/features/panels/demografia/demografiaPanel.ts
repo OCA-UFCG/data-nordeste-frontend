@@ -32,19 +32,19 @@ export const DEMOGRAFIA_PORTES: readonly DemografiaPorte[] = [
   {
     max: 5e4,
     label: "Pequeno",
-    color: "#efcfdc",
+    color: "#f6d3e0",
     texto: "Pequeno porte (até 50 mil hab.)",
   },
   {
     max: 1e5,
     label: "Médio",
-    color: "#e7a4bf",
+    color: "#e98dae",
     texto: "Médio porte (50 mil - 100 mil hab.)",
   },
   {
     max: Infinity,
     label: "Grande",
-    color: "#e482a9",
+    color: "#c93c6b",
     texto: "Grande porte (acima de 100 mil hab.)",
   },
 ];
@@ -125,8 +125,9 @@ const cell = (row: AnoRow | undefined, column: string) =>
 const corRacaDe = (row: AnoRow | undefined): ChartPoint[] =>
   COR_RACA.map(({ column, label }) => ({ label, value: cell(row, column) }));
 
-// O Figma agrupa a pirâmide por décadas; a tabela tem 12 faixas
-// (0-4, 5-9, ..., 25-29 de 5 em 5 anos, depois 30-39 ... 70-79 e 80+).
+// A tabela de origem tem 12 faixas (0-4, 5-9, ..., 25-29 de 5 em 5 anos,
+// depois 30-39 ... 70-79 e 80+). O Figma as junta em 9 décadas (0-9 ... 80+),
+// e são essas 9 que FAIXAS_DECENAIS rotula.
 const FAIXAS_DECENAIS = [
   "0 a 9 anos",
   "10 a 19 anos",
@@ -243,3 +244,23 @@ export const loadDemografiaPanel = async (
     mapa,
   };
 };
+
+/**
+ * Painel sem dados: a página o usa quando a consulta falha, para os cards
+ * mostrarem o erro com "Tentar de novo" no lugar dos gráficos.
+ *
+ * @example emptyDemografiaPanel(filters).serie // []
+ */
+export const emptyDemografiaPanel = (
+  filters: TerritorialFilters,
+): DemografiaPanelData => ({
+  filters,
+  ufs: [],
+  municipios: [],
+  serie: [],
+  sexo: { mulheres: 0, homens: 0 },
+  corRaca: [],
+  corRacaAnterior: null,
+  piramide: [],
+  mapa: [],
+});

@@ -5,7 +5,7 @@ import { EChart } from "@/components/EChart/EChart";
 import {
   buildPyramidOption,
   type PyramidConfig,
-} from "@/features/panels/chartOptions";
+} from "@/features/panels/pyramidOption";
 
 export const PyramidChart = ({
   label,

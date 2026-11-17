@@ -4,6 +4,7 @@ import {
   formatNumber,
   formatPercent,
   formatReais,
+  formatNumberForStep,
   formatReaisAxis,
   formatReaisCompact,
 } from "@/features/panels/format";
@@ -56,5 +57,28 @@ describe("formatNumber and formatReais", () => {
     expect(formatNumber(54_658_515)).toBe("54.658.515");
     expect(formatNumber(0.7021, 3)).toBe("0,702");
     expect(formatReais(467.43)).toBe("R$ 467,43");
+  });
+});
+
+describe("formatNumberForStep", () => {
+  it("gives distinct labels to ticks 200 thousand apart in millions", () => {
+    const ticks = [1_600_000, 1_800_000, 2_000_000, 2_200_000, 2_400_000];
+
+    expect(ticks.map((tick) => formatNumberForStep(tick, 200_000))).toEqual([
+      "1,6 mi",
+      "1,8 mi",
+      "2,0 mi",
+      "2,2 mi",
+      "2,4 mi",
+    ]);
+  });
+
+  it("keeps whole labels when the step is whole in the scale", () => {
+    expect(formatNumberForStep(45_000_000, 5_000_000)).toBe("45 mi");
+  });
+
+  it("switches scale per value and keeps zero bare", () => {
+    expect(formatNumberForStep(800_000, 400_000)).toBe("800 mil");
+    expect(formatNumberForStep(0, 400_000)).toBe("0");
   });
 });

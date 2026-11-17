@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEMOGRAFIA_YEAR_RANGE,
+  emptyDemografiaPanel,
   loadDemografiaPanel,
   populacaoPorMunicipio,
 } from "@/features/panels/demografia/demografiaPanel";
@@ -120,5 +121,19 @@ describe("populacaoPorMunicipio", () => {
       { code: "2", label: "Fortaleza (CE)", value: 2_428_708 },
       { code: "1", label: "Recife (PE)", value: 1_488_920 },
     ]);
+  });
+});
+
+describe("emptyDemografiaPanel", () => {
+  it("keeps the requested filters and leaves every list empty", () => {
+    const filters = { ano: 2010, area: "semiarido" as const, uf: ["PE"] };
+    const panel = emptyDemografiaPanel(filters);
+
+    expect(panel.filters).toEqual(filters);
+    expect(panel.serie).toEqual([]);
+    expect(panel.mapa).toEqual([]);
+    expect(panel.ufs).toEqual([]);
+    expect(panel.corRacaAnterior).toBeNull();
+    expect(panel.sexo).toEqual({ mulheres: 0, homens: 0 });
   });
 });

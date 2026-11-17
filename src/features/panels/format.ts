@@ -1,3 +1,5 @@
+import { dropFloatNoise } from "@/features/panels/floatNoise";
+
 const SCALES = [
   { limit: 1e12, suffix: "tri" },
   { limit: 1e9, suffix: "bi" },
@@ -60,3 +62,17 @@ export const formatNumberAxis = (value: number): string => {
 
 export const formatReaisAxis = (value: number): string =>
   `R$ ${formatNumberAxis(value)}`;
+
+/**
+ * Rótulo compacto com as casas que o passo pede na escala do valor: ticks a
+ * cada 200 mil saem "1,6 mi" e "1,8 mi", nunca dois "2 mi" (revisão da PR #400).
+ *
+ * @example formatNumberForStep(1_800_000, 200_000) // "1,8 mi"
+ */
+export const formatNumberForStep = (value: number, step: number): string => {
+  const scale = SCALES.find(({ limit }) => Math.abs(value) >= limit);
+  const ratio = dropFloatNoise(step / (scale?.limit ?? 1));
+  const fraction = String(ratio).split(".")[1] ?? "";
+
+  return formatNumberCompact(value, Math.min(fraction.length, 3));
+};

@@ -4,13 +4,21 @@ import {
   buildChoroplethFrameOption,
   buildColumnOption,
   buildHorizontalBarOption,
-  buildPyramidOption,
 } from "@/features/panels/chartOptions";
 import { formatReaisCompact } from "@/features/panels/format";
 import type { MapBounds } from "@/features/panels/mapFraming";
 import type { ChartOption } from "@/lib/echarts";
-import { PIB_MAP_BUCKETS } from "@/features/panels/pib/pibPanel";
-import { rankRegions } from "@/features/panels/choropleth";
+import {
+  rankRegions,
+  type ChoroplethBucket,
+} from "@/features/panels/choropleth";
+
+// Faixas de PIB por município, só para o teste.
+const BUCKETS: readonly ChoroplethBucket[] = [
+  { max: 2e10, label: "< 20 Bi", color: "#be4610" },
+  { max: 3.5e10, label: "20 Bi - 35 Bi", color: "#7a3014" },
+  { max: Infinity, label: "> 35 Bi", color: "#421608" },
+];
 
 // Repassa ao ranking real, só para contar as chamadas.
 vi.mock("@/features/panels/choropleth", async (importOriginal) => {
@@ -25,7 +33,7 @@ const COLORS = {
     { code: "2611606", name: "Recife", uf: "PE", value: 6e10 },
     { code: "2507507", name: "João Pessoa", uf: "PB", value: 2e10 },
   ],
-  buckets: PIB_MAP_BUCKETS,
+  buckets: BUCKETS,
   valueLabel: "PIB",
   formatValue: (value: number) => formatReaisCompact(value),
 };
@@ -210,39 +218,5 @@ describe("buildColumnOption", () => {
     expect(single.legend).toBeUndefined();
     expect(grouped.legend).toBeDefined();
     expect(grouped.series[1].label.formatter({ value: 0.493 })).toBe("0.493");
-  });
-});
-
-describe("buildPyramidOption", () => {
-  type PyramidOption = {
-    series: { data?: { label: { show: boolean; position: string } }[] }[];
-  };
-  const config = {
-    categories: ["60 a 69 anos", "30 a 39 anos"],
-    left: { name: "Mulher", color: "#c53d69", values: [2_291_237, 4_446_912] },
-    right: { name: "Homem", color: "#97b42e", values: [1_941_743, 4_060_504] },
-    formatValue: (value: number) => value.toLocaleString("pt-BR"),
-    formatShort: (value: number) => `${Math.round(value / 1e5) / 10} mi`,
-  };
-  const labels = (width: number) =>
-    (buildPyramidOption(config, width) as PyramidOption).series
-      .slice(0, 2)
-      .map((series) => series.data?.map((item) => item.label));
-
-  it("moves a label outside when the bar is narrower than the number", () => {
-    expect(
-      labels(520).map((side) => side?.map((label) => label.position)),
-    ).toEqual([
-      ["inside", "inside"],
-      ["right", "inside"],
-    ]);
-  });
-
-  it("hides the numbers when there is no room for bar plus label", () => {
-    expect(
-      labels(260)
-        .flat()
-        .every((label) => !label?.show),
-    ).toBe(true);
   });
 });

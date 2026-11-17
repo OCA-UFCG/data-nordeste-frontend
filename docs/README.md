@@ -303,10 +303,16 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   views above 900 px (top tab bar below), cards with footer, ⓘ and ⋯ menu,
   "Saiba mais sobre o IDH" with "Ler mais" and glossary. It replaced the
   Power BI-faithful version of `129cef4` (gauges, no ranking).
-- Everything lives in `src/components/IdhDashboard/` and is IDH-only; the
-  shared `Panel/*` components (PIB, Perfil, FNE) are untouched. The prototype
-  CSS was ported to Tailwind with its exact values (`idhStyles.ts` holds the
-  tokens); `max-[700px]`/`max-[900px]`/`max-[1100px]` are its breakpoints.
+- The prototype building blocks (card, sheet, ⓘ, ⋯ menu, cover, filter bar
+  shell, stat cards, state map and its fullscreen, "Saiba mais", sticky chain)
+  live in `src/components/ProtoPanel/` and are shared with the demographic
+  profile; IDH-only pieces stay in `src/components/IdhDashboard/`. The
+  prototype CSS was ported to Tailwind with its exact values (`protoStyles.ts`
+  holds the tokens); `max-[700px]`/`max-[900px]`/`max-[1100px]` are its
+  breakpoints. Each panel sets its accent through CSS variables
+  (`protoToneStyle`, `ProtoToneContext`): roots rendered by the server page
+  take a `tone` prop, portals (sheet, popovers, dialog, tooltip) re-apply it
+  because they render outside the panel tree.
 - Deliberate deviations: the action green is the theme `green-800`
   (`#017f35`), not the prototype `#018f39`, which fails 4.5:1 under white
   text. The cover lead is capped at 1136 px (the prototype's 120ch in its own
@@ -349,3 +355,119 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   missing falls back to `/contentful-api`, which only exists behind production
   Nginx (the error body is the portal's own 404 HTML). The panel's
   `DATA_DB_URL` needs the SSH tunnel up, which needs the internal network.
+
+## Demographic Profile Panel Demo (`/demo/perfil-demografico`)
+
+- Same approach as the IDH panel: the reference is the prototype's
+  `perfil.html` (same artifact), rebuilt with the shared `ProtoPanel/` pieces
+  in the "perfil" tone (pink accent `#d6537f`, women `#c2395f`, men `#96b02e`)
+  and the real `dem_demografia.final_demografia` data. Cover, sticky filter
+  bar, the `.dg` grid (big number, municipalities, map, sex, age pyramid) and
+  `.dg2` (census series, colour or race), "Saiba mais" without glossary.
+- Deliberate deviations from the prototype:
+  - The map shows both views: "Municípios" (default, the real municipal mesh
+    coloured by size band, ECharts canvas for performance through
+    `ChoroplethCanvas`) and "Estados" (the prototype's nine-state SVG, click
+    to filter). The prototype itself notes it draws states "em vez de
+    contornos municipais".
+  - Estado and Município keep multiple selection (up to 100, as before),
+    styled like the prototype selects; links with several places still work.
+  - Axis and labels come from the data (`perfilCharts.ts`: `niceAxis`,
+    `formatCompactPeople`), not the prototype's fixed 40–60 Mi, so a single
+    municipality gets a readable scale.
+  - The change pill is green above zero, red below and neutral at 0,0%
+    (`perfilChangeTone`); no pill for 2000, which has no previous census.
+  - The empty state appears only when the database has no population for the
+    chosen place and year.
+- Field widths follow the perfil prototype (`.fb-in .fl`: flexible 110–240 px,
+  Ano up to 140 px); the IDH bar keeps its fixed 204 px.
+- Image download exists for the series and the colour or race chart (SVG);
+  the map is a canvas and the other cards are HTML.
+- Removed with this rebuild: `DemografiaCharts`, `DemografiaSaibaMais`,
+  `PorteLegend`, `PyramidChart`, `ValueBars` and `buildPyramidOption`.
+- Card state: `resolvePanelCardState` (`src/features/panels/panelCardState.ts`)
+  picks "loading", "error" or "ok", and loading beats error, so "Tentar de
+  novo" shows the skeleton while the query runs again. The IDH reuses it in
+  `resolveIdhCardStates` for its failed branch.
+- Dialogs that must survive the loading state (the porte map fullscreen, the
+  IDH map fullscreen) go in `ProtoCard`'s `overlay` slot, outside the body:
+  inside it, the loading skeleton unmounted the dialog on every filter.
+- Changing "Área de interesse" keeps the chosen states and municipalities, as
+  the prototype's `norm()` does. The server drops the ones outside the new
+  area (`keepKnown` in `src/features/panels/territorialOptions.ts`), which
+  keeps the multi-state selection. PIB clears both instead.
+- The fullscreen map receives `source` (the panel's source line) and an
+  optional `hint`: `MAP_SELECT_HINT` only shows on the states map, which
+  filters on click. The porte legend only shows in the "Municípios" view, in
+  the card and in the fullscreen.
+- The municipalities map is a canvas with no text for screen readers, so it
+  carries an `sr-only` table built by `buildPerfilPorteTable`, replacing the
+  table `ChoroplethMap` used to provide.
+
+
+## PIB Panel Demo (`/demo/pib`)
+
+- Same approach as the IDH and demographic profile panels: the reference is
+  the prototype's `pib.html` (same artifact), rebuilt with the shared
+  `ProtoPanel/` pieces in the "pib" tone (orange accent `#e5640f`, total
+  `#f2761c`, per capita `#1e88c7`) and the real `eco_pib.vw_pib_municipal_pbi`
+  data. Cover, sticky filter bar, two big numbers, the yearly line with one
+  axis per series, the state map and the two sector cards, "Saiba mais" and
+  related content.
+- Shared pieces extracted for this panel, so nothing was copied from the
+  profile: `ProtoTerritorialFilters` (Ano, Área, Estado, Município; was
+  `PerfilFilterBar`), `features/panels/territorialPlace.ts` (was
+  `demografia/perfilPlace.ts`), `ProtoSeriesLegend` (the line legend of the
+  IDH) and the `pair` variant of `ProtoStatCards`.
+- Data: the map query sums `pib_total` by state for the whole area and year,
+  ignoring the Estado and Município filters (the chosen state only gets the
+  outline). Sector data (VAB and activities) stops at 2021
+  (`PIB_VAB_LAST_YEAR`); 2022 and 2023 show the notice with "Ver 2021".
+- Deliberate deviations from the prototype:
+  - The map is by state only, as in the prototype. The previous demo's
+    municipal map, its table and the "highlight an activity on the map" list
+    are gone; the activity card shows the three largest, as the prototype does.
+  - Clicking a state leaves only that state in the filter
+    (`selectOnlyTerritorialUf`); clicking the only chosen one again clears it,
+    as in the IDH map. Several states are still possible through the Estado
+    filter.
+  - The VAB axis unit follows the data (`pibBarUnit`: trilhões, bilhões,
+    milhões, mil) instead of the fixed "R$ bilhões", so a small municipality
+    gets a readable axis.
+  - Money uses the existing formatter ("R$ 45,00 Mi"); the prototype drops
+    decimals in millions. The change pill reads "em relação a 2022" (shared
+    `formatYearChange`), not "vs. 2022".
+  - No "Escolher outro ano" button in the year notice and no "Atualizado em"
+    in the card footers: the database does not say when the PIB was loaded
+    (`PIB_CARD_FOOTER`, marked `INTENTIONAL:`).
+  - Minas Gerais and Espírito Santo (Área da Sudene, Semiárido) have data but
+    no shape in the nine-state map; a hint under the legend says so
+    (`describeStatesOffMap`).
+  - "Saiba mais" keeps the Power BI definitions (PIB, per capita, VAB,
+    participação) as the glossary; the prototype has only the paragraphs.
+- Image download exists for the line and the map (SVG); the sector bars are
+  HTML.
+- Removed with this rebuild: `PibSectorCharts`, `AtividadeList`,
+  `AtividadeHighlightChip`, `PibSaibaMais`, `TrendChart`, `HorizontalBarChart`
+  and `trendOption`. Still exported but unused after it:
+  `buildHorizontalBarOption`, `withCommonFit` and `TerritorialSelects`.
+- The yearly line charts (IDH, PIB) share `useLineYear` and
+  `ProtoYearSlider` (`ProtoPanel/ProtoLineYear.tsx`) and the pure
+  `stepYear`/`yearIndexAtPointer` (`features/panels/lineInteraction.ts`). The
+  tooltip keeps the hovered year, not an index, so a series that changes
+  while it is open cannot point outside it; a filtered year missing from the
+  series highlights nothing (`selectedIndex` -1) in both charts.
+- Card states as in the IDH (`resolvePibCardStates` in `pibCardState.ts`,
+  built on the shared `resolveDependentCardStates` and `usePendingFilters`):
+  while a filter loads, only the cards whose query depends on the changed
+  filter keep their data dimmed (`stale`); clicking a state leaves the map
+  alone, a year change leaves the yearly series alone. The selection (map
+  outline, chart year, filter bar) follows the requested filters at once.
+  Skeletons only after a failed query ("Tentar de novo" and loading beats
+  error). The map fullscreen goes in `ProtoCard`'s `overlay` slot.
+- Big numbers: `buildPibBigNumbers` (`features/panels/pib/pibBigNumbers.ts`)
+  says "Primeiro ano da série" only on the first year; with a zero previous
+  year there is no pill. The arrow colour uses the shared `yearChangeTone`
+  (was `perfilChangeTone`).
+- Local setup: the tunnel command is not in any repository; ask the team.
+  The Gamma database conventionally sits on local port 5434.
