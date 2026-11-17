@@ -1,6 +1,7 @@
 import * as echarts from "echarts/core";
 import {
   BarChart,
+  GaugeChart,
   LineChart,
   LinesChart,
   MapChart,
@@ -20,6 +21,9 @@ echarts.use([
   AriaComponent,
   BarChart,
   CanvasRenderer,
+
+  // Só a demo /demo/idh-powerbi usa o gauge.
+  GaugeChart,
   GeoComponent,
   GridComponent,
 
