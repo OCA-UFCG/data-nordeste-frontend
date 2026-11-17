@@ -48,21 +48,33 @@ export const describeTerritorialShareChips = (
 ];
 
 /**
- * Clicar num estado no mapa: entra ou sai da lista de UFs. O município some,
- * porque ele pode não pertencer ao novo conjunto de estados.
+ * Clicar num estado no mapa: entra ou sai da lista de UFs, sem passar de
+ * `maxPlaces` (o limite que o select de Estado e `parseTerritorialFilters` já
+ * respeitam). O município some, porque pode não ser do novo conjunto.
  *
- * @example toggleTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB"] }, "PE").uf // ["PB", "PE"]
+ * @example toggleTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB"] }, "PE", 9).uf // ["PB", "PE"]
  */
 export const toggleTerritorialUf = (
   filters: TerritorialFilters,
   uf: string,
+  maxPlaces: number,
 ): TerritorialFilters => {
   const current = filters.uf ?? [];
-  const next = current.includes(uf)
-    ? current.filter((item) => item !== uf)
-    : [...current, uf];
 
-  return { ...filters, uf: next.length ? next : undefined, mun: undefined };
+  if (current.includes(uf)) {
+    const next = current.filter((item) => item !== uf);
+
+    return { ...filters, uf: next.length ? next : undefined, mun: undefined };
+  }
+
+  // No limite, fica só o estado clicado, como no mapa do PIB e do IDH: o
+  // clique nunca parece quebrado, e com `maxPlaces = 1` vira o filtro de valor
+  // único. Sem isso, o servidor cortava o excesso em silêncio (revisão da PR #400).
+  if (current.length >= maxPlaces) return selectOnlyTerritorialUf(filters, uf);
+
+  const next = [...current, uf];
+
+  return { ...filters, uf: next, mun: undefined };
 };
 
 /**

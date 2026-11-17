@@ -7,8 +7,8 @@ import {
   PerfilGrids,
 } from "@/components/DemografiaDashboard/PerfilLayout";
 import { DEMOGRAFIA_SOURCE } from "@/components/DemografiaDashboard/demografiaTheme";
+import { usePorteMapView } from "@/components/DemografiaDashboard/PerfilPorteMapCard";
 import { PERFIL_CARD_SOURCE } from "@/components/DemografiaDashboard/perfilTexts";
-import type { ProtoCardState } from "@/components/ProtoPanel/ProtoCard";
 import {
   ProtoCardMenuContext,
   type ProtoCardMenuContextValue,
@@ -20,6 +20,7 @@ import {
 } from "@/components/ProtoPanel/protoStyles";
 import { ProtoTerritorialFilters } from "@/components/ProtoPanel/ProtoTerritorialFilters";
 import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
+import { usePendingFilters } from "@/components/ProtoPanel/usePendingFilters";
 import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
@@ -34,8 +35,8 @@ import {
   isDefaultTerritorialFilters,
   toggleTerritorialUf,
 } from "@/features/panels/territorialPlace";
+import { resolvePerfilCardStates } from "@/features/panels/demografia/perfilCardState";
 import { findPerfilPopulacao } from "@/features/panels/demografia/perfilPopulacao";
-import { resolvePanelCardState } from "@/features/panels/panelCardState";
 import {
   buildTerritorialSearch,
   defaultTerritorialFilters,
@@ -89,19 +90,28 @@ export const DemografiaDashboard = ({
   const { retrying, retry } = useProtoRetry();
   const sticky = useProtoSticky();
   const cardMenu = useCardMenuValue(data, pathname, catalogHref);
-  const state: ProtoCardState = resolvePanelCardState({
-    failed,
-    loading: isPending || retrying,
-  });
-  const reset = () =>
-    applyFilters(defaultTerritorialFilters(DEMOGRAFIA_YEAR_RANGE));
+  const mapView = usePorteMapView();
+
+  // Como no IDH e no PIB: a seleção mostra o filtro pedido na hora, e só o
+  // card cujo dado muda fica esmaecido, sem o painel inteiro virar esqueleto.
+  const { pending, selection, request } = usePendingFilters(
+    data.filters,
+    applyFilters,
+    isPending,
+  );
+  const reset = () => request(defaultTerritorialFilters(DEMOGRAFIA_YEAR_RANGE));
   const layout = {
     data,
+    selection,
+    mapView,
     place: describeTerritorialPlace(data),
-    state,
+    states: resolvePerfilCardStates(
+      { failed, retrying, pending },
+      data.filters,
+    ),
     onRetry: retry,
     onSelectUf: (uf: string) =>
-      applyFilters(toggleTerritorialUf(data.filters, uf)),
+      request(toggleTerritorialUf(selection, uf, DEMOGRAFIA_MAX_PLACES)),
     onReset: reset,
   };
   const showEmpty = !failed && findPerfilPopulacao(data) === null;
@@ -109,13 +119,13 @@ export const DemografiaDashboard = ({
   return (
     <ProtoToneContext.Provider value="perfil">
       <ProtoTerritorialFilters
-        data={data}
+        data={{ ...data, filters: selection }}
         years={YEARS}
         maxPlaces={DEMOGRAFIA_MAX_PLACES}
-        onChange={applyFilters}
+        onChange={request}
         onClear={reset}
         isDefault={isDefaultTerritorialFilters(
-          data.filters,
+          selection,
           DEMOGRAFIA_YEAR_RANGE,
         )}
         top={sticky.filterTop}

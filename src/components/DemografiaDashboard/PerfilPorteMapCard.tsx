@@ -84,23 +84,20 @@ const ViewToggle = ({
   </div>
 );
 
-// Escolher um estado no mapa filtra o painel; a cor marca os já escolhidos.
+// Escolher um estado no mapa filtra o painel; a cor marca os escolhidos. Eles
+// vêm do filtro pedido, para o estado clicado ficar rosa antes da resposta.
 const estadosMap = (
   data: DemografiaPanelData,
+  selected: string[],
   onSelectUf: (uf: string) => void,
-): ProtoStateMapProps => {
-  const selected = data.filters.uf ?? [];
-
-  return {
-    fillFor: (uf) =>
-      selected.includes(uf) ? ESTADO_FILL_SELECTED : ESTADO_FILL,
-    describe: (uf) => data.ufs.find((item) => item.sigla === uf)?.nome ?? uf,
-    isSelectable: () => true,
-    label: ESTADOS_LABEL,
-    selectedUfs: selected,
-    onSelect: onSelectUf,
-  };
-};
+): ProtoStateMapProps => ({
+  fillFor: (uf) => (selected.includes(uf) ? ESTADO_FILL_SELECTED : ESTADO_FILL),
+  describe: (uf) => data.ufs.find((item) => item.sigla === uf)?.nome ?? uf,
+  isSelectable: () => true,
+  label: ESTADOS_LABEL,
+  selectedUfs: selected,
+  onSelect: onSelectUf,
+});
 
 // Os municípios do mapa são a área toda; o porte é o que se destaca.
 const municipiosCanvas = (
@@ -146,6 +143,7 @@ const PorteLegend = ({ porte }: { porte: PorteHighlight }) => (
 
 const usePorteMapData = (
   data: DemografiaPanelData,
+  selectedUfs: string[],
   onSelectUf: (uf: string) => void,
 ) => {
   const municipios = useMemo(
@@ -161,7 +159,7 @@ const usePorteMapData = (
     [data],
   );
 
-  return { porte, table, estados: estadosMap(data, onSelectUf) };
+  return { porte, table, estados: estadosMap(data, selectedUfs, onSelectUf) };
 };
 
 type PorteMapData = ReturnType<typeof usePorteMapData>;
@@ -243,20 +241,41 @@ const PorteFullscreen = ({
 );
 
 /**
+ * Vista e tela cheia do mapa de porte. Ficam no dashboard, não no card: a
+ * troca entre a grade e o aviso de dados vazios monta o card de novo, e sem
+ * isso a tela cheia fechava e a vista voltava para Municípios (revisão da PR #400).
+ *
+ * @example const porteView = usePorteMapView(); <PerfilPorteMapCard {...card} mapView={porteView} />
+ */
+export const usePorteMapView = () => {
+  const [view, setView] = useState<MapView>("municipios");
+  const [fullscreen, setFullscreen] = useState(false);
+
+  return { view, setView, fullscreen, setFullscreen };
+};
+
+export type PorteMapView = ReturnType<typeof usePorteMapView>;
+
+/**
  * Card "Porte dos municípios": mapa dos municípios por faixa de população ou
  * mapa dos estados, que filtra o painel ao ser clicado. A legenda por porte
  * destaca os municípios de cada faixa.
  *
- * @example <PerfilPorteMapCard data={panel} place="Nordeste" state="ok" onRetry={retry} onSelectUf={toggleUf} />
+ * @example <PerfilPorteMapCard data={panel} place="Nordeste" state="ok" onRetry={retry} selectedUfs={["PE"]} mapView={porteView} onSelectUf={toggleUf} />
  */
 export const PerfilPorteMapCard = ({
+  selectedUfs,
+  mapView,
   onSelectUf,
   ...props
-}: PerfilCardProps & { onSelectUf: (uf: string) => void }) => {
+}: PerfilCardProps & {
+  selectedUfs: string[];
+  mapView: PorteMapView;
+  onSelectUf: (uf: string) => void;
+}) => {
   const { data, place, state } = props;
-  const [view, setView] = useState<MapView>("municipios");
-  const [fullscreen, setFullscreen] = useState(false);
-  const map = usePorteMapData(data, onSelectUf);
+  const { view, setView, fullscreen, setFullscreen } = mapView;
+  const map = usePorteMapData(data, selectedUfs, onSelectUf);
   const subtitle = `${place} · ${data.filters.ano}`;
 
   // A legenda por porte só destaca municípios; no mapa de estados não teria
