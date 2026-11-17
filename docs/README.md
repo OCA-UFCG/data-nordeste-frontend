@@ -418,8 +418,10 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   - The map is by state only, as in the prototype. The previous demo's
     municipal map, its table and the "highlight an activity on the map" list
     are gone; the activity card shows the three largest, as the prototype does.
-  - Clicking a state adds or removes it from the filter (several states), like
-    the profile panel; the prototype picks one.
+  - Clicking a state leaves only that state in the filter
+    (`selectOnlyTerritorialUf`); clicking the only chosen one again clears it,
+    as in the IDH map. Several states are still possible through the Estado
+    filter.
   - The VAB axis unit follows the data (`pibBarUnit`: trilhões, bilhões,
     milhões, mil) instead of the fixed "R$ bilhões", so a small municipality
     gets a readable axis.
@@ -440,5 +442,23 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   `AtividadeHighlightChip`, `PibSaibaMais`, `TrendChart`, `HorizontalBarChart`
   and `trendOption`. Still exported but unused after it:
   `buildHorizontalBarOption`, `withCommonFit` and `TerritorialSelects`.
+- The yearly line charts (IDH, PIB) share `useLineYear` and
+  `ProtoYearSlider` (`ProtoPanel/ProtoLineYear.tsx`) and the pure
+  `stepYear`/`yearIndexAtPointer` (`features/panels/lineInteraction.ts`). The
+  tooltip keeps the hovered year, not an index, so a series that changes
+  while it is open cannot point outside it; a filtered year missing from the
+  series highlights nothing (`selectedIndex` -1) in both charts.
+- Card states as in the IDH (`resolvePibCardStates` in `pibCardState.ts`,
+  built on the shared `resolveDependentCardStates` and `usePendingFilters`):
+  while a filter loads, only the cards whose query depends on the changed
+  filter keep their data dimmed (`stale`); clicking a state leaves the map
+  alone, a year change leaves the yearly series alone. The selection (map
+  outline, chart year, filter bar) follows the requested filters at once.
+  Skeletons only after a failed query ("Tentar de novo" and loading beats
+  error). The map fullscreen goes in `ProtoCard`'s `overlay` slot.
+- Big numbers: `buildPibBigNumbers` (`features/panels/pib/pibBigNumbers.ts`)
+  says "Primeiro ano da série" only on the first year; with a zero previous
+  year there is no pill. The arrow colour uses the shared `yearChangeTone`
+  (was `perfilChangeTone`).
 - Local setup: the tunnel command is not in any repository; ask the team.
   The Gamma database conventionally sits on local port 5434.
