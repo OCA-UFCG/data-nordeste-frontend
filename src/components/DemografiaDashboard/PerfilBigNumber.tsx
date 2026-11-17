@@ -5,11 +5,8 @@ import {
 } from "@/components/ProtoPanel/ProtoStatCards";
 import type { DemografiaPanelData } from "@/features/panels/demografia/demografiaPanel";
 import { formatPessoas } from "@/features/panels/format";
-import {
-  findPerfilPopulacao,
-  perfilChangeTone,
-} from "@/features/panels/demografia/perfilPopulacao";
-import { formatYearChange } from "@/features/panels/yearChange";
+import { findPerfilPopulacao } from "@/features/panels/demografia/perfilPopulacao";
+import { formatYearChange, yearChangeTone } from "@/features/panels/yearChange";
 
 // Chip do ícone no tom do perfil; o ProtoStatCards compartilhado não tem essa cor.
 const ICON_CLASS = "bg-[#fbdde8] text-[#a8264f]";
@@ -35,7 +32,7 @@ export const perfilBigNumbers = (
       pill: change
         ? {
             text: formatYearChange(change),
-            direction: perfilChangeTone(change),
+            direction: yearChangeTone(change),
           }
         : null,
     },

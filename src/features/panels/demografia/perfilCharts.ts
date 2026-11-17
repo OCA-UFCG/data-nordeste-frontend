@@ -1,6 +1,7 @@
 import type { ChartPoint } from "@/features/panels/chartBase";
 import type { PopulacaoPorFaixa } from "@/features/panels/demografia/demografiaPanel";
 import { capitalizeScale, formatNumberCompact } from "@/features/panels/format";
+import { dropFloatNoise } from "@/features/panels/floatNoise";
 import { linePath } from "@/features/panels/svgPath";
 
 type Axis = { min: number; max: number; ticks: number[] };
@@ -41,9 +42,6 @@ const niceSteps = (span: number): number[] => {
 const cellCount = (lo: number, hi: number, step: number): number =>
   Math.ceil(hi / step) - Math.floor(lo / step);
 
-// Evita ruído de ponto flutuante (ex.: 2.5 × 10^6 × 3) nos rótulos dos ticks.
-const exact = (value: number): number => Number(value.toPrecision(12));
-
 /**
  * Eixo com limites redondos e ticks igualmente espaçados que cobrem os dados
  * com folga. Os ticks saem em ordem crescente; quem desenha de cima para
@@ -72,7 +70,7 @@ export const niceAxis = (values: number[], intervals = 4): Axis => {
     Math.floor(lo / step) - (intervals - cellCount(lo, hi, step));
   const first = Math.min(...values) >= 0 ? Math.max(0, extended) : extended;
   const ticks = Array.from({ length: intervals + 1 }, (_, i) =>
-    exact((first + i) * step),
+    dropFloatNoise((first + i) * step),
   );
 
   return { min: ticks[0], max: ticks[intervals], ticks };

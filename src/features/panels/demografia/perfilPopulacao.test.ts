@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  findPerfilPopulacao,
-  perfilChangeTone,
-} from "@/features/panels/demografia/perfilPopulacao";
+import { findPerfilPopulacao } from "@/features/panels/demografia/perfilPopulacao";
 
 const SERIE = [
   { label: "2000", value: 100 },
@@ -44,24 +41,5 @@ describe("findPerfilPopulacao", () => {
         filters: { ano: 2010, area: "nordeste" },
       }),
     ).toBeNull();
-  });
-});
-
-describe("perfilChangeTone", () => {
-  it("is up or down by the sign of the change", () => {
-    expect(perfilChangeTone({ ratio: 0.03, previousLabel: "2010" })).toBe("up");
-    expect(perfilChangeTone({ ratio: -0.03, previousLabel: "2010" })).toBe(
-      "down",
-    );
-  });
-
-  it("is flat when the shown one-decimal percentage is zero", () => {
-    expect(perfilChangeTone({ ratio: 0, previousLabel: "2010" })).toBe("flat");
-    expect(perfilChangeTone({ ratio: 0.0004, previousLabel: "2010" })).toBe(
-      "flat",
-    );
-    expect(perfilChangeTone({ ratio: -0.0004, previousLabel: "2010" })).toBe(
-      "flat",
-    );
   });
 });

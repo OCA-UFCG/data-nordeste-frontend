@@ -1,12 +1,11 @@
+import { dropFloatNoise } from "@/features/panels/floatNoise";
+
 export type ZeroAxis = { max: number; step: number; ticks: number[] };
 
 // Multiplicadores "redondos" do passo, os mesmos do protótipo.
 const STEP_FACTORS = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
 
 const INTERVALS = 4;
-
-// Tira o ruído de ponto flutuante (0.30000000000000004 vira 0.3).
-const exact = (value: number): number => Number(value.toPrecision(6));
 
 /**
  * Eixo que começa em zero e cobre `highest` em quatro intervalos de passo
@@ -19,9 +18,9 @@ export const buildZeroAxis = (highest: number): ZeroAxis => {
 
   return {
     step,
-    max: exact(step * INTERVALS),
+    max: dropFloatNoise(step * INTERVALS),
     ticks: Array.from({ length: INTERVALS + 1 }, (_, index) =>
-      exact(step * index),
+      dropFloatNoise(step * index),
     ),
   };
 };
@@ -32,5 +31,5 @@ const roundStep = (raw: number): number => {
   const factor =
     STEP_FACTORS.find((item) => item * magnitude >= raw * 0.9999) ?? 10;
 
-  return exact(factor * magnitude);
+  return dropFloatNoise(factor * magnitude);
 };

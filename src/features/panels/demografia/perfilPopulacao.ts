@@ -24,20 +24,3 @@ export const findPerfilPopulacao = ({
 
   return { value: point.value, change: describeYearChange(serie, index) };
 };
-
-export type PerfilChangeTone = "up" | "down" | "flat";
-
-/**
- * Cor da variação do número de destaque. Decide pelo valor já arredondado ao
- * que aparece na tela (1 casa decimal em %): 0,04% vira "0,0%", sem seta.
- *
- * @example perfilChangeTone({ ratio: 0.03, previousLabel: "2010" }) // "up"
- */
-export const perfilChangeTone = (change: YearChange): PerfilChangeTone => {
-  const tenthsOfPercent = Math.round(change.ratio * 1000);
-
-  if (tenthsOfPercent > 0) return "up";
-  if (tenthsOfPercent < 0) return "down";
-
-  return "flat";
-};

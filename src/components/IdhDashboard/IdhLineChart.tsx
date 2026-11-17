@@ -1,11 +1,13 @@
 "use client";
 
-import { type KeyboardEvent, type MouseEvent, type Ref, useState } from "react";
-import {
-  ProtoTooltip,
-  type TooltipAt,
-} from "@/components/ProtoPanel/ProtoTooltip";
+import { type Ref, useMemo } from "react";
 import { IDH_COLORS } from "@/components/IdhDashboard/idhColors";
+import {
+  type LineYearHandlers,
+  ProtoYearSlider,
+  useLineYear,
+} from "@/components/ProtoPanel/ProtoLineYear";
+import { ProtoTooltip } from "@/components/ProtoPanel/ProtoTooltip";
 import {
   ProtoSeriesLegend,
   useHiddenSeries,
@@ -17,7 +19,6 @@ import {
   buildIdhLineGeometry,
   type IdhLineGeometry,
   linePath,
-  stepIdhYear,
 } from "@/features/panels/idh/idhLineChart";
 import type { IdhYearPoint } from "@/features/panels/idh/idhPanel";
 
@@ -150,24 +151,17 @@ const Line = ({
   </g>
 );
 
-const tooltipRows = (
-  serie: IdhYearPoint[],
-  index: number,
-  hidden: Set<SeriesKey>,
-) =>
+const tooltipRows = (point: IdhYearPoint, hidden: Set<SeriesKey>) =>
   SERIES.filter((series) => !hidden.has(series.key)).map((series) => ({
     color: series.color,
     label: series.shortLabel,
-    value: formatIdh(series.pick(serie[index])),
+    value: formatIdh(series.pick(point)),
   }));
 
-// Posição do ponteiro na área do gráfico vira o índice do ano mais próximo.
-const yearIndexAt = (event: MouseEvent<SVGRectElement>, count: number) => {
-  const rect = event.currentTarget.getBoundingClientRect();
-  const fraction = (event.clientX - rect.left - 10) / (rect.width - 20);
+// Folga da área de clique além do primeiro e do último ponto.
+const HIT_PAD = { x: 10, bottom: 8 };
 
-  return Math.min(count - 1, Math.max(0, Math.round(fraction * (count - 1))));
-};
+// Posição do ponteiro na área do gráfico vira o índice do ano mais próximo.
 
 /**
  * Gráfico de linhas do IDH e do IDH ajustado (`#lineBox` do protótipo), em
@@ -188,76 +182,61 @@ export const IdhLineChart = ({
 }) => {
   const { ref: boxRef, width: boxWidth } = useElementWidth();
   const { hidden, toggle } = useHiddenSeries<SeriesKey>();
-  const [tooltip, setTooltip] = useState<
-    (TooltipAt & { index: number }) | null
-  >(null);
-  const years = serie.map((point) => point.ano);
+  const years = useMemo(() => serie.map((point) => point.ano), [serie]);
+  const { selectedIndex, hover, handlers } = useLineYear({
+    years,
+    ano,
+    onSelectYear,
+    hitPad: HIT_PAD.x,
+  });
 
-  // -1 quando o ano filtrado falta na série: nenhum ponto fica destacado, em
-  // vez de destacar o primeiro ano enquanto os cards mostram outro.
-  const selectedIndex = years.indexOf(ano);
-  const handleKeyDown = (event: KeyboardEvent<SVGRectElement>) => {
-    const next = stepIdhYear(years, ano, event.key);
-
-    if (next === null) return;
-    event.preventDefault();
-    onSelectYear(next);
-  };
+  // PERF: o tooltip muda a cada movimento do ponteiro; a geometria só muda
+  // com a largura, a série ou o ano.
+  const geometry = useMemo(
+    () =>
+      boxWidth && serie.length
+        ? buildIdhLineGeometry({
+            width: boxWidth,
+            years,
+            series: SERIES.map((series) => ({
+              key: series.key,
+              labelOffset: series.labelOffset,
+              values: serie.map(series.pick),
+            })),
+            selectedIndex,
+          })
+        : null,
+    [boxWidth, serie, years, selectedIndex],
+  );
+  const hoverPoint = hover && serie.find((point) => point.ano === hover.ano);
 
   return (
     <>
       <ProtoSeriesLegend series={SERIES} hidden={hidden} onToggle={toggle} />
       <div ref={boxRef} className="relative min-h-[280px]">
-        {boxWidth && serie.length ? (
+        {geometry ? (
           <LineSvg
-            geometry={buildIdhLineGeometry({
-              width: boxWidth,
-              years,
-              series: SERIES.map((series) => ({
-                key: series.key,
-                labelOffset: series.labelOffset,
-                values: serie.map(series.pick),
-              })),
-              selectedIndex,
-            })}
+            geometry={geometry}
             svgRef={svgRef}
             hidden={hidden}
             selectedIndex={selectedIndex}
             ano={ano}
-            onPointerMove={(event) =>
-              setTooltip({
-                x: event.clientX,
-                y: event.clientY,
-                index: yearIndexAt(event, years.length),
-              })
-            }
-            onPointerLeave={() => setTooltip(null)}
-            onClick={(event) =>
-              onSelectYear(years[yearIndexAt(event, years.length)])
-            }
-            onKeyDown={handleKeyDown}
+            {...handlers}
           />
         ) : null}
       </div>
       <p className="mt-2 text-xs text-grey-800">
         Clique em um ponto da linha para escolher o ano.
       </p>
-      {tooltip ? (
+      {hover && hoverPoint ? (
         <ProtoTooltip
-          at={tooltip}
-          title={String(years[tooltip.index])}
-          rows={tooltipRows(serie, tooltip.index, hidden)}
+          at={hover}
+          title={String(hoverPoint.ano)}
+          rows={tooltipRows(hoverPoint, hidden)}
         />
       ) : null}
     </>
   );
-};
-
-type HitHandlers = {
-  onPointerMove: (event: MouseEvent<SVGRectElement>) => void;
-  onPointerLeave: () => void;
-  onClick: (event: MouseEvent<SVGRectElement>) => void;
-  onKeyDown: (event: KeyboardEvent<SVGRectElement>) => void;
 };
 
 const LineSvg = ({
@@ -267,14 +246,14 @@ const LineSvg = ({
   selectedIndex,
   ano,
   ...handlers
-}: HitHandlers & {
+}: LineYearHandlers & {
   geometry: IdhLineGeometry;
   svgRef?: Ref<SVGSVGElement>;
   hidden: Set<SeriesKey>;
   selectedIndex: number;
   ano: number;
 }) => {
-  const { margin, width, height, years } = geometry;
+  const { width, height, years } = geometry;
 
   return (
     <svg
@@ -295,19 +274,12 @@ const LineSvg = ({
           selectedIndex={selectedIndex}
         />
       ))}
-      <rect
-        x={margin.left - 10}
-        y={margin.top}
-        width={width - margin.left - margin.right + 20}
-        height={height - margin.top - margin.bottom + 8}
-        fill="transparent"
-        tabIndex={0}
-        role="slider"
-        aria-label="Ano selecionado"
-        aria-valuemin={years[0]?.year}
-        aria-valuemax={years[years.length - 1]?.year}
-        aria-valuenow={ano}
-        className="cursor-pointer outline-none focus-visible:stroke-[#7c46e1] focus-visible:stroke-2"
+      <ProtoYearSlider
+        frame={geometry}
+        years={years.map((year) => year.year)}
+        ano={ano}
+        pad={HIT_PAD}
+        focusClassName="focus-visible:stroke-[#7c46e1]"
         {...handlers}
       />
     </svg>

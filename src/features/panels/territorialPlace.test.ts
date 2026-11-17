@@ -4,6 +4,7 @@ import {
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
+  selectOnlyTerritorialUf,
   toggleTerritorialUf,
 } from "@/features/panels/territorialPlace";
 import { DEMOGRAFIA_YEAR_RANGE } from "@/features/panels/demografia/demografiaPanel";
@@ -81,6 +82,28 @@ describe("describeTerritorialShareChips", () => {
       "Estado: Paraíba, Pernambuco",
       "Município: Recife (PE)",
     ]);
+  });
+});
+
+describe("selectOnlyTerritorialUf", () => {
+  const BASE = { ano: 2022, area: "nordeste" as const };
+
+  it("keeps only the clicked state and drops the municipality", () => {
+    expect(
+      selectOnlyTerritorialUf(
+        { ...BASE, uf: ["PB", "PE"], mun: ["2507507"] },
+        "RN",
+      ),
+    ).toEqual({ ...BASE, uf: ["RN"], mun: undefined });
+    expect(
+      selectOnlyTerritorialUf({ ...BASE, uf: ["PB", "PE"] }, "PE").uf,
+    ).toEqual(["PE"]);
+  });
+
+  it("clears the filter when the clicked state is the only one chosen", () => {
+    expect(selectOnlyTerritorialUf({ ...BASE, uf: ["PE"] }, "PE").uf).toBe(
+      undefined,
+    );
   });
 });
 
