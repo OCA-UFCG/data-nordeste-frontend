@@ -120,7 +120,7 @@ const aboveColumn = (
   ];
 };
 
-const FADED_OPACITY = 0.35;
+export const FADED_OPACITY = 0.35;
 
 export const FOCUS_BAR = {
   emphasis: { focus: "self" },
@@ -146,7 +146,7 @@ const columnSeries = (series: ColumnSeries, formatLabel: ValueFormatter) => ({
   labelLayout: { hideOverlap: true },
 });
 
-const columnLegend = (series: { name: string }[]) =>
+export const columnLegend = (series: { name: string }[]) =>
   series.length > 1
     ? {
         legend: {
