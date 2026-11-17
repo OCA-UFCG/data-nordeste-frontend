@@ -20,6 +20,7 @@ import {
   buildCorRacaGeometry,
   type CorRacaGeometry,
 } from "@/features/panels/demografia/perfilCharts";
+import { formatPessoas } from "@/features/panels/format";
 
 const TITLE = "População por cor ou raça";
 const INFO =
@@ -133,7 +134,7 @@ const CorRacaChart = ({
             {
               color: BAR,
               label: "População",
-              value: `${hovered.valueLabel} de pessoas`,
+              value: `${formatPessoas(hovered.value)} habitantes`,
             },
           ]}
         />

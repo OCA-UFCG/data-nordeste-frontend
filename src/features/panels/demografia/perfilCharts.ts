@@ -1,6 +1,10 @@
 import type { ChartPoint } from "@/features/panels/chartBase";
 import type { PopulacaoPorFaixa } from "@/features/panels/demografia/demografiaPanel";
-import { capitalizeScale, formatNumberCompact } from "@/features/panels/format";
+import {
+  capitalizeScale,
+  formatNumberCompact,
+  formatNumberForStep,
+} from "@/features/panels/format";
 import { dropFloatNoise } from "@/features/panels/floatNoise";
 import { linePath } from "@/features/panels/svgPath";
 
@@ -19,6 +23,11 @@ const HEADROOM = 0.1;
  */
 export const formatCompactPeople = (value: number): string =>
   capitalizeScale(formatNumberCompact(value, 0));
+
+// Rótulo da série: as casas seguem o passo do eixo, para dois ticks (ou dois
+// censos) próximos não saírem com o mesmo texto, como "2 Mi" em Sergipe.
+const formatPeopleForStep = (value: number, step: number): string =>
+  capitalizeScale(formatNumberForStep(value, step));
 
 const paddedRange = (values: number[]): { lo: number; hi: number } => {
   const lo = Math.min(...values);
@@ -42,6 +51,36 @@ const niceSteps = (span: number): number[] => {
 const cellCount = (lo: number, hi: number, step: number): number =>
   Math.ceil(hi / step) - Math.floor(lo / step);
 
+// O menor passo redondo que cobre o vão em até `intervals` divisões.
+const pickStep = (lo: number, hi: number, intervals: number): number => {
+  const step = niceSteps(hi - lo).find(
+    (candidate) => cellCount(lo, hi, candidate) <= intervals,
+  );
+
+  if (step === undefined) {
+    throw new Error(
+      `niceAxis found no step for range ${lo}..${hi}; expected one of {1,2,2.5,5}×10^k to fit ${intervals} intervals.`,
+    );
+  }
+
+  return step;
+};
+
+// Com passo grande demais o eixo fica com menos divisões: estende para baixo,
+// mas nunca abaixo de zero quando os dados não são negativos (população).
+const firstTickIndex = (
+  lo: number,
+  hi: number,
+  step: number,
+  intervals: number,
+  lowest: number,
+): number => {
+  const extended =
+    Math.floor(lo / step) - (intervals - cellCount(lo, hi, step));
+
+  return lowest >= 0 ? Math.max(0, extended) : extended;
+};
+
 /**
  * Eixo com limites redondos e ticks igualmente espaçados que cobrem os dados
  * com folga. Os ticks saem em ordem crescente; quem desenha de cima para
@@ -56,19 +95,8 @@ export const niceAxis = (values: number[], intervals = 4): Axis => {
     );
   }
   const { lo, hi } = paddedRange(values);
-  const step = niceSteps(hi - lo).find(
-    (candidate) => cellCount(lo, hi, candidate) <= intervals,
-  );
-
-  if (step === undefined) {
-    throw new Error(`niceAxis found no step for range ${lo}..${hi}.`);
-  }
-
-  // Com passo grande demais o eixo fica com menos divisões: estende para baixo,
-  // mas nunca abaixo de zero quando os dados não são negativos (população).
-  const extended =
-    Math.floor(lo / step) - (intervals - cellCount(lo, hi, step));
-  const first = Math.min(...values) >= 0 ? Math.max(0, extended) : extended;
+  const step = pickStep(lo, hi, intervals);
+  const first = firstTickIndex(lo, hi, step, intervals, Math.min(...values));
   const ticks = Array.from({ length: intervals + 1 }, (_, i) =>
     dropFloatNoise((first + i) * step),
   );
@@ -154,6 +182,7 @@ export const buildSerieGeometry = ({
 }: SerieGeometryInput): SerieGeometry => {
   const layout = serieLayout(width);
   const axis = niceAxis(points.map((point) => point.valor));
+  const step = axis.ticks[1] - axis.ticks[0];
   const scale = serieScale(
     layout,
     points.map((point) => point.ano),
@@ -165,7 +194,7 @@ export const buildSerieGeometry = ({
     height: layout.h,
     gridLines: [...axis.ticks].reverse().map((tick) => ({
       y: scale.y(tick),
-      label: formatCompactPeople(tick),
+      label: formatPeopleForStep(tick, step),
     })),
     path: linePath(
       points.map((p) => ({ x: scale.x(p.ano), y: scale.y(p.valor) })),
@@ -173,7 +202,7 @@ export const buildSerieGeometry = ({
     points: points.map((point) => ({
       x: scale.x(point.ano),
       y: scale.y(point.valor),
-      label: formatCompactPeople(point.valor),
+      label: formatPeopleForStep(point.valor, step / 10),
       ano: point.ano,
       valor: point.valor,
     })),

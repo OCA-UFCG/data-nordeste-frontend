@@ -255,3 +255,31 @@ describe("niceAxis near zero", () => {
     expect(axis.ticks).toHaveLength(5);
   });
 });
+
+describe("buildSerieGeometry labels", () => {
+  // Regressão (revisão da PR #400): com 0 casas, os cinco ticks e os três
+  // censos de Sergipe saíam todos "2 Mi".
+  const sergipe = [
+    { ano: 2000, valor: 1_784_475 },
+    { ano: 2010, valor: 2_068_017 },
+    { ano: 2022, valor: 2_210_004 },
+  ];
+
+  it("labels every grid line of Sergipe differently", () => {
+    const labels = buildSerieGeometry({
+      width: 800,
+      points: sergipe,
+    }).gridLines.map((line) => line.label);
+
+    expect(new Set(labels).size).toBe(labels.length);
+  });
+
+  it("labels the census points with one more digit than the axis", () => {
+    const labels = buildSerieGeometry({
+      width: 800,
+      points: sergipe,
+    }).points.map((point) => point.label);
+
+    expect(labels).toEqual(["1,78 Mi", "2,07 Mi", "2,21 Mi"]);
+  });
+});

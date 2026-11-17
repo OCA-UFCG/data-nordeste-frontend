@@ -30,7 +30,7 @@ const INK = "#a8264f";
 const SerieGrid = ({ geometry }: { geometry: SerieGeometry }) => (
   <>
     {geometry.gridLines.map((line) => (
-      <g key={line.label}>
+      <g key={line.y}>
         <line
           x1={geometry.grid.x1}
           x2={geometry.grid.x2}
