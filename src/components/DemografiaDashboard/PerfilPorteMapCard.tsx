@@ -30,7 +30,7 @@ import { formatPessoas } from "@/features/panels/format";
 
 const TITLE = "Porte dos municípios";
 const INFO =
-  "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Clique em um estado para usá-lo como filtro do painel.";
+  "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Na vista Estados, clique em um estado para usá-lo como filtro do painel.";
 const MESH_URL = "/maps/municipios-sudene.json";
 const MUNICIPIOS_LABEL = "Mapa dos municípios por porte";
 const ESTADOS_LABEL = "Mapa dos estados do Nordeste";
@@ -41,7 +41,8 @@ const ESTADO_FILL_SELECTED = "#e98dae";
 
 // 560 px é o `max-height` do mapa no protótipo (`.map-box`). Fixar a altura
 // (em vez da proporção da malha) evita que o card cresça para ~1 200 px; as
-// duas vistas usam a mesma caixa para o card não mudar de tamanho ao alternar.
+// duas vistas usam a mesma caixa de mapa. O card ainda muda de altura ao
+// alternar pela legenda de porte, que só existe na vista Municípios.
 const MAP_BOX_CLASS =
   "h-[560px] w-full max-[1000px]:h-[480px] max-[700px]:h-[360px]";
 
@@ -152,7 +153,13 @@ const usePorteMapData = (
     [data.mapa],
   );
   const porte = useDemografiaHighlight(municipios);
-  const table = useMemo(() => buildPerfilPorteTable(data), [data]);
+
+  // PERF: a tabela tem um item por município (~1 800). O elemento memorizado
+  // evita reconciliar todas as linhas a cada hover na legenda de porte.
+  const table = useMemo(
+    () => <DataTable content={buildPerfilPorteTable(data)} className="" />,
+    [data],
+  );
 
   return { porte, table, estados: estadosMap(data, onSelectUf) };
 };
@@ -182,11 +189,7 @@ const PorteMapBox = ({
         municipiosCanvas(data, map.porte.highlightCodes, MAP_BOX_CLASS)
       )}
     </div>
-    {view === "municipios" ? (
-      <div className="sr-only">
-        <DataTable content={map.table} className="" />
-      </div>
-    ) : null}
+    {view === "municipios" ? <div className="sr-only">{map.table}</div> : null}
   </>
 );
 
@@ -214,6 +217,31 @@ const PorteCardActions = ({
   </>
 );
 
+// Tela cheia da vista aberta: só o mapa de estados filtra ao clicar, então só
+// ele leva a dica.
+const PorteFullscreen = ({
+  view,
+  data,
+  map,
+  ...frame
+}: {
+  view: MapView;
+  data: DemografiaPanelData;
+  map: PorteMapData;
+  subtitle: string;
+  legend: ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => (
+  <ProtoMapFullscreen
+    {...frame}
+    title={TITLE}
+    source={PERFIL_CARD_SOURCE}
+    hint={view === "estados" ? MAP_SELECT_HINT : undefined}
+    {...porteStage(view, data, map.porte, map.estados)}
+  />
+);
+
 /**
  * Card "Porte dos municípios": mapa dos municípios por faixa de população ou
  * mapa dos estados, que filtra o painel ao ser clicado. A legenda por porte
@@ -229,12 +257,12 @@ export const PerfilPorteMapCard = ({
   const [view, setView] = useState<MapView>("municipios");
   const [fullscreen, setFullscreen] = useState(false);
   const map = usePorteMapData(data, onSelectUf);
-  const { porte, estados } = map;
   const subtitle = `${place} · ${data.filters.ano}`;
 
   // A legenda por porte só destaca municípios; no mapa de estados não teria
   // efeito, então some (revisão da PR #401).
-  const legend = view === "municipios" ? <PorteLegend porte={porte} /> : null;
+  const legend =
+    view === "municipios" ? <PorteLegend porte={map.porte} /> : null;
 
   // O diálogo fica no `overlay` do card: dentro do corpo, o esqueleto do
   // carregando o desmontaria a cada estado clicado em tela cheia.
@@ -250,15 +278,14 @@ export const PerfilPorteMapCard = ({
         <PorteCardActions state={state} onOpen={() => setFullscreen(true)} />
       }
       overlay={
-        <ProtoMapFullscreen
-          open={fullscreen}
-          onOpenChange={setFullscreen}
-          title={TITLE}
+        <PorteFullscreen
+          view={view}
+          data={data}
+          map={map}
           subtitle={subtitle}
           legend={legend}
-          source={PERFIL_CARD_SOURCE}
-          hint={view === "estados" ? MAP_SELECT_HINT : undefined}
-          {...porteStage(view, data, porte, estados)}
+          open={fullscreen}
+          onOpenChange={setFullscreen}
         />
       }
     >

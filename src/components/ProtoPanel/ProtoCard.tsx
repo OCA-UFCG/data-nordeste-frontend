@@ -7,10 +7,12 @@ import {
   CARD_SHADOW,
   staleClass,
 } from "@/components/ProtoPanel/protoStyles";
+import type { PanelCardState } from "@/features/panels/panelCardState";
 
 // `stale`: o card mostra o dado anterior esmaecido enquanto o filtro pedido
-// não chega (ver `resolveIdhCardStates`).
-export type ProtoCardState = "ok" | "stale" | "loading" | "error";
+// não chega (ver `resolveIdhCardStates`). Os estados são os de
+// `PanelCardState`, a regra compartilhada dos painéis.
+export type ProtoCardState = PanelCardState;
 
 // Moldura do card do protótipo; reaproveitada por quem desenha um card sem cabeçalho.
 export const PROTO_CARD_CLASS = `flex min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW} max-[700px]:p-4`;

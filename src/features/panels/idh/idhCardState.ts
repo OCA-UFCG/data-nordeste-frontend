@@ -4,7 +4,10 @@ import {
 } from "@/features/panels/panelCardState";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 
-// Estados documentados em PanelCardState; o IDH usa a mesma regra dos demais painéis.
+// Estados documentados em PanelCardState; o IDH usa a mesma regra dos demais
+// painéis. No IDH, `stale` quer dizer que um filtro de que o card depende está
+// a caminho, e `loading` só aparece quando não há dado anterior para mostrar
+// (a consulta falhou e está sendo refeita).
 export type IdhCardState = PanelCardState;
 
 type IdhFilterKey = "uf" | "ano";
