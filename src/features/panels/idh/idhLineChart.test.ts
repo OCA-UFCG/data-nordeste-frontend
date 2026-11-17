@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildIdhLineGeometry,
-  stepIdhYear,
-} from "@/features/panels/idh/idhLineChart";
+import { buildIdhLineGeometry } from "@/features/panels/idh/idhLineChart";
 
 const YEARS = [2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021];
 const idh = YEARS.map((_, index) => 0.675 + index * 0.003);
@@ -70,30 +67,5 @@ describe("buildIdhLineGeometry", () => {
     expect(frame.ticks.map(({ value }) => value)).toEqual([
       0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
     ]);
-  });
-});
-
-describe("stepIdhYear", () => {
-  const GAPPED = [2018, 2019, 2021];
-
-  it("steps one year with the arrows when the year is in the series", () => {
-    expect(stepIdhYear(GAPPED, 2019, "ArrowRight")).toBe(2021);
-    expect(stepIdhYear(GAPPED, 2019, "ArrowLeft")).toBe(2018);
-  });
-
-  it("goes to the nearest neighbour when the year is missing", () => {
-    expect(stepIdhYear(GAPPED, 2020, "ArrowLeft")).toBe(2019);
-    expect(stepIdhYear(GAPPED, 2020, "ArrowRight")).toBe(2021);
-  });
-
-  it("stays put past the ends and on unrelated keys", () => {
-    expect(stepIdhYear(GAPPED, 2022, "ArrowRight")).toBeNull();
-    expect(stepIdhYear(GAPPED, 2021, "ArrowRight")).toBeNull();
-    expect(stepIdhYear(GAPPED, 2020, "Enter")).toBeNull();
-  });
-
-  it("jumps to the ends with Home and End", () => {
-    expect(stepIdhYear(GAPPED, 2020, "Home")).toBe(2018);
-    expect(stepIdhYear(GAPPED, 2020, "End")).toBe(2021);
   });
 });

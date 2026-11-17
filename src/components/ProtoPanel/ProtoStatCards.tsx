@@ -20,6 +20,7 @@ import {
   CarouselItem,
   useCarousel,
 } from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
 
 // Variação do mesmo número: a seta verde ou vermelha ao lado da variação.
 export type ProtoStatPill = {
@@ -35,7 +36,12 @@ export type ProtoStatCell = {
   pill?: ProtoStatPill | null;
 };
 
-// `hero`: o número de destaque do perfil demográfico, em card único e maior.
+// `row`: a faixa de cinco indicadores do IDH. `hero`: o número de destaque do
+// perfil demográfico, em card único e maior. `pair`: os dois números do PIB
+// (`.pib .bns`), do tamanho do `hero`, lado a lado e em carrossel só até 700 px.
+export type ProtoStatVariant = "row" | "hero" | "pair";
+
+// `hero` nos cards: o tamanho grande, que o `pair` também usa.
 const CELL_BASE = `flex h-full min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white p-4 ${CARD_SHADOW}`;
 const ROW_CELL_CLASS = `${CELL_BASE} min-h-[118px]`;
 const HERO_CELL_CLASS = `${CELL_BASE} min-h-[132px]`;
@@ -56,8 +62,12 @@ const CellTop = ({
   iconClassName: string;
 }) => (
   <div className="flex min-h-[34px] items-center gap-2.5">
+    {/* cn: o painel pode trocar o canto do chip (o PIB usa um círculo). */}
     <span
-      className={`grid size-8 flex-none place-items-center rounded-[8px] ${iconClassName}`}
+      className={cn(
+        "grid size-8 flex-none place-items-center rounded-[8px]",
+        iconClassName,
+      )}
     >
       <ProtoIcon name={icon} size={20} />
     </span>
@@ -196,18 +206,32 @@ const Cell = ({
   );
 };
 
-// Do 1100 px em diante o embla desliga e os cards viram a grade de cinco.
-const CAROUSEL_OPTIONS = {
-  align: "start",
-  breakpoints: { "(min-width: 1100px)": { active: false } },
+// Do 1100 px (`row`) ou 701 px (`pair`) em diante o embla desliga e os cards
+// viram grade. Espaço entre os cards: no carrossel é o padding do item (o
+// embla mede os slides, não o `gap`), por isso o passo acompanha a classe sem
+// número fixo. `controls` esconde setas e bolinhas na mesma faixa da grade.
+const CAROUSEL_LAYOUT = {
+  row: {
+    opts: {
+      align: "start",
+      breakpoints: { "(min-width: 1100px)": { active: false } },
+    },
+    track:
+      "-ml-3 min-[1100px]:ml-0 min-[1100px]:grid min-[1100px]:grid-cols-5 min-[1100px]:gap-4",
+    item: "basis-1/3 pl-3 max-[700px]:basis-full min-[1100px]:basis-auto min-[1100px]:pl-0",
+    controls: "min-[1100px]:hidden",
+  },
+  pair: {
+    opts: {
+      align: "start",
+      breakpoints: { "(min-width: 701px)": { active: false } },
+    },
+    track:
+      "-ml-3 min-[701px]:ml-0 min-[701px]:grid min-[701px]:grid-cols-2 min-[701px]:gap-4",
+    item: "basis-full pl-3 min-[701px]:basis-auto min-[701px]:pl-0",
+    controls: "min-[701px]:hidden",
+  },
 } as const;
-
-// Espaço entre os cards: no carrossel é o padding do item (o embla mede os
-// slides, não o `gap`), por isso o passo acompanha a classe sem número fixo.
-const TRACK_CLASS =
-  "-ml-3 min-[1100px]:ml-0 min-[1100px]:grid min-[1100px]:grid-cols-5 min-[1100px]:gap-4";
-const ITEM_CLASS =
-  "basis-1/3 pl-3 max-[700px]:basis-full min-[1100px]:basis-auto min-[1100px]:pl-0";
 
 // Quantas paradas o carrossel tem: três cards por vez no tablet dão três
 // paradas, não cinco. Muda quando a largura troca de faixa.
@@ -270,15 +294,15 @@ const CarouselDots = ({ count, active }: { count: number; active: number }) => (
   </div>
 );
 
-// Setas e bolinhas só abaixo de 1100 px e quando há o que rolar.
-const CarouselControls = () => {
+// Setas e bolinhas só enquanto é carrossel e quando há o que rolar.
+const CarouselControls = ({ className }: { className: string }) => {
   const { canScrollPrev, canScrollNext, currentItem } = useCarousel();
   const snapCount = useSnapCount();
 
   if (!canScrollPrev && !canScrollNext) return null;
 
   return (
-    <div className="mt-3 flex items-center justify-center gap-6 min-[1100px]:hidden">
+    <div className={`mt-3 flex items-center justify-center gap-6 ${className}`}>
       <CarouselArrow direction="back" />
       <CarouselDots count={snapCount} active={currentItem} />
       <CarouselArrow direction="forward" />
@@ -291,7 +315,8 @@ const CarouselControls = () => {
  * 1100 px, o carrossel de `ui/carousel` com setas e bolinhas. Os textos e os
  * valores vêm prontos em `cells`; `label` nomeia o carrossel. `variant="hero"`:
  * um card só, sem carrossel (o número de destaque do perfil). `iconClassName`:
- * cor do chip do ícone (padrão: o tom do painel).
+ * cor do chip do ícone (padrão: o tom do painel). `variant="pair"`: dois cards
+ * grandes lado a lado, com carrossel só até 700 px (o PIB).
  *
  * @example <ProtoStatCards label="Indicadores do IDH" cells={[{ icon: "idh", label: "IDH", value: "0,702" }]} state="ok" onRetry={retry} />
  */
@@ -307,21 +332,20 @@ export const ProtoStatCards = ({
   cells: ProtoStatCell[];
   state: ProtoCardState;
   onRetry: () => void;
-  variant?: "row" | "hero";
+  variant?: ProtoStatVariant;
   iconClassName?: string;
 }) => {
-  const hero = variant === "hero";
   const renderCell = (cell: ProtoStatCell) => (
     <Cell
       cell={cell}
       state={state}
       onRetry={onRetry}
-      hero={hero}
+      hero={variant !== "row"}
       iconClassName={iconClassName}
     />
   );
 
-  if (hero) {
+  if (variant === "hero") {
     return (
       <div className="grid grid-cols-1">
         {cells.map((cell) => (
@@ -331,16 +355,18 @@ export const ProtoStatCards = ({
     );
   }
 
+  const layout = CAROUSEL_LAYOUT[variant];
+
   return (
-    <Carousel opts={CAROUSEL_OPTIONS} aria-label={label}>
-      <CarouselContent wrapperClassName="-m-0.5 p-0.5" className={TRACK_CLASS}>
+    <Carousel opts={layout.opts} aria-label={label}>
+      <CarouselContent wrapperClassName="-m-0.5 p-0.5" className={layout.track}>
         {cells.map((cell) => (
-          <CarouselItem key={cell.label} className={ITEM_CLASS}>
+          <CarouselItem key={cell.label} className={layout.item}>
             {renderCell(cell)}
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselControls />
+      <CarouselControls className={layout.controls} />
     </Carousel>
   );
 };

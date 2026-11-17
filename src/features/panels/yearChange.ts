@@ -34,3 +34,20 @@ const signedPercent = new Intl.NumberFormat("pt-BR", {
 /** @example formatYearChange({ ratio: 0.082, previousLabel: "2020" }) // "+8,2% em relação a 2020" */
 export const formatYearChange = (change: YearChange): string =>
   `${signedPercent.format(change.ratio)} em relação a ${change.previousLabel}`;
+
+export type YearChangeTone = "up" | "down" | "flat";
+
+/**
+ * Cor da variação de um número de destaque (perfil, PIB). Decide pelo valor já arredondado ao
+ * que aparece na tela (1 casa decimal em %): 0,04% vira "0,0%", sem seta.
+ *
+ * @example yearChangeTone({ ratio: 0.03, previousLabel: "2010" }) // "up"
+ */
+export const yearChangeTone = (change: YearChange): YearChangeTone => {
+  const tenthsOfPercent = Math.round(change.ratio * 1000);
+
+  if (tenthsOfPercent > 0) return "up";
+  if (tenthsOfPercent < 0) return "down";
+
+  return "flat";
+};

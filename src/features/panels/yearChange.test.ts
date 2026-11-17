@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   describeYearChange,
   formatYearChange,
+  yearChangeTone,
 } from "@/features/panels/yearChange";
 
 const SERIE = [
@@ -25,5 +26,24 @@ describe("describeYearChange", () => {
     expect(describeYearChange(SERIE, 0)).toBeNull();
     expect(describeYearChange(SERIE, 1)).toBeNull();
     expect(describeYearChange(SERIE, -1)).toBeNull();
+  });
+});
+
+describe("yearChangeTone", () => {
+  it("is up or down by the sign of the change", () => {
+    expect(yearChangeTone({ ratio: 0.03, previousLabel: "2010" })).toBe("up");
+    expect(yearChangeTone({ ratio: -0.03, previousLabel: "2010" })).toBe(
+      "down",
+    );
+  });
+
+  it("is flat when the shown one-decimal percentage is zero", () => {
+    expect(yearChangeTone({ ratio: 0, previousLabel: "2010" })).toBe("flat");
+    expect(yearChangeTone({ ratio: 0.0004, previousLabel: "2010" })).toBe(
+      "flat",
+    );
+    expect(yearChangeTone({ ratio: -0.0004, previousLabel: "2010" })).toBe(
+      "flat",
+    );
   });
 });

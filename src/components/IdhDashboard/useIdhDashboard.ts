@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
+import { usePendingFilters } from "@/components/ProtoPanel/usePendingFilters";
 import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { resolveIdhCardStates } from "@/features/panels/idh/idhCardState";
 import {
@@ -61,25 +62,6 @@ const useIdhTabSelection = (
   return [tab, selectTab] as const;
 };
 
-// Guarda os filtros pedidos enquanto o servidor não responde. A seleção
-// (estado destacado, ano, selects) já mostra o pedido, e cada card sabe se o
-// dado dele vai mudar. Filtrar parte da seleção, não de `data.filters`: assim
-// escolher o ano logo depois do estado não descarta o estado ainda pendente.
-const usePendingFilters = (
-  data: IdhPanelData,
-  applyFilters: (filters: IdhFilters) => void,
-  isPending: boolean,
-) => {
-  const [requested, setRequested] = useState<IdhFilters | null>(null);
-  const pending = isPending ? requested : null;
-  const request = (next: IdhFilters) => {
-    setRequested(next);
-    applyFilters(next);
-  };
-
-  return { pending, selection: pending ?? data.filters, request };
-};
-
 // Ações dos cards e da barra de filtros. Filtrar leva a aba aberta para a URL:
 // é ela que o servidor devolve em `data.filters.visao`.
 const useIdhFilterActions = (
@@ -106,7 +88,7 @@ const useIdhLoad = (data: IdhPanelData, failed: boolean) => {
   const navigation = useIdhNavigation();
   const { retrying, retry } = useProtoRetry();
   const filters = usePendingFilters(
-    data,
+    data.filters,
     navigation.applyFilters,
     navigation.isPending,
   );

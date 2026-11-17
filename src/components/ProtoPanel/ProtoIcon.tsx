@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 // Ícones do protótipo dos painéis, com os mesmos traços: os da lucide são
 // parecidos, mas não iguais (o protótipo é a referência visual do painel).
 // Os nomes idh/idhad/gini/renda/rend vêm dos cards de IDH; `users` (perfil)
-// usa o desenho do idh.
+// usa o desenho do idh. `usd` é o cifrão do PIB; a carteira do PIB per capita
+// é o mesmo desenho de `renda`.
 const PATHS_24: Record<string, ReactNode> = {
   idh: (
     <>
@@ -50,6 +51,12 @@ const PATHS_24: Record<string, ReactNode> = {
       <rect x="2" y="7" width="20" height="14" rx="2" />
       <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
       <path d="M2 13h20" />
+    </>
+  ),
+  usd: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M14.8 9.2c-.4-.9-1.4-1.4-2.8-1.4-1.6 0-2.8.8-2.8 2 0 3 5.8 1.3 5.8 4.2 0 1.2-1.2 2-2.9 2-1.5 0-2.6-.6-3-1.6M12 6.5v1.3M12 16.2v1.3" />
     </>
   ),
   info: (

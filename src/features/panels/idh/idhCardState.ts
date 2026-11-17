@@ -1,6 +1,7 @@
 import {
-  resolvePanelCardState,
   type PanelCardState,
+  type PanelLoadRequest,
+  resolveDependentCardStates,
 } from "@/features/panels/panelCardState";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 
@@ -27,33 +28,7 @@ export type IdhCardKey = keyof typeof IDH_CARD_DEPENDENCIES;
 
 export type IdhCardStates = Record<IdhCardKey, IdhCardState>;
 
-export type IdhLoadStatus = {
-  failed: boolean;
-  retrying: boolean;
-
-  // Filtros pedidos enquanto a navegação está pendente; null fora dela.
-  pending: IdhFilters | null;
-};
-
-const resolveCardState = (
-  { failed, retrying, pending }: IdhLoadStatus,
-  current: IdhFilters,
-  dependsOn: readonly IdhFilterKey[],
-): IdhCardState => {
-  // Recarregar vence o erro: sem essa prioridade o "Tentar de novo" nunca
-  // mostraria o esqueleto nem desabilitaria o botão (revisão da PR #397).
-  if (failed) {
-    return resolvePanelCardState({
-      failed,
-      loading: retrying || pending !== null,
-    });
-  }
-  if (!pending) return "ok";
-
-  return dependsOn.some((key) => pending[key] !== current[key])
-    ? "stale"
-    : "ok";
-};
+export type IdhLoadStatus = PanelLoadRequest<IdhFilters>;
 
 /**
  * Estado de cada card do painel. Só esmaece o card cujo dado muda com o
@@ -64,16 +39,8 @@ const resolveCardState = (
 export const resolveIdhCardStates = (
   status: IdhLoadStatus,
   current: IdhFilters,
-): IdhCardStates => {
-  const keys = Object.keys(IDH_CARD_DEPENDENCIES) as IdhCardKey[];
-
-  return Object.fromEntries(
-    keys.map((key) => [
-      key,
-      resolveCardState(status, current, IDH_CARD_DEPENDENCIES[key]),
-    ]),
-  ) as IdhCardStates;
-};
+): IdhCardStates =>
+  resolveDependentCardStates(status, current, IDH_CARD_DEPENDENCIES);
 
 /**
  * O card tem dado para mostrar (atual ou anterior esmaecido).
