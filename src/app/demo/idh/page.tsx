@@ -1,17 +1,22 @@
 import type { Metadata } from "next";
+import { IdhCover } from "@/components/IdhDashboard/IdhCover";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
+import { IdhSaibaMais } from "@/components/IdhDashboard/IdhSaibaMais";
 import {
-  IDH_ICON,
-  IDH_SOURCE,
+  IDH_LEAD,
+  IDH_MACROTHEME,
   IDH_TITLE,
 } from "@/components/IdhDashboard/idhTheme";
-import { PanelPage } from "@/components/Panel/layout/PanelPage";
-import { PanelMessage } from "@/components/Panel/layout/PanelShell";
-import { PanelTextsFrame } from "@/components/Panel/texts/PanelTextsFrame";
+import {
+  getCatalogHref,
+  getMacroThemeHref,
+  PanelDescriptionSection,
+} from "@/components/Panel/texts/PanelTexts";
+import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedPanelsSection";
 import { buildMetadata } from "@/config/seo";
 import { loadIdhPanelContent } from "@/features/panels/idh/idhContent";
 import {
-  buildIdhSearch,
+  emptyIdhPanel,
   loadIdhPanel,
   parseIdhFilters,
   type IdhFilters,
@@ -47,19 +52,13 @@ const loadPanel = async (filters: IdhFilters) => {
   }
 };
 
-const LoadFailedMessage = ({ filters }: { filters: IdhFilters }) => (
-  <PanelMessage>
-    Não foi possível carregar os dados do painel agora. Tente novamente em
-    alguns minutos.{" "}
-    <a
-      href={`/demo/idh${buildIdhSearch(filters)}`}
-      className="font-medium text-green-900 underline underline-offset-4"
-    >
-      Tentar novamente
-    </a>
-  </PanelMessage>
-);
-
+// Layout do protótipo dos painéis: capa, painel, descrição do Contentful,
+// "Saiba mais" e relacionados.
+// INTENTIONAL: sem o Contentful, a capa usa o macrotema e o texto de abertura
+// do IDH e somem a descrição e os relacionados; sem o banco, os cards mostram o
+// erro com "Tentar de novo" em vez de derrubar a página.
+// IMPORTANT: o título fica constante. O `title` da entrada "panels" é a chave
+// da consulta ("idh"), não um texto para exibir (ver `createPanelEntryReader`).
 export default async function IdhDemoPage({
   searchParams,
 }: {
@@ -70,30 +69,24 @@ export default async function IdhDemoPage({
     loadPanel(filters),
     loadIdhPanelContent(),
   ]);
-
-  // A key remonta as abas quando um link muda ?visao= sem trocar de página.
+  const macroTheme = content?.panel.macroTheme ?? IDH_MACROTHEME;
 
   return (
     <HubTemplate>
-      <PanelTextsFrame content={content}>
-        {panel ? (
-          <IdhDashboard
-            key={panel.filters.visao}
-            data={panel}
-            source={IDH_SOURCE}
-          />
-        ) : (
-          <PanelPage
-            title={IDH_TITLE}
-            icon={IDH_ICON}
-            tone="idh"
-            source={IDH_SOURCE}
-            fullMobile
-          >
-            <LoadFailedMessage filters={filters} />
-          </PanelPage>
-        )}
-      </PanelTextsFrame>
+      <IdhCover
+        title={IDH_TITLE}
+        lead={content?.panel.abovePanelDescription || IDH_LEAD}
+        macroTheme={macroTheme}
+        publishedAt={content?.panel.date}
+      />
+      <IdhDashboard
+        data={panel ?? emptyIdhPanel(filters)}
+        failed={!panel}
+        catalogHref={getCatalogHref(macroTheme)}
+      />
+      {content ? <PanelDescriptionSection panel={content.panel} /> : null}
+      <IdhSaibaMais themeHref={getMacroThemeHref(macroTheme)} />
+      {content ? <RelatedPanelsSection items={content.relatedItems} /> : null}
     </HubTemplate>
   );
 }

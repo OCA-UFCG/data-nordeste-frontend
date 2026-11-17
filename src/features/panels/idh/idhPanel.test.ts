@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   buildIdhSearch,
-  describeIdhSelection,
+  describeIdhSerie,
+  describeIdhShareChips,
+  emptyIdhPanel,
+  idhPlaceName,
   loadIdhPanel,
   parseIdhFilters,
 } from "@/features/panels/idh/idhPanel";
@@ -125,9 +128,87 @@ describe("loadIdhPanel", () => {
     });
 
     expect(panel.filters).toEqual({ ano: 2021, visao: "cor" });
-    expect(describeIdhSelection(panel)).toBe(
-      "Média dos estados do Nordeste · 2021",
+    expect(idhPlaceName(panel)).toBe("Nordeste");
+  });
+});
+
+describe("describeIdhSerie", () => {
+  const serie = [2012, 2021].map((ano) => ({
+    ano,
+    idh: 0.7,
+    idhAjustado: 0.5,
+    gini: 0.55,
+    rendaPerCapita: 467.43,
+    rendimento: 934.08,
+  }));
+  const ufs = [{ sigla: "PE", nome: "Pernambuco" }];
+
+  it("names whose line it is and the years it covers", () => {
+    expect(
+      describeIdhSerie({ filters: { ano: 2015, visao: "geral" }, ufs, serie }),
+    ).toBe("Média dos estados do Nordeste · 2012 a 2021");
+    expect(
+      describeIdhSerie({
+        filters: { ano: 2015, visao: "geral", uf: "PE" },
+        ufs,
+        serie,
+      }),
+    ).toBe("Pernambuco · 2012 a 2021");
+  });
+
+  it("leaves the years out when the series is empty", () => {
+    expect(
+      describeIdhSerie({
+        filters: { ano: 2021, visao: "geral" },
+        ufs,
+        serie: [],
+      }),
+    ).toBe("Média dos estados do Nordeste");
+  });
+});
+
+describe("emptyIdhPanel", () => {
+  it("keeps the requested filters with no data, for the error state", () => {
+    expect(emptyIdhPanel({ ano: 2015, visao: "cor", uf: "PE" })).toEqual({
+      filters: { ano: 2015, visao: "cor", uf: "PE" },
+      ufs: [],
+      serie: [],
+      mapa: [],
+      sexo: [],
+      cor: [],
+    });
+  });
+});
+
+describe("idhPlaceName", () => {
+  it("names the state, or the Northeast for the average", () => {
+    const ufs = [{ sigla: "PE", nome: "Pernambuco" }];
+
+    expect(
+      idhPlaceName({ filters: { ano: 2021, visao: "geral", uf: "PE" }, ufs }),
+    ).toBe("Pernambuco");
+    expect(idhPlaceName({ filters: { ano: 2021, visao: "geral" }, ufs })).toBe(
+      "Nordeste",
     );
+  });
+});
+
+describe("describeIdhShareChips", () => {
+  const ufs = [{ sigla: "PE", nome: "Pernambuco" }];
+
+  it("lists the state, the year and a non-default view", () => {
+    expect(
+      describeIdhShareChips(
+        { filters: { ano: 2019, visao: "geral", uf: "PE" }, ufs },
+        "cor",
+      ),
+    ).toEqual(["Estado: Pernambuco", "Ano: 2019", "Visão por cor"]);
+    expect(
+      describeIdhShareChips(
+        { filters: { ano: 2021, visao: "geral" }, ufs },
+        "geral",
+      ),
+    ).toEqual(["Estado: Todos", "Ano: 2021"]);
   });
 });
 

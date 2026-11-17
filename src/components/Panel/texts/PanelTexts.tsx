@@ -66,13 +66,25 @@ export const CatalogLinkSection = ({ macroTheme }: { macroTheme: string }) => {
 const macroThemeSlug = (macroTheme: string) =>
   MACROTHEME_ROUTE_BY_NAME[macroTheme as keyof typeof MACROTHEME_ROUTE_BY_NAME];
 
-const getCatalogHref = (macroTheme: string): string | null => {
+/**
+ * Link do catálogo filtrado pelo macrotema do painel, ou null se o macrotema
+ * não tem rota.
+ *
+ * @example getCatalogHref("Desenvolvimento Social") // "/catalog?category=…"
+ */
+export const getCatalogHref = (macroTheme: string): string | null => {
   const slug = macroThemeSlug(macroTheme);
 
   return slug ? `/catalog?category=${slug}` : null;
 };
 
-const getMacroThemeHref = (macroTheme: string): string | null => {
+/**
+ * Página do macrotema do painel ("Ver mais sobre o tema"), ou null se o
+ * macrotema não tem rota.
+ *
+ * @example getMacroThemeHref("Desenvolvimento Social") // "/macrothemes/desenvolvimento-social"
+ */
+export const getMacroThemeHref = (macroTheme: string): string | null => {
   const slug = macroThemeSlug(macroTheme);
 
   return slug ? `/macrothemes/${slug}` : null;
