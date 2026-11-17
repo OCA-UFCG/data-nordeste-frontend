@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildIdhSearch,
+  describeIdhSelection,
   describeIdhSerie,
   describeIdhShareChips,
   emptyIdhPanel,
@@ -164,6 +165,22 @@ describe("describeIdhSerie", () => {
         serie: [],
       }),
     ).toBe("Média dos estados do Nordeste");
+  });
+});
+
+describe("describeIdhSelection", () => {
+  const ufs = [{ sigla: "PE", nome: "Pernambuco" }];
+
+  it("names the filtered place and year", () => {
+    expect(
+      describeIdhSelection({ filters: { ano: 2021, visao: "geral" }, ufs }),
+    ).toBe("Média dos estados do Nordeste · 2021");
+    expect(
+      describeIdhSelection({
+        filters: { ano: 2015, visao: "geral", uf: "PE" },
+        ufs,
+      }),
+    ).toBe("Pernambuco · 2015");
   });
 });
 

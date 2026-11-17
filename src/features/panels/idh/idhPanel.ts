@@ -269,6 +269,15 @@ export const describeIdhSerie = (
 };
 
 /**
+ * Subtítulo dos cards da demo /demo/idh-powerbi: o lugar e o ano filtrados.
+ *
+ * @example describeIdhSelection(panel) // "Média dos estados do Nordeste · 2021"
+ */
+export const describeIdhSelection = (
+  data: Pick<IdhPanelData, "filters" | "ufs">,
+): string => `${describeIdhPlace(data)} · ${data.filters.ano}`;
+
+/**
  * Os filtros que entram no link de compartilhar, em texto, para a pessoa ver o
  * que vai junto antes de copiar.
  *
