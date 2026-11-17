@@ -139,18 +139,27 @@ outside the repository and rendered through frontend route/component logic.
   The Figma opens a state search under Nordeste; product decided (12/11/2026)
   that Nordeste is the whole region instead. An area scope only shows when
   `/areas` lists it, so environments whose backend has no `/areas` (beta and
-  prod in Nov/2026) keep only Município and Estado. Estado and the area scopes
-  show Desenvolvimento Social and Instrumentos Sudene disabled (no state or
-  area data in the backend yet) and drop them from the selection; only
-  Município offers every theme. An empty municipality search shows the first eight
+  prod in Nov/2026) keep only Município and Estado. The area scopes show
+  Instrumentos Sudene disabled (no area data in the backend yet), and
+  Desenvolvimento Social (IDH) is offered only in Nordeste (14/11/2026; the
+  backend still lacks its area matview and Doc); Caatinga, Semiárido and Área
+  de atuação da Sudene show it disabled with a "!" that explains, on hover,
+  focus or tap, why the IDH does not apply to them. Estado shows only Instrumentos Sudene disabled (no
+  `est_*` matview; Desenvolvimento Social got its state report on
+  13/11/2026); disabled themes drop from the selection, and only Município
+  offers every theme. An empty municipality search shows the first eight
   municipalities; states are never capped. A backend without `/estados` leaves
   the "Estado" search empty. A state or area name
   goes to the same `/relatorio/{nome}` route, which the backend routes to its
   state or area report (state/area Docs + `auto_relatorios_est` /
   `auto_relatorios_areaint` matviews, no charts or map yet; Minas Gerais waits
-  for the data team). The server
-  reads `NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL`, such as
-  `http://127.0.0.1:8000`, to reach the FastAPI service. The `/relatorio`
+  for the data team). To reach the FastAPI service, the server reads
+  `AUTOMATIC_REPORT_API_URL` and falls back to
+  `NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL`, such as `http://127.0.0.1:8000`.
+  Every deploy sets `AUTOMATIC_REPORT_API_URL` to the backend's Docker-network
+  address. From inside the VM, the public URL loops back through the LSD front
+  door. In Nov/2026 the front door stopped allowing that, which broke beta
+  reports until beta got the internal address too. The `/relatorio`
   route served directly by Automatic-Reporting returns an HTML page, not a
   PDF, and is intentionally not used by the frontend preview; pointing pdf.js
   at it would fail to render.

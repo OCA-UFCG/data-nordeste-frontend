@@ -254,6 +254,38 @@ describe("ReportBuilder", () => {
     expect(social).toBeDisabled();
     expect(social).not.toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Demografia" })).toBeChecked();
+
+    // The "!" next to the disabled theme explains the missing IDH.
+    await user.hover(
+      screen.getByRole("button", {
+        name: "Por que este tema não está disponível?",
+      }),
+    );
+    expect(await screen.findByRole("tooltip")).toHaveTextContent(
+      /não há dados específicos disponíveis para o Semiárido/,
+    );
+  });
+
+  it("offers Desenvolvimento Social in Nordeste, with no notice", async () => {
+    vi.stubGlobal("fetch", new FakeCitiesApi(BACKEND_AREAS).fetch);
+    const user = userEvent.setup();
+
+    render(
+      <ReportBuilder
+        themes={[DEMOGRAFIA_THEME, DESENVOLVIMENTO_SOCIAL_THEME]}
+      />,
+    );
+    await screen.findByRole("button", { name: /^Recorte:/ });
+    await chooseScope(user, "Nordeste");
+
+    expect(
+      await screen.findByRole("checkbox", { name: "Desenvolvimento Social" }),
+    ).toBeEnabled();
+    expect(
+      screen.queryByRole("button", {
+        name: "Por que este tema não está disponível?",
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it("disables and unselects Instrumentos Sudene under Estado", async () => {
