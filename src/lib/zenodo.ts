@@ -107,12 +107,6 @@ export const buildZenodoRecordsQuery = (
   return query;
 };
 
-export const buildZenodoFilesArchiveUrl = (recordId: string): string =>
-  `${ZENODO_BASE_URL}/${recordId}/files-archive`;
-
-export const buildZenodoArchiveFileName = (title: string): string =>
-  title.replace(/\s+/g, "_").toLowerCase() + ".zip";
-
 const buildConditions = (filters: ZenodoFilters) => {
   let dateCondition = "";
   const otherConditions: string[] = [];

@@ -96,6 +96,11 @@ outside the repository and rendered through frontend route/component logic.
   access.
 - Zenodo records are fetched from `https://zenodo.org/api/records` with
   `communities=datane`.
+- The catalog offers no "download all files" zip. Zenodo stopped serving
+  `/api/records/{id}/files-archive` (403 from its nginx, and the record response
+  no longer carries an `archive` link), so each file is downloaded through its own
+  `files[].links.self` URL. Do not bring the zip button back without checking that
+  endpoint again.
 - Firebase is used for survey feedback submission and App Check. The frontend
   expects Firebase public config variables, a ReCaptcha V3 key, and a feedback
   endpoint URL.

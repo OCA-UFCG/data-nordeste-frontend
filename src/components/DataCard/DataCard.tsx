@@ -10,10 +10,6 @@ import {
   buildCatalogTagViews,
   formatCatalogPublicationDate,
 } from "@/features/catalog/records";
-import {
-  buildZenodoArchiveFileName,
-  buildZenodoFilesArchiveUrl,
-} from "@/lib/zenodo";
 import { downloadFile } from "@/lib/download";
 
 export const DataCard = ({
@@ -33,14 +29,6 @@ export const DataCard = ({
     } catch (err) {
       console.error("Erro ao baixar arquivo:", err);
     }
-  };
-
-  const handleDownloadZippedFiles = async () => {
-    // INTENTIONAL: Zenodo exposes a synthetic archive endpoint per record; the
-    // file list below still uses individual file API URLs.
-    const zipUrl = buildZenodoFilesArchiveUrl(post.id);
-    const fileName = buildZenodoArchiveFileName(post.title);
-    await handleDownload(zipUrl, fileName);
   };
 
   const [sanitizedDescription, setSanitizedDescription] = useState("");
@@ -127,24 +115,6 @@ export const DataCard = ({
               }
             </div>
           )}
-          {files.length > 0 && (
-            <div className="flex flex-row flex-wrap items-center justify-between gap-3 lg:flex-nowrap lg:justify-end w-[150px] sm:w-[225px] h-[40px]">
-              {
-                <Button
-                  variant="primary"
-                  onClick={handleDownloadZippedFiles}
-                  className="w-full text-[14px] font-medium text-[#F8F7F8]"
-                >
-                  <Icon id="icon-download" size={16} />
-                  <span className="hidden sm:block">
-                    Baixar todos os arquivos
-                  </span>
-
-                  <span className="block sm:hidden">Baixar Dados</span>
-                </Button>
-              }
-            </div>
-          )}
         </div>
       </div>
 
@@ -187,15 +157,6 @@ export const DataCard = ({
                 </button>
               ))}
             </div>
-
-            <Button
-              variant="primary"
-              onClick={handleDownloadZippedFiles}
-              className="w-full text-[14px] font-medium text-[#F8F7F8]"
-            >
-              <Icon id="icon-download" size={16} />
-              Baixar todos os arquivos
-            </Button>
           </div>
 
           <div className="flex gap-2 items-center h-auto justify-between">
