@@ -8,11 +8,7 @@ import {
   stripHtml,
   truncateDescription,
 } from "@/config/seo";
-import {
-  buildZenodoArchiveFileName,
-  buildZenodoFilesArchiveUrl,
-  getZenodoRecord,
-} from "@/lib/zenodo";
+import { getZenodoRecord } from "@/lib/zenodo";
 import { formatCatalogPublicationDate } from "@/features/catalog/records";
 
 type DatasetPageProps = {
@@ -56,8 +52,6 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
   const tags = record.tags ?? [];
   const formattedDate = formatCatalogPublicationDate(record.publication_date);
   const plainDescription = stripHtml(record.description);
-  const archiveUrl = buildZenodoFilesArchiveUrl(record.id);
-  const archiveName = buildZenodoArchiveFileName(record.title);
   const jsonLd = buildDatasetJsonLd(record);
 
   return (
@@ -147,15 +141,6 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
             >
               Ver registro no Zenodo
             </Link>
-            {!!record.files.length && (
-              <Link
-                href={archiveUrl}
-                download={archiveName}
-                className="rounded-md bg-green-800 px-4 py-2 text-sm font-semibold text-white"
-              >
-                Baixar todos os arquivos
-              </Link>
-            )}
           </div>
 
           {!!record.files.length && (
