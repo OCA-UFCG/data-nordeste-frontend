@@ -46,6 +46,12 @@ export type AllowedPdfFetch = { response: Response } | { rejection: string };
 // IMPORTANT: redirect seguido à mão, conferindo cada salto contra a lista. O
 // redirect automático do fetch levaria a qualquer host que o servidor de fora
 // indicasse, e furaria a lista.
+/**
+ * Fetches the URL following redirects by hand, only through allowed hosts.
+ *
+ * Usage: await fetchThroughAllowedHosts(new URL("https://drive.google.com/uc?id=abc"))
+ * => { response } | { rejection: "redirect_not_allowed" | "too_many_redirects" }
+ */
 export async function fetchThroughAllowedHosts(
   url: URL,
   signal?: AbortSignal,
@@ -57,6 +63,8 @@ export async function fetchThroughAllowedHosts(
     const location = response.headers.get("Location");
     if (!isRedirect(response.status) || !location) return { response };
 
+    // O socket só volta ao pool quando o corpo do 3xx é consumido ou cancelado.
+    await discardBody(response);
     const next = parseAllowedPdfUrl(new URL(location, current).href);
     if (!next) return { rejection: "redirect_not_allowed" };
     current = next;
@@ -69,9 +77,47 @@ function isRedirect(status: number): boolean {
   return status >= 300 && status < 400;
 }
 
+// Cancelar rejeita quando a conexão já caiu no corpo; como o corpo só precisa
+// ser descartado, isso não pode mudar o resultado da resposta.
+async function discardBody(response: Response): Promise<void> {
+  await response.body?.cancel().catch(() => undefined);
+}
+
+export type AllowedPdfOpening =
+  | { response: Response }
+  | { rejection: string; upstreamStatus?: number };
+
+/**
+ * Opens a boletim link by the proxy rules: https on an allowed host, every
+ * redirect checked, and a 2xx answer. The caller owns the body of `response`.
+ * `upstreamStatus` is set when the host itself answered with an error.
+ *
+ * Usage: await openAllowedPdf("https://www.gov.br/x.pdf") => { response }
+ */
+export async function openAllowedPdf(
+  rawUrl: string,
+  signal?: AbortSignal,
+): Promise<AllowedPdfOpening> {
+  const pdfUrl = parseAllowedPdfUrl(rawUrl);
+  if (!pdfUrl) return { rejection: "host_not_allowed" };
+
+  const fetched = await fetchThroughAllowedHosts(pdfUrl, signal);
+  if ("rejection" in fetched) return fetched;
+
+  const { response } = fetched;
+  if (response.ok) return { response };
+
+  await discardBody(response);
+
+  return {
+    rejection: `HTTP ${response.status}`,
+    upstreamStatus: response.status,
+  };
+}
+
 /**
  * Why the boletim link would not open in /api/pdf-proxy, or null when it opens.
- * Same rules as the proxy, but reads only the first bytes of the file.
+ * Same rules as the proxy (openAllowedPdf), but reads only the first bytes.
  *
  * Usage: await checkBoletimPdf("https://www.gov.br/.../x.pdf") => "not_a_pdf"
  */
@@ -79,20 +125,10 @@ export async function checkBoletimPdf(
   rawUrl: string,
   signal?: AbortSignal,
 ): Promise<string | null> {
-  const pdfUrl = parseAllowedPdfUrl(rawUrl);
-  if (!pdfUrl) return "host_not_allowed";
+  const opened = await openAllowedPdf(rawUrl, signal);
+  if ("rejection" in opened) return opened.rejection;
 
-  const fetched = await fetchThroughAllowedHosts(pdfUrl, signal);
-  if ("rejection" in fetched) return fetched.rejection;
-
-  const { response } = fetched;
-  if (!response.ok) {
-    await response.body?.cancel();
-
-    return `HTTP ${response.status}`;
-  }
-
-  const head = await readFirstBytes(response, PDF_SIGNATURE.length);
+  const head = await readFirstBytes(opened.response, PDF_SIGNATURE.length);
 
   return hasPdfSignature(head) ? null : "not_a_pdf";
 }

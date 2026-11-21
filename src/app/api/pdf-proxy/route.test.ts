@@ -86,6 +86,29 @@ describe("GET /api/pdf-proxy", () => {
     expect(boletimHost.fetch).toHaveBeenCalledTimes(1);
   });
 
+  it.each([404, 503])(
+    "passes the upstream status %i through, without a rejection log",
+    async (status) => {
+      useBoletimHost([new Response("gone", { status })]);
+
+      const response = await GET(proxyRequest(BOLETIM_URL));
+
+      expect(response.status).toBe(status);
+      expect(console.warn).not.toHaveBeenCalled();
+    },
+  );
+
+  it("refuses a chain of more than 3 redirects", async () => {
+    const boletimHost = useBoletimHost(
+      Array.from({ length: 5 }, () => redirectTo(DRIVE_TARGET)),
+    );
+
+    const response = await GET(proxyRequest(BOLETIM_URL));
+
+    expect(response.status).toBe(403);
+    expect(boletimHost.fetch).toHaveBeenCalledTimes(4);
+  });
+
   it("refuses to relay HTML from an allowed host", async () => {
     useBoletimHost([new Response("<!doctype html><html>")]);
 
