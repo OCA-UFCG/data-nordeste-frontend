@@ -181,22 +181,23 @@ const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
+const ZENODO_HEADERS = {
+  "Content-Type": "application/json",
+  "Accept": "application/json",
+
+  // Cloudflare do Zenodo bloqueia (403) o User-Agent padrao do undici/fetch
+  // do Node. Um UA explicito nao-browser passa; sem isso a pagina /catalog
+  // quebra em prod (SSR) enquanto curl no mesmo host retorna 200.
+  "User-Agent": "data-nordeste-portal/1.0 (+https://datane.lsd.ufcg.edu.br)",
+};
+
 const fetchZenodoData = async (
   url: string,
 ): Promise<ZenodoApiResponse | ZenodoApiRecord> => {
   // PERF: Zenodo catalog data is shared by filters and pagination, so keep a
   // short Next revalidation window instead of refetching every request.
   const res = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-
-      // Cloudflare do Zenodo bloqueia (403) o User-Agent padrao do undici/fetch
-      // do Node. Um UA explicito nao-browser passa; sem isso a pagina /catalog
-      // quebra em prod (SSR) enquanto curl no mesmo host retorna 200.
-      "User-Agent":
-        "data-nordeste-portal/1.0 (+https://datane.lsd.ufcg.edu.br)",
-    },
+    headers: ZENODO_HEADERS,
     next: { revalidate: 300 },
   });
 
@@ -208,6 +209,26 @@ const fetchZenodoData = async (
 
   return res.json();
 };
+
+/**
+ * HTTP status of the catalog query (community "datane", one record), so a monitor
+ * tests the same query the /catalog page builds. Never cached.
+ *
+ * Usage: await pingZenodoCommunity(AbortSignal.timeout(8000)) => 200
+ */
+export async function pingZenodoCommunity(
+  signal?: AbortSignal,
+): Promise<number> {
+  const query = buildZenodoRecordsQuery(1, 1, {});
+  const response = await fetch(`${ZENODO_BASE_URL}?${query.toString()}`, {
+    headers: ZENODO_HEADERS,
+    cache: "no-store",
+    signal,
+  });
+  await response.body?.cancel();
+
+  return response.status;
+}
 
 export const parseZenodoRecords = (json: ZenodoApiResponse): IMetadata[] => {
   return (json.hits.hits ?? []).map(parseZenodoRecord);

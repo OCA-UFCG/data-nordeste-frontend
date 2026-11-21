@@ -1,8 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { CONTENTFUL_CACHE_TAG } from "@/config/revalidation";
+import { REVALIDATE } from "./constants";
 import {
   buildContentfulEndpoint,
   createContentfulClient,
   getCachedContentfulAssetUrl,
+  getContentUntil,
 } from "./contentful";
 
 const createResponse = ({
@@ -22,6 +25,10 @@ const createResponse = ({
     json: async () => body,
     text: async () => text,
   }) as Response;
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("Contentful client", () => {
   it("builds the direct GraphQL endpoint when space and token exist", () => {
@@ -49,7 +56,9 @@ describe("Contentful client", () => {
       ),
     ).toBe("/contentful-assets/space/asset/banner.jpg?w=1200&fm=webp");
     expect(
-      getCachedContentfulAssetUrl("//images.ctfassets.net/space/asset/icon.svg"),
+      getCachedContentfulAssetUrl(
+        "//images.ctfassets.net/space/asset/icon.svg",
+      ),
     ).toBe("/contentful-assets/space/asset/icon.svg");
     expect(getCachedContentfulAssetUrl("https://example.com/banner.jpg")).toBe(
       "https://example.com/banner.jpg",
@@ -219,5 +228,22 @@ describe("Contentful client", () => {
     await expect(client("query SearchIndex")).rejects.toThrow(
       "expected data field",
     );
+  });
+
+  it("getContentUntil forwards the signal and keeps the cache options of getContent", async () => {
+    const fetchFake = vi.fn<typeof fetch>(async () =>
+      createResponse({ body: { data: { ok: true } } }),
+    );
+    vi.stubGlobal("fetch", fetchFake);
+    const signal = new AbortController().signal;
+
+    await getContentUntil(signal)("query { ok }");
+
+    const init = fetchFake.mock.calls[0][1];
+    expect(init?.signal).toBe(signal);
+    expect(init?.next).toEqual({
+      revalidate: REVALIDATE,
+      tags: [CONTENTFUL_CACHE_TAG],
+    });
   });
 });

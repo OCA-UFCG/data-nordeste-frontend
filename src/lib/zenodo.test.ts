@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { buildZenodoRecordsQuery, parseZenodoRecords } from "./zenodo";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { ZENODO_BASE_URL } from "@/utils/constants";
+import {
+  buildZenodoRecordsQuery,
+  parseZenodoRecords,
+  pingZenodoCommunity,
+} from "./zenodo";
 
 describe("buildZenodoRecordsQuery", () => {
   it("builds the Zenodo community query with date and array filters", () => {
@@ -94,5 +99,45 @@ describe("parseZenodoRecords", () => {
         ],
       },
     ]);
+  });
+});
+
+/** Answers every Zenodo request with one status. */
+class ZenodoFetchFake {
+  constructor(private readonly status: number) {}
+
+  readonly fetch = vi.fn<
+    (url: string, init?: RequestInit) => Promise<Response>
+  >(async () => new Response(null, { status: this.status }));
+}
+
+describe("pingZenodoCommunity", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("asks the catalog's community query, uncached, and returns the status", async () => {
+    const zenodo = new ZenodoFetchFake(503);
+    vi.stubGlobal("fetch", zenodo.fetch);
+    const signal = new AbortController().signal;
+
+    const status = await pingZenodoCommunity(signal);
+
+    const [url, init] = zenodo.fetch.mock.calls[0];
+    expect(status).toBe(503);
+    expect(url).toBe(
+      `${ZENODO_BASE_URL}?${buildZenodoRecordsQuery(1, 1, {}).toString()}`,
+    );
+    expect(init?.cache).toBe("no-store");
+    expect(init?.signal).toBe(signal);
+  });
+
+  it("sends the User-Agent that Zenodo's Cloudflare lets through", async () => {
+    const zenodo = new ZenodoFetchFake(200);
+    vi.stubGlobal("fetch", zenodo.fetch);
+
+    await pingZenodoCommunity();
+
+    expect(zenodo.fetch.mock.calls[0][1]?.headers).toMatchObject({
+      "User-Agent": expect.stringContaining("data-nordeste-portal"),
+    });
   });
 });

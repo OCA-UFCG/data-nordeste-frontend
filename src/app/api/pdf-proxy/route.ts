@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import {
   hasPdfSignature,
-  parseAllowedPdfUrl,
+  openAllowedPdf,
+  type AllowedPdfOpening,
 } from "@/features/boletim/pdfSource";
-
-// O Drive faz 1 salto (drive.google.com → drive.usercontent.google.com).
-const MAX_REDIRECTS = 3;
-
-type AllowedPdfFetch = { response: Response } | { rejection: string };
 
 /** Streams a boletim PDF from an allowed host. Example: `GET /api/pdf-proxy?url=https://www.gov.br/...pdf`. */
 export async function GET(request: Request) {
@@ -18,11 +14,8 @@ export async function GET(request: Request) {
     return new NextResponse("URL is required", { status: 400 });
   }
 
-  const pdfUrl = parseAllowedPdfUrl(targetUrl);
-  if (!pdfUrl) return rejectPdfRequest(targetUrl, "host_not_allowed", 403);
-
   try {
-    return await proxyAllowedPdf(targetUrl, pdfUrl);
+    return await proxyAllowedPdf(targetUrl);
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -36,50 +29,31 @@ export async function GET(request: Request) {
   }
 }
 
-async function proxyAllowedPdf(
-  targetUrl: string,
-  pdfUrl: URL,
-): Promise<NextResponse> {
-  const fetched = await fetchThroughAllowedHosts(pdfUrl);
-  if ("rejection" in fetched) {
-    return rejectPdfRequest(targetUrl, fetched.rejection, 403);
-  }
-
-  const { response } = fetched;
-  if (!response.ok) {
-    return new NextResponse("Failed to fetch PDF", { status: response.status });
-  }
+async function proxyAllowedPdf(targetUrl: string): Promise<NextResponse> {
+  const opened = await openAllowedPdf(targetUrl);
+  if ("rejection" in opened) return refuseOpening(targetUrl, opened);
 
   // ponytail: lê o PDF inteiro para conferir a assinatura (o do Drive tem ~12 MB);
   // ler só o começo do stream, se PDFs muito maiores pesarem na memória.
-  const pdfBuffer = await response.arrayBuffer();
+  const pdfBuffer = await opened.response.arrayBuffer();
 
   return hasPdfSignature(new Uint8Array(pdfBuffer))
     ? buildPdfResponse(pdfBuffer)
     : rejectPdfRequest(targetUrl, "not_a_pdf", 502);
 }
 
-// IMPORTANT: redirect seguido à mão, conferindo cada salto contra a lista. O
-// redirect automático do fetch levaria a qualquer host que o servidor de fora
-// indicasse, e furaria a lista.
-async function fetchThroughAllowedHosts(url: URL): Promise<AllowedPdfFetch> {
-  let current = url;
-
-  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    const response = await fetch(current, { redirect: "manual" });
-    const location = response.headers.get("Location");
-    if (!isRedirect(response.status) || !location) return { response };
-
-    const next = parseAllowedPdfUrl(new URL(location, current).href);
-    if (!next) return { rejection: "redirect_not_allowed" };
-    current = next;
+// Erro do próprio host passa com o status dele; o resto é recusa nossa (403).
+function refuseOpening(
+  targetUrl: string,
+  opening: Extract<AllowedPdfOpening, { rejection: string }>,
+): NextResponse {
+  if (opening.upstreamStatus === undefined) {
+    return rejectPdfRequest(targetUrl, opening.rejection, 403);
   }
 
-  return { rejection: "too_many_redirects" };
-}
-
-function isRedirect(status: number): boolean {
-  return status >= 300 && status < 400;
+  return new NextResponse("Failed to fetch PDF", {
+    status: opening.upstreamStatus,
+  });
 }
 
 // WARNING: não repassar o Content-Type de fora nem abrir CORS: só o próprio portal

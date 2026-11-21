@@ -97,7 +97,8 @@ page or component.
   content, then delegate. All 13 pages wrap `HubTemplate` (`src/templates`) and
   export metadata (static `metadata` or `generateMetadata`) built with
   `buildMetadata` from `@/config/seo` — keep both when adding a route.
-- `src/app/api/**` — server-side proxies, not a public API: `pdf-proxy`, `explore`.
+- `src/app/api/**` — server-side proxies, not a public API: `pdf-proxy`, `explore`;
+  and `metrics`, read by the oca-monitor Prometheus with `METRICS_TOKEN`.
 - `src/features/<domain>/` — framework-free, pure TypeScript domain logic with
   co-located `*.test.ts`: catalog filters, embed URL builders, explore/search,
   posts filters, feedback storage. Start here before writing new
