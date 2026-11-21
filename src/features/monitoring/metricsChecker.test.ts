@@ -81,18 +81,32 @@ class BoletimListFake {
   });
 }
 
-/** Opens or refuses each link, and counts how many checks overlap. */
+/**
+ * Opens or refuses each link, and counts how many checks overlap. With `takes`
+ * set, each check lasts that long on the manual clock: it waits in `waiting`
+ * until `drive` moves the clock to its due time.
+ */
 class PdfCheckFake {
   readonly reasons = new Map<string, string>([[BROKEN_LINK, "not_a_pdf"]]);
   running = 0;
   peak = 0;
+  takes = 0;
+  readonly waiting: { dueAt: number; release: () => void }[] = [];
+
+  constructor(private readonly clock: ManualClock) {}
 
   readonly check = vi.fn<
     (link: string, signal: AbortSignal) => Promise<string | null>
   >(async (link) => {
     this.running++;
     this.peak = Math.max(this.peak, this.running);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    if (this.takes > 0) {
+      await new Promise<void>((release) =>
+        this.waiting.push({ dueAt: this.clock.now() + this.takes, release }),
+      );
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
     this.running--;
 
     return this.reasons.get(link) ?? null;
@@ -117,7 +131,7 @@ function setUp(overrides: Partial<MetricsCheckerDeps> = {}) {
   const contentful = new ContentfulPingFake();
   const zenodo = new ZenodoPingFake();
   const list = new BoletimListFake();
-  const pdf = new PdfCheckFake();
+  const pdf = new PdfCheckFake(clock);
   const logs = new LogFake();
   const { getMetricsReport } = createMetricsChecker({
     pingContentful: contentful.ping,
@@ -143,6 +157,43 @@ function setUp(overrides: Partial<MetricsCheckerDeps> = {}) {
     logs,
   };
 }
+
+/**
+ * Lets slow checks finish without waiting: whenever every started check is
+ * waiting, the manual clock jumps to the earliest due time and releases the checks
+ * due by then.
+ */
+async function drive<T>(
+  pdf: PdfCheckFake,
+  clock: ManualClock,
+  collection: Promise<T>,
+): Promise<T> {
+  let finished = false;
+  collection.then(
+    () => (finished = true),
+    () => (finished = true),
+  );
+  for (let step = 0; !finished; step++) {
+    if (step > 10_000) throw new Error("drive: the collection never finished");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const next = [...pdf.waiting].sort((a, b) => a.dueAt - b.dueAt)[0];
+    if (!next) continue;
+    clock.advance(Math.max(0, next.dueAt - clock.now()));
+    const due = pdf.waiting.filter((check) => check.dueAt <= clock.now());
+    const later = pdf.waiting.filter((check) => check.dueAt > clock.now());
+    pdf.waiting.splice(0, pdf.waiting.length, ...later);
+    due.forEach((check) => check.release());
+  }
+
+  return collection;
+}
+
+const manyBoletins = (count: number) =>
+  Array.from({ length: count }, (_, index) => ({
+    sys: { id: `b${index}` },
+    title: `Boletim ${index}`,
+    link: OPEN_LINK,
+  }));
 
 describe("createMetricsChecker", () => {
   it("reports each dependency and each boletim", async () => {
@@ -402,6 +453,179 @@ describe("createMetricsChecker, bad and many items", () => {
 
     expect(report.boletins).toHaveLength(20);
     expect(pdf.peak).toBe(10);
+  });
+});
+
+describe("createMetricsChecker, slow gov.br", () => {
+  it("stays within its time budget and finishes the rest on the next collections", async () => {
+    const world = setUp();
+    world.list.items = manyBoletins(40);
+    world.pdf.takes = 20 * SECOND_MS;
+    const collect = () =>
+      drive(world.pdf, world.clock, world.getMetricsReport());
+
+    const startedAt = world.clock.now();
+    const first = await collect();
+
+    expect(world.clock.now() - startedAt).toBeLessThanOrEqual(40 * SECOND_MS);
+    expect(first.boletins).toHaveLength(20);
+    expect(world.logs.entries).toContainEqual({
+      event: "metrics_boletins_round_partial",
+      count: 20,
+    });
+
+    world.clock.advance(31 * SECOND_MS);
+    const second = await collect();
+
+    expect(second.boletins).toHaveLength(40);
+    expect(world.pdf.check).toHaveBeenCalledTimes(40);
+  });
+
+  it("checks each boletim once per cycle, then starts another cycle after 15 min", async () => {
+    const world = setUp();
+    world.list.items = manyBoletins(40);
+    world.pdf.takes = 20 * SECOND_MS;
+    const collect = () =>
+      drive(world.pdf, world.clock, world.getMetricsReport());
+
+    await collect();
+    world.clock.advance(31 * SECOND_MS);
+    await collect();
+    world.clock.advance(31 * SECOND_MS);
+    const third = await collect();
+
+    expect(third.boletins).toHaveLength(40);
+    expect(world.pdf.check).toHaveBeenCalledTimes(40);
+
+    world.clock.advance(16 * MINUTE_MS);
+    await collect();
+
+    expect(world.pdf.check).toHaveBeenCalledTimes(60);
+
+    // O novo ciclo não acabou (só 20 de 40): a coleta seguinte continua nele.
+    world.clock.advance(31 * SECOND_MS);
+    await collect();
+
+    expect(world.pdf.check).toHaveBeenCalledTimes(80);
+  });
+
+  it("does not start a check that would not fit in what is left of the budget", async () => {
+    const world = setUp();
+    world.list.items = manyBoletins(40);
+    world.pdf.takes = 15 * SECOND_MS;
+
+    const startedAt = world.clock.now();
+    const report = await drive(
+      world.pdf,
+      world.clock,
+      world.getMetricsReport(),
+    );
+
+    // Levas em 0 s e 15 s; a de 30 s só teria 10 s de orçamento, menos que o prazo.
+    expect(report.boletins).toHaveLength(20);
+    expect(world.clock.now() - startedAt).toBeLessThanOrEqual(40 * SECOND_MS);
+  });
+
+  it("never starts a check with less than its full deadline left", async () => {
+    const world = setUp();
+    world.list.items = manyBoletins(40);
+    world.pdf.takes = 20 * SECOND_MS;
+    const collect = () =>
+      drive(world.pdf, world.clock, world.getMetricsReport());
+
+    await collect();
+    world.clock.advance(31 * SECOND_MS);
+    await collect();
+
+    const lengths = world.deadlines.deadlines.map((deadline) => deadline.ms);
+    expect(lengths.filter((ms) => ms === 20 * SECOND_MS)).toHaveLength(40);
+    expect(
+      lengths.every((ms) => ms === 8 * SECOND_MS || ms === 20 * SECOND_MS),
+    ).toBe(true);
+  });
+
+  it("checks a long list in one collection when gov.br answers fast", async () => {
+    const world = setUp({ boletimListLimit: 1_000 });
+    world.list.items = manyBoletins(200);
+    world.pdf.takes = SECOND_MS;
+
+    const startedAt = world.clock.now();
+    const report = await drive(
+      world.pdf,
+      world.clock,
+      world.getMetricsReport(),
+    );
+
+    expect(world.clock.now() - startedAt).toBeLessThanOrEqual(40 * SECOND_MS);
+    expect(report.boletins).toHaveLength(200);
+    expect(world.logs.events()).not.toContain("metrics_boletins_round_partial");
+  });
+
+  it("drops a boletim that left the list", async () => {
+    const world = setUp();
+    await world.getMetricsReport();
+
+    world.list.items = manyBoletins(1);
+    world.clock.advance(16 * MINUTE_MS);
+    const report = await world.getMetricsReport();
+
+    expect(report.boletins.map((boletim) => boletim.id)).toEqual(["b0"]);
+  });
+});
+
+describe("createMetricsChecker, list failing after it worked", () => {
+  it("keeps checking the last known boletins, so their series do not vanish", async () => {
+    const world = setUp();
+    await world.getMetricsReport();
+
+    world.list.failure = new Error("HTTP 503");
+    world.pdf.reasons.set(OPEN_LINK, "HTTP 503");
+    world.clock.advance(16 * MINUTE_MS);
+    const report = await world.getMetricsReport();
+
+    expect(report.dependencies.lista_de_boletins).toMatchObject({
+      ok: false,
+      error: "failed",
+    });
+    expect(report.boletins).toMatchObject([
+      { id: "abre", ok: false, error: "HTTP 503" },
+      { id: "quebrado", ok: false, error: "not_a_pdf" },
+    ]);
+  });
+
+  it("does not recheck the boletins on every retry of the list", async () => {
+    const world = setUp();
+    await world.getMetricsReport();
+    world.list.failure = new Error("HTTP 503");
+    world.clock.advance(16 * MINUTE_MS);
+    await world.getMetricsReport();
+    const checksBefore = world.pdf.check.mock.calls.length;
+
+    world.clock.advance(6 * MINUTE_MS);
+    await world.getMetricsReport();
+
+    expect(world.list.get).toHaveBeenCalledTimes(3);
+    expect(world.pdf.check.mock.calls.length).toBe(checksBefore);
+  });
+
+  it("checks a boletim that is new when the list comes back, without waiting", async () => {
+    const world = setUp();
+    await world.getMetricsReport();
+    world.list.failure = new Error("HTTP 503");
+    world.clock.advance(16 * MINUTE_MS);
+    await world.getMetricsReport();
+    const checksBefore = world.pdf.check.mock.calls.length;
+
+    world.list.failure = null;
+    world.list.items = [
+      ...(world.list.items as unknown[]),
+      { sys: { id: "novo" }, title: "Novo", link: OPEN_LINK },
+    ];
+    world.clock.advance(6 * MINUTE_MS);
+    const report = await world.getMetricsReport();
+
+    expect(report.boletins).toHaveLength(3);
+    expect(world.pdf.check.mock.calls.length - checksBefore).toBe(1);
   });
 });
 

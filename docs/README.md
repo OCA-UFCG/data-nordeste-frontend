@@ -144,11 +144,17 @@ config and the alert rules live in `data-nordeste-infra` (`scripts/monitoring`).
 - Cost controls: one verification is shared for 30 s. The Contentful ping is
   remembered 1 h when it works and 10 min when it fails (24 calls a day; in a long
   outage at most 144 for the ping plus 288 for the boletim list). Zenodo and the
-  boletins are remembered 15 min; a failed boletim list for 5 min, so it neither
-  hides the boletins for long nor hits Contentful every minute. While the list
-  fails the `datane_boletim_*` series are not emitted, and the failure shows in
-  `datane_dependency_up{dependency="lista_de_boletins"}`. Boletins are checked 10 at a time, so gov.br does not
-  see a burst.
+  boletins are remembered 15 min; a failed boletim list for 5 min, so it does not
+  hit Contentful every minute. While the list fails, the boletins keep being
+  checked through the last known list, so their `datane_boletim_*` series do not
+  vanish (and an alert in progress does not resolve by mistake); the failure shows
+  in `datane_dependency_up{dependency="lista_de_boletins"}`.
+- Time budget: boletins are checked 10 at a time, so gov.br does not see a burst,
+  and the boletim part of a collection gets 40 s. With the list (up to 8 s) that
+  is 48 s, inside the 55 s the Prometheus waits, whatever the number of boletins:
+  a check only starts if its whole 20 s deadline still fits, and the boletins left
+  over are checked on the next collection (each one once per 15 min cycle). A slow
+  gov.br logs `metrics_boletins_round_partial`.
 - The list query has a `limit` (`BOLETIM_LINKS_LIMIT`): a list as long as it
   logs `metrics_boletim_list_truncated`, and unreadable items are dropped and
   logged as `metrics_boletim_items_invalid`; neither fails the report.
