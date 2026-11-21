@@ -78,6 +78,8 @@ jobs:
       - name: Stop existing container
         run: sudo docker rm -f ${{ vars.CONTAINER_NAME_PROD }} || true
 
+      # Sem EXTERNAL_CHECKS de propósito: Contentful, Zenodo e os boletins são os
+      # mesmos do prod, e testar nos dois dobraria a cota. Ver "Monitoring" em docs/README.md.
       - name: Run new container
         run: sudo docker run --restart unless-stopped --name ${{ vars.CONTAINER_NAME_PROD }} -e CONTENT_CACHE_PASSWORD="${{ secrets.CONTENT_CACHE_PASSWORD_PROD }}" -e METRICS_TOKEN="${{ secrets.METRICS_TOKEN_PROD }}" -p ${{ vars.HOST_PORT_PROD }}:${{ vars.CONTAINER_PORT }} -d ${{ vars.DOCKER_IMAGE_PROD }}:latest
 

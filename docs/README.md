@@ -61,6 +61,9 @@ outside the repository and rendered through frontend route/component logic.
   network content, history, and values from Contentful.
 - `/connections` renders partner/project cards from Contentful.
 - `/health` returns `{ "status": "ok" }` for health checks.
+- `/api/metrics` is the sensor read by the oca-monitor Prometheus (see
+  "Monitoring" below). It answers 404 when `METRICS_TOKEN` is unset, and 401
+  without `Authorization: Bearer <METRICS_TOKEN>`.
 
 ## Business And Content Rules
 
@@ -112,6 +115,46 @@ outside the repository and rendered through frontend route/component logic.
 - Do not document secrets or concrete environment values here. Use
   `.env.sample` for variable names and the project root `README.md` for local
   setup flow.
+
+## Monitoring (`/api/metrics`)
+
+The oca-monitor VM (Prometheus, Alertmanager and Blackbox, shared with other
+projects) watches the site from outside. `/api/metrics` is its sensor; the scrape
+config and the alert rules live in `data-nordeste-infra` (`scripts/monitoring`).
+
+- Environment: `METRICS_TOKEN` (unset: the route is a 404; wrong token: a 401
+  before any check runs) and `EXTERNAL_CHECKS` (`1` only in production). It
+  replaces the earlier `CONTENTFUL_HEALTH_CHECK`.
+- With `EXTERNAL_CHECKS=1` it checks Contentful (an uncached ping), Zenodo (the
+  catalog's community query), the boletim list and each boletim PDF, by the same
+  rules as `/api/pdf-proxy`. Without it the route only answers, which is all
+  Prometheus's `up` needs.
+- Topology: the monitor scrapes each server by IP, not by domain. During a DNS
+  failover, production is still scraped directly, and if it goes down the
+  `DataneForaDoAr` alert covers it. The failover server never runs the external
+  checks (same Contentful space and same gov.br links: it would double the quota
+  spent), so the `datane_*` series do not exist there on purpose. Alert rules on
+  `== 0` must not count on them.
+- Metrics, a contract with the infra repo (do not rename):
+  `datane_dependency_up{dependency}` and `datane_boletim_up{id,titulo}` (1 or 0,
+  labels fixed); `datane_dependency_error{dependency,error}` and
+  `datane_boletim_error{id,error}` (value 1, only while failing: the reason lives
+  apart so the `_up` series keep their identity and alerts with `for` do not
+  restart); `datane_dependency_latency_seconds{dependency}`.
+- Cost controls: one verification is shared for 30 s. The Contentful ping is
+  remembered 1 h when it works and 10 min when it fails (24 calls a day; in a long
+  outage at most 144 for the ping plus 288 for the boletim list). Zenodo and the
+  boletins are remembered 15 min; a failed boletim list for 5 min, so it neither
+  hides the boletins for long nor hits Contentful every minute. While the list
+  fails the `datane_boletim_*` series are not emitted, and the failure shows in
+  `datane_dependency_up{dependency="lista_de_boletins"}`. Boletins are checked 10 at a time, so gov.br does not
+  see a burst.
+- The list query has a `limit` (`BOLETIM_LINKS_LIMIT`): a list as long as it
+  logs `metrics_boletim_list_truncated`, and unreadable items are dropped and
+  logged as `metrics_boletim_items_invalid`; neither fails the report.
+- Code: the rules (cache, deadlines, concurrency) are `createMetricsChecker` in
+  `src/features/monitoring`, with the Prometheus text format next to it;
+  `src/app/api/metrics/checks.ts` only wires the real dependencies.
 
 ## Removed Features
 
