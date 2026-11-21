@@ -198,13 +198,35 @@ const CONTENTFUL_ENDPOINT = buildContentfulEndpoint({
   NEXT_PUBLIC_HOST_URL: process.env.NEXT_PUBLIC_HOST_URL,
 });
 
-export const getContent = createContentfulClient({
+const CONTENT_CLIENT_CONFIG: ContentfulClientConfig = {
   accessToken: CONTENTFUL_ACCESS_TOKEN,
   endpoint: CONTENTFUL_ENDPOINT,
   preview: USE_PREVIEW,
   revalidate: REVALIDATE,
   tags: [CONTENTFUL_CACHE_TAG],
-});
+};
+
+export const getContent = createContentfulClient(CONTENT_CLIENT_CONFIG);
+
+const fetchUntil =
+  (signal?: AbortSignal): typeof fetch =>
+  (input, init) =>
+    fetch(input, { ...init, signal });
+
+// IMPORTANT: o Next não põe o signal na chave do cache de dados (conferido no
+// generateCacheKey do 16.3.1), então este cliente lê a mesma entrada que o
+// getContent e só acrescenta o prazo.
+/**
+ * `getContent` that gives up when the signal aborts, still served from the cache.
+ *
+ * Usage: await getContentUntil(AbortSignal.timeout(8000))<Posts>(POSTS_QUERY)
+ */
+export function getContentUntil(signal: AbortSignal) {
+  return createContentfulClient({
+    ...CONTENT_CLIENT_CONFIG,
+    fetcher: fetchUntil(signal),
+  });
+}
 
 // IMPORTANT: sem cache, para chegar de fato ao Contentful; por isso cada chamada
 // conta na cota de 100 mil por mês. Só o /api/metrics usa, uma vez por hora.
@@ -215,10 +237,8 @@ export const getContent = createContentfulClient({
  */
 export function pingContentful(signal?: AbortSignal): Promise<unknown> {
   const requestContentful = createContentfulClient({
-    accessToken: CONTENTFUL_ACCESS_TOKEN,
-    endpoint: CONTENTFUL_ENDPOINT,
-    fetcher: (input, init) => fetch(input, { ...init, signal }),
-    preview: USE_PREVIEW,
+    ...CONTENT_CLIENT_CONFIG,
+    fetcher: fetchUntil(signal),
     revalidate: 0,
     tags: [],
   });

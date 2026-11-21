@@ -181,7 +181,7 @@ const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
-export const ZENODO_HEADERS = {
+const ZENODO_HEADERS = {
   "Content-Type": "application/json",
   "Accept": "application/json",
 
@@ -209,6 +209,26 @@ const fetchZenodoData = async (
 
   return res.json();
 };
+
+/**
+ * HTTP status of the catalog query (community "datane", one record), so a monitor
+ * tests the same query the /catalog page builds. Never cached.
+ *
+ * Usage: await pingZenodoCommunity(AbortSignal.timeout(8000)) => 200
+ */
+export async function pingZenodoCommunity(
+  signal?: AbortSignal,
+): Promise<number> {
+  const query = buildZenodoRecordsQuery(1, 1, {});
+  const response = await fetch(`${ZENODO_BASE_URL}?${query.toString()}`, {
+    headers: ZENODO_HEADERS,
+    cache: "no-store",
+    signal,
+  });
+  await response.body?.cancel();
+
+  return response.status;
+}
 
 export const parseZenodoRecords = (json: ZenodoApiResponse): IMetadata[] => {
   return (json.hits.hits ?? []).map(parseZenodoRecord);

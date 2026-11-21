@@ -57,12 +57,15 @@ export const RELATED_BOLETINS_QUERY = `
   }
 `;
 
+// A list as long as this limit may be cut: the monitor logs it.
+export const BOLETIM_LINKS_LIMIT = 200;
+
 // INTENTIONAL: every published boletim and its PDF link, for /api/metrics to
-// check that each one still opens. Goes through the cached getContent, so the
+// check that each one still opens. Goes through the cached content client, so the
 // monitor only spends quota after /atualizar-conteudo.
 export const BOLETIM_LINKS_QUERY = `
   query GetBoletimLinks($preview: Boolean) {
-    postCollection(limit: 200, where: { type: "newsletter" }, preview: $preview) {
+    postCollection(limit: ${BOLETIM_LINKS_LIMIT}, where: { type: "newsletter" }, preview: $preview) {
       items {
         sys { id }
         title
