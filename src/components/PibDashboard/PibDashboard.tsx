@@ -5,7 +5,11 @@ import { useMemo } from "react";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import { PibEmptyLayout, PibGrids } from "@/components/PibDashboard/PibLayout";
 import { PIB_CARD_SOURCE } from "@/components/PibDashboard/pibTexts";
-import { PIB_SOURCE } from "@/components/PibDashboard/pibTheme";
+import {
+  PIB_ICON,
+  PIB_SHORT_TITLE,
+  PIB_SOURCE,
+} from "@/components/PibDashboard/pibTheme";
 import { usePibYearField } from "@/components/PibDashboard/usePibYearField";
 import {
   ProtoCardMenuContext,
@@ -133,7 +137,7 @@ export const PibDashboard = ({
   return (
     <ProtoToneContext.Provider value="pib">
       <ProtoTerritorialFilters
-        brand={{ icon: "usd", title: "PIB" }}
+        brand={{ icon: PIB_ICON, title: PIB_SHORT_TITLE }}
         fillRow
         disabled={loading}
         yearRef={yearField.yearRef}

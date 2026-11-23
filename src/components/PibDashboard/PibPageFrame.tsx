@@ -7,7 +7,7 @@ import {
   PIB_SAIBA_MAIS_SUMMARY,
   PIB_SAIBA_MAIS_TITLE,
 } from "@/components/PibDashboard/pibTexts";
-import { PIB_TITLE } from "@/components/PibDashboard/pibTheme";
+import { PIB_ICON, PIB_TITLE } from "@/components/PibDashboard/pibTheme";
 import { ProtoCover } from "@/components/ProtoPanel/ProtoCover";
 import { ProtoSaibaMais } from "@/components/ProtoPanel/ProtoSaibaMais";
 
@@ -30,7 +30,7 @@ export const PibPageFrame = ({
     <ProtoCover
       tone="pib"
       variant="light"
-      icon="usd"
+      icon={PIB_ICON}
       title={PIB_TITLE}
       lead={PIB_LEAD}
       macroTheme={macroTheme}
