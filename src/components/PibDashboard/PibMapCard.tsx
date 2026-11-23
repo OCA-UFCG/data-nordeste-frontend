@@ -8,7 +8,7 @@ import {
   PIB_CARD_SOURCE,
 } from "@/components/PibDashboard/pibTexts";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
-import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
+import { ProtoCard, ProtoSkeleton } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import {
   ProtoCardMenu,
@@ -35,6 +35,17 @@ import { describeStatesOffMap } from "@/features/panels/statesOffMap";
 import { areaLabel } from "@/features/panels/territorialOptions";
 
 const TITLE = "Mapa do PIB por estado";
+
+// O mapa pronto: a caixa com o desenho na proporção do mapa e a legenda (em
+// duas linhas no celular).
+const MAP_SKELETON = (
+  <>
+    <div className="p-1">
+      <ProtoSkeleton className="aspect-[600/754] max-h-[520px] w-full" />
+    </div>
+    <ProtoSkeleton className="mt-3 h-4 w-[60%] max-[700px]:h-10" />
+  </>
+);
 
 /**
  * Ligação do mapa do PIB: a cor é a faixa do PIB total do estado e só estado
@@ -88,6 +99,7 @@ export const PibMapCard = ({
       title={TITLE}
       subtitle={subtitle}
       kind="map"
+      skeleton={MAP_SKELETON}
       bodyClassName="flex flex-col"
       overlay={
         <ProtoMapFullscreen

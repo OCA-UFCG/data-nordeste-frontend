@@ -11,6 +11,7 @@ import {
   ProtoSeriesLegend,
   useHiddenSeries,
 } from "@/components/ProtoPanel/ProtoSeriesLegend";
+import { ProtoSkeleton } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoTooltip } from "@/components/ProtoPanel/ProtoTooltip";
 import { PROTO_CHART_FONT } from "@/components/ProtoPanel/protoStyles";
 import { useElementWidth } from "@/components/ProtoPanel/useElementWidth";
@@ -53,7 +54,10 @@ const SERIES: readonly PibLineSeries[] = [
 
 const AXIS_FONT_SIZE = "11.5";
 
-// Cada eixo leva a tinta da sua série e some junto com ela.
+// Altura do gráfico, a mesma no esqueleto: 340 px quando há largura, 300 no estreito.
+const CHART_HEIGHT = "min-h-[300px] @[560px]:min-h-[340px]";
+
+// Cada eixo some junto com a sua série.
 const TickLabels = ({
   geometry,
   hidden,
@@ -78,7 +82,7 @@ const TickLabels = ({
             y={tick.y + 4}
             textAnchor="end"
             fontSize={AXIS_FONT_SIZE}
-            fill={PIB_COLORS.totalInk}
+            fill={PIB_COLORS.muted}
           >
             {formatPibAxis(tick.pib)}
           </text>
@@ -88,7 +92,7 @@ const TickLabels = ({
             x={geometry.width - geometry.margin.right + 8}
             y={tick.y + 4}
             fontSize={AXIS_FONT_SIZE}
-            fill={PIB_COLORS.perCapitaInk}
+            fill={PIB_COLORS.muted}
           >
             {formatPibAxis(tick.perCapita)}
           </text>
@@ -281,17 +285,20 @@ export const PibLineChart = ({
   return (
     <>
       <ProtoSeriesLegend series={SERIES} hidden={hidden} onToggle={toggle} />
-      <div ref={boxRef} className="relative min-h-[300px]">
-        {geometry ? (
-          <LineSvg
-            geometry={geometry}
-            svgRef={svgRef}
-            hidden={hidden}
-            selectedIndex={selectedIndex}
-            ano={ano}
-            {...handlers}
-          />
-        ) : null}
+      {/* Reserva a altura final antes de medir a largura: sem salto na hidratação. */}
+      <div className="@container">
+        <div ref={boxRef} className={`relative ${CHART_HEIGHT}`}>
+          {geometry ? (
+            <LineSvg
+              geometry={geometry}
+              svgRef={svgRef}
+              hidden={hidden}
+              selectedIndex={selectedIndex}
+              ano={ano}
+              {...handlers}
+            />
+          ) : null}
+        </div>
       </div>
       <p className="mt-2 text-xs text-grey-800">
         Clique em um ponto da linha para escolher o ano.
@@ -306,3 +313,19 @@ export const PibLineChart = ({
     </>
   );
 };
+
+/**
+ * Esqueleto do corpo do card com as alturas do gráfico pronto (legenda,
+ * gráfico e dica), para o card não mudar de tamanho quando os dados chegam.
+ *
+ * @example <ProtoCard skeleton={<PibLineChartSkeleton />} … />
+ */
+export const PibLineChartSkeleton = () => (
+  <>
+    <ProtoSkeleton className="mb-1.5 h-5 w-[45%]" />
+    <div className="@container">
+      <ProtoSkeleton className={CHART_HEIGHT} />
+    </div>
+    <ProtoSkeleton className="mt-2 h-4 w-[40%]" />
+  </>
+);

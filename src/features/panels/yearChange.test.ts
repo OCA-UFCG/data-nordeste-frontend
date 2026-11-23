@@ -22,6 +22,12 @@ describe("describeYearChange", () => {
     );
   });
 
+  it("accepts another connector", () => {
+    expect(formatYearChange(describeYearChange(SERIE, 2)!, "vs.")).toBe(
+      "+8,2% vs. 2020",
+    );
+  });
+
   it("has nothing to say for the first year or after a zero", () => {
     expect(describeYearChange(SERIE, 0)).toBeNull();
     expect(describeYearChange(SERIE, 1)).toBeNull();

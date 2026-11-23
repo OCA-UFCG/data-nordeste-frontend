@@ -4,7 +4,8 @@ import { type Ref, useId } from "react";
 import { PlaceFilter } from "@/components/Panel/filters/TerritorialFilterBar";
 import {
   ProtoFilterBar,
-  type ProtoFilterBarBrand,
+  type ProtoFilterBarProps,
+  type ProtoFilterSheetControl,
 } from "@/components/ProtoPanel/ProtoFilterBar";
 import {
   ProtoSelectField,
@@ -37,7 +38,13 @@ const TerritorialFilterFields = ({
   maxPlaces,
   onChange,
   wide,
-}: FieldsProps & { wide: boolean }) => {
+  fillRow,
+  yearRef,
+}: FieldsProps & {
+  wide: boolean;
+  fillRow?: boolean;
+  yearRef?: Ref<HTMLSelectElement>;
+}) => {
   const { filters } = data;
   const id = useId();
 
@@ -50,16 +57,24 @@ const TerritorialFilterFields = ({
         label="Ano"
         wide={wide}
         fluid={fluid}
-        className={fluid ? "max-w-[140px]" : undefined}
+        fill={fillRow}
+        className={
+          fillRow
+            ? "flex-[.6_1_0] max-[901px]:min-w-[84px]"
+            : fluid
+              ? "max-w-[140px]"
+              : undefined
+        }
       >
         {(fieldId) => (
           <select
+            ref={wide ? undefined : yearRef}
             id={fieldId}
             value={filters.ano}
             onChange={(event) =>
               onChange({ ...filters, ano: Number(event.target.value) })
             }
-            className={protoSelectClass(wide)}
+            className={protoSelectClass(wide, fillRow)}
           >
             {years.map((year) => (
               <option key={year} value={year}>
@@ -78,7 +93,12 @@ const TerritorialFilterFields = ({
        * em `src/features/panels/territorialOptions.ts`), o que preserva a
        * seleção de vários estados (revisão da PR #401).
        */}
-      <ProtoSelectField label="Área de interesse" wide={wide} fluid={fluid}>
+      <ProtoSelectField
+        label="Área de interesse"
+        wide={wide}
+        fluid={fluid}
+        fill={fillRow}
+      >
         {(fieldId) => (
           <select
             id={fieldId}
@@ -89,7 +109,7 @@ const TerritorialFilterFields = ({
                 area: event.target.value as TerritorialArea,
               })
             }
-            className={protoSelectClass(wide)}
+            className={protoSelectClass(wide, fillRow)}
           >
             {TERRITORIAL_AREAS.map((area) => (
               <option key={area.value} value={area.value}>
@@ -107,7 +127,7 @@ const TerritorialFilterFields = ({
         values={filters.uf}
         options={data.ufs.map((uf) => ({ value: uf.sigla, label: uf.nome }))}
         onChange={(uf) => onChange({ ...filters, uf })}
-        look={protoFieldLook(wide, fluid)}
+        look={protoFieldLook(wide, fluid, fillRow)}
       />
       <PlaceFilter
         id={`${id}-mun`}
@@ -121,7 +141,7 @@ const TerritorialFilterFields = ({
           label: mun.nome,
         }))}
         onChange={(mun) => onChange({ ...filters, mun })}
-        look={protoFieldLook(wide, fluid)}
+        look={protoFieldLook(wide, fluid, fillRow)}
       />
     </>
   );
@@ -145,17 +165,28 @@ export const ProtoTerritorialFilters = ({
   stuck,
   barRef,
   brand,
-}: FieldsProps & {
-  brand?: ProtoFilterBarBrand;
-  onClear: () => void;
-  isDefault: boolean;
-  top: number;
-  stuck: boolean;
-  barRef: Ref<HTMLDivElement>;
-}) => (
+  fillRow,
+  yearRef,
+  disabled,
+  ...sheet
+}: FieldsProps &
+  Pick<ProtoFilterBarProps, "brand" | "fillRow" | "disabled"> &
+  ProtoFilterSheetControl & {
+    onClear: () => void;
+    isDefault: boolean;
+    top: number;
+    stuck: boolean;
+    barRef: Ref<HTMLDivElement>;
+
+    // O select de Ano do desktop (a folha do celular tem o seu).
+    yearRef?: Ref<HTMLSelectElement>;
+  }) => (
   <ProtoFilterBar
     summaryTitle={describeTerritorialSelection(data, true)}
     brand={brand}
+    fillRow={fillRow}
+    disabled={disabled}
+    {...sheet}
     renderFields={(wide) => (
       <TerritorialFilterFields
         data={data}
@@ -163,6 +194,8 @@ export const ProtoTerritorialFilters = ({
         maxPlaces={maxPlaces}
         onChange={onChange}
         wide={wide}
+        fillRow={fillRow}
+        yearRef={yearRef}
       />
     )}
     isDefault={isDefault}

@@ -8,7 +8,11 @@ import {
   PIB_CARD_INFO,
 } from "@/components/PibDashboard/pibTexts";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
-import { ProtoCard, ProtoCardNotice } from "@/components/ProtoPanel/ProtoCard";
+import {
+  ProtoCard,
+  ProtoCardNotice,
+  ProtoSkeleton,
+} from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
 import { formatPercent } from "@/features/panels/format";
@@ -30,25 +34,34 @@ const NO_DATA_UNIT = "bilhões";
 
 export type PibSectorCardProps = PibCardProps & {
   onSelectYear: (ano: number) => void;
+  onPickYear: () => void;
 };
+
+// A altura do aviso do ano padrão (sem dado setorial), que é o que a página
+// abre mostrando.
+// IMPORTANT: 214 px (286 px até 700 px) é a altura do `YearNotice` abaixo; se
+// o aviso mudar de texto ou de ações, o esqueleto precisa mudar junto.
+const SECTOR_SKELETON = (
+  <ProtoSkeleton className="h-[214px] max-[700px]:h-[286px]" />
+);
 
 const Hint = ({ children }: { children: ReactNode }) => (
   <p className="mt-2 text-xs text-grey-800">{children}</p>
 );
 
 // Anos sem dado setorial (depois de PIB_VAB_LAST_YEAR): o aviso leva ao último
-// ano que tem.
+// ano que tem ou ao select de Ano.
 const YearNotice = ({
   onSelectYear,
-}: {
-  onSelectYear: (ano: number) => void;
-}) => (
+  onPickYear,
+}: Pick<PibSectorCardProps, "onSelectYear" | "onPickYear">) => (
   <ProtoCardNotice
     tone="warn"
     action={{
       label: `Ver ${PIB_VAB_LAST_YEAR}, último ano disponível`,
       onClick: () => onSelectYear(PIB_VAB_LAST_YEAR),
     }}
+    secondaryAction={{ label: "Escolher outro ano", onClick: onPickYear }}
   >
     <b>ATENÇÃO:</b> Os dados para os anos de{" "}
     {listPibYearsWithoutVab().join(" e ")} ainda não foram disponibilizados.
@@ -64,6 +77,7 @@ const SectorCard = ({
   data,
   place,
   onSelectYear,
+  onPickYear,
   ...status
 }: PibSectorCardProps & {
   title: string;
@@ -77,6 +91,7 @@ const SectorCard = ({
     title={title}
     subtitle={`${place} · ${data.filters.ano} · ${unit}`}
     kind="rank"
+    skeleton={SECTOR_SKELETON}
     actions={
       <>
         <ProtoCardInfo title={title} text={info} />
@@ -85,7 +100,7 @@ const SectorCard = ({
     }
   >
     {data.filters.ano > PIB_VAB_LAST_YEAR ? (
-      <YearNotice onSelectYear={onSelectYear} />
+      <YearNotice onSelectYear={onSelectYear} onPickYear={onPickYear} />
     ) : (
       children
     )}
@@ -97,7 +112,7 @@ const SectorCard = ({
  * barras, na unidade que os dados pedem (bilhões no Nordeste, milhões num
  * município pequeno).
  *
- * @example <PibVabCard data={panel} place="Nordeste" state="ok" onRetry={retry} onSelectYear={pickYear} />
+ * @example <PibVabCard data={panel} place="Nordeste" state="ok" onRetry={retry} onSelectYear={showYear} onPickYear={focusYear} />
  */
 export const PibVabCard = (props: PibSectorCardProps) => {
   const bars = buildVabBars(props.data.vab ?? []);
@@ -134,7 +149,7 @@ export const PibVabCard = (props: PibSectorCardProps) => {
  * Card "Participação da atividade com maior VAB no PIB": as três atividades
  * de maior participação no PIB do território, em %.
  *
- * @example <PibAtividadeCard data={panel} place="Nordeste" state="ok" onRetry={retry} onSelectYear={pickYear} />
+ * @example <PibAtividadeCard data={panel} place="Nordeste" state="ok" onRetry={retry} onSelectYear={showYear} onPickYear={focusYear} />
  */
 export const PibAtividadeCard = (props: PibSectorCardProps) => {
   const bars = buildAtividadeBars(props.data.atividades);

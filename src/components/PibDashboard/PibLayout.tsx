@@ -21,6 +21,11 @@ export type PibLayoutProps = Omit<PibCardProps, "state"> & {
   selection: TerritorialFilters;
   onSelectUf: (uf: string) => void;
   onSelectYear: (ano: number) => void;
+
+  // Botões do aviso de ano sem dado setorial: mudar de ano (e mostrar a troca
+  // no select de Ano) ou levar até o select.
+  onShowSectorYear: (ano: number) => void;
+  onPickYear: () => void;
   onReset: () => void;
 };
 
@@ -35,13 +40,15 @@ const SECTOR_COLUMN =
  * Grade do painel do PIB (`.pib-stack` do protótipo): números de destaque, a
  * série anual e, lado a lado, o mapa e os dois cards de setor.
  *
- * @example <PibGrids data={panel} selection={filters} place="Nordeste" states={states} onRetry={retry} onSelectUf={selectUf} onSelectYear={pickYear} />
+ * @example <PibGrids data={panel} selection={filters} place="Nordeste" states={states} onRetry={retry} onSelectUf={selectUf} onSelectYear={pickYear} onShowSectorYear={showYear} onPickYear={focusYear} />
  */
 export const PibGrids = ({
   selection,
   states,
   onSelectUf,
   onSelectYear,
+  onShowSectorYear,
+  onPickYear,
   ...card
 }: Omit<PibLayoutProps, "onReset">) => (
   <div className="flex flex-col gap-4">
@@ -68,12 +75,14 @@ export const PibGrids = ({
         <PibVabCard
           {...card}
           state={states.sectors}
-          onSelectYear={onSelectYear}
+          onSelectYear={onShowSectorYear}
+          onPickYear={onPickYear}
         />
         <PibAtividadeCard
           {...card}
           state={states.sectors}
-          onSelectYear={onSelectYear}
+          onSelectYear={onShowSectorYear}
+          onPickYear={onPickYear}
         />
       </div>
     </div>

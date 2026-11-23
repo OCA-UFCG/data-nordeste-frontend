@@ -22,12 +22,30 @@ const CLEAR_CLASS = cn(
   "min-h-9 px-3.5 py-1.5 text-[#bf1621] enabled:border-[#efb8bd] hover:not-disabled:border-[#efb8bd] hover:not-disabled:bg-[#ffe1e3] max-[700px]:min-h-10 max-[700px]:w-10 max-[700px]:flex-none max-[700px]:p-0",
 );
 
+// `max-[901px]`: o `max-` do Tailwind v4 é estrito, e 900 px ainda é tablet.
+const CLEAR_ICON_ONLY_900 =
+  "max-[901px]:min-h-10 max-[901px]:w-10 max-[901px]:flex-none max-[901px]:p-0";
+
 // Ícone e nome do painel no resumo do celular (`.fb-tile` do protótipo).
 export type ProtoFilterBarBrand = { icon: ProtoIconName; title: string };
 
-export type ProtoFilterBarProps = {
+// Folha controlada por fora (o painel a abre a partir de um card): as duas
+// props vêm juntas, senão a folha não fecharia. Sem elas, a barra cuida do
+// próprio estado.
+export type ProtoFilterSheetControl =
+  | { sheetOpen: boolean; onSheetOpenChange: (open: boolean) => void }
+  | { sheetOpen?: undefined; onSheetOpenChange?: undefined };
+
+export type ProtoFilterBarProps = ProtoFilterSheetControl & {
   summaryTitle: string;
   brand?: ProtoFilterBarBrand;
+
+  // Com `brand` (PIB): o desktop mostra o tile e o nome antes dos campos, que
+  // preenchem a linha; até 900 px, só o tile e o "Limpar filtros" só com o ícone.
+  fillRow?: boolean;
+
+  // Barra inerte enquanto a página carrega: igual por fora, sem interação.
+  disabled?: boolean;
 
   // Sem subtítulo, o resumo do celular mostra só o título (perfil demográfico).
   summarySubtitle?: string;
@@ -39,18 +57,42 @@ export type ProtoFilterBarProps = {
   barRef: Ref<HTMLDivElement>;
 };
 
+const BrandTile = ({ icon }: { icon: ProtoIconName }) => (
+  <span
+    aria-hidden="true"
+    className="grid size-8 flex-none place-items-center rounded-[6px] bg-(--proto-accent) text-white"
+  >
+    <ProtoIcon name={icon} size={18} />
+  </span>
+);
+
+const BrandName = ({ brand }: { brand: ProtoFilterBarBrand }) => (
+  <div className="flex h-10 min-w-0 items-center gap-2.5 border-r border-grey-300 pr-4 max-[901px]:pr-3 max-[700px]:hidden">
+    <BrandTile icon={brand.icon} />
+    <span className="max-w-[220px] min-w-0 truncate text-[15px] leading-5 font-bold max-[901px]:hidden">
+      {brand.title}
+    </span>
+  </div>
+);
+
 const FiltersSheet = ({
   open,
   onOpenChange,
   renderFields,
   isDefault,
   onClear,
-}: Pick<ProtoFilterBarProps, "renderFields" | "isDefault" | "onClear"> & {
+  fillRow,
+}: Pick<
+  ProtoFilterBarProps,
+  "renderFields" | "isDefault" | "onClear" | "fillRow"
+> & {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) => (
   <ProtoSheet open={open} onOpenChange={onOpenChange} title="Filtros">
-    <div>{renderFields(true)}</div>
+    <div className={cn(fillRow && "[&>:last-child]:mb-0")}>
+      {renderFields(true)}
+    </div>
     <div className="mt-5 grid grid-cols-2 gap-3">
       <button
         type="button"
@@ -121,12 +163,7 @@ const PhoneBrandSummary = ({
     aria-label="Filtros selecionados. Toque para alterar"
     className="hidden min-w-0 flex-1 items-center gap-2 py-1 text-left max-[700px]:flex"
   >
-    <span
-      aria-hidden="true"
-      className="grid size-8 flex-none place-items-center rounded-[6px] bg-(--proto-accent) text-white"
-    >
-      <ProtoIcon name={brand.icon} size={18} />
-    </span>
+    <BrandTile icon={brand.icon} />
     <span className="flex min-w-0 flex-col">
       <b className="truncate text-[15px] leading-5 font-bold">{brand.title}</b>
       <small className="truncate text-[12.5px] leading-4 text-grey-800">
@@ -147,6 +184,10 @@ export const ProtoFilterBar = ({
   summaryTitle,
   summarySubtitle,
   brand,
+  fillRow,
+  disabled,
+  sheetOpen: controlledOpen,
+  onSheetOpenChange,
   renderFields,
   isDefault,
   onClear,
@@ -154,17 +195,27 @@ export const ProtoFilterBar = ({
   stuck,
   barRef,
 }: ProtoFilterBarProps) => {
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const sheetOpen = controlledOpen ?? ownOpen;
+  const setSheetOpen = onSheetOpenChange ?? setOwnOpen;
   const tone = useProtoTone();
+  const showBrand = fillRow && brand;
 
   return (
+    // eslint-disable-next-line lines-around-comment
+    // O React 18 só liga `inert` com string vazia; o tipo dele pede boolean.
     <div
       ref={barRef}
+      {...(disabled && ({ inert: "" } as object))}
       style={{ top, ...protoToneStyle(tone) }}
       className={`${PROTO_TEXT} sticky z-40 w-full border-b border-grey-300 bg-white transition-shadow duration-150 ${stuck ? "shadow-[0_6px_16px_-10px_rgba(41,40,41,0.45)]" : ""}`}
     >
       <div
-        className={`${WRAP} flex min-h-[88px] items-end gap-4 py-3 max-[700px]:min-h-14 max-[700px]:items-center max-[700px]:gap-2 max-[700px]:py-2`}
+        className={cn(
+          WRAP,
+          "flex min-h-[88px] items-end gap-4 py-3 max-[700px]:min-h-14 max-[700px]:items-center max-[700px]:gap-2 max-[700px]:py-2",
+          fillRow && "min-[701px]:max-[901px]:gap-3",
+        )}
       >
         <PhoneSummary
           title={summaryTitle}
@@ -183,17 +234,25 @@ export const ProtoFilterBar = ({
           <ProtoIcon name="filter" size={16} stroke={2.2} />
           Filtros
         </button>
+        {showBrand ? <BrandName brand={brand} /> : null}
         <div className="contents max-[700px]:hidden">{renderFields(false)}</div>
-        <div className="flex-1 max-[700px]:hidden" />
+        {fillRow ? null : <div className="flex-1 max-[700px]:hidden" />}
         <button
           type="button"
           disabled={isDefault}
           onClick={onClear}
           aria-label="Limpar filtros"
           title="Limpar filtros"
-          className={CLEAR_CLASS}
+          className={cn(CLEAR_CLASS, fillRow && CLEAR_ICON_ONLY_900)}
         >
-          <span className="max-[700px]:hidden">Limpar filtros</span>
+          <span
+            className={cn(
+              "max-[700px]:hidden",
+              fillRow && "max-[901px]:hidden",
+            )}
+          >
+            Limpar filtros
+          </span>
           <ProtoIcon name="clearFilter" size={16} stroke={2.2} />
         </button>
       </div>
@@ -201,6 +260,7 @@ export const ProtoFilterBar = ({
         renderFields={renderFields}
         isDefault={isDefault}
         onClear={onClear}
+        fillRow={fillRow}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
       />
