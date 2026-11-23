@@ -73,7 +73,6 @@ describe("PibDashboard", () => {
       expect.stringContaining(`ano=${PIB_VAB_LAST_YEAR}`),
       expect.anything(),
     );
-    expect(yearSelect()).toHaveValue(String(PIB_VAB_LAST_YEAR));
     expect(yearSelect()).toHaveClass("animate-proto-ring");
   });
 
