@@ -10,7 +10,7 @@ import { ChoroplethCanvas } from "@/components/Panel/charts/ChoroplethMap";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
-import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
+import { ProtoFullscreenButton } from "@/components/ProtoPanel/ProtoMapControls";
 import {
   MAP_SELECT_HINT,
   ProtoMapFullscreen,
@@ -19,7 +19,6 @@ import {
   ProtoStateMap,
   type ProtoStateMapProps,
 } from "@/components/ProtoPanel/ProtoStateMap";
-import { ICON_BUTTON } from "@/components/ProtoPanel/protoStyles";
 import {
   DEMOGRAFIA_PORTES,
   populacaoPorMunicipio,
@@ -199,17 +198,7 @@ const PorteCardActions = ({
   onOpen: () => void;
 }) => (
   <>
-    <button
-      type="button"
-      aria-haspopup="dialog"
-      aria-label="Abrir mapa em tela cheia"
-      title="Tela cheia"
-      disabled={state !== "ok"}
-      onClick={onOpen}
-      className={ICON_BUTTON}
-    >
-      <ProtoIcon name="fullscreen" size={18} stroke={1.7} />
-    </button>
+    <ProtoFullscreenButton disabled={state !== "ok"} onClick={onOpen} />
     <ProtoCardInfo title={TITLE} text={INFO} />
     <ProtoCardMenu title={TITLE} />
   </>
