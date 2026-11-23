@@ -12,13 +12,18 @@ export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 // não informa quando o PIB foi carregado; inclua a data quando houver fonte.
 export const PIB_CARD_FOOTER = { source: PIB_CARD_SOURCE } as const;
 
+// O ano vem do banco; sem ele (carregando ou erro), a frase sai.
+const sectorCoverage = (vabLastYear: number | null) =>
+  vabLastYear === null ? "" : ` Os dados setoriais vão até ${vabLastYear}.`;
+
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
   line: "PIB total (eixo da esquerda, em R$) e PIB per capita (eixo da direita, em R$ mil). Clique em um ponto para mudar o ano.",
   map: "Cada estado recebe a cor da faixa do seu PIB total. Clique em um estado para usá-lo como filtro do painel.",
-  vab: "Valor adicionado bruto de cada grande setor da economia. Os dados setoriais vão até 2021.",
-  atividade:
-    "As três atividades com maior participação no PIB do território selecionado, em % do PIB. Os dados setoriais vão até 2021.",
+  vab: (vabLastYear: number | null) =>
+    `Valor adicionado bruto de cada grande setor da economia.${sectorCoverage(vabLastYear)}`,
+  atividade: (vabLastYear: number | null) =>
+    `As três atividades com maior participação no PIB do território selecionado, em % do PIB.${sectorCoverage(vabLastYear)}`,
 } as const;
 
 export const PIB_SAIBA_MAIS_TITLE = "Saiba mais sobre o PIB";

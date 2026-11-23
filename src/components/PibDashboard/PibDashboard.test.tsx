@@ -4,7 +4,6 @@ import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import {
   emptyPibPanel,
-  PIB_VAB_LAST_YEAR,
   type PibPanelData,
 } from "@/features/panels/pib/pibPanel";
 
@@ -24,7 +23,15 @@ const PANEL: PibPanelData = {
     { ano: 2022, pib: 1e9, perCapita: 1e4 },
     { ano: 2023, pib: 1.1e9, perCapita: 1.1e4 },
   ],
+  vabLastYear: 2021,
 };
+
+const SECTORS = {
+  vab: [{ label: "Serviços", value: 5e8 }],
+  atividades: [{ label: "Demais serviços", value: 31.9 }],
+};
+
+const sectorNotices = () => screen.queryAllByText(/ainda não foram/);
 
 const yearSelect = () => screen.getByLabelText("Ano");
 
@@ -65,12 +72,12 @@ describe("PibDashboard", () => {
 
     fireEvent.click(
       screen.getAllByRole("button", {
-        name: `Ver ${PIB_VAB_LAST_YEAR}, último ano disponível`,
+        name: "Ver 2021, último ano disponível",
       })[0],
     );
 
     expect(replace).toHaveBeenCalledWith(
-      expect.stringContaining(`ano=${PIB_VAB_LAST_YEAR}`),
+      expect.stringContaining("ano=2021"),
       expect.anything(),
     );
     expect(yearSelect()).toHaveClass("animate-proto-ring");
@@ -88,5 +95,59 @@ describe("PibDashboard", () => {
     expect(yearSelect().scrollIntoView).toHaveBeenCalled();
     expect(document.activeElement).toBe(yearSelect());
     vi.useRealTimers();
+  });
+
+  it("lists the series years without VAB in the sector notice", () => {
+    render(<PibDashboard data={PANEL} catalogHref="/catalog" />);
+
+    expect(sectorNotices()[0]).toHaveTextContent(
+      "Os dados para os anos de 2022 e 2023 ainda não foram disponibilizados.",
+    );
+  });
+
+  it("shows the sector bars when the database has VAB for the year", () => {
+    render(
+      <PibDashboard
+        data={{ ...PANEL, ...SECTORS, vabLastYear: 2023 }}
+        catalogHref="/catalog"
+      />,
+    );
+
+    expect(sectorNotices()).toHaveLength(0);
+    expect(screen.getAllByText("Serviços").length).toBeGreaterThan(0);
+  });
+
+  it("shows the notice for a year without sector data, whatever the year", () => {
+    render(
+      <PibDashboard
+        data={{
+          ...PANEL,
+          filters: { ano: 2015, area: "nordeste" },
+          vabLastYear: 2014,
+        }}
+        catalogHref="/catalog"
+      />,
+    );
+
+    expect(sectorNotices()).toHaveLength(2);
+    expect(
+      screen.getAllByRole("button", {
+        name: "Ver 2014, último ano disponível",
+      }),
+    ).toHaveLength(2);
+  });
+
+  it("offers only the year select when the database has no VAB year", () => {
+    render(
+      <PibDashboard
+        data={{ ...PANEL, vabLastYear: null }}
+        catalogHref="/catalog"
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: /^Ver \d{4}/ })).toBeNull();
+    expect(
+      screen.getAllByRole("button", { name: "Escolher outro ano" }),
+    ).toHaveLength(2);
   });
 });

@@ -22,8 +22,9 @@ import {
 } from "@/features/panels/pib/pibBars";
 import { formatPibReais, formatPibTick } from "@/features/panels/pib/pibFormat";
 import {
+  lacksPibSectorData,
   listPibYearsWithoutVab,
-  PIB_VAB_LAST_YEAR,
+  type PibPanelData,
 } from "@/features/panels/pib/pibPanel";
 
 const VAB_TITLE = "Valor Adicionado Bruto (VAB) por setor";
@@ -49,24 +50,36 @@ const Hint = ({ children }: { children: ReactNode }) => (
   <p className="mt-2 text-xs text-grey-800">{children}</p>
 );
 
-// Anos sem dado setorial (depois de PIB_VAB_LAST_YEAR): o aviso leva ao último
-// ano que tem ou ao select de Ano.
+// Ano sem dado setorial: o aviso leva ao último ano com VAB ou ao select de Ano.
 const YearNotice = ({
+  data,
   onSelectYear,
   onPickYear,
-}: Pick<PibSectorCardProps, "onSelectYear" | "onPickYear">) => (
-  <ProtoCardNotice
-    tone="warn"
-    action={{
-      label: `Ver ${PIB_VAB_LAST_YEAR}, último ano disponível`,
-      onClick: () => onSelectYear(PIB_VAB_LAST_YEAR),
-    }}
-    secondaryAction={{ label: "Escolher outro ano", onClick: onPickYear }}
-  >
-    <b>ATENÇÃO:</b> Os dados para os anos de{" "}
-    {listPibYearsWithoutVab().join(" e ")} ainda não foram disponibilizados.
-  </ProtoCardNotice>
-);
+}: Pick<PibSectorCardProps, "onSelectYear" | "onPickYear"> & {
+  data: PibPanelData;
+}) => {
+  const { vabLastYear } = data;
+  const pickYear = { label: "Escolher outro ano", onClick: onPickYear };
+
+  return (
+    <ProtoCardNotice
+      tone="warn"
+      action={
+        vabLastYear === null
+          ? pickYear
+          : {
+              label: `Ver ${vabLastYear}, último ano disponível`,
+              onClick: () => onSelectYear(vabLastYear),
+            }
+      }
+      secondaryAction={vabLastYear === null ? undefined : pickYear}
+    >
+      <b>ATENÇÃO:</b> Os dados para os anos de{" "}
+      {listPibYearsWithoutVab(data).join(" e ")} ainda não foram
+      disponibilizados.
+    </ProtoCardNotice>
+  );
+};
 
 // Os dois cards de setor têm a mesma moldura; muda o título, o ⓘ e o corpo.
 const SectorCard = ({
@@ -99,8 +112,12 @@ const SectorCard = ({
       </>
     }
   >
-    {data.filters.ano > PIB_VAB_LAST_YEAR ? (
-      <YearNotice onSelectYear={onSelectYear} onPickYear={onPickYear} />
+    {lacksPibSectorData(data) ? (
+      <YearNotice
+        data={data}
+        onSelectYear={onSelectYear}
+        onPickYear={onPickYear}
+      />
     ) : (
       children
     )}
@@ -122,7 +139,7 @@ export const PibVabCard = (props: PibSectorCardProps) => {
       {...props}
       title={VAB_TITLE}
       unit={`R$ ${bars.rows.length ? bars.unit.label : NO_DATA_UNIT}`}
-      info={PIB_CARD_INFO.vab}
+      info={PIB_CARD_INFO.vab(props.data.vabLastYear)}
     >
       {bars.rows.length ? (
         <>
@@ -159,7 +176,7 @@ export const PibAtividadeCard = (props: PibSectorCardProps) => {
       {...props}
       title={ATIVIDADE_TITLE}
       unit="% do PIB"
-      info={PIB_CARD_INFO.atividade}
+      info={PIB_CARD_INFO.atividade(props.data.vabLastYear)}
     >
       {bars.rows.length ? (
         <>
