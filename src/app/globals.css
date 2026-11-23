@@ -124,6 +124,20 @@ body {
       background-position: -200% 0;
     }
   }
+
+  /* Texto do "Veja mais" que mudou com o filtro (`anlFlash` do protótipo). */
+  --animate-proto-flash: proto-flash 1.4s ease-out;
+
+  @keyframes proto-flash {
+    from {
+      background: var(--proto-accent-soft);
+      box-shadow: 0 0 0 6px var(--proto-accent-soft);
+    }
+    to {
+      background: transparent;
+      box-shadow: 0 0 0 6px transparent;
+    }
+  }
 }
 
 @theme inline {

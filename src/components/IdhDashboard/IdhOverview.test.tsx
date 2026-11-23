@@ -4,9 +4,9 @@ import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
 import {
   allIdhCards,
   idhPanelFixture,
-  stubIdhBrowserApis,
 } from "@/components/IdhDashboard/idhTestFixtures";
 import type { IdhCardStates } from "@/features/panels/idh/idhCardState";
+import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 
 const FILTERS = { ano: 2021, visao: "geral" } as const;
 
@@ -22,7 +22,7 @@ const overview = (states: IdhCardStates) => (
 );
 
 describe("IdhOverview", () => {
-  beforeEach(stubIdhBrowserApis);
+  beforeEach(stubPanelBrowserApis);
 
   // Regressão (revisão da PR #397): o diálogo ficava nos children do card, que
   // o esqueleto substitui, e era desmontado a cada estado clicado em tela cheia.

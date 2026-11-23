@@ -1,4 +1,4 @@
-import { buildZeroAxis } from "@/features/panels/pib/pibAxis";
+import { buildZeroAxis } from "@/features/panels/zeroAxis";
 import type { PibYearPoint } from "@/features/panels/pib/pibPanel";
 
 export type PibLineKey = "pib" | "perCapita";

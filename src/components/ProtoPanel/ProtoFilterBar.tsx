@@ -1,7 +1,10 @@
 "use client";
 
 import { type ReactNode, type Ref, useState } from "react";
-import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
+import {
+  ProtoIcon,
+  type ProtoIconName,
+} from "@/components/ProtoPanel/ProtoIcon";
 import { ProtoSheet } from "@/components/ProtoPanel/ProtoSheet";
 import {
   BUTTON,
@@ -19,8 +22,12 @@ const CLEAR_CLASS = cn(
   "min-h-9 px-3.5 py-1.5 text-[#bf1621] enabled:border-[#efb8bd] hover:not-disabled:border-[#efb8bd] hover:not-disabled:bg-[#ffe1e3] max-[700px]:min-h-10 max-[700px]:w-10 max-[700px]:flex-none max-[700px]:p-0",
 );
 
+// Ícone e nome do painel no resumo do celular (`.fb-tile` do protótipo).
+export type ProtoFilterBarBrand = { icon: ProtoIconName; title: string };
+
 export type ProtoFilterBarProps = {
   summaryTitle: string;
+  brand?: ProtoFilterBarBrand;
 
   // Sem subtítulo, o resumo do celular mostra só o título (perfil demográfico).
   summarySubtitle?: string;
@@ -68,13 +75,44 @@ const FiltersSheet = ({
 );
 
 // No celular, o resumo do filtro abre a folha (`.fb-sum`).
+// Com `brand`, o nome do painel vira o título e o recorte desce para baixo.
 const PhoneSummary = ({
   title,
   subtitle,
+  brand,
   onOpen,
 }: {
   title: string;
   subtitle?: string;
+  brand?: ProtoFilterBarBrand;
+  onOpen: () => void;
+}) =>
+  brand ? (
+    <PhoneBrandSummary brand={brand} place={title} onOpen={onOpen} />
+  ) : (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label="Filtros selecionados. Toque para alterar"
+      className="hidden min-w-0 flex-1 items-center gap-2 py-1 text-left max-[700px]:flex"
+    >
+      <ProtoIcon name="pin" size={20} className="flex-none" />
+      <span className="flex min-w-0 flex-col leading-tight">
+        <b className="truncate text-sm font-semibold">{title}</b>
+        {subtitle ? (
+          <small className="text-xs text-grey-1100">{subtitle}</small>
+        ) : null}
+      </span>
+    </button>
+  );
+
+const PhoneBrandSummary = ({
+  brand,
+  place,
+  onOpen,
+}: {
+  brand: ProtoFilterBarBrand;
+  place: string;
   onOpen: () => void;
 }) => (
   <button
@@ -83,12 +121,17 @@ const PhoneSummary = ({
     aria-label="Filtros selecionados. Toque para alterar"
     className="hidden min-w-0 flex-1 items-center gap-2 py-1 text-left max-[700px]:flex"
   >
-    <ProtoIcon name="pin" size={20} className="flex-none" />
-    <span className="flex min-w-0 flex-col leading-tight">
-      <b className="truncate text-sm font-semibold">{title}</b>
-      {subtitle ? (
-        <small className="text-xs text-grey-1100">{subtitle}</small>
-      ) : null}
+    <span
+      aria-hidden="true"
+      className="grid size-8 flex-none place-items-center rounded-[6px] bg-(--proto-accent) text-white"
+    >
+      <ProtoIcon name={brand.icon} size={18} />
+    </span>
+    <span className="flex min-w-0 flex-col">
+      <b className="truncate text-[15px] leading-5 font-bold">{brand.title}</b>
+      <small className="truncate text-[12.5px] leading-4 text-grey-800">
+        {place}
+      </small>
     </span>
   </button>
 );
@@ -103,6 +146,7 @@ const PhoneSummary = ({
 export const ProtoFilterBar = ({
   summaryTitle,
   summarySubtitle,
+  brand,
   renderFields,
   isDefault,
   onClear,
@@ -125,6 +169,7 @@ export const ProtoFilterBar = ({
         <PhoneSummary
           title={summaryTitle}
           subtitle={summarySubtitle}
+          brand={brand}
           onOpen={() => setSheetOpen(true)}
         />
         <button

@@ -14,7 +14,10 @@ import {
   ProtoCardMenu,
   useSvgChart,
 } from "@/components/ProtoPanel/ProtoCardMenu";
-import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
+import {
+  ProtoBinLegend,
+  ProtoFullscreenButton,
+} from "@/components/ProtoPanel/ProtoMapControls";
 import {
   MAP_SELECT_HINT,
   ProtoMapFullscreen,
@@ -23,13 +26,12 @@ import {
   ProtoStateMap,
   type ProtoStateMapProps,
 } from "@/components/ProtoPanel/ProtoStateMap";
-import { ICON_BUTTON } from "@/components/ProtoPanel/protoStyles";
 import type { PibPanelData } from "@/features/panels/pib/pibPanel";
 import {
   buildPibStateLookup,
-  describeStatesOffMap,
   PIB_STATE_BINS,
 } from "@/features/panels/pib/pibStates";
+import { describeStatesOffMap } from "@/features/panels/statesOffMap";
 import { areaLabel } from "@/features/panels/territorialOptions";
 
 const TITLE = "Mapa do PIB por estado";
@@ -57,43 +59,6 @@ export const buildPibMapProps = (
     onSelect,
   };
 };
-
-// `.mleg`: as cinco faixas do PIB total.
-const MapLegend = ({ className = "mt-3" }: { className?: string }) => (
-  <div
-    className={`flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-grey-1100 ${className}`}
-  >
-    {PIB_STATE_BINS.map((bin) => (
-      <span key={bin.label} className="inline-flex items-center gap-1.5">
-        <i
-          className="inline-block size-[9px] rounded-full"
-          style={{ background: bin.color }}
-        />
-        {bin.label}
-      </span>
-    ))}
-  </div>
-);
-
-const FullscreenButton = ({
-  disabled,
-  onClick,
-}: {
-  disabled: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    type="button"
-    aria-haspopup="dialog"
-    aria-label="Abrir mapa em tela cheia"
-    title="Tela cheia"
-    disabled={disabled}
-    onClick={onClick}
-    className={ICON_BUTTON}
-  >
-    <ProtoIcon name="fullscreen" size={18} stroke={1.7} />
-  </button>
-);
 
 /**
  * Card "Mapa do PIB por estado": cada estado na cor da faixa do seu PIB
@@ -131,14 +96,14 @@ export const PibMapCard = ({
           onOpenChange={setFullscreen}
           title={TITLE}
           subtitle={subtitle}
-          legend={<MapLegend className="" />}
+          legend={<ProtoBinLegend bins={PIB_STATE_BINS} className="" />}
           source={PIB_CARD_SOURCE}
           hint={MAP_SELECT_HINT}
         />
       }
       actions={
         <>
-          <FullscreenButton
+          <ProtoFullscreenButton
             disabled={status.state === "loading" || status.state === "error"}
             onClick={() => setFullscreen(true)}
           />
@@ -154,7 +119,7 @@ export const PibMapCard = ({
       >
         <ProtoStateMap {...mapProps} svgRef={chart.ref} />
       </div>
-      <MapLegend />
+      <ProtoBinLegend bins={PIB_STATE_BINS} />
       {offMap ? <p className="mt-2 text-xs text-grey-800">{offMap}</p> : null}
     </ProtoCard>
   );
