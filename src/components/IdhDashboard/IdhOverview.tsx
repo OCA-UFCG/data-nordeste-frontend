@@ -20,13 +20,12 @@ import {
   ProtoCardMenu,
   useSvgChart,
 } from "@/components/ProtoPanel/ProtoCardMenu";
-import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
+import { ProtoFullscreenButton } from "@/components/ProtoPanel/ProtoMapControls";
 import {
   MAP_SELECT_HINT,
   ProtoMapFullscreen,
 } from "@/components/ProtoPanel/ProtoMapFullscreen";
 import { ProtoStateMap } from "@/components/ProtoPanel/ProtoStateMap";
-import { ICON_BUTTON } from "@/components/ProtoPanel/protoStyles";
 import {
   type IdhCardStates,
   showsIdhData,
@@ -124,17 +123,10 @@ const MapCard = ({
       }
       actions={
         <>
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            aria-label="Abrir mapa em tela cheia"
-            title="Tela cheia"
+          <ProtoFullscreenButton
             disabled={!showsIdhData(status.state)}
             onClick={() => setFullscreen(true)}
-            className={ICON_BUTTON}
-          >
-            <ProtoIcon name="fullscreen" size={18} stroke={1.7} />
-          </button>
+          />
           <ProtoCardInfo title={MAP_TITLE} text={IDH_CARD_INFO.map} />
           <ProtoCardMenu title={MAP_TITLE} chart={chart} />
         </>

@@ -2,7 +2,10 @@
 
 import { type Ref, useId } from "react";
 import { PlaceFilter } from "@/components/Panel/filters/TerritorialFilterBar";
-import { ProtoFilterBar } from "@/components/ProtoPanel/ProtoFilterBar";
+import {
+  ProtoFilterBar,
+  type ProtoFilterBarBrand,
+} from "@/components/ProtoPanel/ProtoFilterBar";
 import {
   ProtoSelectField,
   protoFieldLook,
@@ -141,7 +144,9 @@ export const ProtoTerritorialFilters = ({
   top,
   stuck,
   barRef,
+  brand,
 }: FieldsProps & {
+  brand?: ProtoFilterBarBrand;
   onClear: () => void;
   isDefault: boolean;
   top: number;
@@ -150,6 +155,7 @@ export const ProtoTerritorialFilters = ({
 }) => (
   <ProtoFilterBar
     summaryTitle={describeTerritorialSelection(data, true)}
+    brand={brand}
     renderFields={(wide) => (
       <TerritorialFilterFields
         data={data}

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { describeTerritorialSelection } from "@/features/panels/territorialOptions";
+import {
+  describeSelectedTerritory,
+  describeTerritorialSelection,
+} from "@/features/panels/territorialOptions";
 
 const OPTIONS = {
   ufs: [
@@ -64,5 +67,19 @@ describe("describeTerritorialSelection", () => {
         filters: { ano: 2023, area: "nordeste" },
       }),
     ).toBe("Todos os municípios da área · 2023");
+  });
+});
+
+describe("describeSelectedTerritory", () => {
+  it("names the most specific place without the year", () => {
+    const filters = { ano: 2021, area: "caatinga" as const };
+
+    expect(describeSelectedTerritory({ ...OPTIONS, filters })).toBe("Caatinga");
+    expect(
+      describeSelectedTerritory({
+        ...OPTIONS,
+        filters: { ...filters, uf: ["PE"], mun: ["2611606"] },
+      }),
+    ).toBe("Recife (PE)");
   });
 });
