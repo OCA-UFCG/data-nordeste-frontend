@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 import {
   BUTTON,
+  BUTTON_GHOST,
   CARD_SHADOW,
   staleClass,
 } from "@/components/ProtoPanel/protoStyles";
@@ -35,17 +36,27 @@ export const ProtoSkeleton = ({
   />
 );
 
-const CardSkeleton = ({ kind }: { kind: ProtoCardKind }) => (
+const CardSkeleton = ({
+  kind,
+  skeleton,
+}: {
+  kind: ProtoCardKind;
+  skeleton?: ReactNode;
+}) => (
   <div
     aria-busy="true"
     aria-label="Carregando"
-    className="flex flex-col gap-3 pt-1"
+    className={skeleton ? undefined : "flex flex-col gap-3 pt-1"}
   >
-    <ProtoSkeleton className="h-3.5 w-[45%]" />
-    <ProtoSkeleton
-      className="w-full"
-      style={{ height: SKELETON_HEIGHT[kind] }}
-    />
+    {skeleton ?? (
+      <>
+        <ProtoSkeleton className="h-3.5 w-[45%]" />
+        <ProtoSkeleton
+          className="w-full"
+          style={{ height: SKELETON_HEIGHT[kind] }}
+        />
+      </>
+    )}
   </div>
 );
 
@@ -65,17 +76,19 @@ const NoticeButton = ({
 
 /**
  * Estado de aviso ou de erro de um card (`.empty` do protótipo): ícone, texto
- * e, quando `action` é dado, um único botão.
+ * e, quando dados, o botão `action` e o `secondaryAction` (ghost, ao lado).
  *
- * @example <ProtoCardNotice tone="warn" action={{ label: "Ver Nordeste · 2022", onClick: reset }}>…</ProtoCardNotice>
+ * @example <ProtoCardNotice tone="warn" action={{ label: "Ver Nordeste · 2022", onClick: reset }} secondaryAction={{ label: "Escolher outro ano", onClick: pickYear }}>…</ProtoCardNotice>
  */
 export const ProtoCardNotice = ({
   tone,
   action,
+  secondaryAction,
   children,
 }: {
   tone: "warn" | "error";
   action?: NoticeAction;
+  secondaryAction?: NoticeAction;
   children: ReactNode;
 }) => (
   <div
@@ -88,7 +101,14 @@ export const ProtoCardNotice = ({
       <ProtoIcon name="warn" size={24} />
     </span>
     <p className="max-w-[56ch] text-[15px] leading-[22px]">{children}</p>
-    {action ? <NoticeButton action={action} className={BUTTON} /> : null}
+    {action ? (
+      <div className="flex flex-wrap justify-center gap-2">
+        <NoticeButton action={action} className={BUTTON} />
+        {secondaryAction ? (
+          <NoticeButton action={secondaryAction} className={BUTTON_GHOST} />
+        ) : null}
+      </div>
+    ) : null}
   </div>
 );
 
@@ -118,6 +138,9 @@ export type ProtoCardProps = {
   bodyClassName?: string;
   footer?: ProtoCardFooter;
 
+  // Esqueleto com a altura do corpo pronto, no lugar do genérico do `kind`.
+  skeleton?: ReactNode;
+
   // IMPORTANT: o que vai em `overlay` (como o mapa em tela cheia) fica fora do
   // CardBody: dentro dos children, o esqueleto do carregando o desmontaria a
   // cada filtro (revisão da PR #401).
@@ -128,10 +151,15 @@ export type ProtoCardProps = {
 const CardBody = ({
   state,
   kind,
+  skeleton,
   onRetry,
   children,
-}: Pick<ProtoCardProps, "state" | "kind" | "onRetry" | "children">) => {
-  if (state === "loading") return <CardSkeleton kind={kind} />;
+}: Pick<
+  ProtoCardProps,
+  "state" | "kind" | "skeleton" | "onRetry" | "children"
+>) => {
+  if (state === "loading")
+    return <CardSkeleton kind={kind} skeleton={skeleton} />;
   if (state === "error") {
     return (
       <ProtoCardNotice
@@ -181,7 +209,12 @@ export const ProtoCard = (props: ProtoCardProps) => (
       aria-busy={props.state === "stale" || props.state === "loading"}
       className={`min-w-0 flex-1 ${props.bodyClassName ?? ""} ${staleClass(props.state === "stale")}`}
     >
-      <CardBody state={props.state} kind={props.kind} onRetry={props.onRetry}>
+      <CardBody
+        state={props.state}
+        kind={props.kind}
+        skeleton={props.skeleton}
+        onRetry={props.onRetry}
+      >
         {props.children}
       </CardBody>
     </div>

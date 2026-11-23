@@ -4,7 +4,8 @@ import { type Ref, useId } from "react";
 import { PlaceFilter } from "@/components/Panel/filters/TerritorialFilterBar";
 import {
   ProtoFilterBar,
-  type ProtoFilterBarBrand,
+  type ProtoFilterBarProps,
+  type ProtoFilterSheetControl,
 } from "@/components/ProtoPanel/ProtoFilterBar";
 import {
   ProtoSelectField,
@@ -65,15 +66,22 @@ const TerritorialFilterFields = ({
   onChange,
   wide,
   branded,
-}: FieldsProps & { wide: boolean; branded: boolean }) => {
+  fillRow,
+  yearRef,
+}: FieldsProps & {
+  wide: boolean;
+  branded: boolean;
+  fillRow?: boolean;
+  yearRef?: Ref<HTMLSelectElement>;
+}) => {
   const { filters } = data;
   const id = useId();
 
   // Desktop: campos flexíveis como `.fb-in .fl` do protótipo; a folha do celular fica com largura toda.
   const fluid = !wide;
   const classes = fieldClasses(fluid, branded);
-  const selectClass = cn(protoSelectClass(wide), classes.select);
-  const baseLook = protoFieldLook(wide, fluid);
+  const selectClass = cn(protoSelectClass(wide, fillRow), classes.select);
+  const baseLook = protoFieldLook(wide, fluid, fillRow);
   const placeLook = {
     ...baseLook,
     fieldClassName: cn(baseLook.fieldClassName, classes.field),
@@ -86,10 +94,14 @@ const TerritorialFilterFields = ({
         label="Ano"
         wide={wide}
         fluid={fluid}
-        className={classes.year}
+        fill={fillRow}
+        className={
+          fillRow ? "flex-[.6_1_0] max-[901px]:min-w-[84px]" : classes.year
+        }
       >
         {(fieldId) => (
           <select
+            ref={wide ? undefined : yearRef}
             id={fieldId}
             value={filters.ano}
             onChange={(event) =>
@@ -118,6 +130,7 @@ const TerritorialFilterFields = ({
         label="Área de interesse"
         wide={wide}
         fluid={fluid}
+        fill={fillRow}
         className={classes.field}
       >
         {(fieldId) => (
@@ -187,23 +200,34 @@ export const ProtoTerritorialFilters = ({
   barRef,
   brand,
   brandInBar = false,
-}: FieldsProps & {
-  brand?: ProtoFilterBarBrand;
+  fillRow,
+  yearRef,
+  disabled,
+  ...sheet
+}: FieldsProps &
+  Pick<ProtoFilterBarProps, "brand" | "fillRow" | "disabled"> &
+  ProtoFilterSheetControl & {
+    onClear: () => void;
+    isDefault: boolean;
+    top: number;
+    stuck: boolean;
+    barRef: Ref<HTMLDivElement>;
 
-  // Põe a `brand` no início da barra do desktop, como no perfil demográfico:
-  // os quatro campos dividem o resto (sem os limites de largura do PIB) e,
-  // até 900 px, fica só o ícone da marca.
-  brandInBar?: boolean;
-  onClear: () => void;
-  isDefault: boolean;
-  top: number;
-  stuck: boolean;
-  barRef: Ref<HTMLDivElement>;
-}) => (
+    // Põe a `brand` no início da barra do desktop, como no perfil demográfico:
+    // os quatro campos dividem o resto (sem os limites de largura do PIB) e,
+    // até 900 px, fica só o ícone da marca.
+    brandInBar?: boolean;
+
+    // O select de Ano do desktop (a folha do celular tem o seu).
+    yearRef?: Ref<HTMLSelectElement>;
+  }) => (
   <ProtoFilterBar
     summaryTitle={describeTerritorialSelection(data, true)}
     brand={brand}
     brandInBar={brandInBar && "compact"}
+    fillRow={fillRow}
+    disabled={disabled}
+    {...sheet}
     renderFields={(wide) => (
       <TerritorialFilterFields
         data={data}
@@ -212,6 +236,8 @@ export const ProtoTerritorialFilters = ({
         onChange={onChange}
         wide={wide}
         branded={brandInBar}
+        fillRow={fillRow}
+        yearRef={yearRef}
       />
     )}
     isDefault={isDefault}

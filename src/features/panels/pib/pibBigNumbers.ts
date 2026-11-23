@@ -1,5 +1,9 @@
 import type { PibYearPoint } from "@/features/panels/pib/pibPanel";
 import {
+  describeSelectedTerritory,
+  type TerritorialSelection,
+} from "@/features/panels/territorialOptions";
+import {
   describeYearChange,
   formatYearChange,
   type YearChangeTone,
@@ -14,6 +18,10 @@ export type PibBigNumber = {
   value: number | null;
   pill: PibChangePill | null;
 };
+
+/** @example describePibCaption(selection) // "2021 · Nordeste" */
+export const describePibCaption = (selection: TerritorialSelection): string =>
+  `${selection.filters.ano} · ${describeSelectedTerritory(selection)}`;
 
 const PICK = {
   pib: (point: PibYearPoint) => point.pib,
@@ -40,7 +48,10 @@ export const describePibChangePill = (
 
   if (!change) return null;
 
-  return { text: formatYearChange(change), direction: yearChangeTone(change) };
+  return {
+    text: formatYearChange(change, "vs."),
+    direction: yearChangeTone(change),
+  };
 };
 
 /**

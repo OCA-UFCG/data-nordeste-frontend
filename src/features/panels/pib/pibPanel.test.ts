@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   emptyPibPanel,
+  lacksPibSectorData,
   listPibYearsWithoutVab,
   loadPibPanel,
 } from "@/features/panels/pib/pibPanel";
@@ -29,7 +30,10 @@ const municipiosIn = (params: unknown[]) => {
 class PibDatabaseFake {
   readonly calls: RecordedQuery[] = [];
 
-  constructor(private readonly vabServicos: string | null = "413890000") {}
+  constructor(
+    private readonly vabServicos: string | null = "413890000",
+    private readonly vabLastYear: number | null = 2021,
+  ) {}
 
   readonly query = async <Row>(sql: string, params: unknown[]) => {
     this.calls.push({ sql, params });
@@ -72,6 +76,9 @@ class PibDatabaseFake {
         },
       ];
     }
+    if (sql.includes("WHERE vab_servicos IS NOT NULL")) {
+      return [{ ano: this.vabLastYear }];
+    }
     if (sql.includes("atividade_maior_vab AS atividade")) {
       return [{ atividade: "Demais serviços", participacao: "31.949" }];
     }
@@ -108,6 +115,25 @@ describe("loadPibPanel", () => {
     });
 
     expect(panel.vab).toBeNull();
+  });
+
+  it("reads the last year with VAB from the database, for every territory", async () => {
+    const db = new PibDatabaseFake("413890000", 2022);
+    const panel = await loadPibPanel(db.query, {
+      ano: 2017,
+      area: "semiarido",
+      uf: ["PE"],
+    });
+
+    expect(panel.vabLastYear).toBe(2022);
+    expect(db.callFor("vab_servicos IS NOT NULL").params).toEqual([]);
+  });
+
+  it("has no last VAB year when the database has no VAB at all", async () => {
+    const db = new PibDatabaseFake(null, null);
+    const panel = await loadPibPanel(db.query, { ano: 2017, area: "nordeste" });
+
+    expect(panel.vabLastYear).toBeNull();
   });
 
   it("passes user filters as bind parameters, never inside the SQL", async () => {
@@ -206,12 +232,40 @@ describe("emptyPibPanel", () => {
       estados: [],
       vab: null,
       atividades: [],
+      vabLastYear: null,
     });
   });
 });
 
 describe("listPibYearsWithoutVab", () => {
-  it("lists the years after the last VAB release", () => {
-    expect(listPibYearsWithoutVab()).toEqual([2022, 2023]);
+  const serie = [2020, 2021, 2022, 2023].map((ano) => ({
+    ano,
+    pib: 1,
+    perCapita: 1,
+  }));
+
+  it("lists the series years after the last VAB release", () => {
+    expect(listPibYearsWithoutVab({ serie, vabLastYear: 2021 })).toEqual([
+      2022, 2023,
+    ]);
+    expect(listPibYearsWithoutVab({ serie, vabLastYear: 2022 })).toEqual([
+      2023,
+    ]);
+  });
+
+  it("lists every year when the database has no VAB", () => {
+    expect(listPibYearsWithoutVab({ serie, vabLastYear: null })).toEqual([
+      2020, 2021, 2022, 2023,
+    ]);
+  });
+});
+
+describe("lacksPibSectorData", () => {
+  it("is true only without VAB and without activities", () => {
+    expect(lacksPibSectorData({ vab: null, atividades: [] })).toBe(true);
+    expect(lacksPibSectorData({ vab: [], atividades: [] })).toBe(false);
+    expect(
+      lacksPibSectorData({ vab: null, atividades: [{ label: "x", value: 1 }] }),
+    ).toBe(false);
   });
 });

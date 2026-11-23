@@ -31,9 +31,16 @@ const signedPercent = new Intl.NumberFormat("pt-BR", {
   signDisplay: "exceptZero",
 });
 
-/** @example formatYearChange({ ratio: 0.082, previousLabel: "2020" }) // "+8,2% em relação a 2020" */
-export const formatYearChange = (change: YearChange): string =>
-  `${signedPercent.format(change.ratio)} em relação a ${change.previousLabel}`;
+/**
+ * `connector` liga o percentual ao ano anterior (padrão: "em relação a").
+ *
+ * @example formatYearChange({ ratio: 0.082, previousLabel: "2020" }) // "+8,2% em relação a 2020"
+ */
+export const formatYearChange = (
+  change: YearChange,
+  connector = "em relação a",
+): string =>
+  `${signedPercent.format(change.ratio)} ${connector} ${change.previousLabel}`;
 
 export type YearChangeTone = "up" | "down" | "flat";
 

@@ -12,6 +12,7 @@ export type ProtoCardMenuContextValue = {
   share: CardShare;
   catalogHref: string | null;
   imageSource: string;
+  bareSheet?: boolean;
 };
 
 export const ProtoCardMenuContext =
@@ -58,6 +59,7 @@ export const ProtoCardMenu = ({
       title={title}
       share={context.share}
       catalogHref={catalog ? context.catalogHref : null}
+      bareSheet={context.bareSheet}
       image={
         chart
           ? { getSource: chart.getSource, source: context.imageSource }
