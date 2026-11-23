@@ -16,6 +16,11 @@ import {
   parseIdhFilters,
   type IdhFilters,
 } from "@/features/panels/idh/idhPanel";
+import {
+  NO_IDH_YEARS,
+  tryLoadIdhYearRange,
+} from "@/features/panels/idh/idhYearRange";
+import type { YearRange } from "@/features/panels/territorialFilters";
 import { queryDataDb } from "@/lib/dataDb";
 import HubTemplate from "@/templates/HubTemplate";
 
@@ -31,9 +36,9 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const loadPanel = async (filters: IdhFilters) => {
+const loadPanel = async (filters: IdhFilters, range: YearRange) => {
   try {
-    return await loadIdhPanel(queryDataDb, filters);
+    return await loadIdhPanel(queryDataDb, filters, range);
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -47,12 +52,12 @@ const loadPanel = async (filters: IdhFilters) => {
   }
 };
 
-const LoadFailedMessage = ({ filters }: { filters: IdhFilters }) => (
+const LoadFailedMessage = ({ retryHref }: { retryHref: string }) => (
   <PanelMessage>
     Não foi possível carregar os dados do painel agora. Tente novamente em
     alguns minutos.{" "}
     <a
-      href={`/demo/idh-powerbi${buildIdhSearch(filters)}`}
+      href={retryHref}
       className="font-medium text-green-900 underline underline-offset-4"
     >
       Tentar novamente
@@ -65,9 +70,11 @@ export default async function IdhDemoPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const filters = parseIdhFilters(await searchParams);
+  const range = await tryLoadIdhYearRange(queryDataDb);
+  const years = range ?? NO_IDH_YEARS;
+  const filters = parseIdhFilters(await searchParams, years);
   const [panel, content] = await Promise.all([
-    loadPanel(filters),
+    range ? loadPanel(filters, range) : null,
     loadIdhPanelContent(),
   ]);
 
@@ -90,7 +97,9 @@ export default async function IdhDemoPage({
             source={IDH_SOURCE}
             fullMobile
           >
-            <LoadFailedMessage filters={filters} />
+            <LoadFailedMessage
+              retryHref={`/demo/idh-powerbi${buildIdhSearch(filters, years)}`}
+            />
           </PanelPage>
         )}
       </PanelTextsFrame>

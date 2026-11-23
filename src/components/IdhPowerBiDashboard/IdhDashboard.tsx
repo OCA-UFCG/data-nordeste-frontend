@@ -13,26 +13,30 @@ import { PanelTabs } from "@/components/Panel/layout/PanelTabs";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
   buildIdhSearch,
-  DEFAULT_IDH_FILTERS,
+  defaultIdhFilters,
   describeIdhSelection,
   IDH_VISOES,
   type IdhFilters,
   type IdhPanelData,
   type IdhVisao,
 } from "@/features/panels/idh/idhPanel";
+import type { YearRange } from "@/features/panels/territorialFilters";
 
 // Trocar de aba não consulta o banco de novo: só atualiza a URL.
-const useIdhNavigation = () => {
-  const { isPending, pathname, applyFilters } =
-    usePanelNavigation(buildIdhSearch);
+const useIdhNavigation = (range: YearRange) => {
+  const buildSearch = useCallback(
+    (filters: IdhFilters) => buildIdhSearch(filters, range),
+    [range],
+  );
+  const { isPending, pathname, applyFilters } = usePanelNavigation(buildSearch);
   const showVisao = useCallback(
     (filters: IdhFilters) =>
       window.history.replaceState(
         null,
         "",
-        `${pathname}${buildIdhSearch(filters)}`,
+        `${pathname}${buildSearch(filters)}`,
       ),
-    [pathname],
+    [pathname, buildSearch],
   );
 
   return { isPending, applyFilters, showVisao };
@@ -71,7 +75,9 @@ export const IdhDashboard = ({
 }) => {
   const idPrefix = useId();
   const [tab, setTab] = useState<IdhVisao>(data.filters.visao);
-  const { isPending, applyFilters, showVisao } = useIdhNavigation();
+  const { isPending, applyFilters, showVisao } = useIdhNavigation(
+    data.yearRange,
+  );
   const selectTab = (visao: IdhVisao) => {
     setTab(visao);
     showVisao({ ...data.filters, visao });
@@ -100,12 +106,13 @@ export const IdhDashboard = ({
     >
       <PanelFilters
         summary={summary}
-        onClear={() => changeFilters(DEFAULT_IDH_FILTERS)}
+        onClear={() => changeFilters(defaultIdhFilters(data.yearRange))}
         isPending={isPending}
         sticky
       >
         <IdhSelects
           filters={data.filters}
+          yearRange={data.yearRange}
           ufs={data.ufs}
           onChange={changeFilters}
         />

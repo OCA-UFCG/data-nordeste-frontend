@@ -5,11 +5,10 @@ import {
 } from "@/features/panels/panelCardState";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 
-// Estados documentados em PanelCardState; o IDH usa a mesma regra dos demais
-// painéis. No IDH, `stale` quer dizer que um filtro de que o card depende está
-// a caminho, e `loading` só aparece quando não há dado anterior para mostrar
-// (a consulta falhou e está sendo refeita).
-export type IdhCardState = PanelCardState;
+// Estados de PanelCardState menos `stale`: no IDH, o card cujo dado
+// muda com o filtro pedido mostra o esqueleto (`loading`) até o servidor
+// responder, em vez do dado anterior esmaecido dos outros painéis.
+export type IdhCardState = Exclude<PanelCardState, "stale">;
 
 type IdhFilterKey = "uf" | "ano";
 
@@ -31,21 +30,26 @@ export type IdhCardStates = Record<IdhCardKey, IdhCardState>;
 export type IdhLoadStatus = PanelLoadRequest<IdhFilters>;
 
 /**
- * Estado de cada card do painel. Só esmaece o card cujo dado muda com o
- * filtro pedido: trocar a UF não mexe no mapa nem no ranking.
+ * Estado de cada card do painel. Só o card cujo dado muda com o filtro pedido
+ * vira esqueleto: trocar a UF não mexe no mapa nem no ranking.
  *
- * @example resolveIdhCardStates({ failed: false, retrying: false, pending: { ...filters, uf: "PE" } }, filters).map // "ok"
+ * @example resolveIdhCardStates({ failed: false, retrying: false, pending: { ...filters, uf: "PE" } }, filters).evolution // "loading"
  */
 export const resolveIdhCardStates = (
   status: IdhLoadStatus,
   current: IdhFilters,
-): IdhCardStates =>
-  resolveDependentCardStates(status, current, IDH_CARD_DEPENDENCIES);
+): IdhCardStates => {
+  const states = resolveDependentCardStates(
+    status,
+    current,
+    IDH_CARD_DEPENDENCIES,
+  );
+  const cards = Object.keys(states) as IdhCardKey[];
 
-/**
- * O card tem dado para mostrar (atual ou anterior esmaecido).
- *
- * @example showsIdhData("stale") // true
- */
-export const showsIdhData = (state: IdhCardState): boolean =>
-  state === "ok" || state === "stale";
+  return Object.fromEntries(
+    cards.map((card) => [
+      card,
+      states[card] === "stale" ? "loading" : states[card],
+    ]),
+  ) as IdhCardStates;
+};

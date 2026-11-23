@@ -29,7 +29,7 @@ export const PibPageFrame = ({
   <>
     <ProtoCover
       tone="pib"
-      variant="light"
+      light
       icon={PIB_ICON}
       title={PIB_TITLE}
       lead={PIB_LEAD}

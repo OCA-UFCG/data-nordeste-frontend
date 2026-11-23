@@ -77,6 +77,18 @@ describe("IdhDashboard", () => {
     expect(tab("Visão por sexo")).toHaveAttribute("aria-selected", "true");
   });
 
+  it("renders a single tab list, above the filter bar", () => {
+    render(dashboard(GERAL));
+
+    const [tabList] = screen.getAllByRole("tablist");
+    const clear = screen.getByRole("button", { name: "Limpar filtros" });
+
+    expect(screen.getAllByRole("tablist")).toHaveLength(1);
+    expect(
+      tabList.compareDocumentPosition(clear) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("follows the view when a link changes it on the server", () => {
     const { rerender } = render(dashboard(GERAL));
 
@@ -85,7 +97,7 @@ describe("IdhDashboard", () => {
     expect(tab("Visão por cor")).toHaveAttribute("aria-selected", "true");
   });
 
-  it("dims only the cards whose data the pending state changes", () => {
+  it("shows the skeleton only on the cards whose data the pending state changes", () => {
     const { rerender } = render(dashboard(GERAL));
 
     fireEvent.click(mapState("Pernambuco"));
@@ -124,5 +136,36 @@ describe("IdhDashboard", () => {
       uf: "PE",
       visao: "geral",
     });
+  });
+
+  it("offers the years of the database range", () => {
+    const data = {
+      ...idhPanelFixture({ ...GERAL, ano: 2023 }),
+      yearRange: { first: 2018, last: 2023 },
+    };
+
+    render(<IdhDashboard data={data} catalogHref="/catalog" />);
+    const years = within(screen.getAllByLabelText("Ano")[0])
+      .getAllByRole("option")
+      .map((option) => option.textContent);
+
+    expect(years).toEqual(["2018", "2019", "2020", "2021", "2022", "2023"]);
+  });
+
+  it("shows the Contentful date in the card footers, and nothing without it", () => {
+    const { rerender } = render(
+      <IdhDashboard
+        data={idhPanelFixture(GERAL)}
+        catalogHref="/catalog"
+        updatedAt="10/2026"
+      />,
+    );
+
+    expect(screen.getAllByText("Atualizado em 10/2026").length).toBeGreaterThan(
+      0,
+    );
+    rerender(dashboard(GERAL));
+
+    expect(screen.queryByText(/Atualizado em/)).toBeNull();
   });
 });

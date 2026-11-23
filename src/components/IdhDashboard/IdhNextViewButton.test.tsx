@@ -13,7 +13,7 @@ describe("IdhNextViewButton", () => {
         </button>
         <IdhNextViewButton
           visao="sexo"
-          tabIds={["idh-tab-sexo", "idh-rail-sexo"]}
+          tabId="idh-tab-sexo"
           onSelect={onSelect}
         />
       </>,

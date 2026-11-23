@@ -6,7 +6,7 @@ import { IdhFilterBar } from "@/components/IdhDashboard/IdhFilterBar";
 import { IdhGroupView } from "@/components/IdhDashboard/IdhGroupView";
 import { IdhNextViewButton } from "@/components/IdhDashboard/IdhNextViewButton";
 import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
-import { IdhViewBar, IdhViewRail } from "@/components/IdhDashboard/IdhViewTabs";
+import { IdhViewBar } from "@/components/IdhDashboard/IdhViewTabs";
 import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import {
   type IdhDashboardModel,
@@ -20,12 +20,12 @@ import {
   BUTTON,
   PROTO_TEXT,
   protoToneStyle,
+  WRAP,
 } from "@/components/ProtoPanel/protoStyles";
 import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import {
   buildIdhSearch,
-  DEFAULT_IDH_FILTERS,
   describeIdhShareChips,
   IDH_VISOES,
   type IdhPanelData,
@@ -37,11 +37,8 @@ import { cn } from "@/lib/utils";
 const PANEL_SOURCE =
   "Fonte dos dados: Pesquisa Nacional por Amostra de Domicílios Contínua (PNAD/IBGE) · Data Nordeste";
 
-// Coluna lateral das visões e o conteúdo; abaixo de 900 px, uma coluna só.
-const LAYOUT_CLASS = `${PROTO_TEXT} mx-auto grid w-full max-w-[1440px] grid-cols-[223px_minmax(0,1fr)] max-[900px]:grid-cols-[minmax(0,1fr)]`;
-
-const TAB_PANEL_CLASS =
-  "min-w-0 pt-8 pr-20 pb-10 pl-7 max-[1100px]:pt-6 max-[1100px]:pr-8 max-[1100px]:pl-6 max-[900px]:px-4 max-[900px]:pt-5 max-[900px]:pb-8";
+// `.layout` e `.panel` do protótipo: as margens do `.wrap` e 32/24/20 px no topo.
+const LAYOUT_CLASS = `${PROTO_TEXT} ${WRAP} pt-8 pb-10 max-[1100px]:pt-6 max-[700px]:pt-5 max-[700px]:pb-8`;
 
 // O link de compartilhar leva a aba aberta, não a da carga da página: trocar de
 // aba só muda a URL com replaceState, sem novos `data.filters`.
@@ -54,7 +51,7 @@ const useCardMenuValue = (
   useMemo(
     () => ({
       share: {
-        path: `${pathname}${buildIdhSearch({ ...data.filters, visao: tab })}`,
+        path: `${pathname}${buildIdhSearch({ ...data.filters, visao: tab }, data.yearRange)}`,
         chips: describeIdhShareChips(data, tab),
       },
       catalogHref,
@@ -66,20 +63,21 @@ const useCardMenuValue = (
 const useIdhTabIds = () => {
   const idPrefix = useId();
 
-  return {
-    rail: `${idPrefix}-rail`,
-    bar: `${idPrefix}-tab`,
-    panel: `${idPrefix}-panel`,
-  };
+  return { bar: `${idPrefix}-tab`, panel: `${idPrefix}-panel` };
 };
 
 type IdhTabIds = ReturnType<typeof useIdhTabIds>;
 
-type ViewProps = { data: IdhPanelData; dashboard: IdhDashboardModel };
+type ViewProps = {
+  data: IdhPanelData;
+  dashboard: IdhDashboardModel;
+  updatedAt?: string;
+};
 
-const IdhGeneralView = ({ data, dashboard }: ViewProps) => (
+const IdhGeneralView = ({ data, dashboard, updatedAt }: ViewProps) => (
   <IdhOverview
     data={data}
+    updatedAt={updatedAt}
     selection={dashboard.selection}
     states={dashboard.states}
     onRetry={dashboard.retry}
@@ -88,21 +86,22 @@ const IdhGeneralView = ({ data, dashboard }: ViewProps) => (
   />
 );
 
-const IdhView = ({ data, dashboard }: ViewProps) =>
+const IdhView = ({ data, dashboard, updatedAt }: ViewProps) =>
   dashboard.tab === "geral" ? (
-    <IdhGeneralView data={data} dashboard={dashboard} />
+    <IdhGeneralView data={data} dashboard={dashboard} updatedAt={updatedAt} />
   ) : (
     <IdhGroupView
       visao={dashboard.tab}
       data={data}
+      updatedAt={updatedAt}
       state={dashboard.states.groups}
       onRetry={dashboard.retry}
       onReset={dashboard.actions.reset}
     />
   );
 
-const isDefaultFilters = ({ filters }: IdhPanelData) =>
-  filters.ano === DEFAULT_IDH_FILTERS.ano && !filters.uf;
+const isDefaultFilters = ({ filters, yearRange }: IdhPanelData) =>
+  filters.ano === yearRange.last && !filters.uf;
 
 const visaoLabel = (tab: IdhVisao) =>
   IDH_VISOES.find((item) => item.key === tab)?.label ?? "";
@@ -135,15 +134,10 @@ const IdhDashboardFilterBar = ({
   />
 );
 
-// Barra de abas (celular e tablet) e barra de filtros, as duas grudam no topo.
+// Abas acima dos filtros; só a barra de filtros gruda no topo.
 const IdhDashboardBars = (props: PanelProps & { sticky: IdhStickyBars }) => (
   <>
-    <IdhViewBar
-      {...tabsOf(props)}
-      idPrefix={props.ids.bar}
-      top={props.sticky.tabsTop}
-      barRef={props.sticky.tabsRef}
-    />
+    <IdhViewBar {...tabsOf(props)} idPrefix={props.ids.bar} />
     <IdhDashboardFilterBar {...props} />
   </>
 );
@@ -159,7 +153,7 @@ const NextViewInvite = ({ ids, dashboard }: PanelProps) =>
   dashboard.tab === "geral" ? (
     <IdhNextViewButton
       visao="sexo"
-      tabIds={[`${ids.bar}-sexo`, `${ids.rail}-sexo`]}
+      tabId={`${ids.bar}-sexo`}
       onSelect={dashboard.selectTab}
     />
   ) : null;
@@ -173,18 +167,18 @@ const IdhPanelFooter = (props: PanelProps) => (
   </>
 );
 
-// Coluna lateral das visões (acima de 900 px), grudada abaixo dos filtros.
-const IdhDashboardRail = (props: PanelProps & { top: number }) => (
-  <IdhViewRail {...tabsOf(props)} idPrefix={props.ids.rail} top={props.top} />
-);
-
-const IdhCardsWithMenu = ({ data, dashboard, catalogHref }: PanelProps) => {
+const IdhCardsWithMenu = ({
+  data,
+  dashboard,
+  catalogHref,
+  updatedAt,
+}: PanelProps) => {
   const { tab, pathname } = dashboard;
   const cardMenu = useCardMenuValue(data, tab, pathname, catalogHref);
 
   return (
     <ProtoCardMenuContext.Provider value={cardMenu}>
-      <IdhView data={data} dashboard={dashboard} />
+      <IdhView data={data} dashboard={dashboard} updatedAt={updatedAt} />
     </ProtoCardMenuContext.Provider>
   );
 };
@@ -193,11 +187,9 @@ const IdhTabPanel = (props: PanelProps) => (
   <div
     id={props.ids.panel}
     role="tabpanel"
-    aria-labelledby={`${props.ids.rail}-${props.dashboard.tab}`}
-    className={TAB_PANEL_CLASS}
+    aria-labelledby={`${props.ids.bar}-${props.dashboard.tab}`}
   >
     <IdhCardsWithMenu {...props} />
-    <IdhPanelFooter {...props} />
   </div>
 );
 
@@ -205,12 +197,14 @@ type IdhDashboardProps = {
   data: IdhPanelData;
   failed?: boolean;
   catalogHref: string | null;
+  updatedAt?: string;
 };
 
 /**
- * Painel de IDH no formato do protótipo: barra de abas (celular e tablet),
- * barra de filtros, coluna lateral das visões e o conteúdo da visão. `failed`:
+ * Painel de IDH no formato do protótipo: barra de abas, barra de filtros e o
+ * conteúdo da visão, com a fonte e o catálogo abaixo. `failed`:
  * a consulta falhou e os cards mostram o erro com "Tentar de novo".
+ * `updatedAt`: "MM/AAAA" do rodapé dos cards; sem ele, o rótulo some.
  *
  * @example <IdhDashboard data={panel} catalogHref="/catalog?category=desenvolvimento-social" />
  */
@@ -220,8 +214,8 @@ export const IdhDashboard = (props: IdhDashboardProps) => {
   const layoutRef = useRef<HTMLDivElement>(null);
   const reveal = () => sticky.reveal(layoutRef.current);
   const dashboard = useIdhDashboard(props.data, !!props.failed, reveal);
-  const { data, catalogHref } = props;
-  const panel = { data, catalogHref, dashboard, ids };
+  const { data, catalogHref, updatedAt } = props;
+  const panel = { data, catalogHref, dashboard, ids, updatedAt };
 
   return (
     <ProtoToneContext.Provider value="idh">
@@ -231,8 +225,8 @@ export const IdhDashboard = (props: IdhDashboardProps) => {
         style={protoToneStyle("idh")}
         className={LAYOUT_CLASS}
       >
-        <IdhDashboardRail {...panel} top={sticky.railTop} />
         <IdhTabPanel {...panel} />
+        <IdhPanelFooter {...panel} />
       </div>
     </ProtoToneContext.Provider>
   );

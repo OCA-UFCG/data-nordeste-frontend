@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
-import { cn } from "@/lib/utils";
 
 // Veio de outra página do portal: volta para ela. Sem histórico do portal
 // (link aberto direto), o href leva a "Explorar dados".
@@ -13,12 +12,15 @@ const cameFromPortal = () =>
   new URL(document.referrer).origin === window.location.origin;
 
 /**
- * Botão "Voltar" da capa, na cor do texto da capa.
- * `className` dá a cor do anel de foco.
+ * Botão "Voltar" da capa (`.backbtn` do protótipo).
  *
- * @example <ProtoBackLink className="focus-visible:outline-white" />
+ * @example <ProtoBackLink focusClassName="focus-visible:outline-white" />
  */
-export const ProtoBackLink = ({ className }: { className: string }) => {
+export const ProtoBackLink = ({
+  focusClassName,
+}: {
+  focusClassName: string;
+}) => {
   const router = useRouter();
   const goBack = (event: MouseEvent<HTMLAnchorElement>) => {
     if (!cameFromPortal()) return;
@@ -30,10 +32,7 @@ export const ProtoBackLink = ({ className }: { className: string }) => {
     <Link
       href="/explore"
       onClick={goBack}
-      className={cn(
-        "inline-flex items-center gap-2.5 rounded-[6px] py-1.5 pr-2 text-sm font-semibold text-inherit no-underline hover:underline hover:underline-offset-3 focus-visible:outline-[2.5px] focus-visible:outline-offset-2",
-        className,
-      )}
+      className={`inline-flex items-center gap-2.5 rounded-[6px] py-1.5 pr-2 text-sm font-semibold text-inherit no-underline hover:underline hover:underline-offset-3 focus-visible:outline-[2.5px] focus-visible:outline-offset-2 ${focusClassName}`}
     >
       <ProtoIcon name="back" size={20} stroke={2.2} />
       Voltar

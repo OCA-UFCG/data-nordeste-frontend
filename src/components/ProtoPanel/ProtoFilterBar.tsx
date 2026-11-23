@@ -16,11 +16,14 @@ import {
 import { useProtoTone } from "@/components/ProtoPanel/protoTone";
 import { cn } from "@/lib/utils";
 
-// `#clearBtn`: vermelho quando há filtro; só o ícone no celular.
+// `#clearBtn`: vermelho quando há filtro; só o ícone no celular (com
+// `brandInBar`, já a partir de 900 px, como no protótipo do IDH).
 const CLEAR_CLASS = cn(
   BUTTON_GHOST,
   "min-h-9 px-3.5 py-1.5 text-[#bf1621] enabled:border-[#efb8bd] hover:not-disabled:border-[#efb8bd] hover:not-disabled:bg-[#ffe1e3] max-[700px]:min-h-10 max-[700px]:w-10 max-[700px]:flex-none max-[700px]:p-0",
 );
+const CLEAR_COMPACT_CLASS =
+  "max-[900px]:min-h-10 max-[900px]:w-10 max-[900px]:flex-none max-[900px]:p-0";
 
 // `max-[901px]`: o `max-` do Tailwind v4 é estrito, e 900 px ainda é tablet.
 const CLEAR_ICON_ONLY_900 =
@@ -39,6 +42,9 @@ export type ProtoFilterSheetControl =
 export type ProtoFilterBarProps = ProtoFilterSheetControl & {
   summaryTitle: string;
   brand?: ProtoFilterBarBrand;
+
+  // Também põe a `brand` no início da barra do desktop (`.fb-id`, IDH).
+  brandInBar?: boolean;
 
   // Com `brand` (PIB): o desktop mostra o tile e o nome antes dos campos, que
   // preenchem a linha; até 900 px, só o tile e o "Limpar filtros" só com o ícone.
@@ -116,6 +122,15 @@ const FiltersSheet = ({
   </ProtoSheet>
 );
 
+const BarBrand = ({ brand }: { brand: ProtoFilterBarBrand }) => (
+  <div className="flex h-10 min-w-0 flex-[0_1_auto] items-center gap-2.5 border-r border-grey-300 pr-4 max-[700px]:hidden">
+    <BrandTile icon={brand.icon} />
+    <span className="line-clamp-2 max-w-[220px] min-w-0 text-[15px] leading-5 font-bold">
+      {brand.title}
+    </span>
+  </div>
+);
+
 // No celular, o resumo do filtro abre a folha (`.fb-sum`).
 // Com `brand`, o nome do painel vira o título e o recorte desce para baixo.
 const PhoneSummary = ({
@@ -184,6 +199,7 @@ export const ProtoFilterBar = ({
   summaryTitle,
   summarySubtitle,
   brand,
+  brandInBar = false,
   fillRow,
   disabled,
   sheetOpen: controlledOpen,
@@ -200,6 +216,7 @@ export const ProtoFilterBar = ({
   const setSheetOpen = onSheetOpenChange ?? setOwnOpen;
   const tone = useProtoTone();
   const showBrand = fillRow && brand;
+  const barBrand = brandInBar ? brand : undefined;
 
   // O React 18 só liga `inert` com string vazia; o tipo dele pede boolean.
   return (
@@ -214,8 +231,10 @@ export const ProtoFilterBar = ({
           WRAP,
           "flex min-h-[88px] items-end gap-4 py-3 max-[700px]:min-h-14 max-[700px]:items-center max-[700px]:gap-2 max-[700px]:py-2",
           fillRow && "min-[701px]:max-[901px]:gap-3",
+          barBrand && "max-[900px]:gap-3 max-[700px]:gap-2",
         )}
       >
+        {barBrand ? <BarBrand brand={barBrand} /> : null}
         <PhoneSummary
           title={summaryTitle}
           subtitle={summarySubtitle}
@@ -235,19 +254,26 @@ export const ProtoFilterBar = ({
         </button>
         {showBrand ? <BrandName brand={brand} /> : null}
         <div className="contents max-[700px]:hidden">{renderFields(false)}</div>
-        {fillRow ? null : <div className="flex-1 max-[700px]:hidden" />}
+        {fillRow || barBrand ? null : (
+          <div className="flex-1 max-[700px]:hidden" />
+        )}
         <button
           type="button"
           disabled={isDefault}
           onClick={onClear}
           aria-label="Limpar filtros"
           title="Limpar filtros"
-          className={cn(CLEAR_CLASS, fillRow && CLEAR_ICON_ONLY_900)}
+          className={cn(
+            CLEAR_CLASS,
+            fillRow && CLEAR_ICON_ONLY_900,
+            barBrand && CLEAR_COMPACT_CLASS,
+          )}
         >
           <span
             className={cn(
               "max-[700px]:hidden",
               fillRow && "max-[901px]:hidden",
+              barBrand && "max-[900px]:hidden",
             )}
           >
             Limpar filtros

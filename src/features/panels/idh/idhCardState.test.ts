@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  resolveIdhCardStates,
-  showsIdhData,
-} from "@/features/panels/idh/idhCardState";
+import { resolveIdhCardStates } from "@/features/panels/idh/idhCardState";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 
 const CURRENT: IdhFilters = { ano: 2021, visao: "geral" };
@@ -13,21 +10,21 @@ const navigatingTo = (pending: IdhFilters) =>
 describe("resolveIdhCardStates", () => {
   it("keeps the map and the ranking when only the state changes", () => {
     expect(navigatingTo({ ...CURRENT, uf: "PE" })).toEqual({
-      bigNumbers: "stale",
-      evolution: "stale",
+      bigNumbers: "loading",
+      evolution: "loading",
       map: "ok",
       ranking: "ok",
-      groups: "stale",
+      groups: "loading",
     });
   });
 
   it("keeps the yearly series when only the year changes", () => {
     expect(navigatingTo({ ...CURRENT, ano: 2019 })).toEqual({
-      bigNumbers: "stale",
+      bigNumbers: "loading",
       evolution: "ok",
-      map: "stale",
-      ranking: "stale",
-      groups: "stale",
+      map: "loading",
+      ranking: "loading",
+      groups: "loading",
     });
   });
 
@@ -71,15 +68,5 @@ describe("resolveIdhCardStates", () => {
     );
 
     expect(Object.values(states)).toEqual(Array(5).fill("ok"));
-  });
-});
-
-describe("showsIdhData", () => {
-  it("has data to show when current or stale", () => {
-    expect(
-      (["ok", "stale", "loading", "error"] as const).map((state) =>
-        showsIdhData(state),
-      ),
-    ).toEqual([true, true, false, false]);
   });
 });

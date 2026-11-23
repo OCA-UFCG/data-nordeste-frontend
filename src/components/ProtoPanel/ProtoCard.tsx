@@ -11,7 +11,7 @@ import {
 import type { PanelCardState } from "@/features/panels/panelCardState";
 
 // `stale`: o card mostra o dado anterior esmaecido enquanto o filtro pedido
-// não chega (ver `resolveIdhCardStates`). Os estados são os de
+// não chega (ver `resolveDependentCardStates`). Os estados são os de
 // `PanelCardState`, a regra compartilhada dos painéis.
 export type ProtoCardState = PanelCardState;
 
