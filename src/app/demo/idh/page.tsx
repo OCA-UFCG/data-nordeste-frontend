@@ -91,7 +91,6 @@ export default async function IdhDemoPage({
       <ProtoCover
         tone="idh"
         icon="idh"
-        light
         title={IDH_TITLE}
         lead={content?.panel.abovePanelDescription || IDH_LEAD}
         macroTheme={macroTheme}
