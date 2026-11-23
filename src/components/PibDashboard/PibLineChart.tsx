@@ -54,8 +54,8 @@ const SERIES: readonly PibLineSeries[] = [
 
 const AXIS_FONT_SIZE = "11.5";
 
-// Altura do gráfico, a mesma no esqueleto: 340 px quando há largura, 300 no estreito.
-const CHART_HEIGHT = "min-h-[300px] @[560px]:min-h-[340px]";
+// Altura do gráfico e do esqueleto: PIB_LINE_HEIGHT acima de PIB_LINE_NARROW_WIDTH.
+export const PIB_LINE_HEIGHT_CLASS = "min-h-[300px] @[560px]:min-h-[340px]";
 
 // Cada eixo some junto com a sua série.
 const TickLabels = ({
@@ -287,7 +287,7 @@ export const PibLineChart = ({
       <ProtoSeriesLegend series={SERIES} hidden={hidden} onToggle={toggle} />
       {/* Reserva a altura final antes de medir a largura: sem salto na hidratação. */}
       <div className="@container">
-        <div ref={boxRef} className={`relative ${CHART_HEIGHT}`}>
+        <div ref={boxRef} className={`relative ${PIB_LINE_HEIGHT_CLASS}`}>
           {geometry ? (
             <LineSvg
               geometry={geometry}
@@ -324,7 +324,7 @@ export const PibLineChartSkeleton = () => (
   <>
     <ProtoSkeleton className="mb-1.5 h-5 w-[45%]" />
     <div className="@container">
-      <ProtoSkeleton className={CHART_HEIGHT} />
+      <ProtoSkeleton className={PIB_LINE_HEIGHT_CLASS} />
     </div>
     <ProtoSkeleton className="mt-2 h-4 w-[40%]" />
   </>
