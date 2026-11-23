@@ -36,11 +36,12 @@ import {
 const TITLE = "Índice de aridez (km²)";
 
 // Medidas do `drawCls` do protótipo; abaixo de 440 px some o rótulo do eixo X
-// (a legenda acima já diz qual é cada cor).
-const frameFor = (width: number) => {
+// (a legenda acima já diz qual é cada cor). A altura acompanha o card (que se
+// estica até a lista de municípios ao lado), com o mínimo do protótipo.
+const frameFor = (width: number, boxHeight: number) => {
   const narrow = width < 440;
   const margin = { left: narrow ? 46 : 56, right: 10, top: 26 };
-  const height = narrow ? 250 : 290;
+  const height = Math.max(narrow ? 250 : 290, Math.round(boxHeight));
   const bottom = narrow ? 12 : 32;
 
   return {
@@ -169,6 +170,7 @@ const ColumnsSvg = ({
     viewBox={`0 0 ${frame.width} ${frame.height}`}
     width={frame.width}
     height={frame.height}
+    className="absolute inset-0"
     role="group"
     aria-label="Área por classe do índice de aridez, em km²"
     fontFamily={PROTO_CHART_FONT}
@@ -233,14 +235,16 @@ const MeasuredColumns = ({
   columns: AridezColumns;
   svgRef: Ref<SVGSVGElement>;
 }) => {
-  const { ref, width } = useElementWidth();
+  const { ref, width, height } = useElementWidth();
   const [hover, setHover] = useState<ColumnHover | null>(null);
 
+  // `#c-cls .chartbox` do protótipo: a caixa cresce (flex-1) e o SVG fica
+  // absoluto dentro dela, para não empurrar a própria altura medida.
   return (
-    <div ref={ref} className="mt-2 w-full">
+    <div ref={ref} className="relative mt-2 min-h-[260px] w-full flex-1">
       {width ? (
         <ColumnsSvg
-          frame={frameFor(Math.max(280, width))}
+          frame={frameFor(Math.max(280, width), height)}
           chart={columns}
           svgRef={svgRef}
           onHover={setHover}
@@ -272,6 +276,7 @@ export const AridezClassCard = ({
       title={TITLE}
       subtitle={`${place} · ${data.filters.ano} · área por classe`}
       kind="line"
+      bodyClassName="flex flex-col"
       actions={
         <>
           <ProtoCardInfo title={TITLE} text={ARIDEZ_CARD_INFO.classes} />

@@ -22,7 +22,7 @@ describe("ProtoVejaMais", () => {
       toggle().getAttribute("aria-controls") ?? "",
     );
 
-    expect(body?.hidden).toBe(false);
+    expect(body?.className).not.toContain("invisible");
     expect(
       screen.getByText("Texto gerado conforme os filtros: Nordeste · 2021."),
     ).toBeTruthy();
@@ -38,6 +38,18 @@ describe("ProtoVejaMais", () => {
     expect(screen.getByTitle("Texto atualizado")).toBeTruthy();
 
     fireEvent.click(toggle());
+    expect(screen.queryByTitle("Texto atualizado")).toBeNull();
+  });
+
+  it("não marca ao fechar o texto que mudou com a barra aberta", () => {
+    const { rerender } = render(
+      <ProtoVejaMais analysis={analysis("Semiárido.")} state="ok" />,
+    );
+
+    fireEvent.click(toggle());
+    rerender(<ProtoVejaMais analysis={analysis("Úmido.")} state="ok" />);
+    fireEvent.click(toggle());
+
     expect(screen.queryByTitle("Texto atualizado")).toBeNull();
   });
 

@@ -11,11 +11,9 @@ const NO_TEXT =
   "Não há texto disponível para a combinação de filtros selecionada.";
 const ERROR_TEXT = "Não foi possível carregar o texto.";
 
-// Chave do texto mostrado, para saber se ele mudou desde a última leitura.
 const analysisKey = (analysis: PanelAnalysis | null) =>
   analysis ? JSON.stringify(analysis) : null;
 
-// Prévia da barra fechada (`.anl-pv`): o primeiro parágrafo, ou o aviso.
 const previewOf = (state: PanelCardState, analysis: PanelAnalysis | null) => {
   if (state === "loading") return "Carregando texto…";
   if (state === "error") return ERROR_TEXT;
@@ -34,9 +32,11 @@ const AnalysisSkeleton = () => (
 const AnalysisText = ({
   state,
   analysis,
+  flash,
 }: {
   state: PanelCardState;
   analysis: PanelAnalysis | null;
+  flash: boolean;
 }) => {
   if (state === "loading") return <AnalysisSkeleton />;
   if (state === "error" || !analysis) {
@@ -47,8 +47,12 @@ const AnalysisText = ({
     );
   }
 
+  // `key`: cada texto novo remonta o bloco e reinicia o brilho.
   return (
-    <div className={`max-w-[78ch] ${staleClass(state === "stale")}`}>
+    <div
+      key={analysisKey(analysis)}
+      className={`max-w-[78ch] rounded-[4px] ${flash ? "animate-proto-flash motion-reduce:animate-none" : ""} ${staleClass(state === "stale")}`}
+    >
       {analysis.blocks.map((block) => (
         <div key={block.title} className="mb-3.5 last:mb-0">
           <h4 className="mb-1 text-[15px] leading-[22px] font-bold text-grey-1100">
@@ -95,10 +99,16 @@ export const ProtoVejaMais = ({
   const current = analysisKey(analysis);
   const [open, setOpen] = useState(false);
   const [seen, setSeen] = useState(current);
+
+  // O brilho só vem depois da primeira troca de texto, não ao carregar.
+  const [first] = useState(current);
+  const flash = current !== first;
   const updated =
     !open && state === "ok" && current !== null && current !== seen;
+
+  // Ao abrir e ao fechar: o texto que mudou com a barra aberta já foi lido.
   const toggle = () => {
-    if (!open) setSeen(current);
+    setSeen(current);
     setOpen(!open);
   };
 
@@ -137,14 +147,20 @@ export const ProtoVejaMais = ({
           />
         </span>
       </button>
+      {/* `.anl-b` do protótipo: abre e fecha deslizando (grid-rows 0fr → 1fr).
+          `invisible` (com transição) tira o texto fechado do leitor de tela e
+          do Tab, mas só depois de a barra terminar de recolher. */}
       <div
         id={bodyId}
         role="region"
         aria-labelledby={buttonId}
-        hidden={!open}
-        className="px-5 pb-5 pl-16 max-[700px]:px-4"
+        className={`grid transition-[grid-template-rows,visibility] duration-[220ms] ease-out motion-reduce:transition-none ${open ? "grid-rows-[1fr]" : "invisible grid-rows-[0fr]"}`}
       >
-        <AnalysisText state={state} analysis={analysis} />
+        <div className="min-h-0 overflow-hidden">
+          <div className="px-5 pb-5 pl-16 max-[700px]:px-4">
+            <AnalysisText state={state} analysis={analysis} flash={flash} />
+          </div>
+        </div>
       </div>
     </section>
   );
