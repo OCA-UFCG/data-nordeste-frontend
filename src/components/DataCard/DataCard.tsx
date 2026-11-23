@@ -127,8 +127,8 @@ export const DataCard = ({
                 className="w-full text-[14px] font-medium text-[#F8F7F8]"
               >
                 <Link href={`/catalog/${post.id}`}>
-                  <Icon id="icon-external" size={16} />
-                  Ver todos
+                  <Icon id="icon-download" size={16} />
+                  Baixar arquivos
                 </Link>
               </Button>
             </div>
@@ -167,8 +167,8 @@ export const DataCard = ({
               className="w-full text-[14px] font-medium text-[#F8F7F8]"
             >
               <Link href={`/catalog/${post.id}`}>
-                <Icon id="icon-external" size={16} />
-                Ver todos
+                <Icon id="icon-download" size={16} />
+                Baixar arquivos
               </Link>
             </Button>
           </div>
