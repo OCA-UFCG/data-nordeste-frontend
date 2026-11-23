@@ -130,6 +130,7 @@ export const AridezDashboard = ({
     <ProtoToneContext.Provider value="aridez">
       <ProtoTerritorialFilters
         brand={{ icon: "aridez", title: ARIDEZ_TITLE }}
+        brandInBar
         data={{ ...data, filters: selection }}
         years={YEARS}
         maxPlaces={ARIDEZ_MAX_PLACES}
