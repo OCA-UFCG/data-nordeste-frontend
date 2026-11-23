@@ -7,7 +7,10 @@ import {
   AridezGrids,
 } from "@/components/AridezDashboard/AridezLayout";
 import { ARIDEZ_CARD_SOURCE } from "@/components/AridezDashboard/aridezTexts";
-import { ARIDEZ_SOURCE } from "@/components/AridezDashboard/aridezTheme";
+import {
+  ARIDEZ_SOURCE,
+  ARIDEZ_TITLE,
+} from "@/components/AridezDashboard/aridezTheme";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import {
   ProtoCardMenuContext,
@@ -126,6 +129,7 @@ export const AridezDashboard = ({
   return (
     <ProtoToneContext.Provider value="aridez">
       <ProtoTerritorialFilters
+        brand={{ icon: "aridez", title: ARIDEZ_TITLE }}
         data={{ ...data, filters: selection }}
         years={YEARS}
         maxPlaces={ARIDEZ_MAX_PLACES}
