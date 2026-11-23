@@ -201,9 +201,8 @@ export const ProtoFilterBar = ({
   const tone = useProtoTone();
   const showBrand = fillRow && brand;
 
+  // O React 18 só liga `inert` com string vazia; o tipo dele pede boolean.
   return (
-    // eslint-disable-next-line lines-around-comment
-    // O React 18 só liga `inert` com string vazia; o tipo dele pede boolean.
     <div
       ref={barRef}
       {...(disabled && ({ inert: "" } as object))}

@@ -23,7 +23,7 @@ const ICONS = { pib: "usd", perCapita: "renda" } as const;
  *
  * @example pibBigNumbers(panel)[0].value // "R$ 1,51 Tri"
  */
-export const pibBigNumbers = (data: PibPanelData): ProtoStatCell[] => {
+const pibBigNumbers = (data: PibPanelData): ProtoStatCell[] => {
   const caption = describePibCaption(data);
 
   return buildPibBigNumbers(data.serie, data.filters.ano).map((cell) => ({
