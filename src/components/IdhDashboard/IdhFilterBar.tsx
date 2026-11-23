@@ -1,7 +1,10 @@
 "use client";
 
 import type { Ref } from "react";
-import { ProtoFilterBar } from "@/components/ProtoPanel/ProtoFilterBar";
+import {
+  ProtoFilterBar,
+  type ProtoFilterBarBrand,
+} from "@/components/ProtoPanel/ProtoFilterBar";
 import {
   ProtoSelectField,
   protoSelectClass,
@@ -14,7 +17,7 @@ import {
   type IdhPanelData,
 } from "@/features/panels/idh/idhPanel";
 
-const IDENTITY = { name: "IDH", icon: "idh" } as const;
+const BRAND: ProtoFilterBarBrand = { icon: "idh", title: "IDH" };
 
 // `.fb .fb-in>.fl`: Estado e Ano dividem a barra; até 900 px o select aperta a
 // folga da seta.
@@ -109,9 +112,9 @@ export const IdhFilterBar = ({
   barRef: Ref<HTMLDivElement>;
 }) => (
   <ProtoFilterBar
-    identity={IDENTITY}
-    summaryTitle={IDENTITY.name}
-    summarySubtitle={`${idhPlaceName({ ufs: data.ufs, filters: selection })} · ${selection.ano} · ${visaoLabel}`}
+    brand={BRAND}
+    brandInBar
+    summaryTitle={`${idhPlaceName({ ufs: data.ufs, filters: selection })} · ${selection.ano} · ${visaoLabel}`}
     renderFields={(wide) => (
       <FilterFields
         data={data}

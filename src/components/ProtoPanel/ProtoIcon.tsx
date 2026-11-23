@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 // parecidos, mas não iguais (o protótipo é a referência visual do painel).
 // Os nomes idh/idhad/gini/renda/rend vêm dos cards de IDH; `users` (perfil)
 // usa o desenho do idh. `usd` é o cifrão do PIB; a carteira do PIB per capita
-// é o mesmo desenho de `renda`.
+// é o mesmo desenho de `renda`. `aridez` (a folha da capa), `area` e `pct`
+// vêm do painel de aridez; `text` é o ícone do "Veja mais".
 const PATHS_24: Record<string, ReactNode> = {
   idh: (
     <>
@@ -59,6 +60,26 @@ const PATHS_24: Record<string, ReactNode> = {
       <path d="M14.8 9.2c-.4-.9-1.4-1.4-2.8-1.4-1.6 0-2.8.8-2.8 2 0 3 5.8 1.3 5.8 4.2 0 1.2-1.2 2-2.9 2-1.5 0-2.6-.6-3-1.6M12 6.5v1.3M12 16.2v1.3" />
     </>
   ),
+  aridez: (
+    <>
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.5 2 8 0 5.5-4.8 10-10 10z" />
+      <path d="M2 21c0-3 1.9-5.4 5-6 3-.5 6-2 7-5" />
+    </>
+  ),
+  area: (
+    <>
+      <path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5" />
+      <rect x="8" y="8" width="8" height="8" rx="1" />
+    </>
+  ),
+  pct: (
+    <>
+      <path d="M19 5L5 19" />
+      <circle cx="6.5" cy="6.5" r="2.5" />
+      <circle cx="17.5" cy="17.5" r="2.5" />
+    </>
+  ),
+  text: <path d="M4 6h16M4 10h16M4 14h10M4 18h7" />,
   info: (
     <>
       <circle cx="12" cy="12" r="9" />

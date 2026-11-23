@@ -1,5 +1,5 @@
 import type { ChartPoint } from "@/features/panels/chartBase";
-import { buildZeroAxis } from "@/features/panels/pib/pibAxis";
+import { buildZeroAxis } from "@/features/panels/zeroAxis";
 
 // `share`: largura da barra, de 0 a 1 do eixo.
 export type PibBarRow = { label: string; value: number; share: number };

@@ -1,11 +1,9 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
-import {
-  idhPanelFixture,
-  stubIdhBrowserApis,
-} from "@/components/IdhDashboard/idhTestFixtures";
+import { idhPanelFixture } from "@/components/IdhDashboard/idhTestFixtures";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
+import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 
 // Navegação do painel controlada pelo teste: guarda os filtros pedidos e deixa
 // o teste decidir quando a resposta do servidor está pendente.
@@ -61,7 +59,7 @@ const mapState = (name: string) =>
 
 describe("IdhDashboard", () => {
   beforeEach(() => {
-    stubIdhBrowserApis();
+    stubPanelBrowserApis();
     navigation.current = new PanelNavigationFake();
   });
 
