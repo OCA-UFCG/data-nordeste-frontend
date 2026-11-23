@@ -3,56 +3,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Animações da folha (ProtoSheet) — equivalentes ao tw-animate-css */
-@keyframes slide-in-from-bottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-out-to-bottom {
-  from {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-/* Utilitários para usar as animações via classes */
-@utility animate-in {
-  animation: fade-in 150ms ease-out;
-}
-
-@utility animate-out {
-  animation: fade-out 150ms ease-in;
-}
-
-@utility slide-in-from-bottom {
-  animation: slide-in-from-bottom 250ms ease-out;
-}
-
-@utility slide-out-to-bottom {
-  animation: slide-out-to-bottom 250ms ease-in;
-}
-
 body {
   display: flex;
   flex-flow: column;
@@ -186,6 +136,38 @@ body {
     to {
       background: transparent;
       box-shadow: 0 0 0 6px transparent;
+    }
+  }
+
+  /* Folhas e fundo escurecido do painel (ProtoSheet): sobem e descem em 250 ms,
+     o fundo some em 200 ms. A saída fica em `forwards` para a folha não piscar
+     de volta antes de o Radix desmontá-la. */
+  --animate-proto-sheet-in: proto-sheet-in 250ms ease;
+  --animate-proto-sheet-out: proto-sheet-out 250ms ease forwards;
+  --animate-proto-scrim-in: proto-scrim-in 200ms linear;
+  --animate-proto-scrim-out: proto-scrim-out 200ms linear forwards;
+
+  @keyframes proto-sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes proto-sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes proto-scrim-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes proto-scrim-out {
+    to {
+      opacity: 0;
     }
   }
 }
