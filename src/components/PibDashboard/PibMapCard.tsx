@@ -27,9 +27,9 @@ import { ICON_BUTTON } from "@/components/ProtoPanel/protoStyles";
 import type { PibPanelData } from "@/features/panels/pib/pibPanel";
 import {
   buildPibStateLookup,
-  describeStatesOffMap,
   PIB_STATE_BINS,
 } from "@/features/panels/pib/pibStates";
+import { describeStatesOffMap } from "@/features/panels/statesOffMap";
 import { areaLabel } from "@/features/panels/territorialOptions";
 
 const TITLE = "Mapa do PIB por estado";
