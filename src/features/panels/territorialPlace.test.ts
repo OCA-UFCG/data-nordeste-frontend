@@ -8,6 +8,8 @@ import {
   toggleTerritorialUf,
 } from "@/features/panels/territorialPlace";
 import { DEMOGRAFIA_YEAR_RANGE } from "@/features/panels/demografia/demografiaPanel";
+import { NO_DEMOGRAFIA_YEARS } from "@/features/panels/demografia/demografiaYearRange";
+import { NO_YEAR } from "@/features/panels/territorialFilters";
 
 const OPTIONS = {
   ufs: [
@@ -81,6 +83,16 @@ describe("describeTerritorialShareChips", () => {
       "Área: Caatinga",
       "Estado: Paraíba, Pernambuco",
       "Município: Recife (PE)",
+    ]);
+  });
+
+  it("leaves the year out when the database gave none", () => {
+    const filters = { ano: NO_YEAR, area: "nordeste" as const };
+
+    expect(describeTerritorialShareChips({ ...OPTIONS, filters })).toEqual([
+      "Área: Nordeste",
+      "Estado: Todos",
+      "Município: Todos",
     ]);
   });
 });
@@ -176,5 +188,9 @@ describe("describeDefaultPlaceLabel", () => {
     expect(describeDefaultPlaceLabel(DEMOGRAFIA_YEAR_RANGE)).toBe(
       "Ver Nordeste · 2022",
     );
+  });
+
+  it("leaves the year out when the database gave none", () => {
+    expect(describeDefaultPlaceLabel(NO_DEMOGRAFIA_YEARS)).toBe("Ver Nordeste");
   });
 });

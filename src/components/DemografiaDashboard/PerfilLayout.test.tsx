@@ -15,6 +15,7 @@ import {
 } from "@/features/panels/demografia/demografiaPanel";
 import { resolvePerfilCardStates } from "@/features/panels/demografia/perfilCardState";
 import { defaultTerritorialFilters } from "@/features/panels/territorialFilters";
+import { describeDefaultPlaceLabel } from "@/features/panels/territorialPlace";
 
 // O mapa de porte tem canvas e busca a malha; o teste só precisa do layout e
 // da vista do mapa, que o dublê mostra e troca.
@@ -47,6 +48,7 @@ const buildProps = (
   onRetry: () => undefined,
   onSelectUf: () => undefined,
   onReset,
+  resetLabel: describeDefaultPlaceLabel(DEMOGRAFIA_YEAR_RANGE),
 });
 
 const LayoutHarness = ({

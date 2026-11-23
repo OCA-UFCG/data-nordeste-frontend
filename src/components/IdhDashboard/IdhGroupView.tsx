@@ -27,6 +27,7 @@ import {
   idhPlaceName,
   type IdhPanelData,
 } from "@/features/panels/idh/idhPanel";
+import { withYear } from "@/features/panels/territorialFilters";
 
 type GroupVisao = "sexo" | "cor";
 
@@ -128,7 +129,7 @@ const GroupCard = ({
     data.filters.ano,
     metric,
   );
-  const place = `${idhPlaceName(data)}, ${data.filters.ano}`;
+  const place = withYear(idhPlaceName(data), data.filters.ano, ", ");
 
   return (
     <ProtoCard

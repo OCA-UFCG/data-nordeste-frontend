@@ -71,4 +71,25 @@ describe("ProtoVejaMais", () => {
       screen.getAllByText("Não foi possível carregar o texto.").length,
     ).toBeGreaterThan(0);
   });
+
+  it("lista os itens de um bloco sem parágrafo", () => {
+    render(
+      <ProtoVejaMais
+        analysis={{
+          blocks: [
+            {
+              title: "Quantidade de municípios por porte",
+              items: ["A.", "B."],
+            },
+          ],
+          footnote: "Rodapé.",
+        }}
+        state="ok"
+      />,
+    );
+
+    expect(
+      screen.getAllByRole("listitem").map((item) => item.textContent),
+    ).toEqual(["A.", "B."]);
+  });
 });
