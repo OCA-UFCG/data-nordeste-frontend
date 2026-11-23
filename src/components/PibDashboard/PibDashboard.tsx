@@ -15,6 +15,7 @@ import {
   BUTTON,
   PROTO_TEXT,
   protoToneStyle,
+  WRAP,
 } from "@/components/ProtoPanel/protoStyles";
 import { ProtoTerritorialFilters } from "@/components/ProtoPanel/ProtoTerritorialFilters";
 import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
@@ -150,7 +151,7 @@ export const PibDashboard = ({
       />
       <div
         style={protoToneStyle("pib")}
-        className={`${PROTO_TEXT} mx-auto w-full max-w-[1440px] px-20 pt-8 pb-10 max-[1100px]:px-8 max-[1100px]:pt-6 max-[700px]:px-4 max-[700px]:pt-5 max-[700px]:pb-8`}
+        className={`${PROTO_TEXT} ${WRAP} pt-8 pb-10 max-[1100px]:pt-6 max-[700px]:pt-5 max-[700px]:pb-8`}
       >
         <ProtoCardMenuContext.Provider value={cardMenu}>
           {showEmpty ? (
