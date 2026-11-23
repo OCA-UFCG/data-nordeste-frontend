@@ -476,3 +476,50 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   (was `perfilChangeTone`).
 - Local setup: the tunnel command is not in any repository; ask the team.
   The Gamma database conventionally sits on local port 5434.
+
+## Aridity Index Panel Demo (`/demo/aridez`)
+
+- Same approach as the IDH, profile and PIB panels: the reference is the
+  prototype's `aridez.html` (artifact "Painéis Data Nordeste · Protótipo
+  navegável", November 2026), rebuilt with the shared `ProtoPanel/` pieces in
+  the "aridez" tone (Meio Ambiente green `#758f21`). Cover, sticky filter bar,
+  "Veja mais", two big numbers (ASD in km² and in %), the state map, the
+  columns by class and the per-municipality 100% bars, "Saiba mais" and
+  related content from the Contentful "panels" entry `aridez`.
+- Data: `meio_aridez.vw_aridez` (`cd_mun`, `ano_consolidacao`, `dn_uni`,
+  `area_km2_classe`), the view the Automatic-Reporting environment text reads.
+  `dn_uni` 2/3/4/5 are árido, semiárido, subúmido seco and úmido
+  (`ARIDEZ_CLASSES`). ASD (Área Suscetível à Desertificação) is árido +
+  semiárido + subúmido seco, index below 0.65 (UNCCD). Percentages use the
+  classified area (sum of the four classes) as the base, as the prototype does.
+- WARNING: built without database access (VPN down, 23/11/2026). Two
+  assumptions in `features/panels/aridez/aridezPanel.ts` still need checking
+  against Gamma: the years (1991 and 2021, taken from the Automatic-Reporting
+  SQL) and the territorial columns (UF, name and the area flags come from the
+  latest row of each municipality in `eco_pib.vw_pib_municipal_pbi`, joined on
+  `cd_mun`, because `vw_aridez` is not known to carry them). `dn_uni` 1 is
+  ignored.
+- "Veja mais" (`ProtoPanel/ProtoVejaMais.tsx`, text in
+  `features/panels/aridez/aridezAnalise.ts`): the prototype's expandable bar on
+  top of the panel. The prototype also offers a floating button, switched by its
+  black test strip; only the bar was built. The ASD change compares the chosen
+  year with 1991 (`ARIDEZ_BASE_YEAR`, the prototype says "1990" with made-up
+  values). A red dot marks text that changed while the bar was closed. The
+  component takes any `PanelAnalysis`, so the other panels can adopt it.
+- Deliberate deviations from the prototype:
+  - Real values everywhere; the prototype's state and municipal figures were
+    illustrative.
+  - The municipal list shows every municipality of the selection (about 1,800
+    for the whole area), with `content-visibility: auto`; the segment
+    breakdown is a native `title` tooltip, not the prototype's floating one.
+  - No "Atualizado em" in the card footers (`ARIDEZ_CARD_FOOTER`, as in PIB).
+- Shared pieces extracted for this panel: `ProtoFullscreenButton` and
+  `ProtoBinLegend` (`ProtoPanel/ProtoMapControls.tsx`, used by IDH, profile and
+  PIB too), `describeStatesOffMap` (`features/panels/statesOffMap.ts`),
+  `buildZeroAxis` (`features/panels/zeroAxis.ts`, was `pib/pibAxis.ts`),
+  `describeSelectedTerritory` (`territorialOptions.ts`) and the jsdom fakes
+  `stubPanelBrowserApis` (`ProtoPanel/protoBrowserFakes.ts`, was in
+  `idhTestFixtures.ts`).
+- Headless Chrome screenshots (`--screenshot` with `--virtual-time-budget`)
+  often capture the SVG charts empty because `ResizeObserver` has not fired;
+  check the layout in a real browser or with Playwright waiting for the chart.
