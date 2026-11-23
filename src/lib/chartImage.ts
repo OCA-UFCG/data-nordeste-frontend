@@ -42,6 +42,22 @@ export const svgImageSource = (svg: SVGSVGElement): ChartImageSource => {
   };
 };
 
+/**
+ * Fonte de imagem a partir de um canvas WebGL (o mapa). O tamanho é o da tela
+ * (CSS px), não o do buffer — o buffer já vem multiplicado pelo
+ * devicePixelRatio e dobraria o quadro do PNG. O canvas precisa ter sido
+ * criado com `preserveDrawingBuffer`, senão `toDataURL` sai em branco.
+ *
+ * @example await downloadChartImage(canvasImageSource(map.getCanvas()), options)
+ */
+export const canvasImageSource = (
+  canvas: HTMLCanvasElement,
+): ChartImageSource => ({
+  getWidth: () => canvas.clientWidth,
+  getHeight: () => canvas.clientHeight,
+  getDataURL: () => canvas.toDataURL("image/png"),
+});
+
 // 2×: nítido em telas de alta densidade e ao ampliar num documento.
 const PIXEL_RATIO = 2;
 
