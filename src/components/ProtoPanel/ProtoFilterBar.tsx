@@ -33,7 +33,9 @@ export type ProtoFilterBarProps = {
   brand?: ProtoFilterBarBrand;
 
   // Também põe a `brand` no início da barra do desktop (`.fb-id`, IDH).
-  brandInBar?: boolean;
+  // "compact": barra com quatro campos (perfil demográfico), em que o nome
+  // some até 900 px e fica só o ícone (`.fb-in:has(>.fl:nth-of-type(4))`).
+  brandInBar?: boolean | "compact";
 
   // Sem subtítulo, o resumo do celular mostra só o título (perfil demográfico).
   summarySubtitle?: string;
@@ -89,10 +91,26 @@ const BrandTile = ({ icon }: { icon: ProtoIconName }) => (
   </span>
 );
 
-const BarBrand = ({ brand }: { brand: ProtoFilterBarBrand }) => (
-  <div className="flex h-10 min-w-0 flex-[0_1_auto] items-center gap-2.5 border-r border-grey-300 pr-4 max-[700px]:hidden">
+const BarBrand = ({
+  brand,
+  compact,
+}: {
+  brand: ProtoFilterBarBrand;
+  compact: boolean;
+}) => (
+  <div
+    className={cn(
+      "flex h-10 min-w-0 flex-[0_1_auto] items-center gap-2.5 border-r border-grey-300 pr-4 max-[700px]:hidden",
+      compact && "max-[900px]:pr-3",
+    )}
+  >
     <BrandTile icon={brand.icon} />
-    <span className="line-clamp-2 max-w-[220px] min-w-0 text-[15px] leading-5 font-bold">
+    <span
+      className={cn(
+        "line-clamp-2 max-w-[220px] min-w-0 text-[15px] leading-5 font-bold",
+        compact && "max-[900px]:hidden",
+      )}
+    >
       {brand.title}
     </span>
   </div>
@@ -191,7 +209,9 @@ export const ProtoFilterBar = ({
           barBrand && "max-[900px]:gap-3 max-[700px]:gap-2",
         )}
       >
-        {barBrand ? <BarBrand brand={barBrand} /> : null}
+        {barBrand ? (
+          <BarBrand brand={barBrand} compact={brandInBar === "compact"} />
+        ) : null}
         <PhoneSummary
           title={summaryTitle}
           subtitle={summarySubtitle}

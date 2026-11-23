@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildDemografiaAnalise,
   describeCorRaca,
   municipiosPorPorte,
   formatShare,
@@ -65,5 +66,42 @@ describe("formatShare", () => {
   it("formats the share of the total with one decimal, 0% without total", () => {
     expect(formatShare(28_240_713, 54_658_515)).toBe("51,7%");
     expect(formatShare(5, 0)).toBe("0,0%");
+  });
+});
+
+describe("buildDemografiaAnalise", () => {
+  const region = (code: string, value: number) => ({
+    code,
+    name: code,
+    uf: "PB",
+    value,
+  });
+  const panel = {
+    filters: { ano: 2022, area: "nordeste" as const },
+    corRaca: NORDESTE_2022,
+    corRacaAnterior: { ano: 2010, corRaca: NORDESTE_2010 },
+    mapa: [region("a", 419_379), region("b", 67_259), region("c", 3_000)],
+  };
+
+  it("joins the race reading and lists the municipalities by size", () => {
+    const analise = buildDemografiaAnalise(panel, "Nordeste");
+
+    expect(analise?.blocks[0].text).toBe(
+      describeCorRaca(NORDESTE_2022, panel.corRacaAnterior).join(" "),
+    );
+    expect(analise?.blocks[1].items).toEqual([
+      "Pequeno porte (até 50 mil hab.): 1 município.",
+      "Médio porte (50 mil - 100 mil hab.): 1 município.",
+      "Grande porte (acima de 100 mil hab.): 1 município.",
+    ]);
+    expect(analise?.footnote).toBe(
+      "Texto gerado conforme os filtros: Nordeste · 2022.",
+    );
+  });
+
+  it("has no text without declared race", () => {
+    expect(buildDemografiaAnalise({ ...panel, corRaca: [] }, "Nordeste")).toBe(
+      null,
+    );
   });
 });

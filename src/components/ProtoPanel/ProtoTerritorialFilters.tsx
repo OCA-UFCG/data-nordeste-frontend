@@ -20,6 +20,7 @@ import {
   describeTerritorialSelection,
   type TerritorialSelection,
 } from "@/features/panels/territorialOptions";
+import { cn } from "@/lib/utils";
 
 // `years`: os anos do painel, do mais recente ao mais antigo (`listYears`).
 // `maxPlaces`: quantos municípios o painel aceita no filtro.
@@ -30,6 +31,32 @@ type FieldsProps = {
   onChange: (filters: TerritorialFilters) => void;
 };
 
+// Com a marca na barra (`.fb .fb-in>.fl` do protótipo do perfil): os campos
+// dividem a barra sem limite de largura, o Ano com 0,6 da parte dos outros, e
+// até 900 px o select aperta a folga da seta.
+const BRANDED_FIELD = "min-w-0 max-w-none max-[900px]:[&>div>svg]:right-2";
+type FieldClasses = {
+  year?: string;
+  field?: string;
+  select?: string;
+  trigger?: string;
+};
+
+const BRANDED: FieldClasses = {
+  year: cn(BRANDED_FIELD, "flex-[.6_1_0] max-[900px]:min-w-[84px]"),
+  field: BRANDED_FIELD,
+  select: "max-[900px]:pr-7 max-[900px]:pl-2.5",
+  trigger: "max-[900px]:px-2.5",
+};
+
+// Sem a marca, o Ano fica entre 110 e 140 px (PIB e aridez); na folha do
+// celular, nada muda.
+const fieldClasses = (fluid: boolean, branded: boolean): FieldClasses => {
+  if (fluid && branded) return BRANDED;
+
+  return { year: fluid ? "max-w-[140px]" : undefined };
+};
+
 // Ano e Área são selects nativos; Estado e Município, multisseleção com busca.
 const TerritorialFilterFields = ({
   data,
@@ -37,12 +64,21 @@ const TerritorialFilterFields = ({
   maxPlaces,
   onChange,
   wide,
-}: FieldsProps & { wide: boolean }) => {
+  branded,
+}: FieldsProps & { wide: boolean; branded: boolean }) => {
   const { filters } = data;
   const id = useId();
 
   // Desktop: campos flexíveis como `.fb-in .fl` do protótipo; a folha do celular fica com largura toda.
   const fluid = !wide;
+  const classes = fieldClasses(fluid, branded);
+  const selectClass = cn(protoSelectClass(wide), classes.select);
+  const baseLook = protoFieldLook(wide, fluid);
+  const placeLook = {
+    ...baseLook,
+    fieldClassName: cn(baseLook.fieldClassName, classes.field),
+    triggerClassName: cn(baseLook.triggerClassName, classes.trigger),
+  };
 
   return (
     <>
@@ -50,7 +86,7 @@ const TerritorialFilterFields = ({
         label="Ano"
         wide={wide}
         fluid={fluid}
-        className={fluid ? "max-w-[140px]" : undefined}
+        className={classes.year}
       >
         {(fieldId) => (
           <select
@@ -59,7 +95,7 @@ const TerritorialFilterFields = ({
             onChange={(event) =>
               onChange({ ...filters, ano: Number(event.target.value) })
             }
-            className={protoSelectClass(wide)}
+            className={selectClass}
           >
             {years.map((year) => (
               <option key={year} value={year}>
@@ -78,7 +114,12 @@ const TerritorialFilterFields = ({
        * em `src/features/panels/territorialOptions.ts`), o que preserva a
        * seleção de vários estados (revisão da PR #401).
        */}
-      <ProtoSelectField label="Área de interesse" wide={wide} fluid={fluid}>
+      <ProtoSelectField
+        label="Área de interesse"
+        wide={wide}
+        fluid={fluid}
+        className={classes.field}
+      >
         {(fieldId) => (
           <select
             id={fieldId}
@@ -89,7 +130,7 @@ const TerritorialFilterFields = ({
                 area: event.target.value as TerritorialArea,
               })
             }
-            className={protoSelectClass(wide)}
+            className={selectClass}
           >
             {TERRITORIAL_AREAS.map((area) => (
               <option key={area.value} value={area.value}>
@@ -107,7 +148,7 @@ const TerritorialFilterFields = ({
         values={filters.uf}
         options={data.ufs.map((uf) => ({ value: uf.sigla, label: uf.nome }))}
         onChange={(uf) => onChange({ ...filters, uf })}
-        look={protoFieldLook(wide, fluid)}
+        look={placeLook}
       />
       <PlaceFilter
         id={`${id}-mun`}
@@ -121,7 +162,7 @@ const TerritorialFilterFields = ({
           label: mun.nome,
         }))}
         onChange={(mun) => onChange({ ...filters, mun })}
-        look={protoFieldLook(wide, fluid)}
+        look={placeLook}
       />
     </>
   );
@@ -145,8 +186,14 @@ export const ProtoTerritorialFilters = ({
   stuck,
   barRef,
   brand,
+  brandInBar = false,
 }: FieldsProps & {
   brand?: ProtoFilterBarBrand;
+
+  // Põe a `brand` no início da barra do desktop, como no perfil demográfico:
+  // os quatro campos dividem o resto (sem os limites de largura do PIB) e,
+  // até 900 px, fica só o ícone da marca.
+  brandInBar?: boolean;
   onClear: () => void;
   isDefault: boolean;
   top: number;
@@ -156,6 +203,7 @@ export const ProtoTerritorialFilters = ({
   <ProtoFilterBar
     summaryTitle={describeTerritorialSelection(data, true)}
     brand={brand}
+    brandInBar={brandInBar && "compact"}
     renderFields={(wide) => (
       <TerritorialFilterFields
         data={data}
@@ -163,6 +211,7 @@ export const ProtoTerritorialFilters = ({
         maxPlaces={maxPlaces}
         onChange={onChange}
         wide={wide}
+        branded={brandInBar}
       />
     )}
     isDefault={isDefault}
