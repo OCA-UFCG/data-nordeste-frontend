@@ -2,6 +2,7 @@ import {
   TERRITORIAL_AREAS,
   type TerritorialArea,
   type TerritorialFilters,
+  withYear,
 } from "@/features/panels/territorialFilters";
 import {
   buildTerritorialWhere,
@@ -192,4 +193,5 @@ export const describeSelectedTerritory = (
 export const describeTerritorialSelection = (
   selection: TerritorialSelection,
   nameArea = false,
-): string => `${describePlace(selection, nameArea)} · ${selection.filters.ano}`;
+): string =>
+  withYear(describePlace(selection, nameArea), selection.filters.ano);

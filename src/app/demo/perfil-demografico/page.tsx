@@ -64,7 +64,8 @@ const loadPanel = async (filters: TerritorialFilters) => {
 };
 
 // Mesmo layout do IDH: capa, painel, "Saiba mais" e relacionados. Sem o banco,
-// os cards mostram o erro com "Tentar de novo" em vez de derrubar a página.
+// os cards mostram o erro com "Tentar de novo" em vez de derrubar a página,
+// também quando só a consulta de anos falha (então não há ano a oferecer).
 // INTENTIONAL: sem o Contentful, a capa usa o macrotema padrão e some só a
 // seção de relacionados.
 export default async function PerfilDemograficoDemoPage({
@@ -80,7 +81,7 @@ export default async function PerfilDemograficoDemoPage({
     DEMOGRAFIA_MAX_PLACES,
   );
   const [panel, content] = await Promise.all([
-    loadPanel(filters),
+    range ? loadPanel(filters) : null,
     loadDemografiaPanelContent(),
   ]);
   const macroTheme = content?.panel.macroTheme ?? DEMOGRAFIA_MACROTHEME;

@@ -3,6 +3,7 @@ import type { ChoroplethBucket } from "@/features/panels/choropleth";
 import {
   firstValue,
   listYears,
+  NO_YEAR,
   UF_PATTERN,
   type SearchParams,
   type YearRange,
@@ -314,7 +315,7 @@ export const describeIdhShareChips = (
 
   return [
     `Estado: ${uf?.nome ?? "Todos"}`,
-    `Ano: ${filters.ano}`,
+    ...(filters.ano === NO_YEAR ? [] : [`Ano: ${filters.ano}`]),
     ...(visao !== DEFAULT_IDH_VISAO && view ? [view.label] : []),
   ];
 };

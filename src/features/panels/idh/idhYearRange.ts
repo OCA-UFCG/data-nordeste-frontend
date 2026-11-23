@@ -1,14 +1,17 @@
 import { GERAL_VIEW } from "@/features/panels/idh/idhPanel";
-import type { YearRange } from "@/features/panels/territorialFilters";
+import { NO_YEAR, type YearRange } from "@/features/panels/territorialFilters";
 import {
   toNumber,
   type NumericCell,
   type SqlQuery,
 } from "@/features/panels/territorialSql";
 
-// Sem o intervalo (a consulta falhou) não há ano a oferecer: `available` vazio
-// esconde os anos e `last` só ocupa o lugar do ano padrão, que ninguém vê.
-export const NO_IDH_YEARS: YearRange = { first: 0, last: 0, available: [] };
+// Sem o intervalo (a consulta falhou): nenhum ano a oferecer e o painel em erro.
+export const NO_IDH_YEARS: YearRange = {
+  first: NO_YEAR,
+  last: NO_YEAR,
+  available: [],
+};
 
 /**
  * Primeiro e último ano que o banco tem de IDH.

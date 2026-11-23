@@ -26,6 +26,7 @@ import {
 } from "@/features/panels/demografia/demografiaPanel";
 import { buildPerfilPorteTable } from "@/features/panels/demografia/perfilPorteTable";
 import { formatPessoas } from "@/features/panels/format";
+import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "Porte dos municípios";
 const INFO =
@@ -265,7 +266,7 @@ export const PerfilPorteMapCard = ({
   const { data, place, state } = props;
   const { view, setView, fullscreen, setFullscreen } = mapView;
   const map = usePorteMapData(data, selectedUfs, onSelectUf);
-  const subtitle = `${place} · ${data.filters.ano}`;
+  const subtitle = withYear(place, data.filters.ano);
 
   // A legenda por porte só destaca municípios; no mapa de estados não teria
   // efeito, então some (revisão da PR #401).
