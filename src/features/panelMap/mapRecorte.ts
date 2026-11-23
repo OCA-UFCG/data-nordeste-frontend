@@ -83,11 +83,13 @@ function retarget(
   return recorteAt("municipio", centerUf, centerMun);
 }
 
-// Sem município sob o centro, o município não pode ser alvo: fica no estado.
-function targetLevel(input: ResolveRecorteInput): MapLevel {
-  const level = levelForZoom(input.zoom, input.deepest);
-
-  return input.centerMun ? level : shallowest(level, "estado");
+// Sem município sob o centro, o município não pode ser alvo de descida: fica no
+// estado. INTENTIONAL: isso vale só para descer; nunca pode causar uma subida.
+function descentLevel(
+  level: MapLevel,
+  centerMun: string | undefined,
+): MapLevel {
+  return centerMun ? level : shallowest(level, "estado");
 }
 
 /**
@@ -101,11 +103,14 @@ export function resolveRecorte(input: ResolveRecorteInput): MapRecorte {
 
   if (!centerUf) return current;
   const currentLevel = levelOfRecorte(current);
-  const level = targetLevel(input);
-  const diff = LEVEL_RANK[level] - LEVEL_RANK[currentLevel];
+  const level = levelForZoom(zoom, input.deepest);
+  const down = descentLevel(level, centerMun);
   const zoomedOut = zoom < fittedZoom - ZOOM_OUT_TOLERANCE;
 
-  if (diff > 0 || (diff < 0 && zoomedOut)) {
+  if (LEVEL_RANK[down] > LEVEL_RANK[currentLevel]) {
+    return recorteAt(down, centerUf, centerMun);
+  }
+  if (LEVEL_RANK[level] < LEVEL_RANK[currentLevel] && zoomedOut) {
     return recorteAt(level, centerUf, centerMun);
   }
 

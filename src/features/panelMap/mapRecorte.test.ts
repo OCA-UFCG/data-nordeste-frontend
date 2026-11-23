@@ -18,6 +18,13 @@ describe("levelForZoom", () => {
     expect(levelForZoom(9, "municipio")).toBe("municipio");
   });
 
+  it("inclui os limiares: 6,5 é estado e 8,5 é município", () => {
+    expect(levelForZoom(6.5, "municipio")).toBe("estado");
+    expect(levelForZoom(8.5, "municipio")).toBe("municipio");
+    expect(levelForZoom(6.49, "municipio")).toBe("area");
+    expect(levelForZoom(8.49, "municipio")).toBe("estado");
+  });
+
   it("limita o nível ao mais fundo permitido (IDH não passa de estado)", () => {
     expect(levelForZoom(9, "estado")).toBe("estado");
   });
@@ -69,6 +76,32 @@ describe("resolveRecorte", () => {
       fittedZoom: 5.8,
       zoom: 5.8,
       centerUf: "BA",
+    });
+
+    expect(result).toBe(current);
+  });
+
+  it("não sobe quando o zoom é exatamente enquadramento menos a tolerância", () => {
+    const current: MapRecorte = { uf: ["PE"], mun: [] };
+    const result = resolveRecorte({
+      ...base,
+      current,
+      fittedZoom: 7,
+      zoom: 6.5,
+      centerUf: "PE",
+    });
+
+    expect(result).toBe(current);
+  });
+
+  it("mantém o município quando afasta mas segue no nível município e o centro não tem município", () => {
+    const current: MapRecorte = { uf: ["PE"], mun: [RECIFE] };
+    const result = resolveRecorte({
+      ...base,
+      current,
+      fittedZoom: 10.5,
+      zoom: 9.5,
+      centerUf: "PE",
     });
 
     expect(result).toBe(current);
