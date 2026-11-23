@@ -36,23 +36,30 @@ const PORTE_LIMITES = { pequeno: 50_000, medio: 100_000 } as const;
 const upTo = (limite: number) => limite + 1;
 const mil = (limite: number) => `${limite / 1000} mil`;
 
+// Cores das faixas; o mapa de estados do perfil reusa as duas primeiras.
+export const DEMOGRAFIA_PORTE_COLORS = {
+  pequeno: "#f6d3e0",
+  medio: "#e98dae",
+  grande: "#c93c6b",
+} as const;
+
 export const DEMOGRAFIA_PORTES: readonly DemografiaPorte[] = [
   {
     max: upTo(PORTE_LIMITES.pequeno),
     label: "Pequeno",
-    color: "#f6d3e0",
+    color: DEMOGRAFIA_PORTE_COLORS.pequeno,
     texto: `Pequeno porte (até ${mil(PORTE_LIMITES.pequeno)} hab.)`,
   },
   {
     max: upTo(PORTE_LIMITES.medio),
     label: "Médio",
-    color: "#e98dae",
+    color: DEMOGRAFIA_PORTE_COLORS.medio,
     texto: `Médio porte (${mil(PORTE_LIMITES.pequeno)} - ${mil(PORTE_LIMITES.medio)} hab.)`,
   },
   {
     max: Infinity,
     label: "Grande",
-    color: "#c93c6b",
+    color: DEMOGRAFIA_PORTE_COLORS.grande,
     texto: `Grande porte (acima de ${mil(PORTE_LIMITES.medio)} hab.)`,
   },
 ];
