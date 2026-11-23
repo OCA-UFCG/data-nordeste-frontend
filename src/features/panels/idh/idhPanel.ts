@@ -39,7 +39,7 @@ export type IdhFilters = {
   uf?: string;
 };
 
-export const DEFAULT_IDH_VISAO: IdhVisao = "geral";
+const DEFAULT_IDH_VISAO: IdhVisao = "geral";
 
 /**
  * Filtros sem escolha da pessoa: o último ano do banco e a visão geral.
