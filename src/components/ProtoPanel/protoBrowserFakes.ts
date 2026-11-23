@@ -47,4 +47,7 @@ export const stubPanelBrowserApis = () => {
   vi.stubGlobal("ResizeObserver", ResizeObserverFake);
   vi.stubGlobal("IntersectionObserver", IntersectionObserverFake);
   vi.stubGlobal("matchMedia", (media: string) => new MediaQueryListFake(media));
+
+  // A barra de abas do IDH rola até a aba aberta; o jsdom não tem `Element.scrollTo`.
+  Element.prototype.scrollTo = () => {};
 };

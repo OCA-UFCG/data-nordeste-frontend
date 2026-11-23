@@ -2,7 +2,7 @@
 
 import {
   type KeyboardEvent,
-  type Ref,
+  type RefObject,
   useCallback,
   useEffect,
   useRef,
@@ -15,6 +15,7 @@ import {
   protoToneStyle,
   WRAP,
 } from "@/components/ProtoPanel/protoStyles";
+import { protoScrollBehavior } from "@/components/ProtoPanel/useProtoSticky";
 import { IDH_VISOES, type IdhVisao } from "@/features/panels/idh/idhPanel";
 
 const NEXT_KEYS: Record<string, number> = {
@@ -24,8 +25,8 @@ const NEXT_KEYS: Record<string, number> = {
   ArrowLeft: -1,
 };
 
-// Como no protótipo, as quatro setas andam nas duas listas; Home e End vão às
-// pontas.
+// Como no protótipo, as quatro setas andam na lista com volta; Home e End vão
+// às pontas.
 const nextVisao = (key: string, current: IdhVisao): IdhVisao | null => {
   const index = IDH_VISOES.findIndex((item) => item.key === current);
   const total = IDH_VISOES.length;
@@ -78,30 +79,6 @@ const Tabs = ({
     </button>
   ));
 
-/**
- * Coluna lateral das visões (`.rail` do protótipo), acima de 900 px. O fundo
- * cinza vai até a borda esquerda da tela.
- *
- * @example <IdhViewRail idPrefix="idh-rail" panelId="idh-panel" active="geral" onSelect={setView} top={196} />
- */
-export const IdhViewRail = (props: TabListProps & { top: number }) => (
-  <aside className="relative bg-grey-100 before:absolute before:inset-y-0 before:right-full before:w-screen before:bg-grey-100 max-[900px]:hidden">
-    <div
-      role="tablist"
-      aria-label="Visões do painel"
-      aria-orientation="vertical"
-      onKeyDown={tabKeyHandler(props)}
-      style={{ top: props.top }}
-      className="sticky flex flex-col gap-2 pt-8 pr-4 pb-8 pl-10"
-    >
-      <Tabs
-        {...props}
-        className="rounded-[6px] px-3 py-2.5 text-left text-sm leading-[22px] hover:bg-grey-200 aria-selected:bg-green-800 aria-selected:font-bold aria-selected:text-white"
-      />
-    </div>
-  </aside>
-);
-
 type Overflow = { left: boolean; right: boolean; any: boolean };
 
 const useHorizontalOverflow = () => {
@@ -142,6 +119,31 @@ const useHorizontalOverflow = () => {
   return { ref, overflow };
 };
 
+// Folga do protótipo ao trazer a aba aberta para a vista (`tbSc.scrollTo`).
+const TAB_REVEAL_PAD = 56;
+
+const useRevealActiveTab = (
+  listRef: RefObject<HTMLDivElement | null>,
+  active: IdhVisao,
+) => {
+  useEffect(() => {
+    const list = listRef.current;
+    const tab = list?.querySelector<HTMLElement>("[aria-selected=true]");
+
+    if (!list || !tab) return;
+    const left = tab.offsetLeft - TAB_REVEAL_PAD;
+    const right =
+      tab.offsetLeft + tab.offsetWidth + TAB_REVEAL_PAD - list.clientWidth;
+    const target = Math.min(Math.max(list.scrollLeft, right), left);
+
+    if (target !== list.scrollLeft)
+      list.scrollTo({
+        left: Math.max(0, target),
+        behavior: protoScrollBehavior(),
+      });
+  }, [listRef, active]);
+};
+
 const ScrollArrow = ({
   side,
   visible,
@@ -170,28 +172,26 @@ const FADE =
   "pointer-events-none absolute inset-y-0 z-[2] w-9 transition-opacity duration-150";
 
 /**
- * Barra de abas das visões (`.tabsbar` do protótipo), até 900 px: rola de
- * lado quando não cabe, com esmaecimento e setas nas pontas.
+ * Barra de abas das visões (`.tabsbar` do protótipo), acima dos filtros e sem
+ * grudar: rola com a página. Rola de lado quando não cabe, com esmaecimento e
+ * setas nas pontas, e traz a aba aberta para a vista.
  *
- * @example <IdhViewBar idPrefix="idh-tab" panelId="idh-panel" active="geral" onSelect={setView} top={80} barRef={ref} />
+ * @example <IdhViewBar idPrefix="idh-tab" panelId="idh-panel" active="geral" onSelect={setView} />
  */
-export const IdhViewBar = ({
-  top,
-  barRef,
-  ...props
-}: TabListProps & { top: number; barRef: Ref<HTMLDivElement> }) => {
+export const IdhViewBar = (props: TabListProps) => {
   const { ref, overflow } = useHorizontalOverflow();
   const scroll = (direction: -1 | 1) =>
     ref.current?.scrollBy({
       left: direction * ref.current.clientWidth * 0.6,
-      behavior: "smooth",
+      behavior: protoScrollBehavior(),
     });
+
+  useRevealActiveTab(ref, props.active);
 
   return (
     <div
-      ref={barRef}
-      style={{ top, ...protoToneStyle("idh") }}
-      className={`${PROTO_TEXT} sticky z-[46] hidden w-full border-b border-grey-300 bg-white max-[900px]:block max-[700px]:static`}
+      style={protoToneStyle("idh")}
+      className={`${PROTO_TEXT} relative z-[46] w-full border-b border-grey-300 bg-white`}
     >
       <div className={`${WRAP} relative flex items-center`}>
         <span

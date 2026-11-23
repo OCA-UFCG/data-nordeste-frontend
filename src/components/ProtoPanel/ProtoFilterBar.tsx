@@ -16,11 +16,14 @@ import {
 import { useProtoTone } from "@/components/ProtoPanel/protoTone";
 import { cn } from "@/lib/utils";
 
-// `#clearBtn`: vermelho quando há filtro; só o ícone no celular.
+// `#clearBtn`: vermelho quando há filtro; só o ícone no celular (com
+// `brandInBar`, já a partir de 900 px, como no protótipo do IDH).
 const CLEAR_CLASS = cn(
   BUTTON_GHOST,
   "min-h-9 px-3.5 py-1.5 text-[#bf1621] enabled:border-[#efb8bd] hover:not-disabled:border-[#efb8bd] hover:not-disabled:bg-[#ffe1e3] max-[700px]:min-h-10 max-[700px]:w-10 max-[700px]:flex-none max-[700px]:p-0",
 );
+const CLEAR_COMPACT_CLASS =
+  "max-[900px]:min-h-10 max-[900px]:w-10 max-[900px]:flex-none max-[900px]:p-0";
 
 // Ícone e nome do painel no resumo do celular (`.fb-tile` do protótipo).
 export type ProtoFilterBarBrand = { icon: ProtoIconName; title: string };
@@ -28,6 +31,9 @@ export type ProtoFilterBarBrand = { icon: ProtoIconName; title: string };
 export type ProtoFilterBarProps = {
   summaryTitle: string;
   brand?: ProtoFilterBarBrand;
+
+  // Também põe a `brand` no início da barra do desktop (`.fb-id`, IDH).
+  brandInBar?: boolean;
 
   // Sem subtítulo, o resumo do celular mostra só o título (perfil demográfico).
   summarySubtitle?: string;
@@ -72,6 +78,24 @@ const FiltersSheet = ({
       </button>
     </div>
   </ProtoSheet>
+);
+
+const BrandTile = ({ icon }: { icon: ProtoIconName }) => (
+  <span
+    aria-hidden="true"
+    className="grid size-8 flex-none place-items-center rounded-[6px] bg-(--proto-accent) text-white"
+  >
+    <ProtoIcon name={icon} size={18} />
+  </span>
+);
+
+const BarBrand = ({ brand }: { brand: ProtoFilterBarBrand }) => (
+  <div className="flex h-10 min-w-0 flex-[0_1_auto] items-center gap-2.5 border-r border-grey-300 pr-4 max-[700px]:hidden">
+    <BrandTile icon={brand.icon} />
+    <span className="line-clamp-2 max-w-[220px] min-w-0 text-[15px] leading-5 font-bold">
+      {brand.title}
+    </span>
+  </div>
 );
 
 // No celular, o resumo do filtro abre a folha (`.fb-sum`).
@@ -121,12 +145,7 @@ const PhoneBrandSummary = ({
     aria-label="Filtros selecionados. Toque para alterar"
     className="hidden min-w-0 flex-1 items-center gap-2 py-1 text-left max-[700px]:flex"
   >
-    <span
-      aria-hidden="true"
-      className="grid size-8 flex-none place-items-center rounded-[6px] bg-(--proto-accent) text-white"
-    >
-      <ProtoIcon name={brand.icon} size={18} />
-    </span>
+    <BrandTile icon={brand.icon} />
     <span className="flex min-w-0 flex-col">
       <b className="truncate text-[15px] leading-5 font-bold">{brand.title}</b>
       <small className="truncate text-[12.5px] leading-4 text-grey-800">
@@ -147,6 +166,7 @@ export const ProtoFilterBar = ({
   summaryTitle,
   summarySubtitle,
   brand,
+  brandInBar = false,
   renderFields,
   isDefault,
   onClear,
@@ -156,6 +176,7 @@ export const ProtoFilterBar = ({
 }: ProtoFilterBarProps) => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const tone = useProtoTone();
+  const barBrand = brandInBar ? brand : undefined;
 
   return (
     <div
@@ -164,8 +185,13 @@ export const ProtoFilterBar = ({
       className={`${PROTO_TEXT} sticky z-40 w-full border-b border-grey-300 bg-white transition-shadow duration-150 ${stuck ? "shadow-[0_6px_16px_-10px_rgba(41,40,41,0.45)]" : ""}`}
     >
       <div
-        className={`${WRAP} flex min-h-[88px] items-end gap-4 py-3 max-[700px]:min-h-14 max-[700px]:items-center max-[700px]:gap-2 max-[700px]:py-2`}
+        className={cn(
+          WRAP,
+          "flex min-h-[88px] items-end gap-4 py-3 max-[700px]:min-h-14 max-[700px]:items-center max-[700px]:gap-2 max-[700px]:py-2",
+          barBrand && "max-[900px]:gap-3 max-[700px]:gap-2",
+        )}
       >
+        {barBrand ? <BarBrand brand={barBrand} /> : null}
         <PhoneSummary
           title={summaryTitle}
           subtitle={summarySubtitle}
@@ -184,16 +210,23 @@ export const ProtoFilterBar = ({
           Filtros
         </button>
         <div className="contents max-[700px]:hidden">{renderFields(false)}</div>
-        <div className="flex-1 max-[700px]:hidden" />
+        {barBrand ? null : <div className="flex-1 max-[700px]:hidden" />}
         <button
           type="button"
           disabled={isDefault}
           onClick={onClear}
           aria-label="Limpar filtros"
           title="Limpar filtros"
-          className={CLEAR_CLASS}
+          className={cn(CLEAR_CLASS, barBrand && CLEAR_COMPACT_CLASS)}
         >
-          <span className="max-[700px]:hidden">Limpar filtros</span>
+          <span
+            className={cn(
+              "max-[700px]:hidden",
+              barBrand && "max-[900px]:hidden",
+            )}
+          >
+            Limpar filtros
+          </span>
           <ProtoIcon name="clearFilter" size={16} stroke={2.2} />
         </button>
       </div>

@@ -21,6 +21,7 @@ const yearPoint = (ano: number, idh: number): IdhYearPoint => ({
  */
 export const idhPanelFixture = (filters: IdhFilters): IdhPanelData => ({
   filters,
+  yearRange: { first: 2012, last: 2021 },
   ufs: [
     { sigla: "CE", nome: "Ceará" },
     { sigla: "PE", nome: "Pernambuco" },

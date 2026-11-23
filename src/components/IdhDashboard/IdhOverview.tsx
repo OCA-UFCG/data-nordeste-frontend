@@ -6,7 +6,8 @@ import { IdhLineChart } from "@/components/IdhDashboard/IdhLineChart";
 import { IdhMapLegend } from "@/components/IdhDashboard/IdhMapLegend";
 import { buildIdhMapProps } from "@/components/IdhDashboard/idhMapProps";
 import {
-  IDH_CARD_FOOTER,
+  idhCardFooter,
+  idhEvolutionInfo,
   IDH_CARD_INFO,
 } from "@/components/IdhDashboard/idhCardTexts";
 import { IdhRankingBars } from "@/components/IdhDashboard/IdhRanking";
@@ -26,10 +27,7 @@ import {
   ProtoMapFullscreen,
 } from "@/components/ProtoPanel/ProtoMapFullscreen";
 import { ProtoStateMap } from "@/components/ProtoPanel/ProtoStateMap";
-import {
-  type IdhCardStates,
-  showsIdhData,
-} from "@/features/panels/idh/idhCardState";
+import type { IdhCardStates } from "@/features/panels/idh/idhCardState";
 import { rankIdhStates } from "@/features/panels/idh/idhClasses";
 import {
   describeIdhSerie,
@@ -41,7 +39,11 @@ type CardStatus = { state: ProtoCardState; onRetry: () => void };
 
 // `selection`: os filtros pedidos. O ano da série e o estado destacado no mapa
 // e no ranking seguem o clique na hora, antes de o servidor responder.
-type CardProps = CardStatus & { data: IdhPanelData; selection: IdhFilters };
+type CardProps = CardStatus & {
+  data: IdhPanelData;
+  selection: IdhFilters;
+  updatedAt?: string;
+};
 
 type OverviewProps = Omit<CardProps, "state"> & {
   states: IdhCardStates;
@@ -57,6 +59,7 @@ const RANKING_TITLE = "Ranking do IDH por estado";
 const EvolutionCard = ({
   data,
   selection,
+  updatedAt,
   onSelectYear,
   ...status
 }: CardProps & { onSelectYear: (ano: number) => void }) => {
@@ -65,7 +68,7 @@ const EvolutionCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={IDH_CARD_FOOTER}
+      footer={idhCardFooter(updatedAt)}
       title={EVOLUTION_TITLE}
       mobileTitle="Evolução anual do IDH"
       subtitle={describeIdhSerie(data)}
@@ -74,7 +77,7 @@ const EvolutionCard = ({
         <>
           <ProtoCardInfo
             title={EVOLUTION_TITLE}
-            text={IDH_CARD_INFO.evolution}
+            text={idhEvolutionInfo(data.yearRange)}
           />
           <ProtoCardMenu title={EVOLUTION_TITLE} chart={chart} />
         </>
@@ -93,6 +96,7 @@ const EvolutionCard = ({
 const MapCard = ({
   data,
   selection,
+  updatedAt,
   onSelectUf,
   ...status
 }: CardProps & { onSelectUf: (uf: string) => void }) => {
@@ -104,7 +108,7 @@ const MapCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={IDH_CARD_FOOTER}
+      footer={idhCardFooter(updatedAt)}
       title={MAP_TITLE}
       subtitle={subtitle}
       kind="map"
@@ -124,7 +128,7 @@ const MapCard = ({
       actions={
         <>
           <ProtoFullscreenButton
-            disabled={!showsIdhData(status.state)}
+            disabled={status.state !== "ok"}
             onClick={() => setFullscreen(true)}
           />
           <ProtoCardInfo title={MAP_TITLE} text={IDH_CARD_INFO.map} />
@@ -143,12 +147,13 @@ const MapCard = ({
 const RankingCard = ({
   data,
   selection,
+  updatedAt,
   onSelectUf,
   ...status
 }: CardProps & { onSelectUf: (uf: string) => void }) => (
   <ProtoCard
     {...status}
-    footer={IDH_CARD_FOOTER}
+    footer={idhCardFooter(updatedAt)}
     title={RANKING_TITLE}
     mobileTitle="Comparação entre os estados"
     subtitle={`Do maior para o menor · barras de 0 a 1 · ${data.filters.ano}`}
@@ -173,7 +178,7 @@ const RankingCard = ({
 /**
  * Visão geral do painel (`#v-geral` do protótipo): indicadores, a série anual
  * e, lado a lado, o mapa e o ranking dos estados. Cada card tem o próprio
- * estado: trocar a UF não esmaece o mapa nem o ranking.
+ * estado: trocar a UF não põe o mapa nem o ranking em esqueleto.
  *
  * @example <IdhOverview data={panel} selection={panel.filters} states={states} onRetry={retry} onSelectUf={toggleUf} onSelectYear={pickYear} />
  */
