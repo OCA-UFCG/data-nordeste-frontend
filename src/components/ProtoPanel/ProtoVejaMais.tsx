@@ -29,6 +29,20 @@ const AnalysisSkeleton = () => (
   </div>
 );
 
+// `.anl-tx ul` do protótipo: itens com a seta na cor do painel.
+const AnalysisList = ({ items }: { items: string[] }) => (
+  <ul>
+    {items.map((item) => (
+      <li
+        key={item}
+        className="relative mb-1 pl-[22px] text-base leading-6 text-grey-1100 before:absolute before:left-0 before:font-bold before:text-(--proto-accent-strong) before:content-['→']"
+      >
+        {item}
+      </li>
+    ))}
+  </ul>
+);
+
 const AnalysisText = ({
   state,
   analysis,
@@ -58,7 +72,10 @@ const AnalysisText = ({
           <h4 className="mb-1 text-[15px] leading-[22px] font-bold text-grey-1100">
             {block.title}
           </h4>
-          <p className="text-base leading-6 text-grey-1100">{block.text}</p>
+          {block.text ? (
+            <p className="text-base leading-6 text-grey-1100">{block.text}</p>
+          ) : null}
+          {block.items ? <AnalysisList items={block.items} /> : null}
         </div>
       ))}
       <p className="mt-3 text-[12.5px] leading-4 text-grey-800">

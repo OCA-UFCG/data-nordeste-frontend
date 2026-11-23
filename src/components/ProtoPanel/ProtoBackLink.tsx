@@ -14,13 +14,9 @@ const cameFromPortal = () =>
 /**
  * Botão "Voltar" da capa (`.backbtn` do protótipo).
  *
- * @example <ProtoBackLink focusClassName="focus-visible:outline-white" />
+ * @example <ProtoBackLink />
  */
-export const ProtoBackLink = ({
-  focusClassName,
-}: {
-  focusClassName: string;
-}) => {
+export const ProtoBackLink = () => {
   const router = useRouter();
   const goBack = (event: MouseEvent<HTMLAnchorElement>) => {
     if (!cameFromPortal()) return;
@@ -32,7 +28,7 @@ export const ProtoBackLink = ({
     <Link
       href="/explore"
       onClick={goBack}
-      className={`inline-flex items-center gap-2.5 rounded-[6px] py-1.5 pr-2 text-sm font-semibold text-inherit no-underline hover:underline hover:underline-offset-3 focus-visible:outline-[2.5px] focus-visible:outline-offset-2 ${focusClassName}`}
+      className="inline-flex items-center gap-2.5 rounded-[6px] py-1.5 pr-2 text-sm font-semibold text-inherit no-underline hover:underline hover:underline-offset-3 focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-(--proto-accent-strong)"
     >
       <ProtoIcon name="back" size={20} stroke={2.2} />
       Voltar

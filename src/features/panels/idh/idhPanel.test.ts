@@ -10,6 +10,7 @@ import {
   loadIdhPanel,
   parseIdhFilters,
 } from "@/features/panels/idh/idhPanel";
+import { NO_YEAR } from "@/features/panels/territorialFilters";
 
 const RANGE = { first: 2012, last: 2021 };
 
@@ -248,6 +249,15 @@ describe("describeIdhShareChips", () => {
         "geral",
       ),
     ).toEqual(["Estado: Todos", "Ano: 2021"]);
+  });
+
+  it("leaves the year out when the database gave none", () => {
+    expect(
+      describeIdhShareChips(
+        { filters: { ano: NO_YEAR, visao: "geral" }, ufs },
+        "geral",
+      ),
+    ).toEqual(["Estado: Todos"]);
   });
 });
 

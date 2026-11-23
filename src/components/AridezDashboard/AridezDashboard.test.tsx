@@ -46,6 +46,16 @@ describe("AridezDashboard", () => {
   beforeEach(stubPanelBrowserApis);
   afterEach(() => vi.unstubAllGlobals());
 
+  it("shows the panel brand in the desktop filter bar", () => {
+    render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);
+
+    const inBar = screen
+      .getAllByText("Índice de Aridez")
+      .filter((node) => !node.closest("button"));
+
+    expect(inBar).toHaveLength(1);
+  });
+
   it("renders the Veja mais bar and the municipal breakdown", () => {
     render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);
 

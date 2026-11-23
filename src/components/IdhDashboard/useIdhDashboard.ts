@@ -1,38 +1,17 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
+import { useState } from "react";
+import { useIdhNavigation } from "@/components/IdhDashboard/useIdhNavigation";
 import { usePendingFilters } from "@/components/ProtoPanel/usePendingFilters";
 import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { resolveIdhCardStates } from "@/features/panels/idh/idhCardState";
 import {
-  buildIdhSearch,
   defaultIdhFilters,
   type IdhFilters,
   type IdhPanelData,
   type IdhVisao,
 } from "@/features/panels/idh/idhPanel";
 import type { YearRange } from "@/features/panels/territorialFilters";
-
-// Trocar de aba não consulta o banco de novo: só atualiza a URL.
-const useIdhNavigation = (range: YearRange) => {
-  const buildSearch = useCallback(
-    (filters: IdhFilters) => buildIdhSearch(filters, range),
-    [range],
-  );
-  const { isPending, pathname, applyFilters } = usePanelNavigation(buildSearch);
-  const showVisao = useCallback(
-    (filters: IdhFilters) =>
-      window.history.replaceState(
-        null,
-        "",
-        `${pathname}${buildSearch(filters)}`,
-      ),
-    [pathname, buildSearch],
-  );
-
-  return { isPending, pathname, applyFilters, showVisao };
-};
 
 // A aba é estado local (trocar de aba só usa replaceState), mas acompanha a
 // `visao` do servidor quando um link muda ?visao= sem trocar de página.

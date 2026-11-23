@@ -21,6 +21,7 @@ import {
   type CorRacaGeometry,
 } from "@/features/panels/demografia/perfilCharts";
 import { formatPessoas } from "@/features/panels/format";
+import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "População por cor ou raça";
 const INFO =
@@ -176,7 +177,7 @@ export const PerfilCorRacaCard = (props: PerfilCardProps) => {
   return (
     <ProtoCard
       title={TITLE}
-      subtitle={`${props.place} · ${data.filters.ano}`}
+      subtitle={withYear(props.place, data.filters.ano)}
       kind="line"
       state={props.state}
       onRetry={props.onRetry}

@@ -2,7 +2,12 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
 import { idhPanelFixture } from "@/components/IdhDashboard/idhTestFixtures";
-import type { IdhFilters } from "@/features/panels/idh/idhPanel";
+import {
+  emptyIdhPanel,
+  parseIdhFilters,
+  type IdhFilters,
+} from "@/features/panels/idh/idhPanel";
+import { NO_IDH_YEARS } from "@/features/panels/idh/idhYearRange";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 
 // Navegação do painel controlada pelo teste: guarda os filtros pedidos e deixa
@@ -167,5 +172,25 @@ describe("IdhDashboard", () => {
     rerender(dashboard(GERAL));
 
     expect(screen.queryByText(/Atualizado em/)).toBeNull();
+  });
+
+  // Regressão (revisão da PR #411): sem o intervalo de anos, o resumo do
+  // celular e os subtítulos mostravam o ano 0 ("Nordeste · 0").
+  it("shows no year when the years query failed", () => {
+    const filters = parseIdhFilters({}, NO_IDH_YEARS);
+
+    render(
+      <IdhDashboard
+        data={emptyIdhPanel(filters, NO_IDH_YEARS)}
+        failed
+        catalogHref="/catalog"
+      />,
+    );
+    fireEvent.click(tab("Visão por sexo"));
+
+    expect(document.body.textContent).not.toMatch(/[·,]\s*0(?!\d)/);
+    expect(
+      screen.queryAllByRole("option", { name: "0", hidden: true }),
+    ).toEqual([]);
   });
 });

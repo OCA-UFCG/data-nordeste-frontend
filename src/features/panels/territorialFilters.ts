@@ -21,6 +21,17 @@ export type YearRange = {
   available?: readonly number[];
 };
 
+// Ano dos filtros quando a consulta de anos falhou; a interface não o mostra.
+export const NO_YEAR = 0;
+
+/**
+ * Põe o ano depois do texto; sem ano (`NO_YEAR`), fica só o texto.
+ *
+ * @example withYear("Nordeste", 2022) // "Nordeste · 2022"
+ */
+export const withYear = (text: string, ano: number, separator = " · ") =>
+  ano === NO_YEAR ? text : `${text}${separator}${ano}`;
+
 export type SearchParams = Record<string, string | string[] | undefined>;
 
 export const listYears = ({ first, last, available }: YearRange): number[] =>

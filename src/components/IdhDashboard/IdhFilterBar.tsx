@@ -10,7 +10,7 @@ import {
   protoSelectClass,
 } from "@/components/ProtoPanel/ProtoSelectField";
 import { cn } from "@/lib/utils";
-import { listYears } from "@/features/panels/territorialFilters";
+import { listYears, withYear } from "@/features/panels/territorialFilters";
 import {
   idhPlaceName,
   type IdhFilters,
@@ -114,7 +114,7 @@ export const IdhFilterBar = ({
   <ProtoFilterBar
     brand={BRAND}
     brandInBar
-    summaryTitle={`${idhPlaceName({ ufs: data.ufs, filters: selection })} · ${selection.ano} · ${visaoLabel}`}
+    summaryTitle={`${withYear(idhPlaceName({ ufs: data.ufs, filters: selection }), selection.ano)} · ${visaoLabel}`}
     renderFields={(wide) => (
       <FilterFields
         data={data}

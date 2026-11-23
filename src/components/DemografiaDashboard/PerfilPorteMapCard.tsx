@@ -20,12 +20,14 @@ import {
   type ProtoStateMapProps,
 } from "@/components/ProtoPanel/ProtoStateMap";
 import {
+  DEMOGRAFIA_PORTE_COLORS,
   DEMOGRAFIA_PORTES,
   populacaoPorMunicipio,
   type DemografiaPanelData,
 } from "@/features/panels/demografia/demografiaPanel";
 import { buildPerfilPorteTable } from "@/features/panels/demografia/perfilPorteTable";
 import { formatPessoas } from "@/features/panels/format";
+import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "Porte dos municípios";
 const INFO =
@@ -35,8 +37,8 @@ const MUNICIPIOS_LABEL = "Mapa dos municípios por porte";
 const ESTADOS_LABEL = "Mapa dos estados do Nordeste";
 
 // Literais: o mapa é canvas e a imagem do card não usa variáveis CSS.
-const ESTADO_FILL = "#f6d3e0";
-const ESTADO_FILL_SELECTED = "#e98dae";
+const ESTADO_FILL = DEMOGRAFIA_PORTE_COLORS.pequeno;
+const ESTADO_FILL_SELECTED = DEMOGRAFIA_PORTE_COLORS.medio;
 
 // 560 px é o `max-height` do mapa no protótipo (`.map-box`). Fixar a altura
 // (em vez da proporção da malha) evita que o card cresça para ~1 200 px; as
@@ -265,7 +267,7 @@ export const PerfilPorteMapCard = ({
   const { data, place, state } = props;
   const { view, setView, fullscreen, setFullscreen } = mapView;
   const map = usePorteMapData(data, selectedUfs, onSelectUf);
-  const subtitle = `${place} · ${data.filters.ano}`;
+  const subtitle = withYear(place, data.filters.ano);
 
   // A legenda por porte só destaca municípios; no mapa de estados não teria
   // efeito, então some (revisão da PR #401).

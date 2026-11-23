@@ -9,6 +9,7 @@ import {
 } from "@/features/panels/demografia/perfilCharts";
 import { formatShare } from "@/features/panels/demografia/demografiaAnalise";
 import { formatPessoas } from "@/features/panels/format";
+import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "População por sexo";
 
@@ -54,7 +55,7 @@ export const PerfilSexoCard = (props: PerfilCardProps) => {
   return (
     <ProtoCard
       title={TITLE}
-      subtitle={`${place} · ${data.filters.ano}`}
+      subtitle={withYear(place, data.filters.ano)}
       kind="rank"
       state={props.state}
       onRetry={props.onRetry}
