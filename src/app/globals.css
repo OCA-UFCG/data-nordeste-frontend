@@ -138,6 +138,38 @@ body {
       box-shadow: 0 0 0 6px transparent;
     }
   }
+
+  /* Folhas e fundo escurecido do painel (ProtoSheet): sobem e descem em 250 ms,
+     o fundo some em 200 ms. A saída fica em `forwards` para a folha não piscar
+     de volta antes de o Radix desmontá-la. */
+  --animate-proto-sheet-in: proto-sheet-in 250ms ease;
+  --animate-proto-sheet-out: proto-sheet-out 250ms ease forwards;
+  --animate-proto-scrim-in: proto-scrim-in 200ms linear;
+  --animate-proto-scrim-out: proto-scrim-out 200ms linear forwards;
+
+  @keyframes proto-sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes proto-sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes proto-scrim-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes proto-scrim-out {
+    to {
+      opacity: 0;
+    }
+  }
 }
 
 @theme inline {

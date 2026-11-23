@@ -1,6 +1,8 @@
 import {
   defaultTerritorialFilters,
+  NO_YEAR,
   type TerritorialFilters,
+  withYear,
   type YearRange,
 } from "@/features/panels/territorialFilters";
 import {
@@ -41,7 +43,9 @@ const listOrAll = (names: string[]): string =>
 export const describeTerritorialShareChips = (
   selection: TerritorialSelection,
 ): string[] => [
-  `Ano: ${selection.filters.ano}`,
+  ...(selection.filters.ano === NO_YEAR
+    ? []
+    : [`Ano: ${selection.filters.ano}`]),
   `Área: ${areaLabel(selection.filters.area)}`,
   `Estado: ${listOrAll(selectedUfNames(selection))}`,
   `Município: ${listOrAll(selectedMunicipioNames(selection))}`,
@@ -126,5 +130,5 @@ export const describeDefaultPlaceLabel = (range: YearRange): string => {
     municipios: [],
   });
 
-  return `Ver ${place} · ${defaults.ano}`;
+  return withYear(`Ver ${place}`, defaults.ano);
 };

@@ -25,7 +25,10 @@ import {
 // cabeçalho fixo de 80 px com o X à esquerda, diferente da folha do protótipo
 // (revisão da PR #397).
 const SHEET_CLASS =
-  "fixed inset-x-0 bottom-0 z-50 grid max-h-[88vh] w-full overflow-auto rounded-t-2xl bg-white px-4 pt-0 pb-5 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.25)] duration-250 data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom";
+  "fixed inset-x-0 bottom-0 z-50 grid max-h-[88vh] w-full overflow-auto rounded-t-2xl bg-white px-4 pt-0 pb-5 shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.25)] data-[state=open]:animate-proto-sheet-in data-[state=closed]:animate-proto-sheet-out motion-reduce:animate-none!";
+
+const SCRIM_CLASS =
+  "data-[state=open]:animate-proto-scrim-in data-[state=closed]:animate-proto-scrim-out motion-reduce:animate-none!";
 
 /**
  * Folha inferior do celular (filtros, ⓘ e menu dos cards), como no protótipo.
@@ -49,7 +52,7 @@ export const ProtoSheet = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
-        <DialogOverlay />
+        <DialogOverlay className={SCRIM_CLASS} />
         <DialogUnstyledContent
           aria-describedby={undefined}
           style={protoToneStyle(tone)}

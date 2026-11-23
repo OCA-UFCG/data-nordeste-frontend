@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useId, useState } from "react";
+import { useId, useState } from "react";
 import { IdhGroupView } from "@/components/IdhPowerBiDashboard/IdhGroupView";
 import { IdhOverview } from "@/components/IdhPowerBiDashboard/IdhOverview";
 import { IdhSaibaMais } from "@/components/IdhPowerBiDashboard/IdhSaibaMais";
@@ -10,9 +10,8 @@ import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
 import { SelectionSummary } from "@/components/Panel/filters/SelectionSummary";
 import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { PanelTabs } from "@/components/Panel/layout/PanelTabs";
-import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
+import { useIdhNavigation } from "@/components/IdhDashboard/useIdhNavigation";
 import {
-  buildIdhSearch,
   defaultIdhFilters,
   describeIdhSelection,
   IDH_VISOES,
@@ -20,27 +19,6 @@ import {
   type IdhPanelData,
   type IdhVisao,
 } from "@/features/panels/idh/idhPanel";
-import type { YearRange } from "@/features/panels/territorialFilters";
-
-// Trocar de aba não consulta o banco de novo: só atualiza a URL.
-const useIdhNavigation = (range: YearRange) => {
-  const buildSearch = useCallback(
-    (filters: IdhFilters) => buildIdhSearch(filters, range),
-    [range],
-  );
-  const { isPending, pathname, applyFilters } = usePanelNavigation(buildSearch);
-  const showVisao = useCallback(
-    (filters: IdhFilters) =>
-      window.history.replaceState(
-        null,
-        "",
-        `${pathname}${buildSearch(filters)}`,
-      ),
-    [pathname, buildSearch],
-  );
-
-  return { isPending, applyFilters, showVisao };
-};
 
 const IdhTabContent = ({
   tab,

@@ -33,10 +33,9 @@ export type ProtoFilterBarProps = {
   brand?: ProtoFilterBarBrand;
 
   // Também põe a `brand` no início da barra do desktop (`.fb-id`, IDH).
-  brandInBar?: boolean;
-
-  // Sem subtítulo, o resumo do celular mostra só o título (perfil demográfico).
-  summarySubtitle?: string;
+  // "compact": barra com quatro campos (perfil demográfico), em que o nome
+  // some até 900 px e fica só o ícone (`.fb-in:has(>.fl:nth-of-type(4))`).
+  brandInBar?: boolean | "compact";
   renderFields: (wide: boolean) => ReactNode;
   isDefault: boolean;
   onClear: () => void;
@@ -89,10 +88,26 @@ const BrandTile = ({ icon }: { icon: ProtoIconName }) => (
   </span>
 );
 
-const BarBrand = ({ brand }: { brand: ProtoFilterBarBrand }) => (
-  <div className="flex h-10 min-w-0 flex-[0_1_auto] items-center gap-2.5 border-r border-grey-300 pr-4 max-[700px]:hidden">
+const BarBrand = ({
+  brand,
+  compact,
+}: {
+  brand: ProtoFilterBarBrand;
+  compact: boolean;
+}) => (
+  <div
+    className={cn(
+      "flex h-10 min-w-0 flex-[0_1_auto] items-center gap-2.5 border-r border-grey-300 pr-4 max-[700px]:hidden",
+      compact && "max-[900px]:pr-3",
+    )}
+  >
     <BrandTile icon={brand.icon} />
-    <span className="line-clamp-2 max-w-[220px] min-w-0 text-[15px] leading-5 font-bold">
+    <span
+      className={cn(
+        "line-clamp-2 max-w-[220px] min-w-0 text-[15px] leading-5 font-bold",
+        compact && "max-[900px]:hidden",
+      )}
+    >
       {brand.title}
     </span>
   </div>
@@ -102,12 +117,10 @@ const BarBrand = ({ brand }: { brand: ProtoFilterBarBrand }) => (
 // Com `brand`, o nome do painel vira o título e o recorte desce para baixo.
 const PhoneSummary = ({
   title,
-  subtitle,
   brand,
   onOpen,
 }: {
   title: string;
-  subtitle?: string;
   brand?: ProtoFilterBarBrand;
   onOpen: () => void;
 }) =>
@@ -123,9 +136,6 @@ const PhoneSummary = ({
       <ProtoIcon name="pin" size={20} className="flex-none" />
       <span className="flex min-w-0 flex-col leading-tight">
         <b className="truncate text-sm font-semibold">{title}</b>
-        {subtitle ? (
-          <small className="text-xs text-grey-1100">{subtitle}</small>
-        ) : null}
       </span>
     </button>
   );
@@ -160,11 +170,10 @@ const PhoneBrandSummary = ({
  * resumo e folha no celular, e o "Limpar filtros". Gruda no topo ao rolar. Os
  * campos de cada painel entram por `renderFields(wide)`.
  *
- * @example <ProtoFilterBar summaryTitle="Pernambuco · 2021" summarySubtitle="Visão geral" renderFields={(wide) => <Fields wide={wide} />} isDefault={false} onClear={reset} top={80} stuck={false} barRef={ref} />
+ * @example <ProtoFilterBar summaryTitle="Pernambuco · 2021" renderFields={(wide) => <Fields wide={wide} />} isDefault={false} onClear={reset} top={80} stuck={false} barRef={ref} />
  */
 export const ProtoFilterBar = ({
   summaryTitle,
-  summarySubtitle,
   brand,
   brandInBar = false,
   renderFields,
@@ -191,10 +200,11 @@ export const ProtoFilterBar = ({
           barBrand && "max-[900px]:gap-3 max-[700px]:gap-2",
         )}
       >
-        {barBrand ? <BarBrand brand={barBrand} /> : null}
+        {barBrand ? (
+          <BarBrand brand={barBrand} compact={brandInBar === "compact"} />
+        ) : null}
         <PhoneSummary
           title={summaryTitle}
-          subtitle={summarySubtitle}
           brand={brand}
           onOpen={() => setSheetOpen(true)}
         />

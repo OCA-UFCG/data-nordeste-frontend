@@ -34,6 +34,7 @@ import {
   type IdhFilters,
   type IdhPanelData,
 } from "@/features/panels/idh/idhPanel";
+import { withYear } from "@/features/panels/territorialFilters";
 
 type CardStatus = { state: ProtoCardState; onRetry: () => void };
 
@@ -102,7 +103,10 @@ const MapCard = ({
 }: CardProps & { onSelectUf: (uf: string) => void }) => {
   const chart = useSvgChart();
   const [fullscreen, setFullscreen] = useState(false);
-  const subtitle = `Faixas de desenvolvimento humano · ${data.filters.ano}`;
+  const subtitle = withYear(
+    "Faixas de desenvolvimento humano",
+    data.filters.ano,
+  );
   const mapProps = buildIdhMapProps(data.mapa, selection.uf, onSelectUf);
 
   return (
@@ -156,8 +160,11 @@ const RankingCard = ({
     footer={idhCardFooter(updatedAt)}
     title={RANKING_TITLE}
     mobileTitle="Comparação entre os estados"
-    subtitle={`Do maior para o menor · barras de 0 a 1 · ${data.filters.ano}`}
-    mobileSubtitle={`IDH por estado · ${data.filters.ano}`}
+    subtitle={withYear(
+      "Do maior para o menor · barras de 0 a 1",
+      data.filters.ano,
+    )}
+    mobileSubtitle={withYear("IDH por estado", data.filters.ano)}
     kind="rank"
     bodyClassName="flex flex-col"
     actions={

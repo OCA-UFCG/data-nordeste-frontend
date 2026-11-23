@@ -28,24 +28,39 @@ export const DEMOGRAFIA_MAX_PLACES = 100;
 
 export type DemografiaPorte = ChoroplethBucket & { texto: string };
 
+// IMPORTANT: limites do `porte_mun` da view relatorios_auto.vw_perfil_populacional_municipal,
+// que não os guarda como dado ("até 50 mil" inclui os 50 000).
+const PORTE_LIMITES = { pequeno: 50_000, medio: 100_000 } as const;
+
+// `getBucket` compara com `<` e a população é inteira: `+ 1` põe o limite na faixa de baixo.
+const upTo = (limite: number) => limite + 1;
+const mil = (limite: number) => `${limite / 1000} mil`;
+
+// Cores das faixas; o mapa de estados do perfil reusa as duas primeiras.
+export const DEMOGRAFIA_PORTE_COLORS = {
+  pequeno: "#f6d3e0",
+  medio: "#e98dae",
+  grande: "#c93c6b",
+} as const;
+
 export const DEMOGRAFIA_PORTES: readonly DemografiaPorte[] = [
   {
-    max: 5e4,
+    max: upTo(PORTE_LIMITES.pequeno),
     label: "Pequeno",
-    color: "#f6d3e0",
-    texto: "Pequeno porte (até 50 mil hab.)",
+    color: DEMOGRAFIA_PORTE_COLORS.pequeno,
+    texto: `Pequeno porte (até ${mil(PORTE_LIMITES.pequeno)} hab.)`,
   },
   {
-    max: 1e5,
+    max: upTo(PORTE_LIMITES.medio),
     label: "Médio",
-    color: "#e98dae",
-    texto: "Médio porte (50 mil - 100 mil hab.)",
+    color: DEMOGRAFIA_PORTE_COLORS.medio,
+    texto: `Médio porte (${mil(PORTE_LIMITES.pequeno)} - ${mil(PORTE_LIMITES.medio)} hab.)`,
   },
   {
     max: Infinity,
     label: "Grande",
-    color: "#c93c6b",
-    texto: "Grande porte (acima de 100 mil hab.)",
+    color: DEMOGRAFIA_PORTE_COLORS.grande,
+    texto: `Grande porte (acima de ${mil(PORTE_LIMITES.medio)} hab.)`,
   },
 ];
 

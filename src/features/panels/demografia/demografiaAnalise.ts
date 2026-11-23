@@ -2,11 +2,14 @@ import type { ChartPoint } from "@/features/panels/chartOptions";
 import { getBucket } from "@/features/panels/choropleth";
 import {
   DEMOGRAFIA_PORTES,
+  populacaoPorMunicipio,
   type CorRacaAno,
+  type DemografiaPanelData,
   type DemografiaPorte,
   type MunicipioPoint,
 } from "@/features/panels/demografia/demografiaPanel";
-import { formatPercent } from "@/features/panels/format";
+import { formatNumber, formatPercent } from "@/features/panels/format";
+import type { PanelAnalysis } from "@/features/panels/panelAnalysis";
 
 /**
  * Participação de uma parte no total, com uma casa ("51,7%").
@@ -81,3 +84,39 @@ export const municipiosPorPorte = (
       .filter((item) => getBucket(DEMOGRAFIA_PORTES, item.value) === porte)
       .map((item) => item.code),
   }));
+
+const porteLine = ({ porte, codes }: PorteGrupo): string =>
+  `${porte.texto}: ${formatNumber(codes.length)} ${codes.length === 1 ? "município" : "municípios"}.`;
+
+/**
+ * Texto do "Veja mais" do perfil (`ANALISE()` do protótipo): a leitura de cor
+ * ou raça e a contagem de municípios por porte, com os números do banco. Sem
+ * cor ou raça declarada não há texto (null).
+ *
+ * @example buildDemografiaAnalise(panel, "Nordeste")?.blocks[1].items?.[0] // "Pequeno porte (até 50 mil hab.): 1.619 municípios."
+ */
+export const buildDemografiaAnalise = (
+  data: Pick<
+    DemografiaPanelData,
+    "corRaca" | "corRacaAnterior" | "mapa" | "filters"
+  >,
+  placeFull: string,
+): PanelAnalysis | null => {
+  const corRaca = describeCorRaca(data.corRaca, data.corRacaAnterior);
+
+  if (!corRaca.length) return null;
+  const portes = municipiosPorPorte(
+    populacaoPorMunicipio(data.mapa, data.filters.mun),
+  );
+
+  return {
+    blocks: [
+      { title: "Distribuição por cor ou raça", text: corRaca.join(" ") },
+      {
+        title: "Quantidade de municípios por porte",
+        items: portes.map(porteLine),
+      },
+    ],
+    footnote: `Texto gerado conforme os filtros: ${placeFull} · ${data.filters.ano}.`,
+  };
+};

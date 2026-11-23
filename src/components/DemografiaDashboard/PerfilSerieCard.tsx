@@ -16,13 +16,23 @@ import { PROTO_CHART_FONT } from "@/components/ProtoPanel/protoStyles";
 import { useElementWidth } from "@/components/ProtoPanel/useElementWidth";
 import {
   buildSerieGeometry,
+  serieMinHeight,
   type SerieGeometry,
 } from "@/features/panels/demografia/perfilCharts";
 import { formatPessoas } from "@/features/panels/format";
 
 const TITLE = "Série temporal da população";
-const INFO =
-  "População residente do território nos Censos Demográficos de 2000, 2010 e 2022.";
+
+const CENSOS = new Intl.ListFormat("pt-BR", { type: "conjunction" });
+
+// Os censos citados são os da série que veio do banco.
+const infoText = (serie: PerfilCardProps["data"]["serie"]) => {
+  if (!serie.length) {
+    return "População residente do território nos Censos Demográficos (sem dados disponíveis).";
+  }
+
+  return `População residente do território nos Censos Demográficos de ${CENSOS.format(serie.map((point) => point.label))}.`;
+};
 
 // SVG leva cor literal: a imagem baixada não enxerga as variáveis CSS do painel.
 const INK = "#a8264f";
@@ -127,7 +137,7 @@ const SerieSvg = ({
     role="group"
     aria-label={label}
     fontFamily={PROTO_CHART_FONT}
-    className="block w-full overflow-visible [font-variant-numeric:tabular-nums]"
+    className="absolute inset-x-0 top-0 block w-full overflow-visible [font-variant-numeric:tabular-nums]"
   >
     <SerieGrid geometry={geometry} />
     <path
@@ -149,18 +159,28 @@ const SerieChart = ({
   data: PerfilCardProps["data"];
   svgRef: Ref<SVGSVGElement>;
 }) => {
-  const { ref, width } = useElementWidth();
+  const { ref, width, height } = useElementWidth();
   const [hover, setHover] = useState<SerieHover | null>(null);
   const points = data.serie.map((point) => ({
     ano: Number(point.label),
     valor: point.value,
   }));
   const geometry =
-    width && points.length ? buildSerieGeometry({ width, points }) : null;
+    width && points.length
+      ? buildSerieGeometry({ width, height, points })
+      : null;
   const hovered = geometry && hover ? geometry.points[hover.index] : null;
 
+  // Ao lado de "cor ou raça" (acima de 1000 px) o card é mais alto que o
+  // gráfico: a caixa estica (`flex-1`) e o SVG ocupa a altura que sobrar. O SVG
+  // fica fora do fluxo (`absolute`) para não segurar a caixa alta quando a
+  // linha encolhe; o piso é a altura do protótipo.
   return (
-    <div ref={ref} className="relative min-h-[250px]">
+    <div
+      ref={ref}
+      style={{ minHeight: serieMinHeight(width) }}
+      className="relative flex-1"
+    >
       {geometry ? (
         <SerieSvg
           geometry={geometry}
@@ -203,9 +223,10 @@ export const PerfilSerieCard = (props: PerfilCardProps) => {
       kind="line"
       state={props.state}
       onRetry={props.onRetry}
+      bodyClassName="flex flex-col"
       actions={
         <>
-          <ProtoCardInfo title={TITLE} text={INFO} />
+          <ProtoCardInfo title={TITLE} text={infoText(props.data.serie)} />
           <ProtoCardMenu title={TITLE} chart={chart} />
         </>
       }
