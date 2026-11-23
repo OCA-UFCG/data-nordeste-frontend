@@ -21,10 +21,13 @@ import { buildMetadata } from "@/config/seo";
 import { loadDemografiaPanelContent } from "@/features/panels/demografia/demografiaContent";
 import {
   DEMOGRAFIA_MAX_PLACES,
-  DEMOGRAFIA_YEAR_RANGE,
   emptyDemografiaPanel,
   loadDemografiaPanel,
 } from "@/features/panels/demografia/demografiaPanel";
+import {
+  NO_DEMOGRAFIA_YEARS,
+  tryLoadDemografiaYearRange,
+} from "@/features/panels/demografia/demografiaYearRange";
 import {
   parseTerritorialFilters,
   type TerritorialFilters,
@@ -69,9 +72,11 @@ export default async function PerfilDemograficoDemoPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const range = await tryLoadDemografiaYearRange(queryDataDb);
+  const years = range ?? NO_DEMOGRAFIA_YEARS;
   const filters = parseTerritorialFilters(
     await searchParams,
-    DEMOGRAFIA_YEAR_RANGE,
+    years,
     DEMOGRAFIA_MAX_PLACES,
   );
   const [panel, content] = await Promise.all([
@@ -93,7 +98,7 @@ export default async function PerfilDemograficoDemoPage({
       />
       <DemografiaDashboard
         data={panel ?? emptyDemografiaPanel(filters)}
-        years={DEMOGRAFIA_YEAR_RANGE}
+        years={years}
         failed={!panel}
         catalogHref={getCatalogHref(macroTheme)}
       />

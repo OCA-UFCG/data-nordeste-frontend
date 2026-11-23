@@ -105,7 +105,9 @@ export const buildDemografiaAnalise = (
   const corRaca = describeCorRaca(data.corRaca, data.corRacaAnterior);
 
   if (!corRaca.length) return null;
-  const portes = municipiosPorPorte(populacaoPorMunicipio(data.mapa));
+  const portes = municipiosPorPorte(
+    populacaoPorMunicipio(data.mapa, data.filters.mun),
+  );
 
   return {
     blocks: [

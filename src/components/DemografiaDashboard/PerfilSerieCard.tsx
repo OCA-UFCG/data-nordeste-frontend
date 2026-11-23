@@ -26,8 +26,13 @@ const TITLE = "Série temporal da população";
 const CENSOS = new Intl.ListFormat("pt-BR", { type: "conjunction" });
 
 // Os censos citados são os da série que veio do banco.
-const infoText = (serie: PerfilCardProps["data"]["serie"]) =>
-  `População residente do território nos Censos Demográficos de ${CENSOS.format(serie.map((point) => point.label))}.`;
+const infoText = (serie: PerfilCardProps["data"]["serie"]) => {
+  if (!serie.length) {
+    return "População residente do território nos Censos Demográficos (sem dados disponíveis).";
+  }
+
+  return `População residente do território nos Censos Demográficos de ${CENSOS.format(serie.map((point) => point.label))}.`;
+};
 
 // SVG leva cor literal: a imagem baixada não enxerga as variáveis CSS do painel.
 const INK = "#a8264f";

@@ -104,4 +104,18 @@ describe("buildDemografiaAnalise", () => {
       null,
     );
   });
+
+  it("filters municipalities by mun when provided", () => {
+    const panelWithMun = {
+      ...panel,
+      filters: { ano: 2022, area: "nordeste" as const, mun: ["a"] },
+    };
+    const analise = buildDemografiaAnalise(panelWithMun, "Campina Grande (PB)");
+
+    expect(analise?.blocks[1].items).toEqual([
+      "Pequeno porte (até 50 mil hab.): 0 municípios.",
+      "Médio porte (50 mil - 100 mil hab.): 0 municípios.",
+      "Grande porte (acima de 100 mil hab.): 1 município.",
+    ]);
+  });
 });
