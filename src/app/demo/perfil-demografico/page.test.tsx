@@ -2,6 +2,9 @@ import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import PerfilDemograficoDemoPage from "@/app/demo/perfil-demografico/page";
 import { DemografiaDashboard } from "@/components/DemografiaDashboard/DemografiaDashboard";
+import { PERFIL_LEAD } from "@/components/DemografiaDashboard/perfilTexts";
+import { ProtoCover } from "@/components/ProtoPanel/ProtoCover";
+import type { PanelContent } from "@/features/panels/panelContent";
 
 // Banco em que só a consulta dos censos falha; as outras devolvem zero linhas.
 const dataDb = vi.hoisted(
@@ -20,8 +23,13 @@ const dataDb = vi.hoisted(
 
 vi.mock("@/lib/dataDb", () => ({ queryDataDb: dataDb.query }));
 
+// Contentful controlado pelo teste; null é o Contentful fora do ar.
+const contentful = vi.hoisted(() => ({
+  content: null as PanelContent | null,
+}));
+
 vi.mock("@/features/panels/demografia/demografiaContent", () => ({
-  loadDemografiaPanelContent: async () => null,
+  loadDemografiaPanelContent: async () => contentful.content,
 }));
 
 vi.mock("@/templates/HubTemplate", () => ({
@@ -44,6 +52,7 @@ const findElement = (
 describe("PerfilDemograficoDemoPage", () => {
   beforeEach(() => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
+    contentful.content = null;
   });
 
   // Regressão (revisão da PR #411): sem os censos, a página consultava o ano 0
@@ -55,5 +64,21 @@ describe("PerfilDemograficoDemoPage", () => {
 
     expect(findElement(page, DemografiaDashboard)?.props.failed).toBe(true);
     expect(dataDb.panelQueries).toEqual([]);
+  });
+
+  it("opens the cover with the Contentful text, and the default without it", async () => {
+    const coverLead = async () =>
+      findElement(
+        await PerfilDemograficoDemoPage({ searchParams: Promise.resolve({}) }),
+        ProtoCover,
+      )?.props.lead;
+
+    expect(await coverLead()).toBe(PERFIL_LEAD);
+    contentful.content = {
+      panel: { abovePanelDescription: "Texto do Contentful" },
+      relatedItems: [],
+    } as unknown as PanelContent;
+
+    expect(await coverLead()).toBe("Texto do Contentful");
   });
 });

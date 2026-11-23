@@ -92,7 +92,7 @@ export default async function PerfilDemograficoDemoPage({
         tone="perfil"
         icon="users"
         title={DEMOGRAFIA_TITLE}
-        lead={PERFIL_LEAD}
+        lead={content?.panel.abovePanelDescription || PERFIL_LEAD}
         macroTheme={macroTheme}
         publishedAt={content?.panel.date}
         light
