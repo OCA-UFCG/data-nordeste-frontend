@@ -21,7 +21,7 @@ describe("buildAridezAnalise", () => {
       "Variação da Área Suscetível à Desertificação (ASD):",
     );
     expect(asd.text).toBe(
-      "A área selecionada em 1991 tinha 640,00 km² em ASD. Em 2021, passou para 800,00 km². Isso representa uma variação de 160,00 km², equivalente a 25,00%.",
+      "A área selecionada em 1991 tinha 640,00\u00a0km² em ASD. Em 2021, passou para 800,00\u00a0km². Isso representa uma variação de 160,00\u00a0km², equivalente a 25,00%.",
     );
   });
 
@@ -29,7 +29,7 @@ describe("buildAridezAnalise", () => {
     const [, classes] = buildAridezAnalise(input)?.blocks ?? [];
 
     expect(classes.text).toBe(
-      "No recorte selecionado (Pernambuco), a classe predominante é semiárido, com 60,00% da área (600 km²), seguida de subúmido seco, com 20,00%. A área suscetível (ASD) responde por 80,00% do total.",
+      "No recorte selecionado (Pernambuco), a classe predominante é semiárido, com 60,00% da área (600\u00a0km²), seguida de subúmido seco, com 20,00%. A área suscetível (ASD) responde por 80,00% do total.",
     );
   });
 
@@ -40,7 +40,7 @@ describe("buildAridezAnalise", () => {
         baseAreas: { ...EMPTY_ARIDEZ_AREAS, umido: 1000 },
       })?.blocks ?? [];
 
-    expect(asd.text).toMatch(/variação de 800,00 km²\.$/);
+    expect(asd.text).toMatch(/variação de 800,00\u00a0km²\.$/);
   });
 
   it("states the ASD alone when the base year itself is chosen", () => {
@@ -49,7 +49,7 @@ describe("buildAridezAnalise", () => {
       [];
 
     expect(asd.text).toBe(
-      "Em 1991, a área selecionada tinha 640,00 km² em ASD.",
+      "Em 1991, a área selecionada tinha 640,00\u00a0km² em ASD.",
     );
   });
 

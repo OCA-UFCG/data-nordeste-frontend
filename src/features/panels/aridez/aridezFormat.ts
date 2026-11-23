@@ -42,13 +42,16 @@ export const formatAreaCompact = (
   return `${formatNumber(scaled, digitsFor(scaled, unit))}${unit.suffix}`;
 };
 
+// Espaço não separável: o número e o "km²" não quebram em linhas diferentes.
+const KM2 = "\u00a0km²";
+
 /**
  * Área compacta com "km²" (`fKm2` do protótipo).
  *
  * @example formatAreaKm2(12_400) // "12,4 mil km²"
  */
 export const formatAreaKm2 = (value: number): string =>
-  `${formatAreaCompact(value)} km²`;
+  `${formatAreaCompact(value)}${KM2}`;
 
 /**
  * Área por extenso, com duas casas, para o texto do "Veja mais".
@@ -56,7 +59,7 @@ export const formatAreaKm2 = (value: number): string =>
  * @example formatAreaKm2Full(1234.5) // "1.234,50 km²"
  */
 export const formatAreaKm2Full = (value: number): string =>
-  `${formatNumber(value, 2)} km²`;
+  `${formatNumber(value, 2)}${KM2}`;
 
 /**
  * Percentual com duas casas (`fP` do protótipo).
@@ -65,3 +68,13 @@ export const formatAreaKm2Full = (value: number): string =>
  */
 export const formatSharePercent = (value: number): string =>
   `${formatNumber(value, 2)}%`;
+
+const TICK = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
+
+/**
+ * Rótulo do eixo de áreas: o valor já na unidade do eixo, até duas casas.
+ *
+ * @example formatAreaTick(0.2, areaUnit(774_000)) // "0,2 Mi"
+ */
+export const formatAreaTick = (tick: number, unit: AreaUnit): string =>
+  tick === 0 ? "0" : `${TICK.format(tick)}${unit.suffix}`;
