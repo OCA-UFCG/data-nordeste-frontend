@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { getBucket } from "@/features/panels/choropleth";
 import {
+  DEMOGRAFIA_PORTES,
   DEMOGRAFIA_YEAR_RANGE,
   emptyDemografiaPanel,
   loadDemografiaPanel,
@@ -135,5 +137,41 @@ describe("emptyDemografiaPanel", () => {
     expect(panel.ufs).toEqual([]);
     expect(panel.corRacaAnterior).toBeNull();
     expect(panel.sexo).toEqual({ mulheres: 0, homens: 0 });
+  });
+});
+
+describe("DEMOGRAFIA_PORTES", () => {
+  it("keeps the database thresholds and their labels", () => {
+    expect(
+      DEMOGRAFIA_PORTES.map(({ max, label, texto }) => ({ max, label, texto })),
+    ).toEqual([
+      {
+        max: 50_001,
+        label: "Pequeno",
+        texto: "Pequeno porte (até 50 mil hab.)",
+      },
+      {
+        max: 100_001,
+        label: "Médio",
+        texto: "Médio porte (50 mil - 100 mil hab.)",
+      },
+      {
+        max: Infinity,
+        label: "Grande",
+        texto: "Grande porte (acima de 100 mil hab.)",
+      },
+    ]);
+  });
+
+  it("puts each threshold in the lower size, as the database view does", () => {
+    const porte = (populacao: number) =>
+      getBucket(DEMOGRAFIA_PORTES, populacao).label;
+
+    expect([50_000, 50_001, 100_000, 100_001].map(porte)).toEqual([
+      "Pequeno",
+      "Médio",
+      "Médio",
+      "Grande",
+    ]);
   });
 });

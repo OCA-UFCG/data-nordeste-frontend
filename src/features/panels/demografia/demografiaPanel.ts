@@ -28,29 +28,32 @@ export const DEMOGRAFIA_MAX_PLACES = 100;
 
 export type DemografiaPorte = ChoroplethBucket & { texto: string };
 
-// IMPORTANT: o critério é o do banco ("até 50 mil" inclui os 50 000; ver o
-// `porte_mun` de relatorios_auto.vw_perfil_populacional_municipal e o campo
-// PORTE_POPULACIONAL de instrsudene_fne.fne_metadados). O banco não guarda os
-// limiares como dado, só no código da view. `getBucket` compara com `<`, e a
-// população é inteira: `+ 1` faz o limite entrar na faixa de baixo.
+// IMPORTANT: limites do `porte_mun` da view relatorios_auto.vw_perfil_populacional_municipal,
+// que não os guarda como dado ("até 50 mil" inclui os 50 000).
+const PORTE_LIMITES = { pequeno: 50_000, medio: 100_000 } as const;
+
+// `getBucket` compara com `<` e a população é inteira: `+ 1` põe o limite na faixa de baixo.
+const upTo = (limite: number) => limite + 1;
+const mil = (limite: number) => `${limite / 1000} mil`;
+
 export const DEMOGRAFIA_PORTES: readonly DemografiaPorte[] = [
   {
-    max: 5e4 + 1,
+    max: upTo(PORTE_LIMITES.pequeno),
     label: "Pequeno",
     color: "#f6d3e0",
-    texto: "Pequeno porte (até 50 mil hab.)",
+    texto: `Pequeno porte (até ${mil(PORTE_LIMITES.pequeno)} hab.)`,
   },
   {
-    max: 1e5 + 1,
+    max: upTo(PORTE_LIMITES.medio),
     label: "Médio",
     color: "#e98dae",
-    texto: "Médio porte (50 mil - 100 mil hab.)",
+    texto: `Médio porte (${mil(PORTE_LIMITES.pequeno)} - ${mil(PORTE_LIMITES.medio)} hab.)`,
   },
   {
     max: Infinity,
     label: "Grande",
     color: "#c93c6b",
-    texto: "Grande porte (acima de 100 mil hab.)",
+    texto: `Grande porte (acima de ${mil(PORTE_LIMITES.medio)} hab.)`,
   },
 ];
 
