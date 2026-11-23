@@ -8,11 +8,13 @@ const CARD = `rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHA
 // com os municípios), para nada pular quando os dados chegam. O filtro por
 // estado pode levar alguns segundos na primeira consulta.
 const CoverBones = () => (
-  <div className="w-full bg-grey-1000">
-    <div className={`${WRAP} flex flex-col gap-4 pt-6 pb-[58px]`}>
-      <div className="h-10 w-72 rounded-[6px] bg-white/10" />
-      <div className="h-11 w-80 rounded-[6px] bg-white/10" />
-      <div className="h-12 w-[min(36rem,100%)] rounded-[6px] bg-white/10" />
+  <div className="w-full border-b border-grey-300 bg-grey-100">
+    <div
+      className={`${WRAP} flex flex-col gap-4 pt-6 pb-[58px] max-[700px]:pt-4 max-[700px]:pb-6`}
+    >
+      <ProtoSkeleton className="h-10 w-72 max-w-full" />
+      <ProtoSkeleton className="h-11 w-80 max-w-full" />
+      <ProtoSkeleton className="h-12 w-[min(36rem,100%)]" />
     </div>
   </div>
 );

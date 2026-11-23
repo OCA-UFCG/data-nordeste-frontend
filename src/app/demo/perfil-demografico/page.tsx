@@ -95,7 +95,6 @@ export default async function PerfilDemograficoDemoPage({
         lead={content?.panel.abovePanelDescription || PERFIL_LEAD}
         macroTheme={macroTheme}
         publishedAt={content?.panel.date}
-        light
       />
       <DemografiaDashboard
         data={panel ?? emptyDemografiaPanel(filters)}
