@@ -2,6 +2,7 @@ import type {
   ExpressionSpecification,
   GeoJSONSourceSpecification,
   LayerSpecification,
+  LineLayerSpecification,
   RasterSourceSpecification,
   StyleSpecification,
 } from "maplibre-gl";
@@ -40,9 +41,12 @@ export const PANEL_MAP_LAYER = {
 
 // Semitransparente: o basemap (relevo, litoral) continua legível sob as classes.
 const INDICATOR_FILL_OPACITY = 0.85;
-const HOVER_OUTLINE = { color: "#111827", width: 2 };
-const AREA_OUTLINE = { color: "#374151", width: 1 };
-const SELECTION_OUTLINE = { color: "#1f2937", width: 2.5 };
+
+// Contornos do qgz chegam pelo setIndicatorPaint; até lá, nada aparece.
+const UNPAINTED_LINE: LineStyle = { color: "rgba(0, 0, 0, 0)", width: 0 };
+const HOVER_OUTLINE: LineStyle = { color: "#111827", width: 2 };
+const AREA_OUTLINE: LineStyle = { color: "#374151", width: 1 };
+const SELECTION_OUTLINE: LineStyle = { color: "#1f2937", width: 2.5 };
 
 const EMPTY_COLLECTION: FeatureCollection = {
   type: "FeatureCollection",
@@ -74,53 +78,56 @@ function basemapLayer(kind: BasemapKind, active: BasemapKind) {
   } satisfies LayerSpecification;
 }
 
-function hiddenLine(id: string, source: string, color: string, width: number) {
+type LineStyle = { color: string; width: number };
+
+function lineLayer(
+  id: string,
+  source: string,
+  line: LineStyle,
+  visibility: "visible" | "none" = "visible",
+): LineLayerSpecification {
   return {
     id,
     type: "line",
     source,
-    layout: { visibility: "none" },
-    paint: { "line-color": color, "line-width": width },
-  } satisfies LayerSpecification;
+    layout: { visibility },
+    paint: { "line-color": line.color, "line-width": line.width },
+  };
 }
 
-function hiddenVeil(id: string, source: string) {
+function indicatorFillLayer(): LayerSpecification {
+  return {
+    id: PANEL_MAP_LAYER.indicatorFill,
+    type: "fill",
+    source: PANEL_MAP_SOURCE.features,
+
+    // Transparente até o setIndicatorPaint (o padrão do MapLibre é preto).
+    paint: {
+      "fill-color": "rgba(0, 0, 0, 0)",
+      "fill-opacity": INDICATOR_FILL_OPACITY,
+    },
+  };
+}
+
+// INTENTIONAL: invisível mas visível ao queryRenderedFeatures (visibility
+// "none" sairia da consulta) — é por ela que se acha a UF do centro.
+function statesQueryLayer(): LayerSpecification {
+  return {
+    id: PANEL_MAP_LAYER.statesQuery,
+    type: "fill",
+    source: PANEL_MAP_SOURCE.states,
+    paint: { "fill-opacity": 0 },
+  };
+}
+
+function veilLayer(id: string, source: string): LayerSpecification {
   return {
     id,
     type: "fill",
     source,
     layout: { visibility: "none" },
     paint: { "fill-color": VEIL_COLOR, "fill-opacity": VEIL_OPACITY },
-  } satisfies LayerSpecification;
-}
-
-function fillLayers(): LayerSpecification[] {
-  const { features, states } = PANEL_MAP_SOURCE;
-
-  return [
-    {
-      id: PANEL_MAP_LAYER.indicatorFill,
-      type: "fill",
-      source: features,
-
-      // Transparente até o setIndicatorPaint (o padrão do MapLibre é preto).
-      paint: {
-        "fill-color": "rgba(0, 0, 0, 0)",
-        "fill-opacity": INDICATOR_FILL_OPACITY,
-      },
-    },
-
-    // INTENTIONAL: invisível mas visível ao queryRenderedFeatures (visibility
-    // "none" sairia da consulta) — é por ela que se acha a UF do centro.
-    {
-      id: PANEL_MAP_LAYER.statesQuery,
-      type: "fill",
-      source: states,
-      paint: { "fill-opacity": 0 },
-    },
-    hiddenVeil(PANEL_MAP_LAYER.veilStates, states),
-    hiddenVeil(PANEL_MAP_LAYER.veilFeatures, features),
-  ];
+  };
 }
 
 function hoverLayer(): LayerSpecification {
@@ -129,50 +136,60 @@ function hoverLayer(): LayerSpecification {
     ["feature-state", "hover"],
     false,
   ];
+  const { featureHover } = PANEL_MAP_LAYER;
+  const layer = lineLayer(
+    featureHover,
+    PANEL_MAP_SOURCE.features,
+    HOVER_OUTLINE,
+  );
 
   return {
-    id: PANEL_MAP_LAYER.featureHover,
-    type: "line",
-    source: PANEL_MAP_SOURCE.features,
-    paint: {
-      "line-color": HOVER_OUTLINE.color,
-      "line-width": HOVER_OUTLINE.width,
-      "line-opacity": ["case", hovered, 1, 0],
-    },
+    ...layer,
+    paint: { ...layer.paint, "line-opacity": ["case", hovered, 1, 0] },
   };
 }
 
-function outlineLayers(): LayerSpecification[] {
-  const { features, states, areas } = PANEL_MAP_SOURCE;
-  const selection = SELECTION_OUTLINE;
+// Sem área escolhida, o filtro não casa nada; o setIndicatorPaint troca.
+function areaOutlineLayer(): LayerSpecification {
+  const { areaOutline } = PANEL_MAP_LAYER;
+
+  return {
+    ...lineLayer(areaOutline, PANEL_MAP_SOURCE.areas, AREA_OUTLINE),
+    filter: ["==", ["get", "area"], ""],
+  };
+}
+
+// Camadas acima dos basemaps, de baixo para cima.
+function overlayLayers(): LayerSpecification[] {
+  const { features, states } = PANEL_MAP_SOURCE;
+  const layer = PANEL_MAP_LAYER;
 
   return [
-    { id: PANEL_MAP_LAYER.featureOutline, type: "line", source: features },
+    indicatorFillLayer(),
+    statesQueryLayer(),
+    veilLayer(layer.veilStates, states),
+    veilLayer(layer.veilFeatures, features),
+    lineLayer(layer.featureOutline, features, UNPAINTED_LINE),
     hoverLayer(),
-    { id: PANEL_MAP_LAYER.stateOutline, type: "line", source: states },
-    {
-      id: PANEL_MAP_LAYER.areaOutline,
-      type: "line",
-      source: areas,
-      filter: ["==", ["get", "area"], ""],
-      paint: {
-        "line-color": AREA_OUTLINE.color,
-        "line-width": AREA_OUTLINE.width,
-      },
-    },
-    hiddenLine(
-      PANEL_MAP_LAYER.selectionFeatures,
-      features,
-      selection.color,
-      selection.width,
-    ),
-    hiddenLine(
-      PANEL_MAP_LAYER.selectionStates,
-      states,
-      selection.color,
-      selection.width,
-    ),
+    lineLayer(layer.stateOutline, states, UNPAINTED_LINE),
+    areaOutlineLayer(),
+    lineLayer(layer.selectionFeatures, features, SELECTION_OUTLINE, "none"),
+    lineLayer(layer.selectionStates, states, SELECTION_OUTLINE, "none"),
   ];
+}
+
+function panelMapSources(): StyleSpecification["sources"] {
+  const basemaps = BASEMAP_KINDS.map((kind) => [
+    basemapLayerId(kind),
+    basemapSource(kind),
+  ]);
+
+  return {
+    ...Object.fromEntries(basemaps),
+    [PANEL_MAP_SOURCE.features]: featureSource(),
+    [PANEL_MAP_SOURCE.states]: featureSource(),
+    [PANEL_MAP_SOURCE.areas]: featureSource(),
+  };
 }
 
 /**
@@ -185,21 +202,10 @@ function outlineLayers(): LayerSpecification[] {
 export function panelMapStyle(basemap: BasemapKind): StyleSpecification {
   return {
     version: 8,
-    sources: {
-      ...Object.fromEntries(
-        BASEMAP_KINDS.map((kind) => [
-          basemapLayerId(kind),
-          basemapSource(kind),
-        ]),
-      ),
-      [PANEL_MAP_SOURCE.features]: featureSource(),
-      [PANEL_MAP_SOURCE.states]: featureSource(),
-      [PANEL_MAP_SOURCE.areas]: featureSource(),
-    },
+    sources: panelMapSources(),
     layers: [
       ...BASEMAP_KINDS.map((kind) => basemapLayer(kind, basemap)),
-      ...fillLayers(),
-      ...outlineLayers(),
+      ...overlayLayers(),
     ],
   };
 }

@@ -24,10 +24,18 @@ export type PanelMapHover = { props: MapFeatureProps; x: number; y: number };
 
 type FeatureId = FeatureIdentifier["id"];
 
-// Marca os eventos do fitTo. WHY: um flag "próximo moveend é nosso" fica preso
-// quando o MapLibre não consegue enquadrar (sem moveend) e erra quando um
-// fitTo interrompe outro; o eventData viaja com o moveend da própria animação.
+// Marca os moveend do fitTo, só para registrar o fittedZoom. WHY eventData e
+// não um flag: o flag fica preso quando o MapLibre não consegue enquadrar (sem
+// moveend) e erra quando um fitTo interrompe outro.
 const FIT_EVENT_DATA = { panelMapFit: true };
+
+// IMPORTANT: só gesto do usuário vira filtro. Arrastar, roda do mouse, toque,
+// teclado, duplo clique e os botões +/− mandam `originalEvent` no moveend; o
+// fitTo e o resize do container (ResizeObserver → map.resize) não. Sem isto,
+// redimensionar a janela viraria um recorte que ninguém escolheu.
+function isUserMove(event: object): boolean {
+  return "originalEvent" in event;
+}
 
 function codeAt(
   map: MaplibreMap,
@@ -53,21 +61,32 @@ function centerCodes(map: MaplibreMap, municipal: boolean) {
   };
 }
 
+function describeMoveEnd(
+  map: MaplibreMap,
+  municipal: boolean,
+  event: object,
+  fittedZoom: number,
+): PanelMapMoveEnd {
+  return {
+    zoom: map.getZoom(),
+    ...centerCodes(map, municipal),
+    programmatic: !isUserMove(event),
+    fittedZoom,
+  };
+}
+
 /**
- * Enquadramentos e fins de movimento. `programmatic` vem do fitTo;
- * `fittedZoom` é o zoom em que o último fitTo terminou.
+ * Enquadramentos e fins de movimento. `programmatic` é tudo que não foi gesto
+ * do usuário (fitTo, resize); `fittedZoom` é o zoom em que o último fitTo
+ * terminou.
  */
 export function trackMoves(map: MaplibreMap, municipal: boolean) {
   let fittedZoom = map.getZoom();
   let listener: ((move: PanelMapMoveEnd) => void) | null = null;
 
   map.on("moveend", (event) => {
-    const programmatic = "panelMapFit" in event;
-
-    if (programmatic) fittedZoom = map.getZoom();
-    const center = centerCodes(map, municipal);
-
-    listener?.({ zoom: map.getZoom(), ...center, programmatic, fittedZoom });
+    if ("panelMapFit" in event) fittedZoom = map.getZoom();
+    listener?.(describeMoveEnd(map, municipal, event, fittedZoom));
   });
 
   return {

@@ -30,6 +30,22 @@ function removeAridez(map: MaplibreMap): void {
   }
 }
 
+function addAridez(map: MaplibreMap, overlay: AridezOverlay): void {
+  map.addSource(PANEL_MAP_SOURCE.aridez, {
+    type: "image",
+    url: overlay.url,
+    coordinates: imageCorners(overlay.bounds),
+  });
+  map.addLayer(
+    {
+      id: PANEL_MAP_LAYER.aridez,
+      type: "raster",
+      source: PANEL_MAP_SOURCE.aridez,
+    },
+    PANEL_MAP_LAYER.indicatorFill,
+  );
+}
+
 /**
  * Raster do índice de aridez logo abaixo das cores do indicador; `null` tira.
  * A fonte de imagem só existe com uma URL, por isso nasce aqui e não no estilo.
@@ -40,25 +56,11 @@ export function showAridez(
 ): void {
   if (!overlay) return removeAridez(map);
 
-  const coordinates = imageCorners(overlay.bounds);
   const current = map.getSource<ImageSource>(PANEL_MAP_SOURCE.aridez);
 
-  if (current) {
-    current.updateImage({ url: overlay.url, coordinates });
-
-    return;
-  }
-  map.addSource(PANEL_MAP_SOURCE.aridez, {
-    type: "image",
+  if (!current) return addAridez(map, overlay);
+  current.updateImage({
     url: overlay.url,
-    coordinates,
+    coordinates: imageCorners(overlay.bounds),
   });
-  map.addLayer(
-    {
-      id: PANEL_MAP_LAYER.aridez,
-      type: "raster",
-      source: PANEL_MAP_SOURCE.aridez,
-    },
-    PANEL_MAP_LAYER.indicatorFill,
-  );
 }

@@ -1,5 +1,9 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { FilterSpecification, Map as MaplibreMap } from "maplibre-gl";
+import type {
+  FilterSpecification,
+  Map as MaplibreMap,
+  MapOptions,
+} from "maplibre-gl";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
 import type { Bounds, FitSources } from "@/features/panelMap/mapLayers";
@@ -68,12 +72,20 @@ const NORDESTE_BOUNDS: Bounds = [
   [-34.8, -1.0],
 ];
 
-function createMap(
-  maplibre: MaplibreModule,
+// Sem rotação nem inclinação. Sem box zoom (shift+arrastar): o moveend dele
+// não traz `originalEvent` e seria lido como movimento programático.
+const LOCKED_GESTURES = {
+  dragRotate: false,
+  pitchWithRotate: false,
+  touchPitch: false,
+  boxZoom: false,
+} satisfies Partial<MapOptions>;
+
+function panelMapOptions(
   container: HTMLElement,
   basemap: BasemapKind,
-): MaplibreMap {
-  const map = new maplibre.Map({
+): MapOptions {
+  return {
     container,
     style: panelMapStyle(basemap),
     bounds: NORDESTE_BOUNDS,
@@ -81,15 +93,42 @@ function createMap(
     // IMPORTANT: sem isto o toDataURL do "Baixar imagem" sai em branco.
     preserveDrawingBuffer: true,
     attributionControl: { compact: true },
-    dragRotate: false,
-    pitchWithRotate: false,
-    touchPitch: false,
-  });
+    ...LOCKED_GESTURES,
+  };
+}
+
+function createMap(
+  maplibre: MaplibreModule,
+  container: HTMLElement,
+  basemap: BasemapKind,
+): MaplibreMap {
+  const map = new maplibre.Map(panelMapOptions(container, basemap));
 
   map.touchZoomRotate.disableRotation();
   map.addControl(new maplibre.NavigationControl({ showCompass: false }));
 
   return map;
+}
+
+type PanelMapPaintControls = Pick<
+  PanelMapEngine,
+  | "setBasemap"
+  | "setSources"
+  | "setIndicatorPaint"
+  | "setVeil"
+  | "setSelection"
+  | "setAridez"
+>;
+
+function paintControls(map: MaplibreMap): PanelMapPaintControls {
+  return {
+    setBasemap: (kind) => showBasemap(map, kind),
+    setSources: (sources) => setSourceData(map, sources),
+    setIndicatorPaint: (paint) => paintIndicator(map, paint),
+    setVeil: (veil) => applyVeil(map, veil),
+    setSelection: (filter) => applySelection(map, filter),
+    setAridez: (overlay) => showAridez(map, overlay),
+  };
 }
 
 function engineFor(
@@ -100,12 +139,7 @@ function engineFor(
   const moves = trackMoves(map, municipal);
 
   return {
-    setBasemap: (kind) => showBasemap(map, kind),
-    setSources: (sources) => setSourceData(map, sources),
-    setIndicatorPaint: (paint) => paintIndicator(map, paint),
-    setVeil: (veil) => applyVeil(map, veil),
-    setSelection: (filter) => applySelection(map, filter),
-    setAridez: (overlay) => showAridez(map, overlay),
+    ...paintControls(map),
     fitTo: moves.fitTo,
     onMoveEnd: moves.onMoveEnd,
     onHover: trackHover(map).onHover,
