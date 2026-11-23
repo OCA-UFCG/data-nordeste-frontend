@@ -1,5 +1,11 @@
+import type { ProtoIconName } from "@/components/ProtoPanel/ProtoIcon";
+
 // Fora do módulo "use client": a página server também usa no estado de erro.
 export const PIB_TITLE = "Produto Interno Bruto (PIB)";
+
+// Nome curto e ícone do painel na capa e na barra de filtros.
+export const PIB_SHORT_TITLE = "PIB";
+export const PIB_ICON: ProtoIconName = "usd";
 
 // Texto do rodapé do painel, o mesmo do Power BI.
 export const PIB_SOURCE =
@@ -22,4 +28,5 @@ export const PIB_COLORS = {
   inkStrong: "#1b1a1c",
   muted: "#595557",
   line: "#dcdbdc",
+  paper: "#ffffff",
 } as const;

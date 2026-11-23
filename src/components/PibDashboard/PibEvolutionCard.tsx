@@ -1,7 +1,10 @@
 "use client";
 
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
-import { PibLineChart } from "@/components/PibDashboard/PibLineChart";
+import {
+  PibLineChart,
+  PibLineChartSkeleton,
+} from "@/components/PibDashboard/PibLineChart";
 import {
   PIB_CARD_FOOTER,
   PIB_CARD_INFO,
@@ -42,6 +45,7 @@ export const PibEvolutionCard = ({
       title={TITLE}
       subtitle={`${place} · ${span}PIB total e per capita`}
       kind="line"
+      skeleton={<PibLineChartSkeleton />}
       actions={
         <>
           <ProtoCardInfo title={TITLE} text={PIB_CARD_INFO.line} />

@@ -45,6 +45,26 @@ describe("CardMenu", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows only the list, with no sheet header, when the sheet is bare", async () => {
+    vi.stubGlobal("matchMedia", new ScreenWidthFake(true).matchMedia);
+    render(
+      <CardMenu
+        title="Mapa do IDH"
+        share={SHARE}
+        catalogHref={null}
+        bareSheet
+      />,
+    );
+    await waitFor(() => openMenu());
+
+    const sheet = await screen.findByRole("dialog", { name: "Mapa do IDH" });
+
+    expect(sheet).toContainElement(
+      screen.getByRole("button", { name: "Compartilhar" }),
+    );
+    expect(screen.queryByRole("button", { name: "Fechar" })).toBeNull();
+  });
+
   it("copies the absolute link with the panel filters", async () => {
     const clipboard = new ClipboardFake();
 

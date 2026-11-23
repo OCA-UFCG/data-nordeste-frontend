@@ -14,6 +14,9 @@ export type ProtoToneColors = {
   accentStrong: string;
   accentSoft: string;
   accentLine: string;
+
+  // Fundo do chip dos ícones de destaque; sem ele, vale `accentSoft`.
+  accentChip?: string;
 };
 
 export const PROTO_TONES: Record<ProtoTone, ProtoToneColors> = {
@@ -34,6 +37,7 @@ export const PROTO_TONES: Record<ProtoTone, ProtoToneColors> = {
     accentStrong: "#c2570c",
     accentSoft: "#fff1e4",
     accentLine: "#fbd8b5",
+    accentChip: "#ffe7cf",
   },
 
   // Verde do painel de Meio Ambiente (`:root` de aridez.html).
@@ -59,6 +63,7 @@ export const protoToneStyle = (tone: ProtoTone): CSSProperties => {
     "--proto-accent-strong": colors.accentStrong,
     "--proto-accent-soft": colors.accentSoft,
     "--proto-accent-line": colors.accentLine,
+    "--proto-accent-chip": colors.accentChip ?? colors.accentSoft,
   };
 
   return style as CSSProperties;

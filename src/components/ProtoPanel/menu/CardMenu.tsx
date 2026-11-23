@@ -99,6 +99,9 @@ type CardMenuProps = {
   share: CardShare;
   catalogHref: string | null;
   image?: CardImage;
+
+  // No celular, a folha mostra só a lista, sem cabeçalho.
+  bareSheet?: boolean;
 };
 
 const MenuBody = ({
@@ -162,7 +165,12 @@ export const CardMenu = (props: CardMenuProps) => {
         >
           <TriggerIcon />
         </button>
-        <ProtoSheet open={open} onOpenChange={changeOpen} title={props.title}>
+        <ProtoSheet
+          open={open}
+          onOpenChange={changeOpen}
+          title={props.title}
+          bare={props.bareSheet}
+        >
           {body}
         </ProtoSheet>
       </>

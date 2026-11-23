@@ -25,10 +25,21 @@ const CLEAR_CLASS = cn(
 const CLEAR_COMPACT_CLASS =
   "max-[900px]:min-h-10 max-[900px]:w-10 max-[900px]:flex-none max-[900px]:p-0";
 
+// `max-[901px]`: o `max-` do Tailwind v4 é estrito, e 900 px ainda é tablet.
+const CLEAR_ICON_ONLY_900 =
+  "max-[901px]:min-h-10 max-[901px]:w-10 max-[901px]:flex-none max-[901px]:p-0";
+
 // Ícone e nome do painel no resumo do celular (`.fb-tile` do protótipo).
 export type ProtoFilterBarBrand = { icon: ProtoIconName; title: string };
 
-export type ProtoFilterBarProps = {
+// Folha controlada por fora (o painel a abre a partir de um card): as duas
+// props vêm juntas, senão a folha não fecharia. Sem elas, a barra cuida do
+// próprio estado.
+export type ProtoFilterSheetControl =
+  | { sheetOpen: boolean; onSheetOpenChange: (open: boolean) => void }
+  | { sheetOpen?: undefined; onSheetOpenChange?: undefined };
+
+export type ProtoFilterBarProps = ProtoFilterSheetControl & {
   summaryTitle: string;
   brand?: ProtoFilterBarBrand;
 
@@ -36,6 +47,13 @@ export type ProtoFilterBarProps = {
   // "compact": barra com quatro campos (perfil demográfico), em que o nome
   // some até 900 px e fica só o ícone (`.fb-in:has(>.fl:nth-of-type(4))`).
   brandInBar?: boolean | "compact";
+
+  // Com `brand` (PIB): o desktop mostra o tile e o nome antes dos campos, que
+  // preenchem a linha; até 900 px, só o tile e o "Limpar filtros" só com o ícone.
+  fillRow?: boolean;
+
+  // Barra inerte enquanto a página carrega: igual por fora, sem interação.
+  disabled?: boolean;
   renderFields: (wide: boolean) => ReactNode;
   isDefault: boolean;
   onClear: () => void;
@@ -50,12 +68,18 @@ const FiltersSheet = ({
   renderFields,
   isDefault,
   onClear,
-}: Pick<ProtoFilterBarProps, "renderFields" | "isDefault" | "onClear"> & {
+  fillRow,
+}: Pick<
+  ProtoFilterBarProps,
+  "renderFields" | "isDefault" | "onClear" | "fillRow"
+> & {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) => (
   <ProtoSheet open={open} onOpenChange={onOpenChange} title="Filtros">
-    <div>{renderFields(true)}</div>
+    <div className={cn(fillRow && "[&>:last-child]:mb-0")}>
+      {renderFields(true)}
+    </div>
     <div className="mt-5 grid grid-cols-2 gap-3">
       <button
         type="button"
@@ -86,6 +110,15 @@ const BrandTile = ({ icon }: { icon: ProtoIconName }) => (
   >
     <ProtoIcon name={icon} size={18} />
   </span>
+);
+
+const BrandName = ({ brand }: { brand: ProtoFilterBarBrand }) => (
+  <div className="flex h-10 min-w-0 items-center gap-2.5 border-r border-grey-300 pr-4 max-[901px]:pr-3 max-[700px]:hidden">
+    <BrandTile icon={brand.icon} />
+    <span className="max-w-[220px] min-w-0 truncate text-[15px] leading-5 font-bold max-[901px]:hidden">
+      {brand.title}
+    </span>
+  </div>
 );
 
 const BarBrand = ({
@@ -176,6 +209,10 @@ export const ProtoFilterBar = ({
   summaryTitle,
   brand,
   brandInBar = false,
+  fillRow,
+  disabled,
+  sheetOpen: controlledOpen,
+  onSheetOpenChange,
   renderFields,
   isDefault,
   onClear,
@@ -183,13 +220,18 @@ export const ProtoFilterBar = ({
   stuck,
   barRef,
 }: ProtoFilterBarProps) => {
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const sheetOpen = controlledOpen ?? ownOpen;
+  const setSheetOpen = onSheetOpenChange ?? setOwnOpen;
   const tone = useProtoTone();
+  const showBrand = fillRow && brand;
   const barBrand = brandInBar ? brand : undefined;
 
+  // O React 18 só liga `inert` com string vazia; o tipo dele pede boolean.
   return (
     <div
       ref={barRef}
+      {...(disabled && ({ inert: "" } as object))}
       style={{ top, ...protoToneStyle(tone) }}
       className={`${PROTO_TEXT} sticky z-40 w-full border-b border-grey-300 bg-white transition-shadow duration-150 ${stuck ? "shadow-[0_6px_16px_-10px_rgba(41,40,41,0.45)]" : ""}`}
     >
@@ -197,6 +239,7 @@ export const ProtoFilterBar = ({
         className={cn(
           WRAP,
           "flex min-h-[88px] items-end gap-4 py-3 max-[700px]:min-h-14 max-[700px]:items-center max-[700px]:gap-2 max-[700px]:py-2",
+          fillRow && "min-[701px]:max-[901px]:gap-3",
           barBrand && "max-[900px]:gap-3 max-[700px]:gap-2",
         )}
       >
@@ -219,19 +262,27 @@ export const ProtoFilterBar = ({
           <ProtoIcon name="filter" size={16} stroke={2.2} />
           Filtros
         </button>
+        {showBrand ? <BrandName brand={brand} /> : null}
         <div className="contents max-[700px]:hidden">{renderFields(false)}</div>
-        {barBrand ? null : <div className="flex-1 max-[700px]:hidden" />}
+        {fillRow || barBrand ? null : (
+          <div className="flex-1 max-[700px]:hidden" />
+        )}
         <button
           type="button"
           disabled={isDefault}
           onClick={onClear}
           aria-label="Limpar filtros"
           title="Limpar filtros"
-          className={cn(CLEAR_CLASS, barBrand && CLEAR_COMPACT_CLASS)}
+          className={cn(
+            CLEAR_CLASS,
+            fillRow && CLEAR_ICON_ONLY_900,
+            barBrand && CLEAR_COMPACT_CLASS,
+          )}
         >
           <span
             className={cn(
               "max-[700px]:hidden",
+              fillRow && "max-[901px]:hidden",
               barBrand && "max-[900px]:hidden",
             )}
           >
@@ -244,6 +295,7 @@ export const ProtoFilterBar = ({
         renderFields={renderFields}
         isDefault={isDefault}
         onClear={onClear}
+        fillRow={fillRow}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
       />

@@ -23,8 +23,10 @@ export type PibLineGeometry = {
 };
 
 // Medidas do protótipo (`drawLine`): abaixo de 560 px o gráfico encolhe e
-// mostra um ano a cada quatro.
-const NARROW_WIDTH = 560;
+// mostra um ano a cada quatro. PibLineChart.tsx repete os dois em classes
+// Tailwind (literais); um teste garante que batem.
+export const PIB_LINE_NARROW_WIDTH = 560;
+export const PIB_LINE_HEIGHT = { narrow: 300, wide: 340 } as const;
 const MIN_WIDTH = 300;
 
 // O eixo do per capita sobra 40% acima do maior valor: a linha dele fica
@@ -38,11 +40,11 @@ const LABEL_BELOW = 22;
 const LABEL_BELOW_LATE = 36;
 
 const frameFor = (width: number) => {
-  const narrow = width < NARROW_WIDTH;
+  const narrow = width < PIB_LINE_NARROW_WIDTH;
 
   return {
     narrow,
-    height: narrow ? 300 : 340,
+    height: narrow ? PIB_LINE_HEIGHT.narrow : PIB_LINE_HEIGHT.wide,
     margin: {
       left: narrow ? 56 : 72,
       right: narrow ? 52 : 72,
