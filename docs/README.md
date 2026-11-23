@@ -348,9 +348,17 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   follows `data.filters.visao` when it changes. Do not put a `key` on
   `IdhDashboard`: it remounted the panel on the first filter after a tab
   switch and closed the mobile filter sheet (PR #397 review).
-- WARNING: "Atualizado em 11/2026" in the card footers is the prototype's
-  fixed text (`IDH_DATA_UPDATED_AT`); the database does not expose a load
-  date yet.
+- Year range: no year is hardcoded. `loadIdhYearRange` reads
+  `min(ano)`/`max(ano)` from `idh_geral_novo_view` on both `/demo/idh` and
+  `/demo/idh-powerbi`, and the range travels in `IdhPanelData.yearRange`. The
+  default year is the last one. If the range query fails, `/demo/idh` shows
+  the cards' error state (`NO_IDH_YEARS`: no year offered) and
+  `/demo/idh-powerbi` its load-failed message; both log
+  `idh_demo_year_range_failed`.
+- Card footer "Atualizado em MM/AAAA" is the `date` of the Contentful "panels"
+  entry (the same date the original panel shows as "Publicado em"), formatted
+  by `formatIdhUpdatedAt` and passed to `IdhDashboard` as `updatedAt`. Without
+  the entry or its `date`, the label is hidden; there is no fixed fallback.
 - Group gaps (`idhGroupCompare.ts`): index points for IDH and Gini, percent
   for money; money bars end at the next hundred with 10% headroom.
 - Gini cards have the catalogue item disabled ("Este dado ainda não tem

@@ -6,15 +6,20 @@ import {
   ProtoSelectField,
   protoSelectClass,
 } from "@/components/ProtoPanel/ProtoSelectField";
+import { cn } from "@/lib/utils";
 import { listYears } from "@/features/panels/territorialFilters";
 import {
-  IDH_YEAR_RANGE,
   idhPlaceName,
   type IdhFilters,
   type IdhPanelData,
 } from "@/features/panels/idh/idhPanel";
 
-const YEARS = [...listYears(IDH_YEAR_RANGE)].reverse();
+const IDENTITY = { name: "IDH", icon: "idh" } as const;
+
+// `.fb .fb-in>.fl`: Estado e Ano dividem a barra; até 900 px o select aperta a
+// folga da seta.
+const BAR_FIELD_CLASS = "max-w-none min-w-0 max-[900px]:[&>div>svg]:right-2";
+const BAR_SELECT_CLASS = "max-[900px]:pr-7 max-[900px]:pl-2.5";
 
 // `selection`: os filtros pedidos, que os selects mostram já antes de o
 // servidor responder (e de onde parte o próximo filtro).
@@ -31,11 +36,13 @@ const FilterFields = ({
   wide,
 }: FilterProps & { wide?: boolean }) => {
   const ufs = [...data.ufs].sort((a, b) => a.nome.localeCompare(b.nome, "pt"));
-  const selectClass = protoSelectClass(wide);
+  const years = [...listYears(data.yearRange)].reverse();
+  const selectClass = cn(protoSelectClass(wide), !wide && BAR_SELECT_CLASS);
+  const field = wide ? { wide } : { fluid: true, className: BAR_FIELD_CLASS };
 
   return (
     <>
-      <ProtoSelectField label="Estado" wide={wide}>
+      <ProtoSelectField label="Estado" {...field}>
         {(id) => (
           <select
             id={id}
@@ -54,7 +61,7 @@ const FilterFields = ({
           </select>
         )}
       </ProtoSelectField>
-      <ProtoSelectField label="Ano" wide={wide}>
+      <ProtoSelectField label="Ano" {...field}>
         {(id) => (
           <select
             id={id}
@@ -64,7 +71,7 @@ const FilterFields = ({
             }
             className={selectClass}
           >
-            {YEARS.map((year) => (
+            {years.map((year) => (
               <option key={year} value={year}>
                 {year}
               </option>
@@ -77,8 +84,9 @@ const FilterFields = ({
 };
 
 /**
- * Barra de filtros do painel de IDH: Estado e Ano; o resto (resumo no celular,
- * folha, "Limpar filtros" e o gruda-no-topo) é a `ProtoFilterBar`.
+ * Barra de filtros do painel de IDH: o nome do painel, Estado e Ano; o resto
+ * (resumo no celular, folha, "Limpar filtros" e o gruda-no-topo) é a
+ * `ProtoFilterBar`.
  *
  * @example <IdhFilterBar data={panel} selection={panel.filters} visaoLabel="Visão geral" onChange={apply} onClear={reset} isDefault top={80} stuck={false} barRef={ref} />
  */
@@ -101,8 +109,9 @@ export const IdhFilterBar = ({
   barRef: Ref<HTMLDivElement>;
 }) => (
   <ProtoFilterBar
-    summaryTitle={`${idhPlaceName({ ufs: data.ufs, filters: selection })} · ${selection.ano}`}
-    summarySubtitle={visaoLabel}
+    identity={IDENTITY}
+    summaryTitle={IDENTITY.name}
+    summarySubtitle={`${idhPlaceName({ ufs: data.ufs, filters: selection })} · ${selection.ano} · ${visaoLabel}`}
     renderFields={(wide) => (
       <FilterFields
         data={data}

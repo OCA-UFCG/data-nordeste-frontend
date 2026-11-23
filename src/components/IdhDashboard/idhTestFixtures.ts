@@ -53,6 +53,9 @@ export const stubIdhBrowserApis = () => {
   vi.stubGlobal("ResizeObserver", ResizeObserverFake);
   vi.stubGlobal("IntersectionObserver", IntersectionObserverFake);
   vi.stubGlobal("matchMedia", (media: string) => new MediaQueryListFake(media));
+
+  // A barra de abas rola até a aba aberta; o jsdom não tem `Element.scrollTo`.
+  Element.prototype.scrollTo = () => {};
 };
 
 const yearPoint = (ano: number, idh: number): IdhYearPoint => ({
@@ -71,6 +74,7 @@ const yearPoint = (ano: number, idh: number): IdhYearPoint => ({
  */
 export const idhPanelFixture = (filters: IdhFilters): IdhPanelData => ({
   filters,
+  yearRange: { first: 2012, last: 2021 },
   ufs: [
     { sigla: "CE", nome: "Ceará" },
     { sigla: "PE", nome: "Pernambuco" },
