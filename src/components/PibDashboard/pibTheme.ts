@@ -22,4 +22,5 @@ export const PIB_COLORS = {
   inkStrong: "#1b1a1c",
   muted: "#595557",
   line: "#dcdbdc",
+  paper: "#ffffff",
 } as const;

@@ -13,7 +13,8 @@ import { formatPibReais } from "@/features/panels/pib/pibFormat";
 import type { PibPanelData } from "@/features/panels/pib/pibPanel";
 
 // `.pib .bn .ico`: chip redondo, em laranja mais forte que o tom do painel.
-const ICON_CLASS = "rounded-full bg-[#ffe7cf] text-[#c2570c]";
+const ICON_CLASS =
+  "rounded-full bg-(--proto-accent-chip) text-(--proto-accent-strong)";
 
 const ICONS = { pib: "usd", perCapita: "renda" } as const;
 

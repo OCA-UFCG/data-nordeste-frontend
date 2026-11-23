@@ -164,8 +164,8 @@ const Line = ({
             cx={point.x.toFixed(1)}
             cy={point.y.toFixed(1)}
             r={selected ? 6 : geometry.narrow ? 2.5 : 3.2}
-            fill={selected ? series.color : "#ffffff"}
-            stroke={selected ? "#ffffff" : series.color}
+            fill={selected ? series.color : PIB_COLORS.paper}
+            stroke={selected ? PIB_COLORS.paper : series.color}
             strokeWidth={selected ? 2.4 : 2}
           />
         );
@@ -178,7 +178,7 @@ const Line = ({
           fontSize="13"
           fontWeight="700"
           fill={series.ink}
-          stroke="#ffffff"
+          stroke={PIB_COLORS.paper}
           strokeWidth="4"
           strokeLinejoin="round"
           paintOrder="stroke"
@@ -230,7 +230,7 @@ const LineSvg = ({
         frame={geometry}
         years={years.map((year) => year.year)}
         ano={ano}
-        focusClassName="focus-visible:stroke-[#e5640f]"
+        focusClassName="focus-visible:stroke-(--proto-accent)"
         {...handlers}
       />
     </svg>
