@@ -20,12 +20,12 @@ import {
   type SqlQuery,
 } from "@/features/panels/territorialSql";
 
-// WARNING: anos tirados do SQL do Automatic-Reporting (relatorios_auto.ambiente
-// lê 1991 e 2021); confira em meio_aridez.vw_aridez se há outros.
+// Os anos de `ano_consolidacao` em meio_aridez.vw_aridez (conferido no banco
+// em 23/11/2026).
 export const ARIDEZ_YEAR_RANGE: YearRange = {
   first: 1991,
   last: 2021,
-  available: [2021, 1991],
+  available: [2021, 2011, 2001, 1991],
 };
 
 // Ano de comparação do "Veja mais" (o protótipo escreve "1990").
@@ -75,20 +75,15 @@ export const emptyAridezPanel = (
   porMunicipio: [],
 });
 
-// WARNING: hipótese a conferir no banco. vw_aridez só traz cd_mun, ano, classe
-// e área (é o que o Automatic-Reporting lê); UF, nome e as colunas de área de
-// interesse vêm da view do PIB, a de recorte territorial já usada pelos
-// painéis, na sua linha mais recente de cada município.
-const MUNICIPIO_REFERENCIA = `(SELECT DISTINCT ON (TRIM(cd_mun)) TRIM(cd_mun) AS cd_mun,
-    sigla_uf, estado_uf, municipio_uf, nordeste, semiarido, caatinga, sudene
-  FROM eco_pib.vw_pib_municipal_pbi ORDER BY TRIM(cd_mun), ano DESC)`;
-
 // Uma linha por município, ano e classe, com as colunas que
-// `buildTerritorialWhere` espera.
-const ARIDEZ_VIEW = `(SELECT m.*, a.ano_consolidacao AS ano, a.dn_uni::text AS classe,
-    a.area_km2_classe AS area
-  FROM meio_aridez.vw_aridez a
-  JOIN ${MUNICIPIO_REFERENCIA} m ON m.cd_mun = TRIM(a.cd_mun::text)) aridez`;
+// `buildTerritorialWhere` espera. vw_aridez já traz UF, nome e as marcas de
+// área (ne, semi_21, caat_24, aas_21), iguais às da view do PIB (conferido no
+// banco em 23/11/2026): sem JOIN, a consulta não varre a view do PIB.
+const ARIDEZ_VIEW = `(SELECT TRIM(cd_mun::text) AS cd_mun, sigla_uf,
+    uf AS estado_uf, nm_mun || ' (' || sigla_uf || ')' AS municipio_uf,
+    ne AS nordeste, semi_21 AS semiarido, caat_24 AS caatinga, aas_21 AS sudene,
+    ano_consolidacao AS ano, dn_uni::text AS classe, area_km2_classe AS area
+  FROM meio_aridez.vw_aridez) aridez`;
 
 // `resolveTerritorialSelection` lista municípios linha a linha: aqui, uma por
 // município e ano.
