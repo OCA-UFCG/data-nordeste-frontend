@@ -12,7 +12,7 @@ import { ARIDEZ_YEAR_RANGE } from "@/features/panels/aridez/aridezPanel";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 import { describeDefaultPlaceLabel } from "@/features/panels/territorialPlace";
 
-export type AridezLayoutProps = Omit<AridezCardProps, "state"> & {
+type AridezLayoutProps = Omit<AridezCardProps, "state"> & {
   states: AridezCardStates;
 
   // Filtros pedidos (iguais a `data.filters` fora da navegação): os estados
@@ -22,8 +22,6 @@ export type AridezLayoutProps = Omit<AridezCardProps, "state"> & {
   onReset: () => void;
 };
 
-// `.arow` do protótipo: classes e municípios lado a lado; abaixo de 1000 px,
-// uma coluna só.
 const BOTTOM_GRID =
   "grid grid-cols-2 items-stretch gap-6 max-[1000px]:grid-cols-1 max-[1000px]:gap-4";
 

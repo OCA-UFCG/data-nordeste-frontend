@@ -1,7 +1,6 @@
 // Fora do módulo "use client": a página server também usa no estado de erro.
 export const ARIDEZ_TITLE = "Índice de Aridez";
 
-// Texto do rodapé do painel, o do protótipo.
 export const ARIDEZ_SOURCE =
   "Fonte dos dados: XAVIER et al. (2019). Elaborado pelo Observatório da Caatinga e Desertificação · Data Nordeste";
 

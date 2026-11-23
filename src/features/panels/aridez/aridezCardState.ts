@@ -15,7 +15,7 @@ const ARIDEZ_CARD_DEPENDENCIES = {
   municipios: ["area", "uf", "mun", "ano"],
 } as const satisfies Record<string, readonly (keyof TerritorialFilters)[]>;
 
-export type AridezCardKey = keyof typeof ARIDEZ_CARD_DEPENDENCIES;
+type AridezCardKey = keyof typeof ARIDEZ_CARD_DEPENDENCIES;
 
 export type AridezCardStates = Record<AridezCardKey, PanelCardState>;
 

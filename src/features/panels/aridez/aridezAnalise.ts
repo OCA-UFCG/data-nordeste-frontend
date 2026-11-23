@@ -18,7 +18,7 @@ import type {
 
 // O que o texto precisa saber: as áreas no ano escolhido e no de comparação,
 // o nome curto do recorte (no meio da frase) e o completo (no rodapé).
-export type AridezAnaliseInput = {
+type AridezAnaliseInput = {
   ano: number;
   areas: AridezAreas;
   baseAreas: AridezAreas | null;

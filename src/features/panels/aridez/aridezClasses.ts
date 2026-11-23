@@ -84,7 +84,7 @@ export const classShares = (areas: AridezAreas): AridezAreas => {
   };
 };
 
-export type RankedAridezClass = { item: AridezClass; area: number };
+type RankedAridezClass = { item: AridezClass; area: number };
 
 /**
  * Classes com área, da maior para a menor; empate fica na ordem das classes.

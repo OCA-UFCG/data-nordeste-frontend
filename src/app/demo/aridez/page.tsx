@@ -61,8 +61,6 @@ const loadPanel = async (filters: TerritorialFilters) => {
   }
 };
 
-// Mesmo layout do IDH, do perfil e do PIB: capa, painel, "Saiba mais" e
-// relacionados. Sem o banco, os cards mostram o erro com "Tentar de novo".
 // INTENTIONAL: sem o Contentful, a capa usa o macrotema padrão e some só a
 // seção de relacionados.
 export default async function AridezDemoPage({

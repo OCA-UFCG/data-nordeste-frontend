@@ -43,7 +43,7 @@ const MOBILE_TITLE = "Área suscetível por estado";
  *
  * @example <ProtoStateMap {...buildAridezMapProps(panel, ["PE"], selectUf)} />
  */
-export const buildAridezMapProps = (
+const buildAridezMapProps = (
   data: AridezPanelData,
   selectedUfs: string[],
   onSelect: (code: string) => void,

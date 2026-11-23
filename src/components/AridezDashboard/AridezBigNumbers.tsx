@@ -11,7 +11,6 @@ import type { AridezPanelData } from "@/features/panels/aridez/aridezPanel";
 import { formatPercent } from "@/features/panels/format";
 import { describeTerritorialSelection } from "@/features/panels/territorialOptions";
 
-// `.arid .bn .ico`: chip redondo em verde-claro, como no protótipo.
 const ICON_CLASS = "rounded-full bg-[#e1eda9] text-[#49581c]";
 
 /**
