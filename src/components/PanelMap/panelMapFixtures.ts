@@ -60,29 +60,32 @@ export const MANIFEST_FIXTURE: GeodataManifest = {
   },
 };
 
+type Ring = [number, number][];
+
+function squareRing(west: number, south: number, size: number): Ring {
+  const [east, north] = [west + size, south + size];
+
+  return [
+    [west, south],
+    [east, south],
+    [east, north],
+    [west, north],
+    [west, south],
+  ];
+}
+
 function square(
   west: number,
   south: number,
   size: number,
   properties: object,
 ): Feature {
-  const [east, north] = [west + size, south + size];
+  const coordinates = [squareRing(west, south, size)];
 
   return {
     type: "Feature",
     properties: { ...properties },
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [west, south],
-          [east, south],
-          [east, north],
-          [west, north],
-          [west, south],
-        ],
-      ],
-    },
+    geometry: { type: "Polygon", coordinates },
   };
 }
 

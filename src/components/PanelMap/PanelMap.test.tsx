@@ -32,13 +32,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function renderPanelMap(
-  overrides: Partial<PanelMapProps> = {},
-  geodata = new GeodataFetchFake(),
-) {
-  vi.stubGlobal("fetch", geodata.fetch);
-  const factory = new PanelMapEngineFactoryFake();
-  let props: PanelMapProps = {
+function panelMapProps(
+  factory: PanelMapEngineFactoryFake,
+  overrides: Partial<PanelMapProps>,
+): PanelMapProps {
+  return {
     indicator: "pib",
     ano: 2023,
     area: "nordeste",
@@ -50,6 +48,12 @@ async function renderPanelMap(
     createEngine: factory.create,
     ...overrides,
   };
+}
+
+async function renderPanelMap(overrides: Partial<PanelMapProps> = {}) {
+  vi.stubGlobal("fetch", new GeodataFetchFake().fetch);
+  const factory = new PanelMapEngineFactoryFake();
+  let props = panelMapProps(factory, overrides);
   const view = render(<PanelMap {...props} />);
   const rerender = (next: Partial<PanelMapProps>) => {
     props = { ...props, ...next };
@@ -333,19 +337,7 @@ describe("PanelMap ciclo de vida", () => {
     vi.stubGlobal("fetch", new GeodataFetchFake(true).fetch);
     const factory = new PanelMapEngineFactoryFake();
 
-    render(
-      <PanelMap
-        indicator="pib"
-        ano={2023}
-        area="nordeste"
-        recorte={EMPTY_RECORTE}
-        deepest="municipio"
-        onRecorteChange={() => {}}
-        formatValue={String}
-        label="Mapa do PIB"
-        createEngine={factory.create}
-      />,
-    );
+    render(<PanelMap {...panelMapProps(factory, {})} />);
 
     expect(await screen.findByText(UNAVAILABLE)).toBeInTheDocument();
     expect(factory.create).not.toHaveBeenCalled();

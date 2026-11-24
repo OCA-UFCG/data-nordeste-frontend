@@ -8,6 +8,17 @@ import { NO_DATA_COLOR } from "@/features/panelMap/qgisPaint";
 
 type LegendEntry = { key: string; label: string; color: string };
 
+const LegendItem = ({ entry }: { entry: LegendEntry }) => (
+  <li className="flex items-center gap-1.5">
+    <i
+      aria-hidden
+      className="inline-block size-2.5 shrink-0 rounded-[2px] border border-black/10"
+      style={{ background: entry.color }}
+    />
+    <span>{entry.label}</span>
+  </li>
+);
+
 const LegendList = ({
   title,
   entries,
@@ -19,14 +30,7 @@ const LegendList = ({
     <p className="mb-1 font-semibold text-grey-1100">{title}</p>
     <ul className="space-y-0.5">
       {entries.map((entry) => (
-        <li key={entry.key} className="flex items-center gap-1.5">
-          <i
-            aria-hidden
-            className="inline-block size-2.5 shrink-0 rounded-[2px] border border-black/10"
-            style={{ background: entry.color }}
-          />
-          <span>{entry.label}</span>
-        </li>
+        <LegendItem key={entry.key} entry={entry} />
       ))}
     </ul>
   </div>
@@ -56,9 +60,17 @@ function aridezEntries(styles: GeodataStyles): LegendEntry[] {
   }));
 }
 
+type PanelMapLegendProps = {
+  styles: GeodataStyles;
+  indicator: PanelIndicator;
+  label: string;
+  aridezYear: number | null;
+};
+
 /**
  * Legenda do mapa: as classes do `.qgz` do indicador, como vieram, e — com a
  * aridez ligada — também a paleta do índice de aridez da década escolhida.
+ * Fica no canto inferior esquerdo do mapa.
  *
  * @example <PanelMapLegend styles={styles} indicator="pib" label="PIB" aridezYear={null} />
  */
@@ -67,13 +79,8 @@ export const PanelMapLegend = ({
   indicator,
   label,
   aridezYear,
-}: {
-  styles: GeodataStyles;
-  indicator: PanelIndicator;
-  label: string;
-  aridezYear: number | null;
-}) => (
-  <div className="max-w-56 space-y-2 rounded-[6px] border border-grey-300 bg-white/95 px-2.5 py-2 text-[11px] leading-4 text-grey-800 shadow-sm">
+}: PanelMapLegendProps) => (
+  <div className="absolute bottom-2.5 left-2.5 z-10 max-w-56 space-y-2 rounded-[6px] border border-grey-300 bg-white/95 px-2.5 py-2 text-[11px] leading-4 text-grey-800 shadow-sm">
     <LegendList title={label} entries={indicatorEntries(styles, indicator)} />
     {aridezYear === null ? null : (
       <LegendList

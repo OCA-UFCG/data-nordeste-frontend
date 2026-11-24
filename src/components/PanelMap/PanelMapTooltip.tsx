@@ -69,27 +69,24 @@ export function usePanelMapTooltip(
   return { ...text, x: hover.x, y: hover.y };
 }
 
+type PanelMapTooltipProps = { tooltip: PanelMapTooltipState | null };
+
 /**
  * Caixa escura junto do ponteiro, dentro do mapa. `pointer-events-none` para
  * não roubar o hover das feições.
  *
  * @example <PanelMapTooltip tooltip={tooltip} />
  */
-export const PanelMapTooltip = ({
-  tooltip,
-}: {
-  tooltip: PanelMapTooltipState | null;
-}) => {
+export const PanelMapTooltip = ({ tooltip }: PanelMapTooltipProps) => {
   if (!tooltip) return null;
+  const left = tooltip.x + TOOLTIP_OFFSET_PX;
+  const top = tooltip.y + TOOLTIP_OFFSET_PX;
 
   return (
     <div
       role="tooltip"
       className="pointer-events-none absolute z-20 max-w-60 rounded-[6px] bg-grey-1100 px-3 py-2 text-xs leading-4 text-white shadow-lg"
-      style={{
-        left: tooltip.x + TOOLTIP_OFFSET_PX,
-        top: tooltip.y + TOOLTIP_OFFSET_PX,
-      }}
+      style={{ left, top }}
     >
       <p className="font-semibold">{tooltip.title}</p>
       <p className="mt-1 tabular-nums">{tooltip.value}</p>

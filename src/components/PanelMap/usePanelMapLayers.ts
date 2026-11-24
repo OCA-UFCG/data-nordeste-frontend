@@ -10,7 +10,10 @@ import {
 } from "react";
 
 import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
-import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
+import type {
+  MapFeatureProps,
+  PanelIndicator,
+} from "@/features/panelMap/geodataTypes";
 import {
   fitTargetFor,
   type FitSources,
@@ -121,32 +124,34 @@ function useRecorteFraming(
 }
 
 // Clique emite o recorte direto e o enquadramento vem da mudança de props
-// (não é marcado como do zoom); clicar no que já está escolhido não muda nada, então só enquadra.
+// (não é marcado como do zoom); clicar no que já está escolhido não muda nada,
+// então só enquadra.
+function handleFeatureClick(
+  feature: MapFeatureProps,
+  args: PanelMapLayersArgs,
+  sources: FitSources,
+  zoomEmittedRef: MutableRefObject<MapRecorte | null>,
+): void {
+  const { engine, indicator, deepest, recorte, area } = args;
+  const next = recorteForClick(feature, indicator, deepest);
+
+  zoomEmittedRef.current = null;
+  if (!sameRecorte(next, recorte)) return args.onRecorteChange(next);
+  if (engine) fitRecorte(engine, next, area, sources);
+}
+
+// WHY deps com `args` inteiro: o recorte do pai muda de objeto a cada render,
+// então o callback é trocado a cada render de qualquer jeito (troca barata).
 function useFeatureClicks(
   args: PanelMapLayersArgs,
   sources: FitSources,
   zoomEmittedRef: MutableRefObject<MapRecorte | null>,
 ) {
-  const { engine, indicator, deepest, recorte, area, onRecorteChange } = args;
-
   useEffect(() => {
-    engine?.onClickFeature((feature) => {
-      const next = recorteForClick(feature, indicator, deepest);
-
-      zoomEmittedRef.current = null;
-      if (!sameRecorte(next, recorte)) return onRecorteChange(next);
-      fitRecorte(engine, next, area, sources);
-    });
-  }, [
-    engine,
-    indicator,
-    deepest,
-    recorte,
-    area,
-    sources,
-    onRecorteChange,
-    zoomEmittedRef,
-  ]);
+    args.engine?.onClickFeature((feature) =>
+      handleFeatureClick(feature, args, sources, zoomEmittedRef),
+    );
+  }, [args, sources, zoomEmittedRef]);
 }
 
 /**

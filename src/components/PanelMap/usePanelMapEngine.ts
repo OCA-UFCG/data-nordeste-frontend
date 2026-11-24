@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  type Dispatch,
+  type MutableRefObject,
+  type SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import {
   type BasemapKind,
@@ -16,6 +23,29 @@ export type PanelMapEngineMount = {
   onEngine?: (engine: PanelMapEngine | null) => void;
 };
 
+// `municipal` e a fábrica são lidos só aqui, na montagem: valem pela vida do
+// componente. `onEngine` é lido pelo ref na hora, para pegar o mais recente.
+function mountEngine(
+  container: HTMLElement,
+  mountRef: MutableRefObject<PanelMapEngineMount>,
+  setEngine: Dispatch<SetStateAction<PanelMapEngine | null>>,
+): () => void {
+  const { municipal, createEngine = createPanelMapEngine } = mountRef.current;
+  const teardown = createEngine(container, {
+    basemap: DEFAULT_BASEMAP,
+    municipal,
+    onReady: (ready) => {
+      setEngine(ready);
+      mountRef.current.onEngine?.(ready);
+    },
+  });
+
+  return () => {
+    teardown();
+    mountRef.current.onEngine?.(null);
+  };
+}
+
 /**
  * Monta o motor do mapa no `containerRef` uma vez por componente e o desmonta
  * ao sair. `onEngine` recebe o motor pronto (e `null` ao desmontar), para o
@@ -26,33 +56,17 @@ export type PanelMapEngineMount = {
 export function usePanelMapEngine(mount: PanelMapEngineMount) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [engine, setEngine] = useState<PanelMapEngine | null>(null);
-  const onEngineRef = useRef(mount.onEngine);
-  const createRef = useRef(mount.createEngine ?? createPanelMapEngine);
-  const municipalRef = useRef(mount.municipal);
+  const mountRef = useRef(mount);
 
   useEffect(() => {
-    onEngineRef.current = mount.onEngine;
-  }, [mount.onEngine]);
+    mountRef.current = mount;
+  });
 
-  // INTENTIONAL: deps vazias. `municipal` e a fábrica valem pela vida do
-  // componente; callbacks novos do pai não podem recriar o mapa.
+  // INTENTIONAL: deps vazias. Callbacks novos do pai não podem recriar o mapa.
   useEffect(() => {
     const container = containerRef.current;
 
-    if (!container) return;
-    const teardown = createRef.current(container, {
-      basemap: DEFAULT_BASEMAP,
-      municipal: municipalRef.current,
-      onReady: (ready) => {
-        setEngine(ready);
-        onEngineRef.current?.(ready);
-      },
-    });
-
-    return () => {
-      teardown();
-      onEngineRef.current?.(null);
-    };
+    return container ? mountEngine(container, mountRef, setEngine) : undefined;
   }, []);
 
   return { containerRef, engine };

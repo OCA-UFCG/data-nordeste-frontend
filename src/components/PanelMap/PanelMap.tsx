@@ -61,54 +61,60 @@ const PanelMapNotice = ({
   </div>
 );
 
-// Motor, camadas e recorte pelo zoom, já com os geodados em mãos.
+// Camadas e recorte pelo zoom: o zoom usa o callback marcado pelas camadas.
+function usePanelMapRecorte(
+  props: PanelMapProps,
+  geodata: ReadyGeodata,
+  engine: PanelMapEngine | null,
+  aridezOn: boolean,
+) {
+  const layers = { ...props, engine, geodata, aridezOn };
+  const onZoomRecorte = usePanelMapLayers(layers);
+
+  useMapRecorte({ ...layers, onRecorteChange: onZoomRecorte });
+}
+
+// Motor, controles, camadas e tooltip, já com os geodados em mãos.
 function usePanelMapStage(props: PanelMapProps, geodata: ReadyGeodata) {
-  const { indicator, recorte, deepest } = props;
   const { containerRef, engine } = usePanelMapEngine({
-    municipal: indicator !== "idh",
+    municipal: props.indicator !== "idh",
     createEngine: props.createEngine,
     onEngine: props.onEngine,
   });
   const controls = usePanelMapControls(engine, geodata.manifest);
-  const onZoomRecorte = usePanelMapLayers({
-    ...props,
-    engine,
-    geodata,
-    aridezOn: controls.aridez.on,
-  });
+  const features = geodata.features;
+  const tooltip = usePanelMapTooltip({ ...props, engine, features });
 
-  useMapRecorte({ engine, recorte, deepest, onRecorteChange: onZoomRecorte });
-  const tooltip = usePanelMapTooltip({
-    ...props,
-    engine,
-    features: geodata.features,
-  });
+  usePanelMapRecorte(props, geodata, engine, controls.aridez.on);
 
   return { containerRef, controls, tooltip };
 }
 
-type PanelMapControls = ReturnType<typeof usePanelMapControls>;
+type PanelMapOverlaysProps = {
+  controls: ReturnType<typeof usePanelMapControls>;
+  geodata: ReadyGeodata;
+  props: PanelMapProps;
+};
 
-// Aridez no canto superior esquerdo; basemap à esquerda do +/− do MapLibre,
-// que ocupa o canto superior direito.
-const PanelMapTopControls = ({
+// Cada controle já vem posicionado no seu canto do mapa.
+const PanelMapOverlays = ({
   controls,
-  aridezYears,
-}: {
-  controls: PanelMapControls;
-  aridezYears: number[];
-}) => (
+  geodata,
+  props,
+}: PanelMapOverlaysProps) => (
   <>
-    <div className="absolute top-2.5 left-2.5 z-10">
-      <AridezControl
-        years={aridezYears}
-        value={controls.aridez}
-        onChange={controls.setAridez}
-      />
-    </div>
-    <div className="absolute top-2.5 right-12 z-10">
-      <BasemapSwitch value={controls.basemap} onChange={controls.setBasemap} />
-    </div>
+    <AridezControl
+      years={geodata.manifest.aridez.years}
+      value={controls.aridez}
+      onChange={controls.setAridez}
+    />
+    <BasemapSwitch value={controls.basemap} onChange={controls.setBasemap} />
+    <PanelMapLegend
+      styles={geodata.styles}
+      indicator={props.indicator}
+      label={props.label}
+      aridezYear={controls.aridez.on ? controls.aridez.year : null}
+    />
   </>
 );
 
@@ -117,7 +123,6 @@ const PanelMapStage = ({
   ...props
 }: PanelMapProps & { geodata: ReadyGeodata }) => {
   const { containerRef, controls, tooltip } = usePanelMapStage(props, geodata);
-  const { aridez } = controls;
 
   return (
     <div
@@ -126,18 +131,7 @@ const PanelMapStage = ({
       className={`${FRAME} ${props.className ?? ""}`}
     >
       <div ref={containerRef} className="absolute inset-0" />
-      <PanelMapTopControls
-        controls={controls}
-        aridezYears={geodata.manifest.aridez.years}
-      />
-      <div className="absolute bottom-2.5 left-2.5 z-10">
-        <PanelMapLegend
-          styles={geodata.styles}
-          indicator={props.indicator}
-          label={props.label}
-          aridezYear={aridez.on ? aridez.year : null}
-        />
-      </div>
+      <PanelMapOverlays controls={controls} geodata={geodata} props={props} />
       <PanelMapTooltip tooltip={tooltip} />
     </div>
   );

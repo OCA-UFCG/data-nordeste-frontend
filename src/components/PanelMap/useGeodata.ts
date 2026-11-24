@@ -97,9 +97,7 @@ export function useGeodata(
       .catch((error: unknown) => geodataFailure(indicator, error))
       .then((next) => (cancelled ? undefined : setState(next)));
 
-    return () => {
-      cancelled = true;
-    };
+    return () => void (cancelled = true);
   }, [indicator, fetchGeodata]);
 
   return state;
