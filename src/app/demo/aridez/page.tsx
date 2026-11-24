@@ -61,8 +61,8 @@ const loadPanel = async (filters: TerritorialFilters) => {
   }
 };
 
-// INTENTIONAL: sem o Contentful, a capa usa o macrotema padrão e some só a
-// seção de relacionados.
+// INTENTIONAL: sem o Contentful, a capa usa o macrotema e o texto de abertura
+// padrão e some só a seção de relacionados.
 export default async function AridezDemoPage({
   searchParams,
 }: {
@@ -85,9 +85,9 @@ export default async function AridezDemoPage({
         tone="aridez"
         icon="aridez"
         title={ARIDEZ_TITLE}
-        lead={ARIDEZ_LEAD}
+        lead={content?.panel.abovePanelDescription || ARIDEZ_LEAD}
         macroTheme={macroTheme}
-        publishedAt={content?.panel.date}
+        updatedAt={content?.panel.date}
       />
       <AridezDashboard
         data={panel ?? emptyAridezPanel(filters)}

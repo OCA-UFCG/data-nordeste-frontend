@@ -1,6 +1,7 @@
 // Textos do painel de aridez do protótipo (aridez.html). Ficam fora dos
 // componentes para a página (servidor) e o painel (cliente) lerem a mesma redação.
 
+// Fallback da capa: cópia do `abovePanelDescription` do Contentful.
 export const ARIDEZ_LEAD =
   "O painel de Índice de Aridez reúne dados sobre a disponibilidade hídrica e a suscetibilidade à desertificação nos territórios abrangidos pelo Data Nordeste. As informações permitem analisar a classificação climática dos municípios, a extensão das áreas suscetíveis à desertificação e sua distribuição territorial. O exame desses dados possibilita entender os padrões de disponibilidade hídrica dos territórios, identificar áreas sob maior pressão ambiental e subsidiar estratégias de convivência com a seca e de mitigação dos processos de desertificação.";
 

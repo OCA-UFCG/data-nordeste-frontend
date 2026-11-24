@@ -94,7 +94,7 @@ export default async function IdhDemoPage({
         title={IDH_TITLE}
         lead={content?.panel.abovePanelDescription || IDH_LEAD}
         macroTheme={macroTheme}
-        publishedAt={content?.panel.date}
+        updatedAt={content?.panel.date}
       />
       <IdhDashboard
         data={panel ?? emptyIdhPanel(filters, years)}

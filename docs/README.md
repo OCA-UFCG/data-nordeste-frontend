@@ -304,7 +304,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 
 - The reference is the navigable prototype ("Painéis Data Nordeste", `idh.html`),
   reproduced in layout and behaviour: dark cover (back link, breadcrumb,
-  "Publicado em", macrotheme badge, lead), sticky filter bar, left rail of
+  "Atualizado em", macrotheme badge, lead), sticky filter bar, left rail of
   views above 900 px (top tab bar below), cards with footer, ⓘ and ⋯ menu,
   "Saiba mais sobre o IDH" with "Ler mais" and glossary. It replaced the
   Power BI-faithful version of `129cef4` (gauges, no ranking).
@@ -343,7 +343,11 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Contentful texts: the cover lead is the entry's `abovePanelDescription`
   (`IDH_LEAD` only as fallback) and the long `description` renders before
   "Saiba mais". The title stays `IDH_TITLE`: the "panels" entry `title` is the
-  lookup key (`"idh"`), not display text.
+  lookup key (`"idh"`), not display text. The PIB, perfil and aridez covers
+  follow the same rule (`PIB_LEAD`, `PERFIL_LEAD`, `ARIDEZ_LEAD` are copies of
+  the Contentful text, used only as fallback), so every demo cover opens with
+  the same paragraph as `/data-panel/<id>`. The cover badge says "Atualizado
+  em" with the entry `date`.
 - Switching views only calls `replaceState`; the active tab is local state that
   follows `data.filters.visao` when it changes. Do not put a `key` on
   `IdhDashboard`: it remounted the panel on the first filter after a tab

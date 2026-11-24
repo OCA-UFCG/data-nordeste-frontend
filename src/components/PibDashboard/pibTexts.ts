@@ -1,9 +1,9 @@
 // Textos do painel do PIB do protótipo. Ficam fora dos componentes para a
 // página (servidor) e o painel (cliente) lerem a mesma redação.
 
-// Texto de abertura da capa.
+// Fallback da capa: cópia do `abovePanelDescription` do Contentful.
 export const PIB_LEAD =
-  "Acompanhe a riqueza gerada pelos estados do Nordeste: o PIB total e per capita ao longo do tempo, a comparação entre estados e a contribuição de cada setor da economia.";
+  "Os dados reunidos neste painel permitem explorar diferentes indicadores da atividade econômica dos estados e municípios que compõem as áreas de abrangência do Data Nordeste. As informações incluem o Produto Interno Bruto (PIB) total e per capita desses territórios, o total de impostos, o Valor Adicionado Bruto (VAB) por setor e as atividades econômicas que mais têm participação no PIB. Tais conteúdos podem subsidiar decisões relacionadas ao planejamento econômico, à definição de prioridades de investimento, ao fortalecimento de setores estratégicos e à redução das desigualdades entre os territórios.";
 
 // Fonte que vai no rodapé dos cards e na imagem baixada.
 export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
