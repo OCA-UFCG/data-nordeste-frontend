@@ -100,12 +100,16 @@ function descentLevel(
  */
 export function resolveRecorte(input: ResolveRecorteInput): MapRecorte {
   const { zoom, fittedZoom, current, centerUf, centerMun } = input;
+  const level = levelForZoom(zoom, input.deepest);
+  const zoomedOut = zoom < fittedZoom - ZOOM_OUT_TOLERANCE;
 
+  // INTENTIONAL: subir até a área não precisa de feição no centro. O recorte
+  // vazio sempre volta igual do servidor; sem isto, com o centro fora da área
+  // (ex.: litoral de PE no Semiárido) ou no mar, afastar não limparia nada.
+  if (level === "area" && zoomedOut) return EMPTY_RECORTE;
   if (!centerUf) return current;
   const currentLevel = levelOfRecorte(current);
-  const level = levelForZoom(zoom, input.deepest);
   const down = descentLevel(level, centerMun);
-  const zoomedOut = zoom < fittedZoom - ZOOM_OUT_TOLERANCE;
 
   if (LEVEL_RANK[down] > LEVEL_RANK[currentLevel]) {
     return recorteAt(down, centerUf, centerMun);

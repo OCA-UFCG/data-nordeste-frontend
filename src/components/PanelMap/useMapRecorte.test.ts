@@ -73,6 +73,19 @@ describe("useMapRecorte", () => {
     expect(onRecorteChange).not.toHaveBeenCalled();
   });
 
+  // Área Semiárido, recorte PE, centro no litoral (sem feição do indicador).
+  it("afastar abaixo da âncora limpa o recorte mesmo sem feição no centro", () => {
+    const { engine, onRecorteChange } = renderMapRecorte({
+      uf: ["PE"],
+      mun: [],
+    });
+
+    engine.emitMoveEnd({ zoom: 7, fit: true, fittedZoom: 7 });
+    engine.emitMoveEnd({ zoom: 6.2, fittedZoom: 7 });
+
+    expect(onRecorteChange).toHaveBeenCalledWith(EMPTY_RECORTE);
+  });
+
   it("desce até o município quando o painel permite", () => {
     const { engine, onRecorteChange } = renderMapRecorte(
       EMPTY_RECORTE,

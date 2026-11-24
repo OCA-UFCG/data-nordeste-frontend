@@ -307,7 +307,9 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   (municipal: its `uf` and `code`; IDH: its `code`), and that layer is
   filtered to the area of interest, so the map never emits a code the server
   would drop (`keepKnown`). With the centre outside the area or over the sea
-  there is no feature, and the recorte stays as it is.
+  there is no feature, and the recorte stays as it is, except when zooming out
+  to the area level (below the anchor minus the tolerance): that clears the
+  recorte without a centre feature, since the empty recorte always round-trips.
 - **Going up uses the anchor zoom.** The recorte is only cleared one level when
   the zoom falls more than 0.5 (`ZOOM_OUT_TOLERANCE`) below the anchor: the
   zoom of the last programmatic fit, or the zoom at which the user chose the

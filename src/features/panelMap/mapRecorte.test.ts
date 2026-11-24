@@ -119,6 +119,43 @@ describe("resolveRecorte", () => {
     expect(result).toEqual(EMPTY_RECORTE);
   });
 
+  // Área Semiárido, recorte PE, centro no litoral (fora do semi_21_1): não
+  // há feição do indicador sob o centro, e mesmo assim afastar limpa.
+  it("sobe para a área sem feição no centro quando afasta além da tolerância", () => {
+    const result = resolveRecorte({
+      ...base,
+      current: { uf: ["PE"], mun: [] },
+      fittedZoom: 7,
+      zoom: 6.2,
+    });
+
+    expect(result).toEqual(EMPTY_RECORTE);
+  });
+
+  it("sem feição no centro, não sobe de município para estado", () => {
+    const current: MapRecorte = { uf: ["PE"], mun: [RECIFE] };
+    const result = resolveRecorte({
+      ...base,
+      current,
+      fittedZoom: 9,
+      zoom: 7.5,
+    });
+
+    expect(result).toBe(current);
+  });
+
+  it("sem feição no centro, não sobe à área dentro da tolerância", () => {
+    const current: MapRecorte = { uf: ["PE"], mun: [] };
+    const result = resolveRecorte({
+      ...base,
+      current,
+      fittedZoom: 6.5,
+      zoom: 6.2,
+    });
+
+    expect(result).toBe(current);
+  });
+
   it("sobe de município para estado quando afasta além da tolerância", () => {
     const result = resolveRecorte({
       ...base,
