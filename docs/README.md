@@ -340,9 +340,11 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   moves (fit to the filters, resize) never emit, which avoids a
   filter → fit → zoom → different filter loop. Click emits the recorte of the
   clicked feature directly (municipality; the state in the IDH or in a card
-  that stops at state). When that recorte is new, the map fits it through the
-  prop change (a click is not marked as a zoom emission); when it already is
-  the recorte, nothing changes, so the click fits it directly.
+  that stops at state) through the prop change (a click is not marked as a
+  zoom emission, so the map fits it). Clicking the feature that already is
+  the current recorte goes up one level (`recorteForClick`): municipality →
+  its state, state → `EMPTY_RECORTE` (back to the area of interest). With
+  several selected, clicking one selects only it (no level change).
 - **Gestures and zoom cap** (`src/lib/panelMap/panelMapOptions.ts`): the
   map inside the card uses MapLibre's cooperative gestures (Ctrl/⌘ + wheel,
   two fingers on touch, prompt in Portuguese) so it does not hijack the page

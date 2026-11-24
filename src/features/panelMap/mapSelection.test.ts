@@ -2,6 +2,7 @@ import type { FeatureCollection } from "geojson";
 import { describe, expect, it } from "vitest";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
+import { EMPTY_RECORTE } from "@/features/panelMap/mapRecorte";
 import {
   featureProps,
   featuresInArea,
@@ -33,21 +34,77 @@ const PERNAMBUCO: MapFeatureProps = {
 
 describe("recorteForClick", () => {
   it("com feições de estado (IDH, Estados) a feição é o estado", () => {
-    expect(recorteForClick(PERNAMBUCO, "estado", "estado")).toEqual({
+    expect(
+      recorteForClick(PERNAMBUCO, "estado", "estado", EMPTY_RECORTE),
+    ).toEqual({
       uf: ["PE"],
       mun: [],
     });
   });
 
   it("município clicado vira o filtro de município", () => {
-    expect(recorteForClick(RECIFE, "municipio", "municipio")).toEqual({
+    expect(
+      recorteForClick(RECIFE, "municipio", "municipio", EMPTY_RECORTE),
+    ).toEqual({
       uf: ["PE"],
       mun: ["2611606"],
     });
   });
 
   it("sem nível município, o clique escolhe o estado do município", () => {
-    expect(recorteForClick(RECIFE, "municipio", "estado")).toEqual({
+    expect(
+      recorteForClick(RECIFE, "municipio", "estado", EMPTY_RECORTE),
+    ).toEqual({
+      uf: ["PE"],
+      mun: [],
+    });
+  });
+  it("município já escolhido: o clique volta ao estado", () => {
+    const current = { uf: ["PE"], mun: ["2611606"] };
+
+    expect(recorteForClick(RECIFE, "municipio", "municipio", current)).toEqual({
+      uf: ["PE"],
+      mun: [],
+    });
+  });
+
+  it("estado já escolhido (feições de estado): o clique volta à área", () => {
+    const current = { uf: ["PE"], mun: [] };
+
+    expect(recorteForClick(PERNAMBUCO, "estado", "estado", current)).toEqual(
+      EMPTY_RECORTE,
+    );
+  });
+
+  it("sem nível município, clicar no estado já escolhido volta à área", () => {
+    const current = { uf: ["PE"], mun: [] };
+
+    expect(recorteForClick(RECIFE, "municipio", "estado", current)).toEqual(
+      EMPTY_RECORTE,
+    );
+  });
+
+  it("outro município do mesmo estado é escolhido, sem voltar nível", () => {
+    const current = { uf: ["PE"], mun: ["2611606"] };
+
+    expect(
+      recorteForClick(PETROLINA, "municipio", "municipio", current),
+    ).toEqual({ uf: ["PE"], mun: ["2611101"] });
+  });
+
+  it("um de vários municípios selecionados: escolhe só ele", () => {
+    const current = { uf: ["PE"], mun: ["2611606", "2611101"] };
+
+    expect(recorteForClick(RECIFE, "municipio", "municipio", current)).toEqual({
+      uf: ["PE"],
+      mun: ["2611606"],
+    });
+  });
+
+  it("um de vários estados selecionados: escolhe só ele", () => {
+    const current = { uf: ["PE", "PB"], mun: [] };
+
+    expect(recorteForClick(PERNAMBUCO, "estado", "estado", current)).toEqual({
       uf: ["PE"],
       mun: [],
     });

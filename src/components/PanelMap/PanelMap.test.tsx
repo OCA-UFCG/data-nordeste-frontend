@@ -279,18 +279,26 @@ describe("PanelMap recorte pelo zoom (regras 3 e 4)", () => {
     expect(props.onRecorteChange).toHaveBeenCalledWith(PE);
   });
 
-  it("clique no que já está escolhido só enquadra", async () => {
+  it("clique no estado já escolhido volta à área de interesse", async () => {
     const { engine, props } = await renderPanelMap({
       indicator: "idh",
       deepest: "estado",
       recorte: PE,
     });
 
-    engine.fitTo.mockClear();
     act(() => engine.emitClick(PERNAMBUCO));
 
-    expect(props.onRecorteChange).not.toHaveBeenCalled();
-    expect(engine.fitTo).toHaveBeenCalledWith(PE_BBOX);
+    expect(props.onRecorteChange).toHaveBeenCalledWith(EMPTY_RECORTE);
+  });
+
+  it("clique no município já escolhido volta ao estado", async () => {
+    const { engine, props } = await renderPanelMap({
+      recorte: { uf: ["PE"], mun: ["2611606"] },
+    });
+
+    act(() => engine.emitClick(RECIFE));
+
+    expect(props.onRecorteChange).toHaveBeenCalledWith(PE);
   });
 });
 
