@@ -6,7 +6,10 @@ import type {
 } from "@/features/panelMap/geodataTypes";
 import { propertyIn } from "@/features/panelMap/mapLayers";
 import type { MapRecorte } from "@/features/panelMap/mapRecorte";
-import type { FeaturePaint } from "@/features/panelMap/qgisPaint";
+import {
+  visibleStateOutline,
+  type FeaturePaint,
+} from "@/features/panelMap/qgisPaint";
 import { TERRITORIAL_AREAS } from "@/features/panels/territorialFilters";
 
 /** O que cada feição do mapa é: um município ou um estado. */
@@ -92,7 +95,7 @@ export function statesWithAreaFlags(
 
 /**
  * Pintura da malha dos estados: rosa claro, e os estados escolhidos mais
- * fortes. O contorno é o dos estados no `.qgz`.
+ * fortes. O contorno é o dos estados no `.qgz`, com espessura mínima visível.
  * Ex.: `stateMeshPaint(styles, ["PE"]).color` → `["case", …, "#e98dae", "#f6d3e0"]`.
  */
 export function stateMeshPaint(
@@ -106,7 +109,7 @@ export function stateMeshPaint(
       STATE_MESH_FILL_SELECTED,
       STATE_MESH_FILL,
     ],
-    outline: styles.stateOutline,
+    outline: visibleStateOutline(styles.stateOutline),
   };
 }
 

@@ -11,6 +11,7 @@ import {
   type FitSources,
   type veilFilters,
 } from "@/features/panelMap/mapLayers";
+import { visibleStateOutline } from "@/features/panelMap/qgisPaint";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 import {
   BASEMAP_KINDS,
@@ -80,7 +81,11 @@ export function paintIndicator(map: MaplibreMap, paint: IndicatorPaint): void {
     map.setFilter(layerId, inArea),
   );
   paintLine(map, featureOutline, paint.outline);
-  paintLine(map, PANEL_MAP_LAYER.stateOutline, paint.stateOutline);
+  paintLine(
+    map,
+    PANEL_MAP_LAYER.stateOutline,
+    visibleStateOutline(paint.stateOutline),
+  );
   map.setFilter(PANEL_MAP_LAYER.areaOutline, [
     "==",
     ["get", "area"],

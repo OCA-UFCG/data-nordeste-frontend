@@ -321,7 +321,13 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   boundary: it marks the feature the tooltip names). With state features
   (IDH, Estados view) their own outline has no `minzoom`: without it the
   uniform pink Estados mesh reads as one blob at the area zoom (the separate
-  state-outline layer still starts at `STATE_LINES_ZOOM`). In the Estados view the
+  state-outline layer still starts at `STATE_LINES_ZOOM`). State outlines keep
+  the `.qgz` colour but never draw thinner than `STATE_OUTLINE_MIN_WIDTH_PX`
+  (1.5 px, `visibleStateOutline` in `qgisPaint.ts`): the `.qgz` width is a print
+  one (0.15 mm = 0.57 px) and the limits were invisible on screen (user
+  feedback, 24/11/2026). It applies to the separate state-outline layer
+  (`paintIndicator`) and to the state features' own outline (`stateMeshPaint`);
+  municipal outlines are unchanged. In the Estados view the
   zoom also resolves from the drawn recorte (`recorteForLevel`), so a
   município chosen in the bar does not pin the level at municipality. The engine's
   `municipal` flag picks the variant when the style is built.

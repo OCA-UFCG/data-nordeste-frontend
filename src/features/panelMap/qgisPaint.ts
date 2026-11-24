@@ -9,6 +9,11 @@ import type {
 
 export const NO_DATA_COLOR = "#d9d9d9";
 
+// WHY: o qgz traz o limite estadual com 0,15 mm de impressão (0,57 px), que não
+// aparece na tela; o usuário avisou em 24/11/2026 que os limites dos estados
+// não estavam visíveis. A cor do qgz fica, só a espessura ganha um piso.
+export const STATE_OUTLINE_MIN_WIDTH_PX = 1.5;
+
 /** Nome da propriedade da feição para um ano: `yearField(2023)` → `"v2023"`. */
 export function yearField(ano: number): string {
   return `v${ano}`;
@@ -123,6 +128,17 @@ export function indicatorFillColor(
   rasterBase: boolean,
 ): ExpressionSpecification {
   return rasterBase ? TRANSPARENT_FILL : classColorExpression(classes, ano);
+}
+
+/**
+ * Contorno estadual do qgz com espessura mínima visível na tela; a cor não muda.
+ * Ex.: `visibleStateOutline({ color: "#666666", widthPx: 0.57 })` → `{ color: "#666666", widthPx: 1.5 }`.
+ */
+export function visibleStateOutline(outline: QgisOutline): QgisOutline {
+  return {
+    ...outline,
+    widthPx: Math.max(outline.widthPx, STATE_OUTLINE_MIN_WIDTH_PX),
+  };
 }
 
 export type FeaturePaint = {

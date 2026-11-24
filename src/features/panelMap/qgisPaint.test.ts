@@ -6,7 +6,9 @@ import {
   classForValue,
   featurePaint,
   indicatorFillColor,
+  STATE_OUTLINE_MIN_WIDTH_PX,
   TRANSPARENT_FILL,
+  visibleStateOutline,
   yearField,
 } from "@/features/panelMap/qgisPaint";
 import type {
@@ -207,5 +209,21 @@ describe("featurePaint", () => {
       color: TRANSPARENT_FILL,
       outline: stateOutline,
     });
+  });
+});
+
+describe("visibleStateOutline", () => {
+  it("sobe o limite do qgz (0,57 px) para a espessura mínima, mantendo a cor", () => {
+    expect(visibleStateOutline({ color: "#666666", widthPx: 0.57 })).toEqual({
+      color: "#666666",
+      widthPx: STATE_OUTLINE_MIN_WIDTH_PX,
+    });
+    expect(STATE_OUTLINE_MIN_WIDTH_PX).toBe(1.5);
+  });
+
+  it("não afina um contorno que já é mais grosso", () => {
+    expect(visibleStateOutline({ color: "#000000", widthPx: 3 }).widthPx).toBe(
+      3,
+    );
   });
 });

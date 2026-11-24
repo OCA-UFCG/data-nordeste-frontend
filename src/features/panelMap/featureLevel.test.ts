@@ -9,6 +9,7 @@ import {
   stateMeshPaint,
   statesWithAreaFlags,
 } from "@/features/panelMap/featureLevel";
+import { STATE_OUTLINE_MIN_WIDTH_PX } from "@/features/panelMap/qgisPaint";
 import type { GeodataStyles } from "@/features/panelMap/geodataTypes";
 
 function collection(properties: object[]): FeatureCollection {
@@ -110,8 +111,11 @@ describe("stateMeshPaint", () => {
     ]);
   });
 
-  it("o contorno das feições é o dos estados", () => {
-    expect(stateMeshPaint(styles, []).outline).toBe(STATE_OUTLINE);
+  it("o contorno das feições é o dos estados, com espessura mínima", () => {
+    expect(stateMeshPaint(styles, []).outline).toEqual({
+      color: "#ffffff",
+      widthPx: STATE_OUTLINE_MIN_WIDTH_PX,
+    });
   });
 });
 
