@@ -63,7 +63,7 @@ export function veilFilters(recorte: MapRecorte): VeilFilters {
 
 /**
  * Contorno grosso da seleção: municípios em `mun`, senão estados em `uf`. Com
- * feições de estado (IDH, vista Estados), `mun` não se aplica.
+ * feições de estado (IDH), `mun` não se aplica.
  */
 export function selectionFilter(
   recorte: MapRecorte,

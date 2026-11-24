@@ -7,7 +7,6 @@ import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
 import { featureProps, featuresInArea } from "@/features/panelMap/mapSelection";
 import {
   describeMapFeature,
-  describeMapFeatureName,
   featureValueReader,
   type FeatureValueReader,
   type MapTooltipText,
@@ -29,9 +28,6 @@ export type PanelMapTooltipArgs = {
 
   // Nome do número no tooltip ("PIB: R$ 1 mi").
   valueLabel: string;
-
-  // Feições sem valores (malha dos estados): o tooltip mostra só o nome.
-  nameOnly?: boolean;
 };
 
 export type PanelMapTooltipState = MapTooltipText & { x: number; y: number };
@@ -74,12 +70,10 @@ export function usePanelMapTooltip(
 
   useEffect(() => engine?.onHover(setHover), [engine]);
   if (!hover) return null;
-  const text = args.nameOnly
-    ? describeMapFeatureName(hover.props)
-    : describeMapFeature(hover.props, readValue, ranks, ranks.size, {
-        valueLabel,
-        formatValue,
-      });
+  const text = describeMapFeature(hover.props, readValue, ranks, ranks.size, {
+    valueLabel,
+    formatValue,
+  });
 
   return { ...text, x: hover.x, y: hover.y };
 }

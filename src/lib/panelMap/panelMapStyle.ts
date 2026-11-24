@@ -146,9 +146,9 @@ function classMutedLayer(): LayerSpecification {
 // STATE_LINES_ZOOM; os municípios a partir de MUNICIPAL_LINES_ZOOM. Assim a
 // divisa já aparece antes de o zoom filtrar por ela. O preenchimento das classes, o
 // véu e a seleção aparecem em qualquer zoom. INTENTIONAL: com feições de
-// estado (IDH, vista Estados), o contorno delas aparece em qualquer zoom;
-// sem ele a malha rosa da vista Estados vira uma mancha só (decisão do
-// controlador, 24/11/2026).
+// estado (IDH), o contorno delas aparece em qualquer zoom; sem ele a antiga
+// malha rosa da vista Estados do perfil virava uma mancha só (decisão do
+// controlador, 24/11/2026; a vista saiu depois, a regra ficou para o IDH).
 function withMinZoom<Layer extends LayerSpecification>(
   layer: Layer,
   minzoom: number,

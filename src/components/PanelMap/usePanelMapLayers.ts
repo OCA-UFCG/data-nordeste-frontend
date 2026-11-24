@@ -9,9 +9,7 @@ import type {
 } from "@/features/panelMap/geodataTypes";
 import {
   type FeatureLevel,
-  type MapFeatureMode,
   recorteForLevel,
-  stateMeshPaint,
 } from "@/features/panelMap/featureLevel";
 import {
   fitTargetFor,
@@ -39,11 +37,9 @@ export type PanelMapLayersArgs = {
   recorte: MapRecorte;
   deepest: MapLevel;
   aridez: PanelMapAridez;
-  mode: MapFeatureMode;
+  level: FeatureLevel;
   onRecorteChange: (recorte: MapRecorte) => void;
 };
-
-const NO_UFS: string[] = [];
 
 /**
  * O mesmo recorte enquanto a seleção não muda. O pai costuma montar um objeto
@@ -69,27 +65,18 @@ function useFitSources(geodata: ReadyGeodata): FitSources {
   );
 }
 
-// A malha dos estados pinta os escolhidos mais forte: só ela depende da UF.
-function usePaint(args: PanelMapLayersArgs, meshUfs: string[]) {
+function usePaint(args: PanelMapLayersArgs) {
   const { geodata, indicator, ano, aridez } = args;
-  const { stateMesh } = args.mode;
 
   return useMemo(
-    () =>
-      stateMesh
-        ? stateMeshPaint(geodata.styles, meshUfs)
-        : featurePaint(geodata.styles, indicator, ano, aridez === "base"),
-    [geodata, indicator, ano, aridez, stateMesh, meshUfs],
+    () => featurePaint(geodata.styles, indicator, ano, aridez === "base"),
+    [geodata, indicator, ano, aridez],
   );
 }
 
-function useSourcesAndPaint(
-  args: PanelMapLayersArgs,
-  sources: FitSources,
-  recorte: MapRecorte,
-) {
-  const { engine, geodata, area, mode } = args;
-  const paint = usePaint(args, mode.stateMesh ? recorte.uf : NO_UFS);
+function useSourcesAndPaint(args: PanelMapLayersArgs, sources: FitSources) {
+  const { engine, geodata, area } = args;
+  const paint = usePaint(args);
 
   useEffect(() => engine?.setSources(sources), [engine, sources]);
   useEffect(() => {
@@ -124,8 +111,7 @@ function useRecorteFraming(
   sources: FitSources,
   recorte: MapRecorte,
 ) {
-  const { engine, area } = args;
-  const { level } = args.mode;
+  const { engine, area, level } = args;
 
   useEffect(() => {
     if (!engine) return;
@@ -144,8 +130,8 @@ function handleMapClick(
   clicked: MapFeatureProps | null,
   args: PanelMapLayersArgs,
 ): void {
-  const { mode, deepest, recorte } = args;
-  const next = recorteForClick(clicked, mode.level, deepest, recorte);
+  const { level, deepest, recorte } = args;
+  const next = recorteForClick(clicked, level, deepest, recorte);
 
   if (sameRecorte(next, recorte)) return;
   args.onRecorteChange(next);
@@ -169,7 +155,7 @@ export function usePanelMapLayers(args: PanelMapLayersArgs): void {
   const sources = useFitSources(args.geodata);
   const recorte = useStableRecorte(args.recorte);
 
-  useSourcesAndPaint(args, sources, recorte);
+  useSourcesAndPaint(args, sources);
   useRecorteFraming(args, sources, recorte);
   useMapClicks(args);
 }

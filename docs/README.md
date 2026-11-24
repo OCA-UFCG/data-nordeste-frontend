@@ -328,16 +328,14 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   themselves are unchanged). The class fill, veil,
   selection outline and hover outline show at any zoom (the hover is not a
   boundary: it marks the feature the tooltip names). With state features
-  (IDH, Estados view) their own outline has no `minzoom`: without it the
-  uniform pink Estados mesh reads as one blob at the area zoom (the separate
-  state-outline layer still starts at `STATE_LINES_ZOOM`). State outlines keep
+  (IDH) their own outline has no `minzoom` (the separate state-outline layer
+  still starts at `STATE_LINES_ZOOM`). State outlines keep
   the `.qgz` colour but never draw thinner than `STATE_OUTLINE_MIN_WIDTH_PX`
   (1.5 px, `visibleStateOutline` in `qgisPaint.ts`): the `.qgz` width is a print
   one (0.15 mm = 0.57 px) and the limits were invisible on screen (user
   feedback, 24/11/2026). It applies to the separate state-outline layer
-  (`paintIndicator`) and to the state features' own outline (`stateMeshPaint`);
-  municipal outlines are unchanged. In the Estados view the
-  zoom also resolves from the drawn recorte (`recorteForLevel`), so a
+  (`paintIndicator`); municipal outlines are unchanged. With state features
+  (IDH) the zoom also resolves from the drawn recorte (`recorteForLevel`), so a
   município chosen in the bar does not pin the level at municipality. The engine's
   `municipal` flag picks the variant when the style is built.
 - **Going up uses the anchor zoom.** The recorte is only cleared one level when
@@ -386,19 +384,15 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   prop). Double-click zoom is off, because it interrupted the fit of the
   click. `fitTo` stops at zoom 10, so a small municipality is not zoomed in
   too far.
-- **Feature level** (`featureLevel` prop, `src/features/panelMap/featureLevel.ts`):
-  what each feature is, a municipality or a state (`mapFeatureMode`). The IDH
-  is always "estado" (its GeoJSON already has the states, with values). For the
-  other indicators, `featureLevel="estado"` swaps the municipalities for the
-  state mesh (`estados.geojson`), flagged with the areas of their
-  municipalities (`statesWithAreaFlags`: a state is in the area when any of its
-  municipalities is), so the area filter and the centre of the zoom only see
-  states the server accepts. The mesh is pink `#f6d3e0`, the chosen states
-  `#e98dae` (`stateMeshPaint`), with no legend, and the tooltip shows only the
-  name. Engine (`municipal`), click and selection follow the level; with state
-  features a municipality chosen in the bar counts as its state
-  (`recorteForLevel`), otherwise the veil would cover the chosen state. The
-  level is read when the engine mounts: switch it with a `key`.
+- **Feature level** (`src/features/panelMap/featureLevel.ts`): what each
+  feature is, a municipality or a state (`featureLevelFor`). The IDH is
+  "estado" (its GeoJSON already has the states, with values); every other
+  indicator is "municipio". Engine (`municipal`), click and selection follow
+  the level; with state features a municipality chosen in the bar counts as
+  its state (`recorteForLevel`), otherwise the veil would cover the chosen
+  state. The profile's "Estados" view (pink state mesh, `featureLevel` prop,
+  `stateMeshPaint`, `statesWithAreaFlags`) was removed on 24/11/2026 (user
+  decision): the porte card only has the municipal map.
 - **Veil:** grey (`VEIL_COLOR`) only from the state level: states outside the
   chosen ones and, at municipality level, the municipalities of those states
   that are not chosen (`veilFilters`, a layer filter). At area level there is
@@ -650,17 +644,15 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Deliberate deviations from the prototype:
   - The map is the shared MapLibre `PanelMap` (indicator "demografia", the
     `.qgz` classes as delivered, including the inverted "Médio" range in the
-    legend). The "Municípios | Estados" switch (green-800 pressed button
-    group above the map) stays: "Municípios" shows the porte classes with the
-    legend chips (`deepest: "municipio"`); "Estados" is the same `PanelMap`
-    with `featureLevel="estado"` and `deepest: "estado"` (state mesh in pink,
-    chosen states stronger, no legend, no `sr-only` table, tooltip with the
-    state name). The SVG state map, the old porte pills
-    (`PerfilPorteToggles`) and `useDemografiaHighlight` are gone (the legend
-    chips of `PanelMap` highlight the class). Zooming or clicking the map
-    changes Estado and Município (Estados view: only Estado) in the panel
-    filters through `usePanelMapFilters` (the same `request` as the filter
-    bar).
+    legend). Only the municipal map remains: the porte classes with the
+    legend chips (`deepest: "municipio"`). The prototype's "Municípios |
+    Estados" switch was removed on 24/11/2026 (user decision), together with
+    the Estados view; `usePorteMapView` now only keeps the fullscreen state.
+    The SVG state map, the old porte pills (`PerfilPorteToggles`) and
+    `useDemografiaHighlight` are gone (the legend chips of `PanelMap`
+    highlight the class). Zooming or clicking the map changes Estado and
+    Município in the panel filters through `usePanelMapFilters` (the same
+    `request` as the filter bar).
   - Estado and Município keep multiple selection (up to 100, as before),
     styled like the prototype selects; links with several places still work.
   - Axis and labels come from the data (`perfilCharts.ts`: `niceAxis`,
