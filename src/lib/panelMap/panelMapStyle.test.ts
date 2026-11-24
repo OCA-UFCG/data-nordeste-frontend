@@ -31,11 +31,11 @@ describe("limites conforme o zoom", () => {
     expect(zooms[PANEL_MAP_LAYER.featureHover]).toBe(MUNICIPALITY_ZOOM);
   });
 
-  it("com feições de estado (IDH, Estados): os contornos seguem o nível estado", () => {
+  it("com feições de estado (IDH, Estados): o contorno delas aparece em qualquer zoom", () => {
     const zooms = minZooms(false);
 
     expect(zooms[PANEL_MAP_LAYER.stateOutline]).toBe(STATE_ZOOM);
-    expect(zooms[PANEL_MAP_LAYER.featureOutline]).toBe(STATE_ZOOM);
+    expect(zooms[PANEL_MAP_LAYER.featureOutline]).toBeUndefined();
     expect(zooms[PANEL_MAP_LAYER.featureHover]).toBeUndefined();
   });
 

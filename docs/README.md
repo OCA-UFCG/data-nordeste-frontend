@@ -315,9 +315,10 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   with only its outline; state limits appear from the state level and
   municipal limits (and the municipal hover outline) from the municipality
   level. The class fill, veil and selection outline show at any zoom. With
-  state features (IDH, Estados view) their outline is a state limit and also
-  starts at `STATE_ZOOM`; their hover outline has no `minzoom`, since at the
-  area zoom it is the only cue of the state under the pointer. The engine's
+  state features (IDH, Estados view) their own outline and hover outline have
+  no `minzoom`: without them the uniform pink Estados mesh reads as one blob
+  at the area zoom (the separate state-outline layer still starts at
+  `STATE_ZOOM`). The engine's
   `municipal` flag picks the variant when the style is built.
 - **Going up uses the anchor zoom.** The recorte is only cleared one level when
   the zoom falls more than 0.5 (`ZOOM_OUT_TOLERANCE`) below the anchor: the

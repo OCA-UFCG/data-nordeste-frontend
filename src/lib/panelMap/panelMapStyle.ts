@@ -141,8 +141,10 @@ function classMutedLayer(): LayerSpecification {
 // Limites conforme o zoom, nos mesmos limiares do recorte (mapRecorte): a
 // área de interesse sempre; os estados a partir do nível estado; os
 // municípios a partir do nível município. O preenchimento das classes, o
-// véu e a seleção aparecem em qualquer zoom. Com feições de estado (IDH,
-// vista Estados), o contorno delas é limite de estado e segue STATE_ZOOM.
+// véu e a seleção aparecem em qualquer zoom. INTENTIONAL: com feições de
+// estado (IDH, vista Estados), o contorno delas aparece em qualquer zoom;
+// sem ele a malha rosa da vista Estados vira uma mancha só (decisão do
+// controlador, 24/11/2026).
 function withMinZoom<Layer extends LayerSpecification>(
   layer: Layer,
   minzoom: number,
@@ -158,7 +160,7 @@ function featureOutlineLayer(municipal: boolean): LayerSpecification {
     UNPAINTED_LINE,
   );
 
-  return withMinZoom(layer, municipal ? MUNICIPALITY_ZOOM : STATE_ZOOM);
+  return municipal ? withMinZoom(layer, MUNICIPALITY_ZOOM) : layer;
 }
 
 function stateOutlineLayer(): LayerSpecification {
