@@ -75,6 +75,40 @@ const Gridlines = ({ geometry }: { geometry: PibLineGeometry }) => (
   </>
 );
 
+// Traço com ponto antes do título no cabeçalho do celular: diz qual linha é
+// de qual eixo, já que os títulos saem da ponta de cada eixo.
+const SeriesMarker = ({ series, y }: { series: PibLineSeries; y: number }) => (
+  <g stroke={series.color} strokeWidth="2.6" strokeLinecap="round">
+    <line x1="1.5" x2="12.5" y1={y - 4} y2={y - 4} />
+    <circle cx="7" cy={y - 4} r="2.5" fill={PIB_COLORS.paper} strokeWidth="2" />
+  </g>
+);
+
+// Valor do ano escolhido no cabeçalho do celular, no lugar do rótulo sobre a
+// linha (que lá cobria a outra série).
+const Readout = ({
+  geometry,
+  series,
+}: {
+  geometry: PibLineGeometry;
+  series: PibLineSeries;
+}) => {
+  const readout = geometry.readouts?.[series.key];
+
+  return readout ? (
+    <text
+      x={readout.x}
+      y={readout.y}
+      textAnchor="end"
+      fontSize="13"
+      fontWeight="700"
+      fill={series.ink}
+    >
+      {formatPibReais(readout.value)}
+    </text>
+  ) : null;
+};
+
 // Título, marcas e linha de um eixo, na cor da série (texto na tinta escura,
 // que passa o contraste AA no branco).
 const ValueAxis = ({
@@ -89,13 +123,15 @@ const ValueAxis = ({
   const { width, height, margin } = geometry;
   const left = series.key === "pib";
   const axisX = left ? margin.left : width - margin.right;
+  const title = geometry.titles[series.key];
 
   return (
     <g fill={series.ink} fontSize={AXIS_FONT_SIZE}>
+      {geometry.narrow ? <SeriesMarker series={series} y={title.y} /> : null}
       <text
-        x={left ? 0 : width}
-        y={geometry.titleY}
-        textAnchor={left ? "start" : "end"}
+        x={title.x}
+        y={title.y}
+        textAnchor={title.anchor}
         fontSize="12"
         fontWeight="600"
       >
@@ -245,6 +281,9 @@ const LineSvg = ({
           series={series}
           unit={units[series.key]}
         />
+      ))}
+      {SERIES.map((series) => (
+        <Readout key={series.key} geometry={geometry} series={series} />
       ))}
       {SERIES.map((series) => (
         <Line

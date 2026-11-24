@@ -15,10 +15,7 @@ import {
   ProtoCardMenu,
   useSvgChart,
 } from "@/components/ProtoPanel/ProtoCardMenu";
-
-// "2010 a 2023", pelos anos que a série realmente tem.
-const describeSpan = (years: number[]): string =>
-  years.length ? `${years[0]} a ${years[years.length - 1]} · ` : "";
+import { pibLineSubtitle } from "@/features/panels/pib/pibLineChart";
 
 /**
  * Card "Dinâmica temporal do PIB total e do PIB per capita": a série do território em linha, com o PIB
@@ -34,13 +31,15 @@ export const PibEvolutionCard = ({
   ...status
 }: PibCardProps & { ano: number; onSelectYear: (ano: number) => void }) => {
   const chart = useSvgChart();
-  const span = describeSpan(data.serie.map((point) => point.ano));
 
   return (
     <ProtoCard
       {...status}
       title={PIB_LINE_TITLE}
-      subtitle={`${place} · ${span}PIB total e per capita`}
+      subtitle={pibLineSubtitle(
+        place,
+        data.serie.map((point) => point.ano),
+      )}
       kind="line"
       skeleton={<PibLineChartSkeleton />}
       actions={

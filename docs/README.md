@@ -470,7 +470,12 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     series legend: the axis titles name the series. `point.pib` and `point.perCapita` are in
     reais; `pibLineUnits` divides. The total drops to milhões/mil when the
     series stays under R$ 1 bi (small municipalities), as the VAB axis does.
-    Tooltip and value labels keep `formatPibReais`.
+    Tooltip and value labels keep `formatPibReais`. Subtitle: place and year
+    span only (`pibLineSubtitle`). Below 560 px the two titles do not fit
+    side by side (~250 px in Inter): they stack as a two-row header with a
+    series marker, the selected year's value right-aligned on each row
+    instead of labels on the lines, the side margins follow the widest tick
+    label, and the selected year always shows on the X axis.
   - Money uses the existing formatter ("R$ 45,00 Mi"); the prototype drops
     decimals in millions. The change pill reads "em relação a 2022" (shared
     `formatYearChange`), not "vs. 2022".

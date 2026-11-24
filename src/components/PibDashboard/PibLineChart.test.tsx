@@ -73,6 +73,33 @@ describe("PibLineChart", () => {
     expect(svg.queryAllByText(/^R\$ [\d.,]+ (Bi|Tri|Mil)$/)).toHaveLength(2);
   });
 
+  // A 306 px os títulos lado a lado (~250 px) passariam da borda, e os
+  // valores sobre as linhas cobriam a outra série.
+  it("stacks the axis titles with the selected values in a header on a phone", () => {
+    render(<PibLineChart serie={NORDESTE} ano={2023} onSelectYear={vi.fn()} />);
+    const svg = chartSvg();
+    const titles = [
+      svg.getByText("PIB total (R$ bilhões)"),
+      svg.getByText("PIB per capita (R$ mil)"),
+    ];
+    const values = [
+      svg.getByText("R$ 1,51 Tri"),
+      svg.getByText("R$ 27,68 Mil"),
+    ];
+
+    expect(titles.map((title) => title.getAttribute("x"))).toEqual([
+      "18",
+      "18",
+    ]);
+    expect(titles.map((title) => title.getAttribute("y"))).toEqual(
+      values.map((value) => value.getAttribute("y")),
+    );
+    values.forEach((value) => {
+      expect(value.getAttribute("x")).toBe("306");
+      expect(value.getAttribute("text-anchor")).toBe("end");
+    });
+  });
+
   // Os títulos dos eixos já nomeiam as séries.
   it("shows no series legend", () => {
     render(<PibLineChart serie={NORDESTE} ano={2023} onSelectYear={vi.fn()} />);
