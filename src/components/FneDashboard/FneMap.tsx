@@ -2,7 +2,7 @@
 
 import { type ReactNode, useId, useMemo, useState } from "react";
 import { LayeredMap } from "@/components/Panel/charts/LayeredMap";
-import { previewOnMouse } from "@/components/Panel/pointer";
+import { previewOnMouse } from "@/components/Panel/charts/RankedBars";
 import {
   FNE_YEAR_RANGE,
   type FneVisao,

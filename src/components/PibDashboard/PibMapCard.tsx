@@ -1,72 +1,95 @@
 "use client";
 
-import { useState } from "react";
-import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
-import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
-import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
-import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
-import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
-import { usePanelMapFilters } from "@/components/PanelMap/usePanelMapFilters";
+import { useMemo, useState } from "react";
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
-import { PibInfoParagraphs } from "@/components/PibDashboard/PibInfoParagraphs";
 import {
-  PIB_CARD_SOURCE,
   PIB_MAP_INFO,
   PIB_MAP_TITLE,
 } from "@/components/PibDashboard/pibTexts";
-import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
+import { PibInfoParagraphs } from "@/components/PibDashboard/PibInfoParagraphs";
+import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
+import { ProtoCard, ProtoSkeleton } from "@/components/ProtoPanel/ProtoCard";
+import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
+import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
+import {
+  ProtoBinLegend,
+  ProtoFullscreenButton,
+} from "@/components/ProtoPanel/ProtoMapControls";
 import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
+import {
+  ProtoMunicipalCanvas,
+  ProtoMunicipalMapBox,
+} from "@/components/ProtoPanel/ProtoMunicipalMap";
 import { formatPibReais } from "@/features/panels/pib/pibFormat";
-import { areaLabel } from "@/features/panels/territorialOptions";
-import type { TerritorialFilters } from "@/features/panels/territorialFilters";
+import {
+  buildPibMunicipalTable,
+  PIB_MUNICIPAL_BINS,
+  pibMapFocus,
+  type PibMapFocus,
+} from "@/features/panels/pib/pibMunicipios";
 
-// INTENTIONAL: altura fixa, e não a da coluna dos setores como na PR #413. O
-// `PanelMap` só enquadra no `fitTo` (troca de recorte); um resize mantém
-// centro e zoom. A coluna muda de altura com o ano (aviso sem VAB) e o
-// município, com o mapa montado: ele ficaria cortado ou folgado sem reenquadrar.
-const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
+// O mapa pronto: a caixa com a altura mínima do mapa e a legenda (em duas
+// linhas no celular).
+const MAP_SKELETON = (
+  <>
+    <div className="p-1">
+      <ProtoSkeleton className="h-[360px] max-[1000px]:h-[480px] max-[700px]:h-[360px]" />
+    </div>
+    <ProtoSkeleton className="mt-3 h-4 w-[60%] max-[700px]:h-10" />
+  </>
+);
 
-const usePibMapProps = (
-  selection: TerritorialFilters,
-  onFiltersChange: (filters: TerritorialFilters) => void,
-): PanelMapProps => ({
-  ...usePanelMapFilters(selection, onFiltersChange),
-  indicator: "pib",
-  deepest: "municipio",
-  formatValue: formatPibReais,
-  valueLabel: "PIB",
-  label: `Mapa do ${PIB_MAP_TITLE}`,
-});
+type PibMapSource = Pick<PibCardProps, "data" | "place"> & {
+  focus: PibMapFocus;
+};
+
+const pibCanvas = ({ data, place, focus }: PibMapSource, stage = false) => (
+  <ProtoMunicipalCanvas
+    {...focus}
+    label={`Mapa do ${PIB_MAP_TITLE}, ${place}`}
+    sea={PIB_COLORS.sea}
+    stage={stage}
+    fill={!stage}
+    regions={data.mapa}
+    buckets={PIB_MUNICIPAL_BINS}
+    valueLabel="PIB total"
+    formatValue={formatPibReais}
+  />
+);
 
 /**
- * Card "PIB total por município": cada município na cor da faixa do seu PIB
- * total. Aproximar ou clicar no mapa troca Estado e Município no filtro do
- * painel, pelo mesmo caminho da barra de filtros.
+ * Card "PIB total por município": cada município da área (ou dos estados do
+ * filtro) na cor da faixa do seu PIB total. Os municípios do filtro ficam em
+ * destaque; o clique não filtra, como no mapa de municípios do perfil.
+ * `selectedMuns`: os municípios do filtro pedido, destacados na hora.
  *
- * @example <PibMapCard selection={filters} onFiltersChange={request} state="ok" onRetry={retry} />
+ * @example <PibMapCard data={panel} place="Nordeste · Pernambuco" selectedMuns={["2611606"]} state="ok" onRetry={retry} />
  */
 export const PibMapCard = ({
-  selection,
-  onFiltersChange,
-  state,
-  onRetry,
-}: Pick<PibCardProps, "state" | "onRetry"> & {
-  selection: TerritorialFilters;
-  onFiltersChange: (filters: TerritorialFilters) => void;
-}) => {
-  const card = usePanelMapCard(PIB_CARD_SOURCE);
+  data,
+  place,
+  selectedMuns,
+  ...status
+}: PibCardProps & { selectedMuns: string[] }) => {
+  const munKey = selectedMuns.join(",");
+
+  // PERF: um Set novo a cada render refaria as cores dos ~1 800 municípios.
+  const focus = useMemo(
+    () => pibMapFocus(munKey ? munKey.split(",") : []),
+    [munKey],
+  );
+  const source = { data, place, focus };
   const [fullscreen, setFullscreen] = useState(false);
-  const mapProps = usePibMapProps(selection, onFiltersChange);
-  const subtitle = `PIB total · ${areaLabel(selection.area)} · ${selection.ano}`;
+  const table = useMemo(() => buildPibMunicipalTable(data), [data]);
+  const subtitle = `PIB total por município · ${place} · ${data.filters.ano}`;
 
   return (
     <ProtoCard
-      state={state}
-      onRetry={onRetry}
+      {...status}
       title={PIB_MAP_TITLE}
       subtitle={subtitle}
       kind="map"
-      skeleton={<PanelMapSkeleton boxClassName={MAP_BOX_CLASS} />}
+      skeleton={MAP_SKELETON}
       bodyClassName="flex flex-col"
       overlay={
         <ProtoMapFullscreen
@@ -74,22 +97,29 @@ export const PibMapCard = ({
           onOpenChange={setFullscreen}
           title={PIB_MAP_TITLE}
           subtitle={subtitle}
-          hint={PANEL_MAP_HINT}
-          renderStage={(frame) => <PanelMap {...mapProps} className={frame} />}
+          legend={<ProtoBinLegend bins={PIB_MUNICIPAL_BINS} className="" />}
+          renderStage={() => pibCanvas(source, true)}
         />
       }
       actions={
-        <PanelMapCardActions
-          title={PIB_MAP_TITLE}
-          info={<PibInfoParagraphs paragraphs={PIB_MAP_INFO} />}
-          imageSource={card.imageSource}
-          engine={card.engine}
-          disabled={state === "loading" || state === "error"}
-          onOpenFullscreen={() => setFullscreen(true)}
-        />
+        <>
+          <ProtoFullscreenButton
+            disabled={status.state === "loading" || status.state === "error"}
+            onClick={() => setFullscreen(true)}
+          />
+          <ProtoCardInfo
+            title={PIB_MAP_TITLE}
+            text={<PibInfoParagraphs paragraphs={PIB_MAP_INFO} />}
+          />
+          <ProtoCardMenu title={PIB_MAP_TITLE} />
+        </>
       }
     >
-      <PanelMap {...mapProps} {...card.mapBinding} className={MAP_BOX_CLASS} />
+      {/* A altura do mapa vem da grade (coluna dos setores); a legenda fica abaixo. */}
+      <ProtoMunicipalMapBox fill sea={PIB_COLORS.sea} table={table}>
+        {pibCanvas(source)}
+      </ProtoMunicipalMapBox>
+      <ProtoBinLegend bins={PIB_MUNICIPAL_BINS} />
     </ProtoCard>
   );
 };

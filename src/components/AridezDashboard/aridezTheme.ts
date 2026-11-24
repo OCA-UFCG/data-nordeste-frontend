@@ -7,9 +7,12 @@ export const ARIDEZ_SOURCE =
 // Selo da capa quando o Contentful não responde ("Painel de Meio Ambiente").
 export const ARIDEZ_MACROTHEME = "Meio Ambiente";
 
-// Cores fixas dos gráficos. Literais: o SVG baixado como imagem não
+// Cores fixas do mapa e do gráfico. Literais: o SVG baixado como imagem não
 // enxerga as variáveis CSS do painel.
 export const ARIDEZ_COLORS = {
+  offArea: "#e9e5df",
+  sea: "#d6f1fa",
+
   // Contorno do subúmido seco: o verde-claro some no fundo branco.
   subumidoEdge: "#758f21",
   grid: "#dcdbdc",

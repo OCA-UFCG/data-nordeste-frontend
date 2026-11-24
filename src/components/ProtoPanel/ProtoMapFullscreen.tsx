@@ -1,6 +1,25 @@
 "use client";
 
-import type { ReactNode } from "react";
+import {
+  type Dispatch,
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
+  type SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  ProtoIcon,
+  type ProtoIconName,
+} from "@/components/ProtoPanel/ProtoIcon";
+import {
+  ProtoStateMap,
+  type ProtoStateMapProps,
+} from "@/components/ProtoPanel/ProtoStateMap";
 import {
   ICON_BUTTON,
   protoToneStyle,
@@ -13,14 +32,178 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { STATE_MAP_BOX } from "@/features/panels/stateShapes";
+import {
+  MAX_MAP_ZOOM,
+  panViewBox,
+  type ViewBox,
+  viewBoxAttribute,
+  zoomViewBox,
+} from "@/features/panels/mapViewBox";
 
-// Moldura do palco: altura do mapa e cantos. O painel a aplica só na caixa do
-// mapa (`renderStage`), para a legenda dele ficar abaixo, fora do
-// `overflow-hidden`.
-export const MAP_STAGE_FRAME =
-  "relative h-[min(640px,calc(100vh-250px))] min-h-[300px] overflow-hidden rounded-[8px] max-[700px]:h-auto max-[700px]:flex-1";
+const BASE: ViewBox = { x: 0, y: 0, ...STATE_MAP_BOX };
 
-export type ProtoMapFullscreenProps = {
+// Passo dos botões e das teclas (1,5×) e da roda do mouse (1,2×).
+const BUTTON_STEP = 1.5;
+const WHEEL_STEP = 1.2;
+
+// Arrastar menos que isso ainda conta como clique num estado.
+const DRAG_THRESHOLD = 5;
+
+// Escala e margens do SVG na tela (preserveAspectRatio "meet"), para converter
+// pixels do ponteiro em unidades do mapa.
+const svgMetrics = (svg: SVGSVGElement, view: ViewBox) => {
+  const rect = svg.getBoundingClientRect();
+  const scale = Math.min(rect.width / view.width, rect.height / view.height);
+
+  return {
+    rect,
+    scale,
+    offsetX: (rect.width - view.width * scale) / 2,
+    offsetY: (rect.height - view.height * scale) / 2,
+  };
+};
+
+const focusAt = (
+  svg: SVGSVGElement,
+  view: ViewBox,
+  clientX: number,
+  clientY: number,
+) => {
+  const { rect, scale, offsetX, offsetY } = svgMetrics(svg, view);
+
+  return {
+    x: (clientX - rect.left - offsetX) / (view.width * scale),
+    y: (clientY - rect.top - offsetY) / (view.height * scale),
+  };
+};
+
+const useWheelZoom = (
+  svgRef: RefObject<SVGSVGElement | null>,
+  setView: Dispatch<SetStateAction<ViewBox>>,
+) => {
+  useEffect(() => {
+    const svg = svgRef.current;
+
+    if (!svg) return;
+
+    // Fora do React: o onWheel dele é passivo e não deixa impedir a rolagem.
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      setView((view) =>
+        zoomViewBox(
+          view,
+          BASE,
+          event.deltaY < 0 ? WHEEL_STEP : 1 / WHEEL_STEP,
+          focusAt(svg, view, event.clientX, event.clientY),
+        ),
+      );
+    };
+
+    svg.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => svg.removeEventListener("wheel", handleWheel);
+  }, [svgRef, setView]);
+};
+
+type Drag = { x: number; y: number; view: ViewBox; moved: boolean };
+
+const useDragPan = (
+  svgRef: RefObject<SVGSVGElement | null>,
+  view: ViewBox,
+  setView: (view: ViewBox) => void,
+) => {
+  const drag = useRef<Drag | null>(null);
+  const moved = useRef(false);
+
+  return {
+    onPointerDown: (event: PointerEvent<HTMLDivElement>) => {
+      if ((event.target as Element).closest("[data-map-controls]")) return;
+      drag.current = { x: event.clientX, y: event.clientY, view, moved: false };
+      moved.current = false;
+    },
+    onPointerMove: (event: PointerEvent<HTMLDivElement>) => {
+      const start = drag.current;
+      const svg = svgRef.current;
+
+      if (!start || !svg) return;
+      const dx = event.clientX - start.x;
+      const dy = event.clientY - start.y;
+
+      if (!start.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+      start.moved = moved.current = true;
+      const { scale } = svgMetrics(svg, start.view);
+
+      setView(panViewBox(start.view, BASE, { x: -dx / scale, y: -dy / scale }));
+    },
+    onPointerEnd: () => {
+      drag.current = null;
+    },
+
+    // Soltar o arrasto em cima de um estado não pode filtrar o painel.
+    onClickCapture: (event: MouseEvent<HTMLDivElement>) => {
+      if (!moved.current) return;
+      event.stopPropagation();
+      moved.current = false;
+    },
+  };
+};
+
+const ZoomButton = ({
+  label,
+  icon,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  icon: ProtoIconName;
+  disabled: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    aria-label={label}
+    title={label}
+    disabled={disabled}
+    onClick={onClick}
+    className="grid size-10 place-items-center border-b border-grey-300 bg-white text-grey-800 last:border-b-0 hover:not-disabled:bg-grey-200 hover:not-disabled:text-grey-1100 disabled:cursor-not-allowed disabled:opacity-40"
+  >
+    <ProtoIcon name={icon} size={20} stroke={1.75} />
+  </button>
+);
+
+type ZoomStep = "in" | "out" | "fit";
+
+const ZOOM_KEYS: Record<string, ZoomStep> = {
+  "+": "in",
+  "=": "in",
+  "-": "out",
+  "0": "fit",
+};
+
+const useMapView = () => {
+  const [view, setView] = useState<ViewBox>(BASE);
+  const zoom = (step: ZoomStep) =>
+    setView((current) =>
+      step === "fit"
+        ? BASE
+        : zoomViewBox(
+            current,
+            BASE,
+            step === "in" ? BUTTON_STEP : 1 / BUTTON_STEP,
+          ),
+    );
+
+  return { view, setView, zoom };
+};
+
+type MapProps = ProtoStateMapProps;
+
+// O palco: o mapa por estado (com zoom e arrasto) ou o que o painel passar em
+// `renderStage` (o mapa de municípios, que tem o próprio zoom).
+type StageProps = MapProps | { renderStage: () => ReactNode };
+
+type FrameProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
@@ -29,26 +212,112 @@ export type ProtoMapFullscreenProps = {
 
   // Dica de uso no rodapé; sem ela, não há rodapé.
   hint?: string;
-
-  // O palco é do painel (o mapa de municípios, que tem o próprio zoom).
-  // Recebe `MAP_STAGE_FRAME`.
-  renderStage: (frameClassName: string) => ReactNode;
 };
 
-// Só existe com o diálogo aberto: cada abertura monta o mapa de novo.
+// Dica do rodapé quando o mapa filtra o painel ao clicar num estado.
+export const MAP_SELECT_HINT = "Clique em um estado para filtrar o painel";
+
+// Moldura do palco: altura do mapa e cantos. O mapa por estado e o de
+// municípios somam só cor e interação por cima disso.
+export const MAP_STAGE_FRAME =
+  "relative h-[min(640px,calc(100vh-250px))] min-h-[300px] overflow-hidden rounded-[8px] max-[700px]:h-auto max-[700px]:flex-1";
+
+export type ProtoMapFullscreenProps = FrameProps & StageProps;
+
+const ZoomControls = ({
+  view,
+  zoom,
+}: {
+  view: ViewBox;
+  zoom: (step: ZoomStep) => void;
+}) => (
+  <div
+    data-map-controls
+    role="group"
+    aria-label="Controles de zoom"
+    className="absolute top-4 right-4 flex flex-col overflow-hidden rounded-[8px] shadow-[0_2px_6px_rgba(0,0,0,0.14)]"
+  >
+    <ZoomButton
+      label="Ampliar"
+      icon="zoomIn"
+      disabled={view.width <= BASE.width / MAX_MAP_ZOOM + 0.01}
+      onClick={() => zoom("in")}
+    />
+    <ZoomButton
+      label="Reduzir"
+      icon="zoomOut"
+      disabled={view.width >= BASE.width - 0.01}
+      onClick={() => zoom("out")}
+    />
+    <ZoomButton
+      label="Ajustar à tela"
+      icon="fit"
+      disabled={false}
+      onClick={() => zoom("fit")}
+    />
+  </div>
+);
+
+const MapStage = ({
+  map,
+  mapView,
+}: {
+  map: MapProps;
+  mapView: ReturnType<typeof useMapView>;
+}) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const pan = useDragPan(svgRef, mapView.view, mapView.setView);
+
+  useWheelZoom(svgRef, mapView.setView);
+
+  return (
+    <div
+      onPointerDown={pan.onPointerDown}
+      onPointerMove={pan.onPointerMove}
+      onPointerUp={pan.onPointerEnd}
+      onPointerCancel={pan.onPointerEnd}
+      onPointerLeave={pan.onPointerEnd}
+      onClickCapture={pan.onClickCapture}
+      className={`${MAP_STAGE_FRAME} cursor-grab touch-none bg-[#d6f1fa] select-none active:cursor-grabbing`}
+    >
+      <ProtoStateMap
+        {...map}
+        svgRef={svgRef}
+        viewBox={viewBoxAttribute(mapView.view)}
+        fullscreen
+        className="block size-full"
+      />
+      <ZoomControls view={mapView.view} zoom={mapView.zoom} />
+      <div className="pointer-events-none absolute bottom-4 left-4 rounded-full border border-grey-300 bg-white px-3 py-1.5 text-[13px] text-grey-800 max-[700px]:hidden">
+        Arraste para mover o mapa · use + e − ou a roda do mouse para ampliar
+      </div>
+    </div>
+  );
+};
+
+// Só existe com o diálogo aberto: cada abertura começa no mapa inteiro.
 const FullscreenContent = ({
   title,
   subtitle,
   legend,
   hint,
-  renderStage,
-}: Omit<ProtoMapFullscreenProps, "open" | "onOpenChange">) => {
+  stage,
+}: Omit<FrameProps, "open" | "onOpenChange"> & { stage: StageProps }) => {
+  const mapView = useMapView();
   const tone = useProtoTone();
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const step = ZOOM_KEYS[event.key];
+
+    if (!step) return;
+    event.preventDefault();
+    mapView.zoom(step);
+  };
 
   return (
     <DialogContent
       showCloseButton={false}
       style={protoToneStyle(tone)}
+      onKeyDown={handleKeyDown}
       className="flex max-h-full w-[min(1200px,calc(100%-48px))] max-w-none flex-col gap-0 rounded-[12px] border-0 bg-white px-4 pt-5 pb-3 shadow-[0_12px_32px_rgba(0,0,0,0.25)] sm:max-w-none max-[700px]:inset-0 max-[700px]:h-full max-[700px]:w-full max-[700px]:translate-x-0 max-[700px]:translate-y-0 max-[700px]:rounded-none max-[700px]:p-3"
     >
       <div className="mx-1 mb-3 flex items-start justify-between gap-2">
@@ -79,9 +348,11 @@ const FullscreenContent = ({
           </svg>
         </DialogClose>
       </div>
-      <div className="flex min-h-0 flex-col max-[700px]:flex-1">
-        {renderStage(MAP_STAGE_FRAME)}
-      </div>
+      {"renderStage" in stage ? (
+        <div className={MAP_STAGE_FRAME}>{stage.renderStage()}</div>
+      ) : (
+        <MapStage map={stage} mapView={mapView} />
+      )}
       {legend ? <div className="mx-1 mt-3">{legend}</div> : null}
       {hint ? (
         <p className="mx-1 mt-3 border-t border-grey-200 pt-3 text-[13px] text-grey-800 max-[700px]:hidden">
@@ -93,21 +364,24 @@ const FullscreenContent = ({
 };
 
 /**
- * Tela cheia de um card de mapa (`.mmodal` do protótipo): cabeçalho com o
- * título e o botão de fechar, o palco do painel (`renderStage`), a legenda
- * opcional e o rodapé com a dica de uso (`hint`; sem ela, não há rodapé). A
- * fonte fica só em "Fonte dos dados" e na imagem baixada. O palco recebe só a
- * classe da caixa do mapa (`frameClassName`); a legenda do painel fica abaixo
- * dela.
+ * Mapa em tela cheia (`.mmodal` do protótipo): ampliar, reduzir, ajustar
+ * (botões, roda do mouse ou teclas + − 0), arrastar e clicar num estado para
+ * filtrar o painel. `legend` (opcional) é a legenda do painel, já montada, e
+ * `hint` (ex.: `MAP_SELECT_HINT`), a dica de uso. Com `renderStage`, o palco é do painel (ex.: mapa de municípios) e o
+ * cabeçalho, a legenda e o rodapé continuam os mesmos.
  *
- * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" hint={PANEL_MAP_HINT} renderStage={(frame) => <PanelMap {...mapProps} className={frame} />} />
+ * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" legend={<IdhMapLegend mapa={mapa} />} hint={MAP_SELECT_HINT} fillFor={fill} describe={describe} isSelectable={isSelectable} label="Mapa" selectedUf="PE" onSelect={toggleUf} />
  */
-export const ProtoMapFullscreen = ({
-  open,
-  onOpenChange,
-  ...content
-}: ProtoMapFullscreenProps) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    {open ? <FullscreenContent {...content} /> : null}
+export const ProtoMapFullscreen = (props: ProtoMapFullscreenProps) => (
+  <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+    {props.open ? (
+      <FullscreenContent
+        title={props.title}
+        subtitle={props.subtitle}
+        legend={props.legend}
+        hint={props.hint}
+        stage={props}
+      />
+    ) : null}
   </Dialog>
 );

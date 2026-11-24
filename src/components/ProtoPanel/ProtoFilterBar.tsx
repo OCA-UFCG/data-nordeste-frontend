@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, type Ref, useState } from "react";
+import { type ReactNode, type Ref, useState, version } from "react";
 import {
   ProtoIcon,
   type ProtoIconName,
@@ -14,8 +14,11 @@ import {
   WRAP,
 } from "@/components/ProtoPanel/protoStyles";
 import { useProtoTone } from "@/components/ProtoPanel/protoTone";
-import { useInert } from "@/components/ProtoPanel/useInert";
 import { cn } from "@/lib/utils";
+
+// O app roda no React 19 do Next (`inert` booleano) e os testes no React 18,
+// que só liga `inert` com string vazia.
+const INERT_ON = version.startsWith("18.") ? "" : true;
 
 // `#clearBtn`: vermelho quando há filtro; só o ícone no celular (com
 // `brandInBar`, já a partir de 900 px, como no protótipo do IDH).
@@ -227,17 +230,15 @@ export const ProtoFilterBar = ({
   const tone = useProtoTone();
   const showBrand = fillRow && brand;
   const barBrand = brandInBar ? brand : undefined;
-  const contentRef = useInert<HTMLDivElement>(Boolean(disabled));
 
   return (
     <div
       ref={barRef}
+      {...(disabled && ({ inert: INERT_ON } as object))}
       style={{ top, ...protoToneStyle(tone) }}
       className={`${PROTO_TEXT} sticky z-40 w-full border-b border-grey-300 bg-white transition-shadow duration-150 ${stuck ? "shadow-[0_6px_16px_-10px_rgba(41,40,41,0.45)]" : ""}`}
     >
-      {/* Inerte pelo DOM (`useInert`): o React 18 reclama de `inert=""` no JSX. */}
       <div
-        ref={contentRef}
         className={cn(
           WRAP,
           "flex min-h-[88px] items-end gap-4 py-3 max-[700px]:min-h-14 max-[700px]:items-center max-[700px]:gap-2 max-[700px]:py-2",

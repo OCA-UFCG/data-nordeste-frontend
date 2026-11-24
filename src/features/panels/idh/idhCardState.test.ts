@@ -18,11 +18,11 @@ describe("resolveIdhCardStates", () => {
     });
   });
 
-  it("keeps the yearly series and the map when only the year changes", () => {
+  it("keeps the yearly series when only the year changes", () => {
     expect(navigatingTo({ ...CURRENT, ano: 2019 })).toEqual({
       bigNumbers: "loading",
       evolution: "ok",
-      map: "ok",
+      map: "loading",
       ranking: "loading",
       groups: "loading",
     });
@@ -50,13 +50,6 @@ describe("resolveIdhCardStates", () => {
     );
 
     expect(states.map).toBe("loading");
-  });
-
-  // Regressão (revisão da task 15): o mapa MapLibre não depende de dado do
-  // servidor, e o esqueleto o remontava a cada troca de ano.
-  it("keeps the map mounted while a year or state change is pending", () => {
-    expect(navigatingTo({ ...CURRENT, ano: 2019 }).map).toBe("ok");
-    expect(navigatingTo({ ...CURRENT, ano: 2019, uf: "PE" }).map).toBe("ok");
   });
 
   it("shows the error once nothing is pending", () => {
