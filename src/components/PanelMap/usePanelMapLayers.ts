@@ -1,0 +1,175 @@
+"use client";
+
+import {
+  type MutableRefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
+import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
+import {
+  fitTargetFor,
+  type FitSources,
+  selectionFilter,
+  veilFilters,
+} from "@/features/panelMap/mapLayers";
+import {
+  type MapLevel,
+  type MapRecorte,
+  sameRecorte,
+} from "@/features/panelMap/mapRecorte";
+import { recorteForClick } from "@/features/panelMap/mapSelection";
+import { classColorExpression } from "@/features/panelMap/qgisPaint";
+import type { TerritorialArea } from "@/features/panels/territorialFilters";
+import type { IndicatorPaint, PanelMapEngine } from "@/lib/panelMapEngine";
+
+// Com a aridez ligada o raster fica legível por baixo: o preenchimento some,
+// mas contornos, véu, hover e tooltip continuam.
+const TRANSPARENT_FILL: IndicatorPaint["color"] = ["to-color", "rgba(0,0,0,0)"];
+
+export type PanelMapLayersArgs = {
+  engine: PanelMapEngine | null;
+  geodata: ReadyGeodata;
+  indicator: PanelIndicator;
+  ano: number;
+  area: TerritorialArea;
+  recorte: MapRecorte;
+  deepest: MapLevel;
+  aridezOn: boolean;
+  onRecorteChange: (recorte: MapRecorte) => void;
+};
+
+/**
+ * O mesmo recorte enquanto a seleção não muda. O pai costuma montar um objeto
+ * novo a cada render (`territorialToRecorte(filters)`); sem isto cada render
+ * enquadraria o mapa de novo.
+ */
+function useStableRecorte(recorte: MapRecorte): MapRecorte {
+  const [stable, setStable] = useState(recorte);
+
+  if (!sameRecorte(stable, recorte)) setStable(recorte);
+
+  return sameRecorte(stable, recorte) ? stable : recorte;
+}
+
+function useFitSources(geodata: ReadyGeodata): FitSources {
+  return useMemo(
+    () => ({
+      features: geodata.features,
+      states: geodata.states,
+      areas: geodata.areas,
+    }),
+    [geodata],
+  );
+}
+
+function useSourcesAndPaint(args: PanelMapLayersArgs, sources: FitSources) {
+  const { engine, geodata, indicator, ano, area, aridezOn } = args;
+
+  useEffect(() => engine?.setSources(sources), [engine, sources]);
+  useEffect(() => {
+    const style = geodata.styles.indicators[indicator];
+
+    engine?.setIndicatorPaint({
+      color: aridezOn
+        ? TRANSPARENT_FILL
+        : classColorExpression(style.classes, ano),
+      outline: style.outline,
+      stateOutline: geodata.styles.stateOutline,
+      area,
+    });
+  }, [engine, geodata, indicator, ano, area, aridezOn]);
+}
+
+function fitRecorte(
+  engine: PanelMapEngine,
+  recorte: MapRecorte,
+  area: TerritorialArea,
+  sources: FitSources,
+): void {
+  const target = fitTargetFor(recorte, area, sources);
+
+  if (target) engine.fitTo(target);
+}
+
+// IMPORTANT: o recorte que o próprio zoom escolheu não é enquadrado (o mapa
+// pularia a cada gesto); qualquer outro (barra, limpar, clique, montagem, área
+// nova) é. O marcador é consumido a cada recorte novo: "limpar" e escolher de
+// novo o mesmo estado pela barra precisa enquadrar.
+function useRecorteFraming(
+  args: PanelMapLayersArgs,
+  sources: FitSources,
+  zoomEmittedRef: MutableRefObject<MapRecorte | null>,
+) {
+  const { engine, indicator, area } = args;
+  const recorte = useStableRecorte(args.recorte);
+
+  useEffect(() => {
+    if (!engine) return;
+    const emitted = zoomEmittedRef.current;
+    const fromZoom = emitted !== null && sameRecorte(emitted, recorte);
+
+    zoomEmittedRef.current = null;
+    engine.setVeil(veilFilters(recorte));
+    engine.setSelection(selectionFilter(recorte, indicator));
+    if (!fromZoom) fitRecorte(engine, recorte, area, sources);
+  }, [engine, recorte, area, indicator, sources, zoomEmittedRef]);
+}
+
+// Clique emite o recorte direto e o enquadramento vem da mudança de props
+// (não é marcado como do zoom); clicar no que já está escolhido não muda nada, então só enquadra.
+function useFeatureClicks(
+  args: PanelMapLayersArgs,
+  sources: FitSources,
+  zoomEmittedRef: MutableRefObject<MapRecorte | null>,
+) {
+  const { engine, indicator, deepest, recorte, area, onRecorteChange } = args;
+
+  useEffect(() => {
+    engine?.onClickFeature((feature) => {
+      const next = recorteForClick(feature, indicator, deepest);
+
+      zoomEmittedRef.current = null;
+      if (!sameRecorte(next, recorte)) return onRecorteChange(next);
+      fitRecorte(engine, next, area, sources);
+    });
+  }, [
+    engine,
+    indicator,
+    deepest,
+    recorte,
+    area,
+    sources,
+    onRecorteChange,
+    zoomEmittedRef,
+  ]);
+}
+
+/**
+ * Liga as camadas do motor às props: fontes, cores do ano, véu, seleção,
+ * enquadramento e clique. Devolve o `onRecorteChange` que o zoom deve usar —
+ * ele marca o recorte como escolhido pelo próprio mapa.
+ *
+ * @example const onZoomRecorte = usePanelMapLayers(args); useMapRecorte({ engine, recorte, deepest, onRecorteChange: onZoomRecorte });
+ */
+export function usePanelMapLayers(args: PanelMapLayersArgs) {
+  const sources = useFitSources(args.geodata);
+  const zoomEmittedRef = useRef<MapRecorte | null>(null);
+  const { onRecorteChange } = args;
+
+  useSourcesAndPaint(args, sources);
+  useRecorteFraming(args, sources, zoomEmittedRef);
+  useFeatureClicks(args, sources, zoomEmittedRef);
+
+  return useCallback(
+    (recorte: MapRecorte) => {
+      zoomEmittedRef.current = recorte;
+      onRecorteChange(recorte);
+    },
+    [onRecorteChange],
+  );
+}
