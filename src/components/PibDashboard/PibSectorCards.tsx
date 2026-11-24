@@ -3,10 +3,7 @@
 import type { ReactNode } from "react";
 import { PibBars } from "@/components/PibDashboard/PibBars";
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
-import {
-  PIB_CARD_FOOTER,
-  PIB_CARD_INFO,
-} from "@/components/PibDashboard/pibTexts";
+import { PIB_CARD_INFO } from "@/components/PibDashboard/pibTexts";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
 import {
   ProtoCard,
@@ -100,7 +97,6 @@ const SectorCard = ({
 }) => (
   <ProtoCard
     {...status}
-    footer={PIB_CARD_FOOTER}
     title={title}
     subtitle={`${place} · ${data.filters.ano} · ${unit}`}
     kind="rank"

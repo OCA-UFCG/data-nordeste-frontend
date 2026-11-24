@@ -4,7 +4,6 @@ import { type ReactNode, useMemo, useState } from "react";
 import { useDemografiaHighlight } from "@/components/DemografiaDashboard/DemografiaMapa";
 import { PerfilPorteToggles } from "@/components/DemografiaDashboard/PerfilPorteToggles";
 import type { PerfilCardProps } from "@/components/DemografiaDashboard/perfilCardProps";
-import { PERFIL_CARD_SOURCE } from "@/components/DemografiaDashboard/perfilTexts";
 import { DataTable } from "@/components/Panel/cards/DataTable";
 import { ChoroplethCanvas } from "@/components/Panel/charts/ChoroplethMap";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
@@ -225,7 +224,6 @@ const PorteFullscreen = ({
   <ProtoMapFullscreen
     {...frame}
     title={TITLE}
-    source={PERFIL_CARD_SOURCE}
     hint={view === "estados" ? MAP_SELECT_HINT : undefined}
     {...porteStage(view, data, map.porte, map.estados)}
   />

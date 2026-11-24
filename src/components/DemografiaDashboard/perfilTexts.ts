@@ -5,7 +5,7 @@
 export const PERFIL_LEAD =
   "No painel são reunidos indicadores da população residente das áreas abrangidas pelo Data Nordeste. Nele, é possível consultar o total de habitantes, a distribuição por sexo, faixa etária e cor ou raça, acompanhar a evolução da população entre os Censos de 2000, 2010 e 2022, visualizar rankings municipais e explorar mapa temático que evidencia a distribuição populacional nos diferentes territórios. Os dados podem ser filtrados por ano, área de interesse, estado e município. Essas informações permitem analisar fenômenos demográficos e subsidiar a formulação de políticas públicas voltadas para o desenvolvimento regional.";
 
-// Fonte que vai no rodapé e na imagem baixada dos cards.
+// Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const PERFIL_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
 export const PERFIL_SAIBA_MAIS_TITLE = "Saiba mais sobre o perfil demográfico";

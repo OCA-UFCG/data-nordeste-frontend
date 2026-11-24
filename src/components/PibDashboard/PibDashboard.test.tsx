@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
+import { PIB_CARD_SOURCE } from "@/components/PibDashboard/pibTexts";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import {
   emptyPibPanel,
@@ -65,6 +66,13 @@ describe("PibDashboard", () => {
 
     expect(screen.getByText(/não há dados para/)).toBeTruthy();
     expect(yearSelect().closest("[inert]")).toBeNull();
+  });
+
+  // A fonte fica só na seção "Fonte dos dados" do painel, não em cada card.
+  it("shows no source under the charts", () => {
+    render(<PibDashboard data={PANEL} catalogHref="/catalog" />);
+
+    expect(screen.queryByText(PIB_CARD_SOURCE)).toBeNull();
   });
 
   it("switches to the last year with sector data and rings the year select", () => {

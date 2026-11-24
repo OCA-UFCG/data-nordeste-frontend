@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import type { AridezCardProps } from "@/components/AridezDashboard/aridezCardProps";
-import {
-  ARIDEZ_CARD_FOOTER,
-  ARIDEZ_CARD_INFO,
-  ARIDEZ_CARD_SOURCE,
-} from "@/components/AridezDashboard/aridezTexts";
+import { ARIDEZ_CARD_INFO } from "@/components/AridezDashboard/aridezTexts";
 import { ARIDEZ_COLORS } from "@/components/AridezDashboard/aridezTheme";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
@@ -84,7 +80,6 @@ export const AridezMapCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={ARIDEZ_CARD_FOOTER}
       title={TITLE}
       mobileTitle={MOBILE_TITLE}
       subtitle={subtitle}
@@ -98,7 +93,6 @@ export const AridezMapCard = ({
           title={TITLE}
           subtitle={subtitle}
           legend={<ProtoBinLegend bins={ARIDEZ_STATE_BINS} className="" />}
-          source={ARIDEZ_CARD_SOURCE}
           hint={MAP_SELECT_HINT}
         />
       }

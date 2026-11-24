@@ -5,12 +5,8 @@
 export const PIB_LEAD =
   "Os dados reunidos neste painel permitem explorar diferentes indicadores da atividade econômica dos estados e municípios que compõem as áreas de abrangência do Data Nordeste. As informações incluem o Produto Interno Bruto (PIB) total e per capita desses territórios, o total de impostos, o Valor Adicionado Bruto (VAB) por setor e as atividades econômicas que mais têm participação no PIB. Tais conteúdos podem subsidiar decisões relacionadas ao planejamento econômico, à definição de prioridades de investimento, ao fortalecimento de setores estratégicos e à redução das desigualdades entre os territórios.";
 
-// Fonte que vai no rodapé dos cards e na imagem baixada.
+// Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
-
-// INTENTIONAL: sem "Atualizado em". O protótipo traz "11/2026" fixo e o banco
-// não informa quando o PIB foi carregado; inclua a data quando houver fonte.
-export const PIB_CARD_FOOTER = { source: PIB_CARD_SOURCE } as const;
 
 // O ano vem do banco; sem ele (carregando ou erro), a frase sai.
 const sectorCoverage = (vabLastYear: number | null) =>
