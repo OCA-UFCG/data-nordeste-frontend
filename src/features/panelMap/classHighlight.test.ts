@@ -1,4 +1,3 @@
-import { featureFilter } from "@maplibre/maplibre-gl-style-spec";
 import type { FilterSpecification } from "maplibre-gl";
 import { describe, expect, it } from "vitest";
 
@@ -40,14 +39,84 @@ const TOWNS = [
   town("ausente"),
 ];
 
-// O avaliador de filtros do próprio MapLibre: a semântica é a do mapa.
-function codesMatching(filter: FilterSpecification): string[] {
-  const compiled = featureFilter(filter);
+// Avaliador mínimo dos operadores que os filtros do destaque usam, com a
+// semântica do MapLibre. WHY local: o avaliador do MapLibre
+// (`@maplibre/maplibre-gl-style-spec`) é só dependência transitiva, e o
+// `maplibre-gl` não o exporta. IMPORTANT: como no mapa, comparar com `<`,
+// `<=`, `>` ou `>=` algo que não é número é erro de avaliação, e o filtro
+// com erro não casa a feição.
+type FeatureValues = Record<string, unknown>;
+type Operator = (args: unknown[], props: FeatureValues) => unknown;
 
-  return TOWNS.filter((properties) =>
-    compiled.filter({ zoom: 5 }, { type: 3, properties, geometry: [] }),
-  ).map(({ code }) => code);
+const numeric =
+  (test: (left: number, right: number) => boolean): Operator =>
+  (args, props) => {
+    const [left, right] = args.map((arg) => evaluate(arg, props));
+
+    if (typeof left !== "number" || typeof right !== "number") {
+      throw new TypeError(
+        `Comparison of "${String(left)}" and "${String(right)}" failed; expected two numbers.`,
+      );
+    }
+
+    return test(left, right);
+  };
+
+// O `typeof` do MapLibre chama o ausente e o `null` de "null".
+const typeName = (value: unknown) => (value === null ? "null" : typeof value);
+
+const OPERATORS: Record<string, Operator> = {
+  "get": ([key], props) => props[String(key)] ?? null,
+  "literal": ([value]) => value,
+  "typeof": ([arg], props) => typeName(evaluate(arg, props)),
+  "in": ([needle, list], props) =>
+    (evaluate(list, props) as unknown[]).includes(evaluate(needle, props)),
+  "!": ([arg], props) => !evaluate(arg, props),
+  "all": (args, props) => args.every((arg) => evaluate(arg, props)),
+  "any": (args, props) => args.some((arg) => evaluate(arg, props)),
+  "==": ([left, right], props) =>
+    evaluate(left, props) === evaluate(right, props),
+  "<=": numeric((left, right) => left <= right),
+  ">": numeric((left, right) => left > right),
+  ">=": numeric((left, right) => left >= right),
+};
+
+function evaluate(expression: unknown, props: FeatureValues): unknown {
+  if (!Array.isArray(expression)) return expression;
+  const [name, ...args] = expression;
+  const operator = OPERATORS[String(name)];
+
+  if (!operator) {
+    throw new Error(
+      `Operator "${String(name)}" is not supported by the test evaluator; expected one of ${Object.keys(OPERATORS).join(", ")}.`,
+    );
+  }
+
+  return operator(args, props);
 }
+
+function matches(filter: FilterSpecification, props: FeatureValues): boolean {
+  try {
+    return evaluate(filter, props) === true;
+  } catch (error) {
+    if (error instanceof TypeError) return false;
+    throw error;
+  }
+}
+
+function codesMatching(filter: FilterSpecification): string[] {
+  return TOWNS.filter((town) => matches(filter, town)).map(({ code }) => code);
+}
+
+describe("avaliador de teste", () => {
+  it("comparar o que não é número não casa, como no MapLibre", () => {
+    const filter: FilterSpecification = [">=", ["get", "v2022"], 0];
+
+    expect(matches(filter, { v2022: null })).toBe(false);
+    expect(matches(filter, { v2022: "n/d" })).toBe(false);
+    expect(matches(filter, { v2022: 3 })).toBe(true);
+  });
+});
 
 describe("classHighlightFilter", () => {
   it("casa a 1ª classe com as bordas fechadas, incluindo a sobreposição", () => {
