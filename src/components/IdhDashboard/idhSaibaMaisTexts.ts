@@ -1,5 +1,5 @@
 // Textos do "Saiba mais sobre o IDH" do protótipo dos painéis.
-export const IDH_SAIBA_MAIS_TITLE = "Saiba mais sobre o IDH";
+export const IDH_SAIBA_MAIS_TITLE = "Saiba mais";
 
 export const IDH_SAIBA_MAIS_SUMMARY =
   "O Índice de Desenvolvimento Humano (IDH) é um indicador criado pelo Programa das Nações Unidas para o Desenvolvimento (PNUD) para avaliar o desenvolvimento humano a partir de três dimensões: educação, longevidade e renda. Seu valor varia de 0 a 1, e quanto mais próximo de 1, maior o desenvolvimento humano.";
