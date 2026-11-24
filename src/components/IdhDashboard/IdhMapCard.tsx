@@ -4,16 +4,12 @@ import { useState } from "react";
 import {
   IDH_CARD_INFO,
   IDH_MAP_LABEL,
-  idhCardFooter,
 } from "@/components/IdhDashboard/idhCardTexts";
 import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
 import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
-import {
-  PANEL_MAP_HINT,
-  panelMapImageSource,
-} from "@/components/PanelMap/panelMapTexts";
+import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
 import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
 import {
   type RecorteAdapter,
@@ -33,10 +29,6 @@ import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "Mapa do IDH por estado";
-
-// Rodapé da tela cheia; a imagem baixada do card credita o basemap ativo
-// (`usePanelMapCard`).
-const FULLSCREEN_SOURCE = panelMapImageSource(IDH_CARD_SOURCE);
 
 // Altura fixa: o mapa preenche o card ao lado do ranking sem depender da
 // proporção da malha.
@@ -100,7 +92,7 @@ export const IdhMapCard = ({
       skeleton={<PanelMapSkeleton boxClassName={MAP_BOX_CLASS} />}
       state={state}
       onRetry={onRetry}
-      footer={idhCardFooter(updatedAt)}
+      updatedAt={updatedAt}
       bodyClassName="flex flex-col"
       actions={
         <PanelMapCardActions
@@ -118,7 +110,6 @@ export const IdhMapCard = ({
           onOpenChange={setFullscreen}
           title={TITLE}
           subtitle={subtitle}
-          source={FULLSCREEN_SOURCE}
           hint={PANEL_MAP_HINT}
           renderStage={(frame) => <PanelMap {...mapProps} className={frame} />}
         />

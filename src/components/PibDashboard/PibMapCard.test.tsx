@@ -78,7 +78,7 @@ describe("PibMapCard", () => {
       ano: 2021,
       area: "semiarido",
       deepest: "municipio",
-      label: "Mapa do PIB por município",
+      label: "Mapa do PIB total por município",
       formatValue: formatPibReais,
       valueLabel: "PIB",
     });
@@ -97,7 +97,7 @@ describe("PibMapCard", () => {
     renderCard();
 
     expect(
-      screen.getByRole("heading", { name: "Mapa do PIB por município" }),
+      screen.getByRole("heading", { name: "PIB total por município" }),
     ).toBeInTheDocument();
     expect(screen.getByText(/^PIB total · .+ · 2021$/)).toBeInTheDocument();
   });
@@ -149,7 +149,7 @@ describe("PibMapCard", () => {
     renderCard();
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Mais opções: Mapa do PIB por município",
+        name: "Mais opções: PIB total por município",
       }),
     );
     fireEvent.click(
@@ -161,5 +161,33 @@ describe("PibMapCard", () => {
         `${PIB_CARD_SOURCE} · Basemap: © OpenStreetMap contributors`,
       ),
     ).toBeInTheDocument();
+  });
+
+  // A coluna dos setores manda na altura da linha (PR #413): o quadro do mapa
+  // a acompanha com um mínimo, sem altura fixa acima de 1000 px.
+  it("fills the height the grid gives it, with a minimum and no fixed height", () => {
+    renderCard();
+
+    const frame = lastProps().className ?? "";
+
+    expect(frame).toContain("flex-1");
+    expect(frame).toContain("min-h-[360px]");
+    expect(frame).not.toMatch(/(^| )h-\[/);
+  });
+
+  it("explains how the map filters and the PIB terms in the info balloon", async () => {
+    renderCard();
+
+    fireEvent.click(screen.getByRole("button", { name: "Sobre este gráfico" }));
+    const term = await screen.findByText("Produto Interno Bruto (PIB)");
+    const paragraphs = term.closest("p")?.parentElement?.querySelectorAll("p");
+
+    expect(term.tagName).toBe("B");
+    expect(screen.getByText("PIB per capita").tagName).toBe("B");
+    expect(paragraphs).toHaveLength(4);
+    expect(paragraphs?.[0].textContent).toMatch(
+      /clique em um estado ou município/,
+    );
+    expect(paragraphs?.[0].textContent).toMatch(/legenda/);
   });
 });

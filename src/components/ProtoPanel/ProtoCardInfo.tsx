@@ -1,6 +1,6 @@
 "use client";
 
-import { type MouseEvent, useState } from "react";
+import { type MouseEvent, type ReactNode, useState } from "react";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 import { ProtoSheet } from "@/components/ProtoPanel/ProtoSheet";
 import {
@@ -34,14 +34,22 @@ const InfoButton = (props: {
 );
 
 // No celular, o texto abre numa folha com o título do card.
-const InfoSheetButton = ({ title, text }: { title: string; text: string }) => {
+const InfoSheetButton = ({
+  title,
+  text,
+}: {
+  title: string;
+  text: ReactNode;
+}) => {
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <InfoButton onClick={() => setOpen(true)} />
       <ProtoSheet open={open} onOpenChange={setOpen} title={title}>
-        <p className="text-[15px] leading-[22px] text-grey-1100">{text}</p>
+        <div className="text-[15px] leading-[22px] text-grey-1100 [&>p+p]:mt-3">
+          {text}
+        </div>
       </ProtoSheet>
     </>
   );
@@ -49,7 +57,7 @@ const InfoSheetButton = ({ title, text }: { title: string; text: string }) => {
 
 // No desktop, passar o mouse mostra o balão e clicar o fixa até clicar fora,
 // como no protótipo.
-const InfoPopoverButton = ({ text }: { text: string }) => {
+const InfoPopoverButton = ({ text }: { text: ReactNode }) => {
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
   const tone = useProtoTone();
@@ -79,7 +87,7 @@ const InfoPopoverButton = ({ text }: { text: string }) => {
         sideOffset={6}
         style={protoToneStyle(tone)}
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="w-auto max-w-[280px] rounded-[8px] border-grey-300 bg-white px-3 py-2.5 text-[13px] leading-[19px] text-grey-1100 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.3)]"
+        className="w-auto max-w-[280px] rounded-[8px] border-grey-300 bg-white px-3 py-2.5 text-[13px] leading-[19px] text-grey-1100 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.3)] [&>p+p]:mt-2"
       >
         {text}
       </PopoverContent>
@@ -97,7 +105,7 @@ export const ProtoCardInfo = ({
   text,
 }: {
   title: string;
-  text: string;
+  text: ReactNode;
 }) =>
   useMediaQuery("(max-width: 700px)") ? (
     <InfoSheetButton title={title} text={text} />

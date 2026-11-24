@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from "react";
+import { type ReactNode, useContext } from "react";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import {
   ProtoCardMenu,
@@ -45,7 +45,7 @@ export const PanelMapCardActions = ({
   onOpenFullscreen,
 }: {
   title: string;
-  info: string;
+  info: ReactNode;
   imageSource: string;
   engine: PanelMapEngine | null;
   disabled: boolean;

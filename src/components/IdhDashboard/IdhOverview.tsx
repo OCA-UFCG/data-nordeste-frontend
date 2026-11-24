@@ -4,7 +4,6 @@ import { IdhBigNumbers } from "@/components/IdhDashboard/IdhBigNumbers";
 import { IdhLineChart } from "@/components/IdhDashboard/IdhLineChart";
 import { IdhMapCard } from "@/components/IdhDashboard/IdhMapCard";
 import {
-  idhCardFooter,
   idhEvolutionInfo,
   IDH_CARD_INFO,
 } from "@/components/IdhDashboard/idhCardTexts";
@@ -60,7 +59,7 @@ const EvolutionCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={idhCardFooter(updatedAt)}
+      updatedAt={updatedAt}
       title={EVOLUTION_TITLE}
       mobileTitle="Evolução anual do IDH"
       subtitle={describeIdhSerie(data)}
@@ -94,7 +93,7 @@ const RankingCard = ({
 }: CardProps & { onSelectUf: (uf: string) => void }) => (
   <ProtoCard
     {...status}
-    footer={idhCardFooter(updatedAt)}
+    updatedAt={updatedAt}
     title={RANKING_TITLE}
     mobileTitle="Comparação entre os estados"
     subtitle={withYear(

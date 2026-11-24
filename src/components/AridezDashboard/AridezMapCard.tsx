@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import type { AridezCardProps } from "@/components/AridezDashboard/aridezCardProps";
 import {
-  ARIDEZ_CARD_FOOTER,
   ARIDEZ_CARD_INFO,
   ARIDEZ_CARD_SOURCE,
   ARIDEZ_MAP_MOBILE_TITLE,
@@ -12,10 +11,7 @@ import {
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
 import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
-import {
-  PANEL_MAP_HINT,
-  panelMapImageSource,
-} from "@/components/PanelMap/panelMapTexts";
+import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
 import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
 import { usePanelMapFilters } from "@/components/PanelMap/usePanelMapFilters";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
@@ -29,10 +25,6 @@ import {
 import type { AridezPanelData } from "@/features/panels/aridez/aridezPanel";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 import { areaLabel } from "@/features/panels/territorialOptions";
-
-// Rodapé da tela cheia; a imagem baixada do card credita o basemap ativo
-// (`usePanelMapCard`).
-const FULLSCREEN_SOURCE = panelMapImageSource(ARIDEZ_CARD_SOURCE);
 
 // Altura fixa: o mapa não depende da proporção da malha, e a legenda das
 // classes fica abaixo da caixa.
@@ -93,7 +85,6 @@ export const AridezMapCard = ({
     <ProtoCard
       state={state}
       onRetry={onRetry}
-      footer={ARIDEZ_CARD_FOOTER}
       title={ARIDEZ_MAP_TITLE}
       mobileTitle={ARIDEZ_MAP_MOBILE_TITLE}
       subtitle={subtitle}
@@ -106,7 +97,6 @@ export const AridezMapCard = ({
           onOpenChange={setFullscreen}
           title={ARIDEZ_MAP_TITLE}
           subtitle={subtitle}
-          source={FULLSCREEN_SOURCE}
           hint={PANEL_MAP_HINT}
           renderStage={(frame) => <PanelMap {...mapProps} className={frame} />}
         />

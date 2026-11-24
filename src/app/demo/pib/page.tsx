@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getCatalogHref } from "@/components/Panel/texts/PanelTexts";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
 import { PibPageFrame } from "@/components/PibDashboard/PibPageFrame";
+import { PIB_LEAD } from "@/components/PibDashboard/pibTexts";
 import { PIB_MACROTHEME } from "@/components/PibDashboard/pibTheme";
 import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedPanelsSection";
 import { buildMetadata } from "@/config/seo";
@@ -51,8 +52,8 @@ const loadPanel = async (filters: TerritorialFilters) => {
 // Mesmo layout do IDH e do perfil: capa, painel, "Saiba mais" e relacionados.
 // Sem o banco, os cards mostram o erro com "Tentar de novo" em vez de derrubar
 // a página.
-// INTENTIONAL: sem o Contentful, a capa usa o macrotema padrão e some só a
-// seção de relacionados.
+// INTENTIONAL: sem o Contentful, a capa usa o macrotema e o texto de abertura
+// padrão e some só a seção de relacionados.
 export default async function PibDemoPage({
   searchParams,
 }: {
@@ -71,7 +72,11 @@ export default async function PibDemoPage({
 
   return (
     <HubTemplate>
-      <PibPageFrame macroTheme={macroTheme} publishedAt={content?.panel.date}>
+      <PibPageFrame
+        macroTheme={macroTheme}
+        lead={content?.panel.abovePanelDescription || PIB_LEAD}
+        updatedAt={content?.panel.date}
+      >
         <PibDashboard
           data={panel ?? emptyPibPanel(filters)}
           failed={!panel}

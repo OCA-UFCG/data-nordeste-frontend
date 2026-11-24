@@ -10,7 +10,7 @@ export const PANEL_MAP_HINT =
  * Fonte da imagem baixada do mapa: a fonte do dado do painel e o crédito do
  * basemap que aparece nela (o Padrão credita o OpenStreetMap; o satélite, Esri,
  * Maxar e Earthstar). Sem
- * `basemap`, o crédito do padrão (rodapé da tela cheia).
+ * `basemap`, o crédito do padrão.
  *
  * @example panelMapImageSource("Fonte: IBGE · Data Nordeste", "satelite") // "Fonte: IBGE · Data Nordeste · Basemap: Esri, Maxar, Earthstar Geographics"
  */

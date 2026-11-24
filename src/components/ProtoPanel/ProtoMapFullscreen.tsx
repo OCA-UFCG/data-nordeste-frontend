@@ -27,10 +27,7 @@ export type ProtoMapFullscreenProps = {
   subtitle: string;
   legend?: ReactNode;
 
-  // Fonte exibida no rodapé do diálogo.
-  source: string;
-
-  // Dica de uso no rodapé; sem ela, o rodapé não mostra a dica.
+  // Dica de uso no rodapé; sem ela, não há rodapé.
   hint?: string;
 
   // O palco é do painel (o mapa de municípios, que tem o próprio zoom).
@@ -43,7 +40,6 @@ const FullscreenContent = ({
   title,
   subtitle,
   legend,
-  source,
   hint,
   renderStage,
 }: Omit<ProtoMapFullscreenProps, "open" | "onOpenChange">) => {
@@ -87,10 +83,11 @@ const FullscreenContent = ({
         {renderStage(MAP_STAGE_FRAME)}
       </div>
       {legend ? <div className="mx-1 mt-3">{legend}</div> : null}
-      <div className="mx-1 mt-3 flex justify-between gap-3 border-t border-grey-200 pt-3 text-[13px] text-grey-800">
-        <span>{source}</span>
-        {hint ? <span className="max-[700px]:hidden">{hint}</span> : null}
-      </div>
+      {hint ? (
+        <p className="mx-1 mt-3 border-t border-grey-200 pt-3 text-[13px] text-grey-800 max-[700px]:hidden">
+          {hint}
+        </p>
+      ) : null}
     </DialogContent>
   );
 };
@@ -98,11 +95,12 @@ const FullscreenContent = ({
 /**
  * Tela cheia de um card de mapa (`.mmodal` do protótipo): cabeçalho com o
  * título e o botão de fechar, o palco do painel (`renderStage`), a legenda
- * opcional e o rodapé com a fonte e a dica de uso (`hint`). O palco recebe só
- * a classe da caixa do mapa (`frameClassName`); a legenda do painel fica
- * abaixo dela.
+ * opcional e o rodapé com a dica de uso (`hint`; sem ela, não há rodapé). A
+ * fonte fica só em "Fonte dos dados" e na imagem baixada. O palco recebe só a
+ * classe da caixa do mapa (`frameClassName`); a legenda do painel fica abaixo
+ * dela.
  *
- * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" source={PIB_CARD_SOURCE} hint={PANEL_MAP_HINT} renderStage={(frame) => <PanelMap {...mapProps} className={frame} />} />
+ * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" hint={PANEL_MAP_HINT} renderStage={(frame) => <PanelMap {...mapProps} className={frame} />} />
  */
 export const ProtoMapFullscreen = ({
   open,

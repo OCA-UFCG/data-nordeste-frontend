@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AridezDashboard } from "@/components/AridezDashboard/AridezDashboard";
 import { aridezBigNumbers } from "@/components/AridezDashboard/AridezBigNumbers";
+import { ARIDEZ_CARD_SOURCE } from "@/components/AridezDashboard/aridezTexts";
 import type { PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import {
@@ -113,6 +114,13 @@ describe("AridezDashboard", () => {
     // O pedido chega ao mapa na hora (seleção otimista), sem esqueleto.
     expect(panelMapRenders.some(({ ano }) => ano === 2011)).toBe(true);
     expect(screen.queryByLabelText("Carregando")).toBeNull();
+  });
+
+  // A fonte fica só na seção "Fonte dos dados" do painel, não em cada card.
+  it("shows no source under the charts", () => {
+    render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);
+
+    expect(screen.queryByText(ARIDEZ_CARD_SOURCE)).toBeNull();
   });
 
   it("shows the panel brand in the desktop filter bar", () => {

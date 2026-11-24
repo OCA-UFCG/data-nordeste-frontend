@@ -1,32 +1,63 @@
 // Textos do painel do PIB do protótipo. Ficam fora dos componentes para a
 // página (servidor) e o painel (cliente) lerem a mesma redação.
 
-// Texto de abertura da capa.
+// Fallback da capa: cópia do `abovePanelDescription` do Contentful.
 export const PIB_LEAD =
-  "Acompanhe a riqueza gerada pelos estados do Nordeste: o PIB total e per capita ao longo do tempo, a comparação entre estados e a contribuição de cada setor da economia.";
+  "Os dados reunidos neste painel permitem explorar diferentes indicadores da atividade econômica dos estados e municípios que compõem as áreas de abrangência do Data Nordeste. As informações incluem o Produto Interno Bruto (PIB) total e per capita desses territórios, o total de impostos, o Valor Adicionado Bruto (VAB) por setor e as atividades econômicas que mais têm participação no PIB. Tais conteúdos podem subsidiar decisões relacionadas ao planejamento econômico, à definição de prioridades de investimento, ao fortalecimento de setores estratégicos e à redução das desigualdades entre os territórios.";
 
-// Fonte que vai no rodapé dos cards e na imagem baixada.
+// Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
-// Título do card do mapa.
-export const PIB_MAP_TITLE = "Mapa do PIB por município";
+// Título do card da linha, também no rótulo do SVG e na imagem baixada.
+export const PIB_LINE_TITLE =
+  "Dinâmica temporal do PIB total e do PIB per capita";
 
-// INTENTIONAL: sem "Atualizado em". O protótipo traz "11/2026" fixo e o banco
-// não informa quando o PIB foi carregado; inclua a data quando houver fonte.
-export const PIB_CARD_FOOTER = { source: PIB_CARD_SOURCE } as const;
+// Título do card do mapa, também no subtítulo da tela cheia e no rótulo.
+export const PIB_MAP_TITLE = "PIB total por município";
 
-// O ano vem do banco; sem ele (carregando ou erro), a frase sai.
-const sectorCoverage = (vabLastYear: number | null) =>
-  vabLastYear === null ? "" : ` Os dados setoriais vão até ${vabLastYear}.`;
+// Trecho do ⓘ do VAB que o card destaca em negrito.
+export const PIB_VAB_TERM = "Valor Adicionado Bruto (VAB)";
+
+// ⓘ da equipe de conteúdo: um item por parágrafo, com o termo definido (em
+// negrito no card) separado do resto.
+export type PibInfoParagraph = { term?: string; rest: string };
+
+// O primeiro parágrafo é nosso: diz como o mapa MapLibre filtra o painel. Os
+// outros são da equipe de conteúdo, sem mudança.
+export const PIB_MAP_INFO: readonly PibInfoParagraph[] = [
+  {
+    rest: "Cada município recebe a cor da faixa do seu PIB total. Aproxime o mapa ou clique em um estado ou município para usá-lo como filtro do painel; clicar de novo no município escolhido volta ao estado, e clicar fora do estado escolhido volta à área de interesse. Passe o mouse sobre uma faixa da legenda para destacar os municípios dela no mapa.",
+  },
+  {
+    term: "Produto Interno Bruto (PIB)",
+    rest: " é a soma de todos os bens e serviços finais produzidos em um país, estado ou município durante um determinado período.",
+  },
+  {
+    term: "PIB per capita",
+    rest: " indica a produção econômica média por habitante. É obtido dividindo-se o PIB total pela população do município. Em 2023, foi usada a população do Censo Demográfico de 2022, segundo nota do Instituto Brasileiro de Geografia e Estatística (IBGE).",
+  },
+  {
+    rest: "Obs.: Os valores do PIB são apresentados a preços correntes de cada ano. A evolução nominal incorpora tanto variações na produção quanto nos preços.",
+  },
+];
+
+export const PIB_ATIVIDADE_INFO: readonly PibInfoParagraph[] = [
+  {
+    term: "Participação da atividade com maior Valor Adicionado Bruto (VAB) no Produto Interno Bruto (PIB)",
+    rest: " representa o percentual do PIB que é gerado pela atividade econômica de maior VAB no local selecionado. Esse indicador mostra o quanto a principal atividade econômica contribui para a geração de riqueza local.",
+  },
+  {
+    rest: "Obs.: Enquanto nenhum município estiver selecionado, o gráfico apresenta um ranking das atividades com maior VAB. Ao selecionar um município, o gráfico passa a mostrar a participação da atividade de maior VAB no PIB do município selecionado.",
+  },
+];
+
+// Unidade do subtítulo do card de atividade.
+export const PIB_ATIVIDADE_UNIT = "Percentual do PIB (%)";
 
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
-  line: "PIB total (eixo da esquerda, em R$) e PIB per capita (eixo da direita, em R$ mil). Clique em um ponto para mudar o ano.",
-  map: "Cada município recebe a cor da faixa do seu PIB total. Aproxime o mapa ou clique em um estado ou município para usá-lo como filtro do painel; clicar de novo no município escolhido volta ao estado, e clicar fora do estado escolhido volta à visão do Nordeste.",
-  vab: (vabLastYear: number | null) =>
-    `Valor adicionado bruto de cada grande setor da economia.${sectorCoverage(vabLastYear)}`,
-  atividade: (vabLastYear: number | null) =>
-    `As três atividades com maior participação no PIB do território selecionado, em % do PIB.${sectorCoverage(vabLastYear)}`,
+  line: "PIB total no eixo da esquerda e PIB per capita no eixo da direita, cada um na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
+  vab: `${PIB_VAB_TERM} por setor representa o quanto cada setor da economia contribui para a geração de riqueza, ou seja, para o Produto Interno Bruto (PIB).`,
 } as const;
 
 export const PIB_SAIBA_MAIS_TITLE = "Saiba mais sobre o PIB";

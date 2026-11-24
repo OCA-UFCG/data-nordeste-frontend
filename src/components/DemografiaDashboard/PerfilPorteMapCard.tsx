@@ -7,10 +7,7 @@ import { DataTable } from "@/components/Panel/cards/DataTable";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
 import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
-import {
-  PANEL_MAP_HINT,
-  panelMapImageSource,
-} from "@/components/PanelMap/panelMapTexts";
+import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
 import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
 import { usePanelMapFilters } from "@/components/PanelMap/usePanelMapFilters";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
@@ -27,10 +24,6 @@ const TITLE = "Porte dos municípios";
 const INFO =
   "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Aproxime ou clique no mapa para filtrar o painel por estado e por município; clicar de novo no município escolhido volta ao estado, e clicar fora do estado escolhido volta à área. Na vista Estados, só por estado.";
 const ESTADOS_LABEL = "Mapa dos estados";
-
-// Rodapé da tela cheia; a imagem baixada do card credita o basemap ativo
-// (`usePanelMapCard`).
-const FULLSCREEN_SOURCE = panelMapImageSource(PERFIL_CARD_SOURCE);
 
 // Altura fixa (`max-height` de 560 px do `.map-box` do protótipo): sem ela o
 // card cresceria com a proporção da malha.
@@ -174,7 +167,6 @@ export const PerfilPorteMapCard = ({
           onOpenChange={mapView.setFullscreen}
           title={TITLE}
           subtitle={subtitle}
-          source={FULLSCREEN_SOURCE}
           hint={PANEL_MAP_HINT}
           renderStage={(frame) => (
             <PanelMap key={view} {...mapProps} className={frame} />

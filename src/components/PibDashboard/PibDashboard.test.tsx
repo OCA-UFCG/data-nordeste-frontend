@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
+import { PIB_CARD_SOURCE } from "@/components/PibDashboard/pibTexts";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import {
   emptyPibPanel,
@@ -67,6 +68,13 @@ describe("PibDashboard", () => {
     expect(yearSelect().closest("[inert]")).toBeNull();
   });
 
+  // A fonte fica só na seção "Fonte dos dados" do painel, não em cada card.
+  it("shows no source under the charts", () => {
+    render(<PibDashboard data={PANEL} catalogHref="/catalog" />);
+
+    expect(screen.queryByText(PIB_CARD_SOURCE)).toBeNull();
+  });
+
   it("switches to the last year with sector data and rings the year select", () => {
     render(<PibDashboard data={PANEL} catalogHref="/catalog" />);
 
@@ -115,6 +123,11 @@ describe("PibDashboard", () => {
 
     expect(sectorNotices()).toHaveLength(0);
     expect(screen.getAllByText("Serviços").length).toBeGreaterThan(0);
+    expect(screen.getByText(/VAB total: R\$ 500,00 Mi$/)).toBeInTheDocument();
+    expect(screen.getByText(/· R\$ milhões \(Mi\)$/)).toBeInTheDocument();
+    expect(screen.queryByText(/no eixo/)).not.toBeInTheDocument();
+    expect(screen.getByText(/· Percentual do PIB \(%\)$/)).toBeInTheDocument();
+    expect(screen.queryByText(/Participação de cada atividade/)).toBeNull();
   });
 
   it("shows the notice for a year without sector data, whatever the year", () => {
