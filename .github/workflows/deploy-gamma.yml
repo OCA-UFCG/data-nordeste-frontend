@@ -64,6 +64,11 @@ jobs:
       - name: Stop existing container
         run: sudo docker rm -f ${{ vars.CONTAINER_NAME_GAMMA }} || true
 
+      # IMPORTANT: /opt/datane/geodata (montado em /geodata, somente leitura) NAO
+      # vem do build: e preenchido a mao por scripts/geodata (download + build) e
+      # rsync para a VM, como descrito em docs/README.md ("Panel Maps (MapLibre)").
+      # Sem esse diretorio os mapas dos paineis ficam sem dados. So o gamma monta;
+      # beta e prod nao tem os geodados.
       - name: Run new container
         run: |
           sudo docker run \
@@ -74,6 +79,8 @@ jobs:
             -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" \
             -e DATA_DB_URL="${{ secrets.DATA_DB_URL_GAMMA }}" \
             -e DEMOS_HABILITADAS=1 \
+            -v /opt/datane/geodata:/geodata:ro \
+            -e GEODATA_DIR=/geodata \
             -e CONTENT_CACHE_PASSWORD="${{ secrets.CONTENT_CACHE_PASSWORD }}" \
             -p ${{ vars.HOST_PORT_GAMMA }}:${{ vars.CONTAINER_PORT }} \
             -d \

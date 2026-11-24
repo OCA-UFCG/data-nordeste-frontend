@@ -45,7 +45,6 @@ import {
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
-  selectOnlyTerritorialUf,
 } from "@/features/panels/territorialPlace";
 import { cn } from "@/lib/utils";
 
@@ -122,7 +121,7 @@ export const AridezDashboard = ({
     place: describeTerritorialPlace(data),
     states,
     onRetry: retry,
-    onSelectUf: (uf: string) => request(selectOnlyTerritorialUf(selection, uf)),
+    onFiltersChange: request,
   };
   const showEmpty = !failed && !data.areas;
 

@@ -15,10 +15,13 @@ type IdhFilterKey = "uf" | "ano";
 // De quais filtros o dado de cada card depende. O ano escolhido na série e o
 // estado destacado no mapa e no ranking vêm do filtro pedido (seleção
 // otimista), então não contam: só o que exige dado novo do servidor.
+// IMPORTANT: o mapa (MapLibre) desenha os geodados do ano pedido e não lê dado
+// do servidor; com `ano` aqui, cada troca de ano o trocava pelo esqueleto e
+// remontava o mapa (novo contexto WebGL, geodados de novo, câmera perdida).
 const IDH_CARD_DEPENDENCIES = {
   bigNumbers: ["uf", "ano"],
   evolution: ["uf"],
-  map: ["ano"],
+  map: [],
   ranking: ["ano"],
   groups: ["uf", "ano"],
 } as const satisfies Record<string, readonly IdhFilterKey[]>;

@@ -1,120 +1,118 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { AridezCardProps } from "@/components/AridezDashboard/aridezCardProps";
-import { ARIDEZ_CARD_INFO } from "@/components/AridezDashboard/aridezTexts";
-import { ARIDEZ_COLORS } from "@/components/AridezDashboard/aridezTheme";
+import {
+  ARIDEZ_CARD_INFO,
+  ARIDEZ_CARD_SOURCE,
+  ARIDEZ_MAP_MOBILE_TITLE,
+  ARIDEZ_MAP_TITLE,
+} from "@/components/AridezDashboard/aridezTexts";
+import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
+import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
+import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
+import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
+import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
+import { usePanelMapFilters } from "@/components/PanelMap/usePanelMapFilters";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
-import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
+import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
+import { formatSharePercent } from "@/features/panels/aridez/aridezFormat";
 import {
-  ProtoCardMenu,
-  useSvgChart,
-} from "@/components/ProtoPanel/ProtoCardMenu";
-import {
-  ProtoBinLegend,
-  ProtoFullscreenButton,
-} from "@/components/ProtoPanel/ProtoMapControls";
-import {
-  MAP_SELECT_HINT,
-  ProtoMapFullscreen,
-} from "@/components/ProtoPanel/ProtoMapFullscreen";
-import {
-  ProtoStateMap,
-  type ProtoStateMapProps,
-} from "@/components/ProtoPanel/ProtoStateMap";
+  aridezClassCounts,
+  aridezMapValues,
+  aridezPredominantClasses,
+} from "@/features/panels/aridez/aridezMap";
 import type { AridezPanelData } from "@/features/panels/aridez/aridezPanel";
-import {
-  ARIDEZ_STATE_BINS,
-  buildAridezStateLookup,
-} from "@/features/panels/aridez/aridezStates";
-import { describeStatesOffMap } from "@/features/panels/statesOffMap";
+import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 import { areaLabel } from "@/features/panels/territorialOptions";
 
-const TITLE = "Área suscetível à desertificação por estado";
-const MOBILE_TITLE = "Área suscetível por estado";
+// Altura fixa: o mapa não depende da proporção da malha, e a legenda das
+// classes fica abaixo da caixa.
+const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 
-/**
- * Ligação do mapa da aridez: a cor é a faixa do % de ASD do estado e só
- * estado da área de interesse escolhe. Usado pelo card e pela tela cheia.
- *
- * @example <ProtoStateMap {...buildAridezMapProps(panel, ["PE"], selectUf)} />
- */
-const buildAridezMapProps = (
+// O número do tooltip, as contagens da legenda e o destaque das classes saem
+// de todos os municípios da área (`data.mapa`): só mudam com Área e Ano, não
+// com o zoom.
+const useAridezMapProps = (
   data: AridezPanelData,
-  selectedUfs: string[],
-  onSelect: (code: string) => void,
-): ProtoStateMapProps => {
-  const lookup = buildAridezStateLookup(data.estados);
+  selection: TerritorialFilters,
+  onFiltersChange: (filters: TerritorialFilters) => void,
+): PanelMapProps => {
+  const values = useMemo(() => aridezMapValues(data.mapa), [data.mapa]);
+  const classCounts = useMemo(() => aridezClassCounts(data.mapa), [data.mapa]);
+  const classOf = useMemo(
+    () => aridezPredominantClasses(data.mapa),
+    [data.mapa],
+  );
 
   return {
-    fillFor: (code) => lookup.binFor(code)?.color ?? ARIDEZ_COLORS.offArea,
-    describe: lookup.describe,
-    isSelectable: lookup.isSelectable,
-    label: `Mapa da área suscetível à desertificação por estado, ${areaLabel(data.filters.area)}`,
-    selectedUfs,
-    onSelect,
+    ...usePanelMapFilters(selection, onFiltersChange),
+    indicator: "aridez",
+    deepest: "municipio",
+    formatValue: formatSharePercent,
+    valueLabel: "Área suscetível",
+    label: ARIDEZ_MAP_TITLE,
+    values,
+    classCounts,
+    classOf,
   };
 };
 
 /**
- * Card "Área suscetível à desertificação por estado": cada estado na cor da
- * faixa do % da sua área que é ASD. Clicar num estado deixa só ele no filtro.
+ * Card "Índice de aridez por município": o raster do índice da década do ano
+ * escolhido, com a legenda das classes e o % de ASD de cada município no
+ * tooltip. Aproximar ou clicar no mapa troca Estado e Município no filtro do
+ * painel, pelo mesmo caminho da barra de filtros.
  *
- * @example <AridezMapCard data={panel} selectedUfs={["PE"]} state="ok" onRetry={retry} onSelectUf={selectUf} />
+ * @example <AridezMapCard data={panel} selection={filters} onFiltersChange={request} state="ok" onRetry={retry} />
  */
 export const AridezMapCard = ({
   data,
-  selectedUfs,
-  onSelectUf,
-  ...status
-}: Omit<AridezCardProps, "place"> & {
-  selectedUfs: string[];
-  onSelectUf: (uf: string) => void;
+  selection,
+  onFiltersChange,
+  state,
+  onRetry,
+}: Pick<AridezCardProps, "data" | "state" | "onRetry"> & {
+  selection: TerritorialFilters;
+  onFiltersChange: (filters: TerritorialFilters) => void;
 }) => {
-  const chart = useSvgChart();
+  const card = usePanelMapCard(ARIDEZ_CARD_SOURCE);
   const [fullscreen, setFullscreen] = useState(false);
-  const subtitle = `% da área do estado suscetível à desertificação · ${areaLabel(data.filters.area)} · ${data.filters.ano}`;
-  const mapProps = buildAridezMapProps(data, selectedUfs, onSelectUf);
-  const offMap = describeStatesOffMap(data.estados);
+  const mapProps = useAridezMapProps(data, selection, onFiltersChange);
+  const subtitle = `Classe de aridez · ${areaLabel(selection.area)} · ${selection.ano}`;
 
   return (
     <ProtoCard
-      {...status}
-      title={TITLE}
-      mobileTitle={MOBILE_TITLE}
+      state={state}
+      onRetry={onRetry}
+      title={ARIDEZ_MAP_TITLE}
+      mobileTitle={ARIDEZ_MAP_MOBILE_TITLE}
       subtitle={subtitle}
       kind="map"
+      skeleton={<PanelMapSkeleton boxClassName={MAP_BOX_CLASS} />}
       bodyClassName="flex flex-col"
       overlay={
         <ProtoMapFullscreen
-          {...mapProps}
           open={fullscreen}
           onOpenChange={setFullscreen}
-          title={TITLE}
+          title={ARIDEZ_MAP_TITLE}
           subtitle={subtitle}
-          legend={<ProtoBinLegend bins={ARIDEZ_STATE_BINS} className="" />}
-          hint={MAP_SELECT_HINT}
+          hint={PANEL_MAP_HINT}
+          renderStage={(frame) => <PanelMap {...mapProps} className={frame} />}
         />
       }
       actions={
-        <>
-          <ProtoFullscreenButton
-            disabled={status.state === "loading" || status.state === "error"}
-            onClick={() => setFullscreen(true)}
-          />
-          <ProtoCardInfo title={TITLE} text={ARIDEZ_CARD_INFO.map} />
-          <ProtoCardMenu title={TITLE} chart={chart} />
-        </>
+        <PanelMapCardActions
+          title={ARIDEZ_MAP_TITLE}
+          info={ARIDEZ_CARD_INFO.map}
+          imageSource={card.imageSource}
+          engine={card.engine}
+          disabled={state === "loading" || state === "error"}
+          onOpenFullscreen={() => setFullscreen(true)}
+        />
       }
     >
-      <div
-        className="relative flex flex-1 items-center rounded-[8px] p-1"
-        style={{ background: ARIDEZ_COLORS.sea }}
-      >
-        <ProtoStateMap {...mapProps} svgRef={chart.ref} />
-      </div>
-      <ProtoBinLegend bins={ARIDEZ_STATE_BINS} />
-      {offMap ? <p className="mt-2 text-xs text-grey-800">{offMap}</p> : null}
+      <PanelMap {...mapProps} {...card.mapBinding} className={MAP_BOX_CLASS} />
     </ProtoCard>
   );
 };
