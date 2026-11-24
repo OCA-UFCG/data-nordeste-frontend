@@ -154,7 +154,12 @@ function mountMap(
   const map = createMap(maplibre, container, options);
 
   mount.map = map;
-  map.once("load", () => {
+
+  // WHY style.load e não load: o `load` espera todos os ladrilhos do basemap
+  // (segundos de atraso); os métodos do motor só precisam do estilo e das
+  // camadas. O estilo é um objeto inline, mas o MapLibre o carrega num frame
+  // seguinte, então o evento nunca dispara antes deste `once`.
+  map.once("style.load", () => {
     if (!mount.destroyed) {
       options.onReady(engineFor(map, options.municipal, destroy));
     }
