@@ -17,8 +17,6 @@ export const PIB_COLORS = {
   perCapitaInk: "#0f6091",
   vabBar: "#973815",
   atividadeBar: "#f2761c",
-  offArea: "#e9e5df",
-  sea: "#d6f1fa",
   inkStrong: "#1b1a1c",
   muted: "#595557",
   line: "#dcdbdc",

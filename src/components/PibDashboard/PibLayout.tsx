@@ -17,9 +17,10 @@ export type PibLayoutProps = Omit<PibCardProps, "state"> & {
   states: PibCardStates;
 
   // Filtros pedidos (iguais a `data.filters` fora da navegação): o ano da
-  // série e os estados destacados no mapa já mostram o pedido.
+  // série e o recorte do mapa já mostram o pedido. `onFiltersChange` é o
+  // mesmo caminho da barra de filtros (`request`).
   selection: TerritorialFilters;
-  onSelectUf: (uf: string) => void;
+  onFiltersChange: (filters: TerritorialFilters) => void;
   onSelectYear: (ano: number) => void;
   onReset: () => void;
 };
@@ -35,12 +36,12 @@ const SECTOR_COLUMN =
  * Grade do painel do PIB (`.pib-stack` do protótipo): números de destaque, a
  * série anual e, lado a lado, o mapa e os dois cards de setor.
  *
- * @example <PibGrids data={panel} selection={filters} place="Nordeste" states={states} onRetry={retry} onSelectUf={selectUf} onSelectYear={pickYear} />
+ * @example <PibGrids data={panel} selection={filters} place="Nordeste" states={states} onRetry={retry} onFiltersChange={request} onSelectYear={pickYear} />
  */
 export const PibGrids = ({
   selection,
   states,
-  onSelectUf,
+  onFiltersChange,
   onSelectYear,
   ...card
 }: Omit<PibLayoutProps, "onReset">) => (
@@ -59,10 +60,10 @@ export const PibGrids = ({
     <div className={BOTTOM_GRID}>
       <PibMapCard
         data={card.data}
-        selectedUfs={selection.uf ?? []}
+        selection={selection}
+        onFiltersChange={onFiltersChange}
         state={states.map}
         onRetry={card.onRetry}
-        onSelectUf={onSelectUf}
       />
       <div className={SECTOR_COLUMN}>
         <PibVabCard
@@ -84,12 +85,12 @@ export const PibGrids = ({
  * Sem PIB para o território e o ano escolhidos: um aviso com o atalho para o
  * padrão do painel e o mapa sozinho (`.pgrid.solo` do protótipo).
  *
- * @example <PibEmptyLayout data={panel} selection={filters} place="Caatinga" states={states} onRetry={retry} onSelectUf={selectUf} onSelectYear={pickYear} onReset={reset} />
+ * @example <PibEmptyLayout data={panel} selection={filters} place="Caatinga" states={states} onRetry={retry} onFiltersChange={request} onSelectYear={pickYear} onReset={reset} />
  */
 export const PibEmptyLayout = ({
   selection,
   states,
-  onSelectUf,
+  onFiltersChange,
   onReset,
   ...card
 }: PibLayoutProps) => (
@@ -110,10 +111,10 @@ export const PibEmptyLayout = ({
     </article>
     <PibMapCard
       data={card.data}
-      selectedUfs={selection.uf ?? []}
+      selection={selection}
+      onFiltersChange={onFiltersChange}
       state={states.map}
       onRetry={card.onRetry}
-      onSelectUf={onSelectUf}
     />
   </div>
 );

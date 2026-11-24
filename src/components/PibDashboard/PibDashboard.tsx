@@ -36,7 +36,6 @@ import {
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
-  selectOnlyTerritorialUf,
 } from "@/features/panels/territorialPlace";
 import { cn } from "@/lib/utils";
 
@@ -104,7 +103,7 @@ export const PibDashboard = ({
     place: describeTerritorialPlace(data),
     states,
     onRetry: retry,
-    onSelectUf: (uf: string) => request(selectOnlyTerritorialUf(selection, uf)),
+    onFiltersChange: request,
     onSelectYear: (ano: number) => request({ ...selection, ano }),
   };
   const showEmpty = !failed && data.serie.length === 0;

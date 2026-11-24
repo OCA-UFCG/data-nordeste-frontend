@@ -1,79 +1,76 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
+import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
 import {
   PIB_CARD_FOOTER,
   PIB_CARD_INFO,
-  PIB_CARD_SOURCE,
+  PIB_MAP_HINT,
+  PIB_MAP_IMAGE_SOURCE,
+  PIB_MAP_TITLE,
 } from "@/components/PibDashboard/pibTexts";
-import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import {
   ProtoCardMenu,
-  useSvgChart,
+  ProtoCardMenuContext,
 } from "@/components/ProtoPanel/ProtoCardMenu";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
-import {
-  MAP_SELECT_HINT,
-  ProtoMapFullscreen,
-} from "@/components/ProtoPanel/ProtoMapFullscreen";
-import {
-  ProtoStateMap,
-  type ProtoStateMapProps,
-} from "@/components/ProtoPanel/ProtoStateMap";
+import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
 import { ICON_BUTTON } from "@/components/ProtoPanel/protoStyles";
-import type { PibPanelData } from "@/features/panels/pib/pibPanel";
 import {
-  buildPibStateLookup,
-  describeStatesOffMap,
-  PIB_STATE_BINS,
-} from "@/features/panels/pib/pibStates";
+  recorteToTerritorial,
+  territorialToRecorte,
+} from "@/features/panelMap/panelMapAdapters";
+import { formatPibReais } from "@/features/panels/pib/pibFormat";
 import { areaLabel } from "@/features/panels/territorialOptions";
+import type { TerritorialFilters } from "@/features/panels/territorialFilters";
+import type { PanelMapEngine } from "@/lib/panelMapEngine";
 
-const TITLE = "Mapa do PIB por estado";
+// Altura fixa: o mapa preenche o card ao lado da coluna dos setores sem
+// depender da proporção da malha.
+const MAP_BOX_CLASS =
+  "h-[480px] overflow-hidden rounded-[8px] max-[1000px]:h-[400px]";
 
-/**
- * Ligação do mapa do PIB: a cor é a faixa do PIB total do estado e só estado
- * da área de interesse escolhe. Usado pelo mapa do card e pelo de tela cheia.
- * `selectedUfs`: os estados do filtro pedido, contornados na hora.
- *
- * @example <ProtoStateMap {...buildPibMapProps(panel, ["PE"], selectUf)} />
- */
-export const buildPibMapProps = (
-  data: PibPanelData,
-  selectedUfs: string[],
-  onSelect: (code: string) => void,
-): ProtoStateMapProps => {
-  const lookup = buildPibStateLookup(data.estados);
+type PibMapSelectionProps = Pick<
+  PanelMapProps,
+  | "indicator"
+  | "ano"
+  | "area"
+  | "recorte"
+  | "deepest"
+  | "formatValue"
+  | "label"
+  | "onRecorteChange"
+>;
+
+// IMPORTANT: o recorte vem direto de `selection` e volta direto para o
+// `request`. O PanelMap só evita reenquadrar se o recorte que recebe depois
+// for igual ao que emitiu; normalizar em qualquer ponto do caminho faria o
+// mapa "pular" a cada zoom.
+const usePibMapProps = (
+  selection: TerritorialFilters,
+  onFiltersChange: (filters: TerritorialFilters) => void,
+): PibMapSelectionProps => {
+  const recorte = useMemo(() => territorialToRecorte(selection), [selection]);
+  const onRecorteChange = useCallback(
+    (next: Parameters<PanelMapProps["onRecorteChange"]>[0]) =>
+      onFiltersChange(recorteToTerritorial(selection, next)),
+    [selection, onFiltersChange],
+  );
 
   return {
-    fillFor: (code) => lookup.binFor(code)?.color ?? PIB_COLORS.offArea,
-    describe: lookup.describe,
-    isSelectable: lookup.isSelectable,
-    label: `${TITLE}, ${areaLabel(data.filters.area)}`,
-    selectedUfs,
-    onSelect,
+    indicator: "pib",
+    ano: selection.ano,
+    area: selection.area,
+    recorte,
+    deepest: "municipio",
+    formatValue: formatPibReais,
+    label: PIB_MAP_TITLE,
+    onRecorteChange,
   };
 };
-
-// `.mleg`: as cinco faixas do PIB total.
-const MapLegend = ({ className = "mt-3" }: { className?: string }) => (
-  <div
-    className={`flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-grey-1100 ${className}`}
-  >
-    {PIB_STATE_BINS.map((bin) => (
-      <span key={bin.label} className="inline-flex items-center gap-1.5">
-        <i
-          className="inline-block size-[9px] rounded-full"
-          style={{ background: bin.color }}
-        />
-        {bin.label}
-      </span>
-    ))}
-  </div>
-);
 
 const FullscreenButton = ({
   disabled,
@@ -95,67 +92,76 @@ const FullscreenButton = ({
   </button>
 );
 
+// A imagem do mapa leva o crédito do Esri; os outros cards do painel seguem
+// com a fonte do contexto.
+const MapCardMenu = ({ engine }: { engine: PanelMapEngine | null }) => {
+  const menu = useContext(ProtoCardMenuContext);
+  const chart = { getSource: () => engine?.toImageSource() ?? null };
+
+  return (
+    <ProtoCardMenuContext.Provider
+      value={menu && { ...menu, imageSource: PIB_MAP_IMAGE_SOURCE }}
+    >
+      <ProtoCardMenu title={PIB_MAP_TITLE} chart={chart} />
+    </ProtoCardMenuContext.Provider>
+  );
+};
+
 /**
- * Card "Mapa do PIB por estado": cada estado na cor da faixa do seu PIB
- * total na área de interesse. Clicar num estado deixa só ele no filtro.
+ * Card "Mapa do PIB por município": cada município na cor da faixa do seu PIB
+ * total. Aproximar ou clicar no mapa troca Estado e Município no filtro do
+ * painel, pelo mesmo caminho da barra de filtros.
  *
- * @example <PibMapCard data={panel} selectedUfs={["PE"]} state="ok" onRetry={retry} onSelectUf={selectUf} />
+ * @example <PibMapCard data={panel} selection={filters} onFiltersChange={request} state="ok" onRetry={retry} />
  */
 export const PibMapCard = ({
-  data,
-  selectedUfs,
-  onSelectUf,
-  ...status
+  selection,
+  onFiltersChange,
+  state,
+  onRetry,
 }: Omit<PibCardProps, "place"> & {
-  selectedUfs: string[];
-  onSelectUf: (uf: string) => void;
+  selection: TerritorialFilters;
+  onFiltersChange: (filters: TerritorialFilters) => void;
 }) => {
-  const chart = useSvgChart();
+  const [engine, setEngine] = useState<PanelMapEngine | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
-  const subtitle = `PIB total por estado · ${areaLabel(data.filters.area)} · ${data.filters.ano}`;
-  const mapProps = buildPibMapProps(data, selectedUfs, onSelectUf);
-  const offMap = describeStatesOffMap(data.estados);
+  const mapProps = usePibMapProps(selection, onFiltersChange);
+  const subtitle = `PIB total · ${areaLabel(selection.area)} · ${selection.ano}`;
 
   return (
     <ProtoCard
-      {...status}
+      state={state}
+      onRetry={onRetry}
       footer={PIB_CARD_FOOTER}
-      title={TITLE}
+      title={PIB_MAP_TITLE}
       subtitle={subtitle}
       kind="map"
       bodyClassName="flex flex-col"
       overlay={
         <ProtoMapFullscreen
-          {...mapProps}
           open={fullscreen}
           onOpenChange={setFullscreen}
-          title={TITLE}
+          title={PIB_MAP_TITLE}
           subtitle={subtitle}
-          legend={<MapLegend className="" />}
-          source={PIB_CARD_SOURCE}
-          hint={MAP_SELECT_HINT}
+          source={PIB_MAP_IMAGE_SOURCE}
+          hint={PIB_MAP_HINT}
+          renderStage={() => <PanelMap {...mapProps} />}
         />
       }
       actions={
         <>
           <FullscreenButton
-            disabled={status.state === "loading" || status.state === "error"}
+            disabled={state === "loading" || state === "error"}
             onClick={() => setFullscreen(true)}
           />
-          <ProtoCardInfo title={TITLE} text={PIB_CARD_INFO.map} />
-          <ProtoCardMenu title={TITLE} chart={chart} />
+          <ProtoCardInfo title={PIB_MAP_TITLE} text={PIB_CARD_INFO.map} />
+          <MapCardMenu engine={engine} />
         </>
       }
     >
-      {/* flex-1: o mapa acompanha a altura da coluna dos setores, ao lado. */}
-      <div
-        className="relative flex flex-1 items-center rounded-[8px] p-1"
-        style={{ background: PIB_COLORS.sea }}
-      >
-        <ProtoStateMap {...mapProps} svgRef={chart.ref} />
+      <div className={MAP_BOX_CLASS}>
+        <PanelMap {...mapProps} onEngine={setEngine} />
       </div>
-      <MapLegend />
-      {offMap ? <p className="mt-2 text-xs text-grey-800">{offMap}</p> : null}
     </ProtoCard>
   );
 };

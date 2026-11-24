@@ -8,6 +8,12 @@ export const PIB_LEAD =
 // Fonte que vai no rodapé dos cards e na imagem baixada.
 export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
+// Título do card do mapa e a fonte da imagem baixada dele: o fundo do mapa é
+// do Esri, e a atribuição vai junto da fonte do dado.
+export const PIB_MAP_TITLE = "Mapa do PIB por município";
+export const PIB_MAP_IMAGE_SOURCE = `${PIB_CARD_SOURCE} · Basemap: Esri`;
+export const PIB_MAP_HINT = "Aproxime o mapa ou clique para filtrar o painel";
+
 // INTENTIONAL: sem "Atualizado em". O protótipo traz "11/2026" fixo e o banco
 // não informa quando o PIB foi carregado; inclua a data quando houver fonte.
 export const PIB_CARD_FOOTER = { source: PIB_CARD_SOURCE } as const;
@@ -15,7 +21,7 @@ export const PIB_CARD_FOOTER = { source: PIB_CARD_SOURCE } as const;
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
   line: "PIB total (eixo da esquerda, em R$) e PIB per capita (eixo da direita, em R$ mil). Clique em um ponto para mudar o ano.",
-  map: "Cada estado recebe a cor da faixa do seu PIB total. Clique em um estado para usá-lo como filtro do painel.",
+  map: "Cada município recebe a cor da faixa do seu PIB total. Aproxime o mapa ou clique em um estado ou município para usá-lo como filtro do painel.",
   vab: "Valor adicionado bruto de cada grande setor da economia. Os dados setoriais vão até 2021.",
   atividade:
     "As três atividades com maior participação no PIB do território selecionado, em % do PIB. Os dados setoriais vão até 2021.",
