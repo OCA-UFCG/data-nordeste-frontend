@@ -1,5 +1,6 @@
 import { render } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
+import { ProtoCardMenuContext } from "@/components/ProtoPanel/ProtoCardMenu";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import {
   ProtoStatCards,
@@ -45,5 +46,32 @@ describe("ProtoStatCards loading skeleton", () => {
     const { container } = renderLoading("row");
 
     expect(skeletonBars(container)).toHaveLength(3);
+  });
+});
+
+describe("ProtoStatCards menu", () => {
+  beforeEach(stubPanelBrowserApis);
+
+  it("gives every big number the ⋮ menu, titled by its label", () => {
+    const menu = {
+      share: { path: "/demo/perfil-demografico", chips: [] },
+      catalogHref: null,
+      imageSource: "IBGE",
+    };
+    const { getByRole } = render(
+      <ProtoCardMenuContext.Provider value={menu}>
+        <ProtoStatCards
+          label="Números"
+          cells={[{ icon: "users", label: "População residente", value: "1" }]}
+          state="ok"
+          onRetry={() => {}}
+          variant="hero"
+        />
+      </ProtoCardMenuContext.Provider>,
+    );
+
+    expect(
+      getByRole("button", { name: "Mais opções: População residente" }),
+    ).toBeTruthy();
   });
 });

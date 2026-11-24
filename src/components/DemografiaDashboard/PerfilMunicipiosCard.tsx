@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
 import type { PerfilCardProps } from "@/components/DemografiaDashboard/perfilCardProps";
@@ -12,16 +12,19 @@ import { formatPessoas } from "@/features/panels/format";
 import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "População por município";
-const TOP_COUNT = 15;
 
-// A barra mais longa ocupa 46% da célula; o resto fica para o número.
+// 4.5rem reservados ao número: a barra mais longa não o empurra para fora.
 const barWidth = (value: number, max: number): string =>
-  max > 0 ? `${(value / max) * 46}%` : "0%";
+  max > 0 ? `calc((100% - 4.5rem) * ${value / max})` : "0px";
 
+// `contents`: as células entram na grade da lista, e a coluna dos nomes fica
+// com a largura do nome mais longo, numa linha só.
 const MunicipioRow = ({ item, max }: { item: MunicipioPoint; max: number }) => (
-  <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 text-[12px] max-[1000px]:grid-cols-[minmax(0,.9fr)_minmax(0,1fr)]">
-    <span className="text-right leading-[1.2]">{item.label}</span>
-    <div className="flex items-center gap-1.5">
+  <div className="contents text-[12px]">
+    <span className="truncate text-right leading-[1.2]" title={item.label}>
+      {item.label}
+    </span>
+    <div className="flex min-w-0 items-center gap-1.5">
       <i
         className="h-[14px] flex-none rounded-[2px] bg-[#e484aa]"
         style={{ width: barWidth(item.value, max) }}
@@ -33,22 +36,24 @@ const MunicipioRow = ({ item, max }: { item: MunicipioPoint; max: number }) => (
   </div>
 );
 
-// Rola dentro do card; no celular a lista cresce e a página rola.
-const MunicipiosList = ({ items }: { items: MunicipioPoint[] }) => {
+// Linhas de até 2.25rem: poucas ficam no topo, muitas rolam dentro do card.
+// PERF: memo, para o render do painel não redesenhar ~1 800 linhas.
+const MunicipiosList = memo(({ items }: { items: MunicipioPoint[] }) => {
   const max = items[0]?.value ?? 0;
 
   return (
-    <div className="mun-list flex min-h-0 flex-[1_1_0] flex-col gap-1.5 overflow-auto pr-1.5 [scrollbar-width:thin] max-[1000px]:flex-none max-[1000px]:overflow-visible">
+    <div className="mun-list grid min-h-0 flex-[1_1_0] auto-rows-[minmax(min-content,2.25rem)] grid-cols-[minmax(0,max-content)_minmax(7rem,1fr)] items-center gap-x-2 gap-y-1.5 overflow-auto pr-1.5 [scrollbar-width:thin] max-[1000px]:max-h-[420px] max-[1000px]:flex-none max-[1000px]:auto-rows-min">
       {items.map((item) => (
         <MunicipioRow key={item.code} item={item} max={max} />
       ))}
     </div>
   );
-};
+});
+MunicipiosList.displayName = "MunicipiosList";
 
 /**
- * Card "População por município": os 15 municípios de maior população entre
- * os escolhidos no filtro (ou todos, sem filtro), com barras proporcionais.
+ * Card "População por município": todos os municípios do filtro, do mais
+ * populoso ao menos, com barras proporcionais e rolagem dentro do card.
  *
  * @example <PerfilMunicipiosCard data={panel} place="Semiárido · Pernambuco" state="ok" onRetry={retry} />
  */
@@ -56,10 +61,9 @@ export const PerfilMunicipiosCard = (props: PerfilCardProps) => {
   const { data, place } = props;
 
   // PERF: o mapa tem ~1 800 municípios; sem o memo, cada render do dashboard
-  // (o sticky ao rolar, a navegação) refazia a ordenação só para pegar 15.
+  // (o sticky ao rolar, a navegação) refazia a ordenação.
   const items = useMemo(
-    () =>
-      populacaoPorMunicipio(data.mapa, data.filters.mun).slice(0, TOP_COUNT),
+    () => populacaoPorMunicipio(data.mapa, data.filters.mun),
     [data.mapa, data.filters.mun],
   );
 

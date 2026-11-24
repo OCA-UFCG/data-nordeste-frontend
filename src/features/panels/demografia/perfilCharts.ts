@@ -6,14 +6,13 @@ import {
   formatNumberForStep,
 } from "@/features/panels/format";
 import { dropFloatNoise } from "@/features/panels/floatNoise";
-import { linePath } from "@/features/panels/svgPath";
 
 type Axis = { min: number; max: number; ticks: number[] };
 
 const STEP_MANTISSAS = [1, 2, 2.5, 5] as const;
 
-// Folga de 10% em cada lado: o dado não encosta na borda do gráfico.
-const HEADROOM = 0.1;
+// Folga acima da coluna mais alta, para o rótulo do valor.
+const HEADROOM = 0.05;
 
 /**
  * Rótulo de pessoas compacto em pt-BR, como os do protótipo ("15 Mi", "69 Mil").
@@ -28,16 +27,6 @@ export const formatCompactPeople = (value: number): string =>
 // censos) próximos não saírem com o mesmo texto, como "2 Mi" em Sergipe.
 const formatPeopleForStep = (value: number, step: number): string =>
   capitalizeScale(formatNumberForStep(value, step));
-
-const paddedRange = (values: number[]): { lo: number; hi: number } => {
-  const lo = Math.min(...values);
-  const hi = Math.max(...values);
-
-  // Série constante: usa a própria magnitude como vão para não colapsar o eixo.
-  const span = hi - lo || Math.abs(hi) || 1;
-
-  return { lo: lo - span * HEADROOM, hi: hi + span * HEADROOM };
-};
 
 // Passos de {1,2,2.5,5}×10^k em torno da ordem de grandeza do vão, em ordem crescente.
 const niceSteps = (span: number): number[] => {
@@ -59,49 +48,27 @@ const pickStep = (lo: number, hi: number, intervals: number): number => {
 
   if (step === undefined) {
     throw new Error(
-      `niceAxis found no step for range ${lo}..${hi}; expected one of {1,2,2.5,5}×10^k to fit ${intervals} intervals.`,
+      `zeroBasedAxis found no step for range ${lo}..${hi}; expected one of {1,2,2.5,5}×10^k to fit ${intervals} intervals.`,
     );
   }
 
   return step;
 };
 
-// Com passo grande demais o eixo fica com menos divisões: estende para baixo,
-// mas nunca abaixo de zero quando os dados não são negativos (população).
-const firstTickIndex = (
-  lo: number,
-  hi: number,
-  step: number,
-  intervals: number,
-  lowest: number,
-): number => {
-  const extended =
-    Math.floor(lo / step) - (intervals - cellCount(lo, hi, step));
-
-  return lowest >= 0 ? Math.max(0, extended) : extended;
-};
-
 /**
- * Eixo com limites redondos e ticks igualmente espaçados que cobrem os dados
- * com folga. Os ticks saem em ordem crescente; quem desenha de cima para
- * baixo deve inverter.
+ * Eixo de barras: parte do zero (barra truncada engana) e usa só as divisões
+ * que o maior valor pede, sem estender acima dele.
  *
- * @example niceAxis([47_741_711, 53_081_950, 54_658_515]) // { min: 40e6, max: 60e6, ticks: [40e6, 45e6, 50e6, 55e6, 60e6] }
+ * @example zeroBasedAxis([47_741_711, 53_081_950, 54_658_515]).ticks // [0, 20e6, 40e6, 60e6]
  */
-export const niceAxis = (values: number[], intervals = 4): Axis => {
-  if (values.length === 0 || intervals < 2) {
-    throw new Error(
-      `niceAxis needs at least one value and 2 intervals; got ${values.length} values and ${intervals} intervals.`,
-    );
-  }
-  const { lo, hi } = paddedRange(values);
-  const step = pickStep(lo, hi, intervals);
-  const first = firstTickIndex(lo, hi, step, intervals, Math.min(...values));
-  const ticks = Array.from({ length: intervals + 1 }, (_, i) =>
-    dropFloatNoise((first + i) * step),
+export const zeroBasedAxis = (values: number[], intervals = 5): Axis => {
+  const hi = (Math.max(0, ...values) || 1) * (1 + HEADROOM);
+  const step = pickStep(0, hi, intervals);
+  const ticks = Array.from({ length: Math.ceil(hi / step) + 1 }, (_, i) =>
+    dropFloatNoise(i * step),
   );
 
-  return { min: ticks[0], max: ticks[intervals], ticks };
+  return { min: 0, max: ticks[ticks.length - 1], ticks };
 };
 
 // `height`: a altura livre do card; o gráfico só cresce, nunca fica abaixo da
@@ -112,18 +79,23 @@ export type SerieGeometryInput = {
   points: { ano: number; valor: number }[];
 };
 
+export type SerieBarGeometry = {
+  x: number;
+  barX: number;
+  barY: number;
+  barWidth: number;
+  barHeight: number;
+  label: string;
+  ano: number;
+  valor: number;
+};
+
 export type SerieGeometry = {
   width: number;
   height: number;
   gridLines: { y: number; label: string }[];
-  path: string;
-  points: {
-    x: number;
-    y: number;
-    label: string;
-    ano: number;
-    valor: number;
-  }[];
+  base: number;
+  bars: SerieBarGeometry[];
   yearLabelY: number;
   axisLabelX: number;
 
@@ -165,26 +137,23 @@ const serieLayout = (width: number, height = 0): SerieLayout => {
   };
 };
 
-// Anos são desigualmente espaçados (2000, 2010, 2022): a posição segue a
-// proporção do tempo, não o índice do censo.
-const serieScale = (layout: SerieLayout, years: number[], axis: Axis) => {
+// Uma coluna por censo, em espaços iguais: o ano vai no rótulo, não na posição.
+const serieScale = (layout: SerieLayout, count: number, axis: Axis) => {
   const pw = layout.w - layout.L - layout.R;
   const ph = layout.h - layout.T - layout.B;
-  const first = Math.min(...years);
-  const last = Math.max(...years);
-  const share = (ano: number) =>
-    last === first ? 0 : (ano - first) / (last - first);
+  const slot = pw / count;
 
   return {
-    x: (ano: number) => layout.L + 26 + share(ano) * (pw - 52),
+    x: (index: number) => layout.L + slot * index + slot / 2,
     y: (valor: number) =>
       layout.T + ((axis.max - valor) / (axis.max - axis.min)) * ph,
+    barWidth: Math.min(40, slot * 0.4),
   };
 };
 
 /**
- * Geometria SVG da série de censos: linhas de grade, pontos e caminho. O
- * eixo vem de niceAxis; desenha de cima (máximo) para baixo.
+ * Geometria SVG da série de censos: linhas de grade e uma coluna por censo. O
+ * eixo vem de zeroBasedAxis; desenha de cima (máximo) para baixo.
  *
  * @example buildSerieGeometry({ width: 800, points: [{ ano: 2000, valor: 47_741_711 }] }).height // 290
  */
@@ -194,13 +163,11 @@ export const buildSerieGeometry = ({
   points,
 }: SerieGeometryInput): SerieGeometry => {
   const layout = serieLayout(width, height);
-  const axis = niceAxis(points.map((point) => point.valor));
+
+  const axis = zeroBasedAxis(points.map((point) => point.valor));
   const step = axis.ticks[1] - axis.ticks[0];
-  const scale = serieScale(
-    layout,
-    points.map((point) => point.ano),
-    axis,
-  );
+  const scale = serieScale(layout, points.length, axis);
+  const base = scale.y(axis.min);
 
   return {
     width: layout.w,
@@ -209,16 +176,22 @@ export const buildSerieGeometry = ({
       y: scale.y(tick),
       label: formatPeopleForStep(tick, step),
     })),
-    path: linePath(
-      points.map((p) => ({ x: scale.x(p.ano), y: scale.y(p.valor) })),
-    ),
-    points: points.map((point) => ({
-      x: scale.x(point.ano),
-      y: scale.y(point.valor),
-      label: formatPeopleForStep(point.valor, step / 10),
-      ano: point.ano,
-      valor: point.valor,
-    })),
+    base,
+    bars: points.map((point, index) => {
+      // Mínimo de 2px: coluna de valor baixo continua visível.
+      const barHeight = Math.max(2, base - scale.y(point.valor));
+
+      return {
+        x: scale.x(index),
+        barX: scale.x(index) - scale.barWidth / 2,
+        barY: base - barHeight,
+        barWidth: scale.barWidth,
+        barHeight,
+        label: formatPeopleForStep(point.valor, step / 10),
+        ano: point.ano,
+        valor: point.valor,
+      };
+    }),
     yearLabelY: layout.h - 10,
     axisLabelX: layout.L - 8,
     grid: { x1: layout.L, x2: layout.w - layout.R / 2 },

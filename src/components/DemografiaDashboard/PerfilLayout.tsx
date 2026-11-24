@@ -49,7 +49,7 @@ const Slot = ({
 // `.dg` do protótipo: número de destaque, mapa, municípios, sexo e pirâmide.
 // Abaixo de 1000 px vira uma coluna só, na ordem que o protótipo usa no celular.
 const TOP_GRID =
-  "grid grid-cols-[302px_minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)_auto] gap-4 items-stretch [grid-template-areas:'bn_map'_'mun_map'_'sex_age'] max-[1000px]:flex max-[1000px]:flex-col";
+  "grid grid-cols-[360px_minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)_auto] gap-4 items-stretch [grid-template-areas:'bn_map'_'mun_map'_'sex_age'] max-[1000px]:flex max-[1000px]:flex-col";
 
 // `.dg2` do protótipo: série temporal e cor ou raça, lado a lado.
 const BOTTOM_GRID =

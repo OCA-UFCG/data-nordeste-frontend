@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { getMacroThemeHref } from "@/components/Panel/texts/PanelTexts";
 import {
-  PIB_SAIBA_MAIS_GLOSSARY,
   PIB_SAIBA_MAIS_PARAGRAPHS,
   PIB_SAIBA_MAIS_SUMMARY,
   PIB_SAIBA_MAIS_TITLE,
@@ -42,7 +41,6 @@ export const PibPageFrame = ({
       title={PIB_SAIBA_MAIS_TITLE}
       summary={PIB_SAIBA_MAIS_SUMMARY}
       paragraphs={[...PIB_SAIBA_MAIS_PARAGRAPHS]}
-      glossary={PIB_SAIBA_MAIS_GLOSSARY}
       themeHref={getMacroThemeHref(macroTheme)}
     />
   </>

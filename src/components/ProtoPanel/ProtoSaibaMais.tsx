@@ -59,7 +59,7 @@ const MoreText = ({
           {paragraphs.map((paragraph) => (
             <p
               key={paragraph}
-              className="mb-3 max-w-[70ch] text-sm leading-[22px]"
+              className={`mb-3 text-sm leading-[22px] ${glossary ? "max-w-[70ch]" : ""}`}
             >
               {paragraph}
             </p>
@@ -92,7 +92,7 @@ const Glossary = ({ items }: { items: ProtoGlossary }) => (
  * glossário (quando há) e, no celular, uma sanfona fechada que abre pelo
  * cabeçalho. O `tone` vai no `style` da seção, porque a página é do servidor.
  *
- * @example <ProtoSaibaMais tone="idh" title="Saiba mais sobre o IDH" summary="…" paragraphs={["…"]} glossary={[["IDH", "…"]]} themeHref="/macrothemes/desenvolvimento-social" />
+ * @example <ProtoSaibaMais tone="idh" title="Saiba mais" summary="…" paragraphs={["…"]} glossary={[["IDH", "…"]]} themeHref="/macrothemes/desenvolvimento-social" />
  */
 export const ProtoSaibaMais = ({
   title,
