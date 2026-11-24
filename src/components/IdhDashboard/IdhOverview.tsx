@@ -4,7 +4,8 @@ import { IdhBigNumbers } from "@/components/IdhDashboard/IdhBigNumbers";
 import { IdhLineChart } from "@/components/IdhDashboard/IdhLineChart";
 import { IdhMapCard } from "@/components/IdhDashboard/IdhMapCard";
 import {
-  IDH_CARD_FOOTER,
+  idhCardFooter,
+  idhEvolutionInfo,
   IDH_CARD_INFO,
 } from "@/components/IdhDashboard/idhCardTexts";
 import { IdhRankingBars } from "@/components/IdhDashboard/IdhRanking";
@@ -24,12 +25,17 @@ import {
   type IdhFilters,
   type IdhPanelData,
 } from "@/features/panels/idh/idhPanel";
+import { withYear } from "@/features/panels/territorialFilters";
 
 type CardStatus = { state: ProtoCardState; onRetry: () => void };
 
 // `selection`: os filtros pedidos. O ano da série e o estado destacado no mapa
 // e no ranking seguem o clique na hora, antes de o servidor responder.
-type CardProps = CardStatus & { data: IdhPanelData; selection: IdhFilters };
+type CardProps = CardStatus & {
+  data: IdhPanelData;
+  selection: IdhFilters;
+  updatedAt?: string;
+};
 
 type OverviewProps = Omit<CardProps, "state"> & {
   states: IdhCardStates;
@@ -45,6 +51,7 @@ const RANKING_TITLE = "Ranking do IDH por estado";
 const EvolutionCard = ({
   data,
   selection,
+  updatedAt,
   onSelectYear,
   ...status
 }: CardProps & { onSelectYear: (ano: number) => void }) => {
@@ -53,7 +60,7 @@ const EvolutionCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={IDH_CARD_FOOTER}
+      footer={idhCardFooter(updatedAt)}
       title={EVOLUTION_TITLE}
       mobileTitle="Evolução anual do IDH"
       subtitle={describeIdhSerie(data)}
@@ -62,7 +69,7 @@ const EvolutionCard = ({
         <>
           <ProtoCardInfo
             title={EVOLUTION_TITLE}
-            text={IDH_CARD_INFO.evolution}
+            text={idhEvolutionInfo(data.yearRange)}
           />
           <ProtoCardMenu title={EVOLUTION_TITLE} chart={chart} />
         </>
@@ -81,16 +88,20 @@ const EvolutionCard = ({
 const RankingCard = ({
   data,
   selection,
+  updatedAt,
   onSelectUf,
   ...status
 }: CardProps & { onSelectUf: (uf: string) => void }) => (
   <ProtoCard
     {...status}
-    footer={IDH_CARD_FOOTER}
+    footer={idhCardFooter(updatedAt)}
     title={RANKING_TITLE}
     mobileTitle="Comparação entre os estados"
-    subtitle={`Do maior para o menor · barras de 0 a 1 · ${data.filters.ano}`}
-    mobileSubtitle={`IDH por estado · ${data.filters.ano}`}
+    subtitle={withYear(
+      "Do maior para o menor · barras de 0 a 1",
+      data.filters.ano,
+    )}
+    mobileSubtitle={withYear("IDH por estado", data.filters.ano)}
     kind="rank"
     bodyClassName="flex flex-col"
     actions={
@@ -111,8 +122,9 @@ const RankingCard = ({
 /**
  * Visão geral do painel (`#v-geral` do protótipo): indicadores, a série anual
  * e, lado a lado, o mapa e o ranking dos estados. Cada card tem o próprio
- * estado: trocar a UF não esmaece o mapa nem o ranking. O mapa filtra por
- * `onFiltersChange` (o pedido da barra de filtros); o ranking, por `onSelectUf`.
+ * estado: trocar a UF não põe o mapa nem o ranking em esqueleto. O mapa
+ * filtra por `onFiltersChange` (o pedido da barra de filtros); o ranking, por
+ * `onSelectUf`.
  *
  * @example <IdhOverview data={panel} selection={panel.filters} states={states} onRetry={retry} onSelectUf={toggleUf} onSelectYear={pickYear} onFiltersChange={changeFilters} />
  */

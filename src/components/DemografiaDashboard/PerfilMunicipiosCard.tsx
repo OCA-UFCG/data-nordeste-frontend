@@ -9,6 +9,7 @@ import {
   type MunicipioPoint,
 } from "@/features/panels/demografia/demografiaPanel";
 import { formatPessoas } from "@/features/panels/format";
+import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "População por município";
 const TOP_COUNT = 15;
@@ -65,7 +66,7 @@ export const PerfilMunicipiosCard = (props: PerfilCardProps) => {
   return (
     <ProtoCard
       title={TITLE}
-      subtitle={`${place} · ${data.filters.ano}`}
+      subtitle={withYear(place, data.filters.ano)}
       kind="rank"
       state={props.state}
       onRetry={props.onRetry}

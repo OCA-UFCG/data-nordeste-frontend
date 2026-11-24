@@ -500,9 +500,17 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   follows `data.filters.visao` when it changes. Do not put a `key` on
   `IdhDashboard`: it remounted the panel on the first filter after a tab
   switch and closed the mobile filter sheet (PR #397 review).
-- WARNING: "Atualizado em 11/2026" in the card footers is the prototype's
-  fixed text (`IDH_DATA_UPDATED_AT`); the database does not expose a load
-  date yet.
+- Year range: no year is hardcoded. `loadIdhYearRange` reads
+  `min(ano)`/`max(ano)` from `idh_geral_novo_view` on both `/demo/idh` and
+  `/demo/idh-powerbi`, and the range travels in `IdhPanelData.yearRange`. The
+  default year is the last one. If the range query fails, `/demo/idh` shows
+  the cards' error state (`NO_IDH_YEARS`: no year offered) and
+  `/demo/idh-powerbi` its load-failed message; both log
+  `idh_demo_year_range_failed`.
+- Card footer "Atualizado em MM/AAAA" is the `date` of the Contentful "panels"
+  entry (the same date the original panel shows as "Publicado em"), formatted
+  by `formatIdhUpdatedAt` and passed to `IdhDashboard` as `updatedAt`. Without
+  the entry or its `date`, the label is hidden; there is no fixed fallback.
 - Group gaps (`idhGroupCompare.ts`): index points for IDH and Gini, percent
   for money; money bars end at the next hundred with 10% headroom.
 - Gini cards have the catalogue item disabled ("Este dado ainda não tem
@@ -648,3 +656,56 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   (was `perfilChangeTone`).
 - Local setup: the tunnel command is not in any repository; ask the team.
   The Gamma database conventionally sits on local port 5434.
+
+## Aridity Index Panel Demo (`/demo/aridez`)
+
+- Same approach as the IDH, profile and PIB panels: the reference is the
+  prototype's `aridez.html` (artifact "Painéis Data Nordeste · Protótipo
+  navegável", November 2026), rebuilt with the shared `ProtoPanel/` pieces in
+  the "aridez" tone (Meio Ambiente green `#758f21`). Cover, sticky filter bar,
+  "Veja mais", two big numbers (ASD in km² and in %), the state map, the
+  columns by class and the per-municipality 100% bars, "Saiba mais" and
+  related content from the Contentful "panels" entry `aridez`.
+- Data: `meio_aridez.vw_aridez` (`cd_mun`, `ano_consolidacao`, `dn_uni`,
+  `area_km2_classe`), the view the Automatic-Reporting environment text reads.
+  Years: 1991, 2001, 2011 and 2021. The view also carries the territorial
+  columns (`sigla_uf`, `uf`, `nm_mun`, `ne`, `semi_21`, `caat_24`, `aas_21`),
+  identical to `eco_pib.vw_pib_municipal_pbi` for every municipality (checked
+  on 23/11/2026), so the panel reads them directly. An earlier version joined
+  the PIB view for them and made a state filter 3–10× slower on a cold cache.
+  `dn_uni` 2/3/4/5 are árido, semiárido, subúmido seco and úmido
+  (`ARIDEZ_CLASSES`). ASD (Área Suscetível à Desertificação) is árido +
+  semiárido + subúmido seco, index below 0.65 (UNCCD). Percentages use the
+  classified area (sum of the four classes) as the base, as the prototype does.
+- `dn_uni` 1 is ignored.
+- "Veja mais" (`ProtoPanel/ProtoVejaMais.tsx`, text in
+  `features/panels/aridez/aridezAnalise.ts`): the prototype's expandable bar on
+  top of the panel. The prototype also offers a floating button, switched by its
+  black test strip; only the bar was built. The ASD change compares the chosen
+  year with 1991 (`ARIDEZ_BASE_YEAR`, the prototype says "1990" with made-up
+  values). A red dot marks text that changed while the bar was closed. The
+  component takes any `PanelAnalysis`, so the other panels can adopt it. It
+  slides open (grid rows, 220 ms) and the text flashes in the accent colour when
+  a filter changes it (`animate-proto-flash` in `globals.css`), as in the
+  prototype; both respect `prefers-reduced-motion`.
+- Deliberate deviations from the prototype:
+  - Real values everywhere; the prototype's state and municipal figures were
+    illustrative.
+  - The municipal list shows every municipality of the selection (about 1,800
+    for the whole area), with `content-visibility: auto`. The segment tooltip
+    is the prototype's dark `ProtoTooltip`, driven by one delegated
+    `pointermove` on the list, not a handler per segment.
+  - No "Atualizado em" in the card footers (`ARIDEZ_CARD_FOOTER`, as in PIB).
+- The class columns card stretches to the municipal list beside it
+  (`#c-cls .chartbox{flex:1}` in the prototype): the SVG is absolutely
+  positioned in a growing box and `useElementWidth` also reports the height.
+- Shared pieces extracted for this panel: `ProtoFullscreenButton` and
+  `ProtoBinLegend` (`ProtoPanel/ProtoMapControls.tsx`, used by IDH, profile and
+  PIB too), `describeStatesOffMap` (`features/panels/statesOffMap.ts`),
+  `buildZeroAxis` (`features/panels/zeroAxis.ts`, was `pib/pibAxis.ts`),
+  `describeSelectedTerritory` (`territorialOptions.ts`) and the jsdom fakes
+  `stubPanelBrowserApis` (`ProtoPanel/protoBrowserFakes.ts`, was in
+  `idhTestFixtures.ts`).
+- Headless Chrome screenshots (`--screenshot` with `--virtual-time-budget`)
+  often capture the SVG charts empty because `ResizeObserver` has not fired;
+  check the layout in a real browser or with Playwright waiting for the chart.

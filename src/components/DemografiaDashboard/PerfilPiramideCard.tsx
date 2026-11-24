@@ -13,6 +13,7 @@ import {
   type PyramidRow,
 } from "@/features/panels/demografia/perfilCharts";
 import { formatPessoas } from "@/features/panels/format";
+import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "População por faixa etária e sexo";
 const INFO =
@@ -233,7 +234,7 @@ export const PerfilPiramideCard = (props: PerfilCardProps) => {
   return (
     <ProtoCard
       title={TITLE}
-      subtitle={`${place} · ${data.filters.ano}`}
+      subtitle={withYear(place, data.filters.ano)}
       kind="rank"
       state={props.state}
       onRetry={props.onRetry}

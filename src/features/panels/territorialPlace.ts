@@ -1,6 +1,8 @@
 import {
   defaultTerritorialFilters,
+  NO_YEAR,
   type TerritorialFilters,
+  withYear,
   type YearRange,
 } from "@/features/panels/territorialFilters";
 import {
@@ -41,11 +43,29 @@ const listOrAll = (names: string[]): string =>
 export const describeTerritorialShareChips = (
   selection: TerritorialSelection,
 ): string[] => [
-  `Ano: ${selection.filters.ano}`,
+  ...(selection.filters.ano === NO_YEAR
+    ? []
+    : [`Ano: ${selection.filters.ano}`]),
   `Área: ${areaLabel(selection.filters.area)}`,
   `Estado: ${listOrAll(selectedUfNames(selection))}`,
   `Município: ${listOrAll(selectedMunicipioNames(selection))}`,
 ];
+
+/**
+ * Clicar num estado no mapa da aridez: o filtro fica só com ele. Clicar de
+ * novo no único escolhido limpa o filtro. O município some, porque pode não
+ * ser do estado novo.
+ *
+ * @example selectOnlyTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB", "PE"] }, "PE").uf // ["PE"]
+ */
+export const selectOnlyTerritorialUf = (
+  filters: TerritorialFilters,
+  uf: string,
+): TerritorialFilters => {
+  const alreadyOnly = filters.uf?.length === 1 && filters.uf[0] === uf;
+
+  return { ...filters, uf: alreadyOnly ? undefined : [uf], mun: undefined };
+};
 
 /**
  * Os filtros estão no padrão (Nordeste, último ano, sem estado nem município)?
@@ -80,5 +100,5 @@ export const describeDefaultPlaceLabel = (range: YearRange): string => {
     municipios: [],
   });
 
-  return `Ver ${place} · ${defaults.ano}`;
+  return withYear(`Ver ${place}`, defaults.ano);
 };

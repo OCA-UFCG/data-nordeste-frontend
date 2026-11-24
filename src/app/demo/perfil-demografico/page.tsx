@@ -21,10 +21,13 @@ import { buildMetadata } from "@/config/seo";
 import { loadDemografiaPanelContent } from "@/features/panels/demografia/demografiaContent";
 import {
   DEMOGRAFIA_MAX_PLACES,
-  DEMOGRAFIA_YEAR_RANGE,
   emptyDemografiaPanel,
   loadDemografiaPanel,
 } from "@/features/panels/demografia/demografiaPanel";
+import {
+  NO_DEMOGRAFIA_YEARS,
+  tryLoadDemografiaYearRange,
+} from "@/features/panels/demografia/demografiaYearRange";
 import {
   parseTerritorialFilters,
   type TerritorialFilters,
@@ -61,7 +64,8 @@ const loadPanel = async (filters: TerritorialFilters) => {
 };
 
 // Mesmo layout do IDH: capa, painel, "Saiba mais" e relacionados. Sem o banco,
-// os cards mostram o erro com "Tentar de novo" em vez de derrubar a página.
+// os cards mostram o erro com "Tentar de novo" em vez de derrubar a página,
+// também quando só a consulta de anos falha (então não há ano a oferecer).
 // INTENTIONAL: sem o Contentful, a capa usa o macrotema padrão e some só a
 // seção de relacionados.
 export default async function PerfilDemograficoDemoPage({
@@ -69,13 +73,15 @@ export default async function PerfilDemograficoDemoPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const range = await tryLoadDemografiaYearRange(queryDataDb);
+  const years = range ?? NO_DEMOGRAFIA_YEARS;
   const filters = parseTerritorialFilters(
     await searchParams,
-    DEMOGRAFIA_YEAR_RANGE,
+    years,
     DEMOGRAFIA_MAX_PLACES,
   );
   const [panel, content] = await Promise.all([
-    loadPanel(filters),
+    range ? loadPanel(filters) : null,
     loadDemografiaPanelContent(),
   ]);
   const macroTheme = content?.panel.macroTheme ?? DEMOGRAFIA_MACROTHEME;
@@ -86,12 +92,13 @@ export default async function PerfilDemograficoDemoPage({
         tone="perfil"
         icon="users"
         title={DEMOGRAFIA_TITLE}
-        lead={PERFIL_LEAD}
+        lead={content?.panel.abovePanelDescription || PERFIL_LEAD}
         macroTheme={macroTheme}
         publishedAt={content?.panel.date}
       />
       <DemografiaDashboard
         data={panel ?? emptyDemografiaPanel(filters)}
+        years={years}
         failed={!panel}
         catalogHref={getCatalogHref(macroTheme)}
       />

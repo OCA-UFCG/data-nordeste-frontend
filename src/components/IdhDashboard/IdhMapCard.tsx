@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import {
-  IDH_CARD_FOOTER,
   IDH_CARD_INFO,
   IDH_MAP_LABEL,
+  idhCardFooter,
 } from "@/components/IdhDashboard/idhCardTexts";
 import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
@@ -27,9 +27,9 @@ import {
   idhToRecorte,
   recorteToIdh,
 } from "@/features/panelMap/panelMapAdapters";
-import { showsIdhData } from "@/features/panels/idh/idhCardState";
 import { formatIdhCard } from "@/features/panels/idh/idhFormat";
 import type { IdhFilters, IdhPanelData } from "@/features/panels/idh/idhPanel";
+import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "Mapa do IDH por estado";
 
@@ -67,17 +67,19 @@ const useIdhMapProps = (
  * caminho da barra de filtros. O diálogo da tela cheia fica no `overlay`: no
  * corpo, o esqueleto do carregando o desmontaria a cada filtro aplicado.
  *
- * @example <IdhMapCard data={panel} selection={filters} state="ok" onRetry={retry} onFiltersChange={changeFilters} />
+ * @example <IdhMapCard data={panel} selection={filters} updatedAt="10/2026" state="ok" onRetry={retry} onFiltersChange={changeFilters} />
  */
 export const IdhMapCard = ({
   data,
   selection,
+  updatedAt,
   state,
   onRetry,
   onFiltersChange,
 }: {
   data: IdhPanelData;
   selection: IdhFilters;
+  updatedAt?: string;
   state: ProtoCardState;
   onRetry: () => void;
   onFiltersChange: (filters: IdhFilters) => void;
@@ -85,7 +87,10 @@ export const IdhMapCard = ({
   const card = usePanelMapCard(IDH_CARD_SOURCE);
   const [fullscreen, setFullscreen] = useState(false);
   const mapProps = useIdhMapProps(selection, onFiltersChange);
-  const subtitle = `Faixas de desenvolvimento humano · ${data.filters.ano}`;
+  const subtitle = withYear(
+    "Faixas de desenvolvimento humano",
+    data.filters.ano,
+  );
 
   return (
     <ProtoCard
@@ -94,7 +99,7 @@ export const IdhMapCard = ({
       kind="map"
       state={state}
       onRetry={onRetry}
-      footer={IDH_CARD_FOOTER}
+      footer={idhCardFooter(updatedAt)}
       bodyClassName="flex flex-col"
       actions={
         <PanelMapCardActions
@@ -102,7 +107,7 @@ export const IdhMapCard = ({
           info={IDH_CARD_INFO.map}
           imageSource={card.imageSource}
           engine={card.engine}
-          disabled={!showsIdhData(state)}
+          disabled={state !== "ok"}
           onOpenFullscreen={() => setFullscreen(true)}
         />
       }

@@ -42,6 +42,25 @@ describe("buildPerfilPorteTable", () => {
     ]);
   });
 
+  it("keeps 50 and 100 thousand in the lower porte, as the database does", () => {
+    const table = buildPerfilPorteTable({
+      filters: FILTERS,
+      mapa: [
+        municipio("A", "CE", 100001),
+        municipio("B", "CE", 100000),
+        municipio("C", "CE", 50001),
+        municipio("D", "CE", 50000),
+      ],
+    });
+
+    expect(table.rows.map((row) => row[2])).toEqual([
+      "Grande",
+      "Médio",
+      "Médio",
+      "Pequeno",
+    ]);
+  });
+
   it("names the columns and captions the table with the year", () => {
     const table = buildPerfilPorteTable({ filters: FILTERS, mapa: [] });
 

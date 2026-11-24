@@ -19,28 +19,38 @@ export const PIB_YEAR_RANGE: YearRange = { first: 2010, last: 2023 };
 // Limita o tamanho da URL e do array do `= ANY($n)`.
 export const PIB_MAX_PLACES = 100;
 
-// Último ano com VAB publicado pelo IBGE; o aviso do painel cita 2022 e 2023.
-export const PIB_VAB_LAST_YEAR = 2021;
-
-/**
- * Anos do painel que ainda não têm VAB (os posteriores a `PIB_VAB_LAST_YEAR`),
- * para o aviso dos cards de setor.
- *
- * @example listPibYearsWithoutVab() // [2022, 2023]
- */
-export const listPibYearsWithoutVab = (): number[] =>
-  Array.from(
-    { length: PIB_YEAR_RANGE.last - PIB_VAB_LAST_YEAR },
-    (_, index) => PIB_VAB_LAST_YEAR + 1 + index,
-  );
-
 export type PibYearPoint = { ano: number; pib: number; perCapita: number };
 
 export type PibPanelData = TerritorialSelection & {
   serie: PibYearPoint[];
   vab: ChartPoint[] | null;
   atividades: ChartPoint[];
+
+  // Último ano com VAB no banco (o IBGE publica o setorial depois do PIB).
+  vabLastYear: number | null;
 };
+
+/**
+ * Sem VAB nem atividades no ano: os cards de setor trocam as barras pelo aviso.
+ *
+ * @example lacksPibSectorData({ vab: null, atividades: [] }) // true
+ */
+export const lacksPibSectorData = (
+  data: Pick<PibPanelData, "vab" | "atividades">,
+): boolean => data.vab === null && data.atividades.length === 0;
+
+/**
+ * Anos da série que ainda não têm VAB (posteriores a `vabLastYear`), para o
+ * aviso dos cards de setor.
+ *
+ * @example listPibYearsWithoutVab({ serie, vabLastYear: 2021 }) // [2022, 2023]
+ */
+export const listPibYearsWithoutVab = (
+  data: Pick<PibPanelData, "serie" | "vabLastYear">,
+): number[] =>
+  data.serie
+    .map((point) => point.ano)
+    .filter((ano) => data.vabLastYear === null || ano > data.vabLastYear);
 
 /**
  * Painel sem dados: a página o usa quando a consulta falha, para os cards
@@ -55,6 +65,7 @@ export const emptyPibPanel = (filters: TerritorialFilters): PibPanelData => ({
   serie: [],
   vab: null,
   atividades: [],
+  vabLastYear: null,
 });
 
 const PIB_VIEW = "eco_pib.vw_pib_municipal_pbi";
@@ -132,6 +143,18 @@ const loadAtividades = async (query: SqlQuery, filters: TerritorialFilters) => {
   }));
 };
 
+// Sem filtro de território: o IBGE publica o VAB de todos os municípios juntos.
+const loadVabLastYear = async (query: SqlQuery) => {
+  const [row] = await query<{ ano: NumericCell }>(
+    `SELECT MAX(ano) AS ano FROM ${PIB_VIEW} WHERE vab_servicos IS NOT NULL`,
+    [],
+  );
+
+  const ano = row?.ano ?? null;
+
+  return ano === null ? null : toNumber(ano);
+};
+
 export const loadPibPanel = async (
   query: SqlQuery,
   requested: TerritorialFilters,
@@ -142,11 +165,12 @@ export const loadPibPanel = async (
     requested,
   );
   const { filters } = selection;
-  const [serie, vab, atividades] = await Promise.all([
+  const [serie, vab, atividades, vabLastYear] = await Promise.all([
     loadSerie(query, filters),
     loadVab(query, filters),
     loadAtividades(query, filters),
+    loadVabLastYear(query),
   ]);
 
-  return { ...selection, serie, vab, atividades };
+  return { ...selection, serie, vab, atividades, vabLastYear };
 };

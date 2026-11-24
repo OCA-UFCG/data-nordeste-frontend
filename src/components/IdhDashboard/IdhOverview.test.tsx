@@ -4,7 +4,6 @@ import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
 import {
   allIdhCards,
   idhPanelFixture,
-  stubIdhBrowserApis,
 } from "@/components/IdhDashboard/idhTestFixtures";
 import type { PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
@@ -17,6 +16,7 @@ import { idhToRecorte } from "@/features/panelMap/panelMapAdapters";
 import { formatIdhCard } from "@/features/panels/idh/idhFormat";
 import type { IdhCardStates } from "@/features/panels/idh/idhCardState";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
+import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 
 // O mapa é MapLibre (canvas); o dublê só guarda as props de cada montagem.
 const panelMapRenders = vi.hoisted(() => [] as PanelMapProps[]);
@@ -64,7 +64,7 @@ const emit = (recorte: MapRecorte) =>
 describe("IdhOverview", () => {
   beforeEach(() => {
     panelMapRenders.length = 0;
-    stubIdhBrowserApis();
+    stubPanelBrowserApis();
   });
 
   it("renders the state-level IDH map for the Northeast, year and selected state", () => {

@@ -5,6 +5,7 @@ import {
   type ProtoCardState,
   ProtoSkeleton,
 } from "@/components/ProtoPanel/ProtoCard";
+import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
 import {
   ProtoIcon,
   type ProtoIconName,
@@ -33,6 +34,9 @@ export type ProtoStatCell = {
   label: string;
   value: string | null;
   caption?: string;
+
+  // Com título, o card ganha o menu ⋮ (compartilhar e catálogo).
+  menuTitle?: string;
   pill?: ProtoStatPill | null;
 };
 
@@ -55,10 +59,12 @@ const DEFAULT_ICON_CLASS =
 const CellTop = ({
   icon,
   label,
+  menuTitle,
   iconClassName,
 }: {
   icon: ProtoIconName;
   label: string;
+  menuTitle?: string;
   iconClassName: string;
 }) => (
   <div className="flex min-h-[34px] items-center gap-2.5">
@@ -74,6 +80,11 @@ const CellTop = ({
     <div className="min-w-0 text-[13px] leading-[17px] font-medium">
       {label}
     </div>
+    {menuTitle ? (
+      <div className="-mt-1.5 -mr-2 ml-auto flex-none self-start">
+        <ProtoCardMenu title={menuTitle} />
+      </div>
+    ) : null}
   </div>
 );
 
@@ -106,13 +117,26 @@ const Pill = ({ pill }: { pill: ProtoStatPill }) => (
   </span>
 );
 
-const CellLoading = ({ hero }: { hero: boolean }) => (
+// Valor, legenda e variação nas alturas do card pronto, que tem os três.
+const PillValueLoading = () => (
+  <div className="mt-auto pt-2.5">
+    <ProtoSkeleton className="h-9 w-[60%]" />
+    <ProtoSkeleton className="mt-0.5 h-3.5 w-[35%]" />
+    <ProtoSkeleton className="mt-2 h-5 w-[30%]" />
+  </div>
+);
+
+const CellLoading = ({ hero, pill }: { hero: boolean; pill: boolean }) => (
   <div aria-busy="true" className={cellClass(hero)}>
     <div className="flex min-h-[34px] items-center gap-2.5">
       <ProtoSkeleton className="size-8" />
-      <ProtoSkeleton className="h-3.5 w-[60%]" />
+      <ProtoSkeleton className={`h-3.5 ${pill ? "w-[40%]" : "w-[60%]"}`} />
     </div>
-    <ProtoSkeleton className="mt-auto h-7 w-[70%]" />
+    {pill ? (
+      <PillValueLoading />
+    ) : (
+      <ProtoSkeleton className="mt-auto h-7 w-[70%]" />
+    )}
   </div>
 );
 
@@ -131,6 +155,7 @@ const CellError = ({
     <CellTop
       icon={cell.icon}
       label={cell.label}
+      menuTitle={cell.menuTitle}
       iconClassName={iconClassName}
     />
     <div className="mt-auto pt-2.5 text-sm leading-5 font-medium">
@@ -172,15 +197,17 @@ const Cell = ({
   state,
   onRetry,
   hero,
+  pill,
   iconClassName,
 }: {
   cell: ProtoStatCell;
   state: ProtoCardState;
   onRetry: () => void;
   hero: boolean;
+  pill: boolean;
   iconClassName: string;
 }) => {
-  if (state === "loading") return <CellLoading hero={hero} />;
+  if (state === "loading") return <CellLoading hero={hero} pill={pill} />;
   if (state === "error")
     return (
       <CellError
@@ -199,6 +226,7 @@ const Cell = ({
       <CellTop
         icon={cell.icon}
         label={cell.label}
+        menuTitle={cell.menuTitle}
         iconClassName={iconClassName}
       />
       <CellValue cell={cell} hero={hero} />
@@ -327,6 +355,7 @@ export const ProtoStatCards = ({
   onRetry,
   variant = "row",
   iconClassName = DEFAULT_ICON_CLASS,
+  withPill = false,
 }: {
   label: string;
   cells: ProtoStatCell[];
@@ -334,6 +363,9 @@ export const ProtoStatCards = ({
   onRetry: () => void;
   variant?: ProtoStatVariant;
   iconClassName?: string;
+
+  // Os cards prontos têm a variação (`pill`): o esqueleto reserva a altura dela.
+  withPill?: boolean;
 }) => {
   const renderCell = (cell: ProtoStatCell) => (
     <Cell
@@ -341,6 +373,7 @@ export const ProtoStatCards = ({
       state={state}
       onRetry={onRetry}
       hero={variant !== "row"}
+      pill={withPill}
       iconClassName={iconClassName}
     />
   );

@@ -28,7 +28,7 @@ export const ProtoBackLink = () => {
     <Link
       href="/explore"
       onClick={goBack}
-      className="inline-flex items-center gap-2.5 rounded-[6px] py-1.5 pr-2 text-sm font-semibold text-white no-underline hover:underline hover:underline-offset-3 focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-white"
+      className="inline-flex items-center gap-2.5 rounded-[6px] py-1.5 pr-2 text-sm font-semibold text-inherit no-underline hover:underline hover:underline-offset-3 focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-(--proto-accent-strong)"
     >
       <ProtoIcon name="back" size={20} stroke={2.2} />
       Voltar

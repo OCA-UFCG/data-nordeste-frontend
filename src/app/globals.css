@@ -124,6 +124,77 @@ body {
       background-position: -200% 0;
     }
   }
+
+  /* Texto do "Veja mais" que mudou com o filtro (`anlFlash` do protótipo). */
+  --animate-proto-flash: proto-flash 1.4s ease-out;
+
+  @keyframes proto-flash {
+    from {
+      background: var(--proto-accent-soft);
+      box-shadow: 0 0 0 6px var(--proto-accent-soft);
+    }
+    to {
+      background: transparent;
+      box-shadow: 0 0 0 6px transparent;
+    }
+  }
+
+  /* Folhas e fundo escurecido do painel (ProtoSheet): sobem e descem em 250 ms,
+     o fundo some em 200 ms. A saída fica em `forwards` para a folha não piscar
+     de volta antes de o Radix desmontá-la. */
+  --animate-proto-sheet-in: proto-sheet-in 250ms ease;
+  --animate-proto-sheet-out: proto-sheet-out 250ms ease forwards;
+  --animate-proto-scrim-in: proto-scrim-in 200ms linear;
+  --animate-proto-scrim-out: proto-scrim-out 200ms linear forwards;
+
+  @keyframes proto-sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes proto-sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes proto-scrim-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes proto-scrim-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Anel pulsante que chama a atenção para um controle (ex.: o select que um
+     botão do aviso acabou de mudar). Uso: `className="animate-proto-ring"`,
+     reiniciando a animação com `key` ou removendo e recolocando a classe. */
+  --animate-proto-ring: proto-ring 1.6s ease-out;
+
+  @keyframes proto-ring {
+    0%,
+    40% {
+      box-shadow:
+        0 0 0 4px var(--proto-accent),
+        0 0 0 10px color-mix(in srgb, var(--proto-accent) 25%, transparent);
+    }
+    100% {
+      box-shadow:
+        0 0 0 0 transparent,
+        0 0 0 0 transparent;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-proto-ring {
+    animation: none;
+  }
 }
 
 @theme inline {

@@ -27,6 +27,12 @@ import {
   parseIdhFilters,
   type IdhFilters,
 } from "@/features/panels/idh/idhPanel";
+import { formatIdhUpdatedAt } from "@/features/panels/idh/idhUpdatedAt";
+import {
+  NO_IDH_YEARS,
+  tryLoadIdhYearRange,
+} from "@/features/panels/idh/idhYearRange";
+import type { YearRange } from "@/features/panels/territorialFilters";
 import { queryDataDb } from "@/lib/dataDb";
 import HubTemplate from "@/templates/HubTemplate";
 
@@ -42,9 +48,9 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const loadPanel = async (filters: IdhFilters) => {
+const loadPanel = async (filters: IdhFilters, range: YearRange) => {
   try {
-    return await loadIdhPanel(queryDataDb, filters);
+    return await loadIdhPanel(queryDataDb, filters, range);
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -62,7 +68,8 @@ const loadPanel = async (filters: IdhFilters) => {
 // "Saiba mais" e relacionados.
 // INTENTIONAL: sem o Contentful, a capa usa o macrotema e o texto de abertura
 // do IDH e somem a descrição e os relacionados; sem o banco, os cards mostram o
-// erro com "Tentar de novo" em vez de derrubar a página.
+// erro com "Tentar de novo" em vez de derrubar a página, também quando só o
+// intervalo de anos falha (então não há ano a oferecer).
 // IMPORTANT: o título fica constante. O `title` da entrada "panels" é a chave
 // da consulta ("idh"), não um texto para exibir (ver `createPanelEntryReader`).
 export default async function IdhDemoPage({
@@ -70,9 +77,11 @@ export default async function IdhDemoPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const filters = parseIdhFilters(await searchParams);
+  const range = await tryLoadIdhYearRange(queryDataDb);
+  const years = range ?? NO_IDH_YEARS;
+  const filters = parseIdhFilters(await searchParams, years);
   const [panel, content] = await Promise.all([
-    loadPanel(filters),
+    range ? loadPanel(filters, range) : null,
     loadIdhPanelContent(),
   ]);
   const macroTheme = content?.panel.macroTheme ?? IDH_MACROTHEME;
@@ -88,8 +97,9 @@ export default async function IdhDemoPage({
         publishedAt={content?.panel.date}
       />
       <IdhDashboard
-        data={panel ?? emptyIdhPanel(filters)}
+        data={panel ?? emptyIdhPanel(filters, years)}
         failed={!panel}
+        updatedAt={formatIdhUpdatedAt(content?.panel.date)}
         catalogHref={getCatalogHref(macroTheme)}
       />
       {content ? <PanelDescriptionSection panel={content.panel} /> : null}

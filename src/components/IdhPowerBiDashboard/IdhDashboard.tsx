@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useId, useState } from "react";
+import { useId, useState } from "react";
 import { IdhGroupView } from "@/components/IdhPowerBiDashboard/IdhGroupView";
 import { IdhOverview } from "@/components/IdhPowerBiDashboard/IdhOverview";
 import { IdhSaibaMais } from "@/components/IdhPowerBiDashboard/IdhSaibaMais";
@@ -10,33 +10,15 @@ import { PanelFilters } from "@/components/Panel/filters/PanelFilters";
 import { SelectionSummary } from "@/components/Panel/filters/SelectionSummary";
 import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { PanelTabs } from "@/components/Panel/layout/PanelTabs";
-import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
+import { useIdhNavigation } from "@/components/IdhDashboard/useIdhNavigation";
 import {
-  buildIdhSearch,
-  DEFAULT_IDH_FILTERS,
+  defaultIdhFilters,
   describeIdhSelection,
   IDH_VISOES,
   type IdhFilters,
   type IdhPanelData,
   type IdhVisao,
 } from "@/features/panels/idh/idhPanel";
-
-// Trocar de aba não consulta o banco de novo: só atualiza a URL.
-const useIdhNavigation = () => {
-  const { isPending, pathname, applyFilters } =
-    usePanelNavigation(buildIdhSearch);
-  const showVisao = useCallback(
-    (filters: IdhFilters) =>
-      window.history.replaceState(
-        null,
-        "",
-        `${pathname}${buildIdhSearch(filters)}`,
-      ),
-    [pathname],
-  );
-
-  return { isPending, applyFilters, showVisao };
-};
 
 const IdhTabContent = ({
   tab,
@@ -71,7 +53,9 @@ export const IdhDashboard = ({
 }) => {
   const idPrefix = useId();
   const [tab, setTab] = useState<IdhVisao>(data.filters.visao);
-  const { isPending, applyFilters, showVisao } = useIdhNavigation();
+  const { isPending, applyFilters, showVisao } = useIdhNavigation(
+    data.yearRange,
+  );
   const selectTab = (visao: IdhVisao) => {
     setTab(visao);
     showVisao({ ...data.filters, visao });
@@ -100,12 +84,13 @@ export const IdhDashboard = ({
     >
       <PanelFilters
         summary={summary}
-        onClear={() => changeFilters(DEFAULT_IDH_FILTERS)}
+        onClear={() => changeFilters(defaultIdhFilters(data.yearRange))}
         isPending={isPending}
         sticky
       >
         <IdhSelects
           filters={data.filters}
+          yearRange={data.yearRange}
           ufs={data.ufs}
           onChange={changeFilters}
         />

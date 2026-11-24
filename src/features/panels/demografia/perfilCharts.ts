@@ -104,8 +104,11 @@ export const niceAxis = (values: number[], intervals = 4): Axis => {
   return { min: ticks[0], max: ticks[intervals], ticks };
 };
 
+// `height`: a altura livre do card; o gráfico só cresce, nunca fica abaixo da
+// do protótipo.
 export type SerieGeometryInput = {
   width: number;
+  height?: number;
   points: { ano: number; valor: number }[];
 };
 
@@ -137,15 +140,24 @@ type SerieLayout = {
   B: number;
 };
 
+/**
+ * Altura do gráfico da série no protótipo para a largura dada: o piso que o
+ * card reserva antes de esticar o gráfico.
+ *
+ * @example serieMinHeight(400) // 250
+ */
+export const serieMinHeight = (width: number): number =>
+  Math.max(280, width) < 460 ? 250 : 290;
+
 // IMPORTANT: largura mínima e a troca de margens em 460px vêm do protótipo;
 // mudar aqui desalinha os rótulos do eixo em telas estreitas.
-const serieLayout = (width: number): SerieLayout => {
+const serieLayout = (width: number, height = 0): SerieLayout => {
   const w = Math.max(280, width);
   const narrow = w < 460;
 
   return {
     w,
-    h: narrow ? 250 : 290,
+    h: Math.max(serieMinHeight(w), height),
     L: narrow ? 48 : 54,
     R: narrow ? 24 : 36,
     T: 26,
@@ -178,9 +190,10 @@ const serieScale = (layout: SerieLayout, years: number[], axis: Axis) => {
  */
 export const buildSerieGeometry = ({
   width,
+  height,
   points,
 }: SerieGeometryInput): SerieGeometry => {
-  const layout = serieLayout(width);
+  const layout = serieLayout(width, height);
   const axis = niceAxis(points.map((point) => point.valor));
   const step = axis.ticks[1] - axis.ticks[0];
   const scale = serieScale(

@@ -13,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const CRUMB_LINK =
-  "text-inherit no-underline hover:underline focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-white";
+  "text-inherit no-underline hover:underline focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-(--proto-accent-strong)";
 
 // "14/05/25", como no protótipo. UTC: a data do Contentful vem à meia-noite
 // UTC e, no fuso de Brasília, cairia no dia anterior.
@@ -25,31 +25,26 @@ const formatPublishedAt = (date: string) =>
     timeZone: "UTC",
   });
 
-const Separator = () => (
-  <ProtoIcon
-    name="chevronRight"
-    size={16}
-    stroke={2.4}
-    className="text-white/70"
-  />
+const Crumb = ({ href, label }: { href: string; label: string }) => (
+  <li className="inline-flex items-center gap-1 text-grey-800">
+    <Link href={href} className={CRUMB_LINK}>
+      {label}
+    </Link>
+    <ProtoIcon
+      name="chevronRight"
+      size={16}
+      stroke={2.4}
+      className="text-grey-800"
+    />
+  </li>
 );
 
 const Breadcrumbs = ({ title }: { title: string }) => (
   <nav aria-label="Você está em" className="max-[700px]:hidden">
     <ol className="flex flex-wrap items-center gap-1 text-sm">
-      <li className="inline-flex items-center gap-1 text-white/75">
-        <Link href="/" className={CRUMB_LINK}>
-          Início
-        </Link>
-        <Separator />
-      </li>
-      <li className="inline-flex items-center gap-1 text-white/75">
-        <Link href="/explore" className={CRUMB_LINK}>
-          Explorar dados
-        </Link>
-        <Separator />
-      </li>
-      <li aria-current="page" className="text-white">
+      <Crumb href="/" label="Início" />
+      <Crumb href="/explore" label="Explorar dados" />
+      <li aria-current="page" className="font-medium text-grey-1100">
         {title}
       </li>
     </ol>
@@ -57,10 +52,9 @@ const Breadcrumbs = ({ title }: { title: string }) => (
 );
 
 /**
- * Capa do painel (`.cover` do protótipo, em "Cinza Dados 800"): voltar,
- * trilha, data de publicação, macrotema, título e texto de abertura. É usada
- * pela página (servidor), então recebe o `tone` e o `icon` em vez de ler o
- * contexto.
+ * Capa do painel (`.cover` do protótipo, em "Cinza Dados 50"): voltar, trilha,
+ * data de publicação, macrotema, título e texto de abertura. É usada pela
+ * página (servidor), então recebe o `tone` e o `icon` em vez de ler o contexto.
  *
  * @example <ProtoCover tone="idh" icon="idh" title={IDH_TITLE} lead={IDH_LEAD} macroTheme="Desenvolvimento Social" publishedAt="2025-05-14" />
  */
@@ -83,7 +77,7 @@ export const ProtoCover = ({
     style={protoToneStyle(tone)}
     className={cn(
       PROTO_TEXT,
-      "relative w-full overflow-hidden bg-grey-1000 text-white",
+      "relative w-full overflow-hidden border-b border-grey-300 bg-grey-100 text-grey-1100",
     )}
   >
     <div
@@ -99,7 +93,7 @@ export const ProtoCover = ({
         ) : null}
       </div>
       <div className="flex items-center gap-3 text-[20px] leading-[30px] font-medium max-[700px]:text-base">
-        <span className="grid size-11 flex-none place-items-center rounded-[6px] bg-(--proto-accent) max-[700px]:size-9">
+        <span className="grid size-11 flex-none place-items-center rounded-[6px] bg-(--proto-accent) text-white max-[700px]:size-9">
           <ProtoIcon name={icon} size={26} />
         </span>
         Painel de {macroTheme}

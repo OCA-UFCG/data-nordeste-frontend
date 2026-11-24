@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
-  IDH_CARD_FOOTER,
+  idhCardFooter,
   IDH_CARD_INFO,
 } from "@/components/IdhDashboard/idhCardTexts";
 import { IDH_COLORS } from "@/components/IdhDashboard/idhColors";
@@ -13,8 +14,6 @@ import {
 } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
-import { staleClass } from "@/components/ProtoPanel/protoStyles";
-import { showsIdhData } from "@/features/panels/idh/idhCardState";
 import { formatNumber } from "@/features/panels/format";
 import {
   compareIdhGroups,
@@ -24,11 +23,11 @@ import {
 } from "@/features/panels/idh/idhGroupCompare";
 import { formatIdhCard, formatRenda } from "@/features/panels/idh/idhFormat";
 import {
-  DEFAULT_IDH_FILTERS,
   IDH_VISOES,
   idhPlaceName,
   type IdhPanelData,
 } from "@/features/panels/idh/idhPanel";
+import { withYear } from "@/features/panels/territorialFilters";
 
 type GroupVisao = "sexo" | "cor";
 
@@ -53,6 +52,21 @@ const GROUP_COLORS = [IDH_COLORS.accentStrong, IDH_COLORS.groupSecond];
 
 const isIndex = (metric: IdhGroupMetric) => INDEX_METRICS.has(metric);
 
+// `.gi-t i{transition:width .35s}`: no protótipo o DOM é recriado e a barra
+// nunca anima. Aqui ela nasce em 0 e cresce no quadro seguinte (depois do
+// esqueleto ou ao abrir a aba) e, entre sexo e cor, vai do valor antigo ao novo.
+const useGrownBar = () => {
+  const [grown, setGrown] = useState(false);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setGrown(true));
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return grown;
+};
+
 // `.gi`: rótulo e valor, a barra de 12 px e a escala de 0 ao fim.
 const GroupItem = ({
   item,
@@ -64,29 +78,35 @@ const GroupItem = ({
   color: string;
   max: number;
   metric: IdhGroupMetric;
-}) => (
-  <div className="mt-2.5 first:mt-1">
-    <div className="flex justify-between text-[13px] leading-[18px]">
-      <span>{item.label}</span>
-      <b className="font-medium tabular-nums">
-        {isIndex(metric) ? formatIdhCard(item.value) : formatRenda(item.value)}
-      </b>
+}) => {
+  const grown = useGrownBar();
+
+  return (
+    <div className="mt-2.5 first:mt-1">
+      <div className="flex justify-between text-[13px] leading-[18px]">
+        <span>{item.label}</span>
+        <b className="font-medium tabular-nums">
+          {isIndex(metric)
+            ? formatIdhCard(item.value)
+            : formatRenda(item.value)}
+        </b>
+      </div>
+      <div className="mt-2 h-3 overflow-hidden rounded-[6px] bg-grey-200">
+        <i
+          className="block h-full rounded-[6px] transition-[width] duration-350 motion-reduce:transition-none"
+          style={{
+            width: grown ? `${Math.min(item.value / max, 1) * 100}%` : 0,
+            background: color,
+          }}
+        />
+      </div>
+      <div className="mt-1.5 flex justify-between text-[10.5px] text-grey-800 tabular-nums">
+        <span>{isIndex(metric) ? "0,00" : "0"}</span>
+        <span>{isIndex(metric) ? formatIdhCard(max) : formatNumber(max)}</span>
+      </div>
     </div>
-    <div className="mt-2 h-3 overflow-hidden rounded-[6px] bg-grey-200">
-      <i
-        className="block h-full rounded-[6px] transition-[width] duration-350 motion-reduce:transition-none"
-        style={{
-          width: `${Math.min(item.value / max, 1) * 100}%`,
-          background: color,
-        }}
-      />
-    </div>
-    <div className="mt-1.5 flex justify-between text-[10.5px] text-grey-800 tabular-nums">
-      <span>{isIndex(metric) ? "0,00" : "0"}</span>
-      <span>{isIndex(metric) ? formatIdhCard(max) : formatNumber(max)}</span>
-    </div>
-  </div>
-);
+  );
+};
 
 const GroupCard = ({
   title,
@@ -94,11 +114,13 @@ const GroupCard = ({
   catalog,
   visao,
   data,
+  updatedAt,
   state,
   onRetry,
 }: (typeof METRIC_CARDS)[number] & {
   visao: GroupVisao;
   data: IdhPanelData;
+  updatedAt?: string;
   state: ProtoCardState;
   onRetry: () => void;
 }) => {
@@ -107,11 +129,11 @@ const GroupCard = ({
     data.filters.ano,
     metric,
   );
-  const place = `${idhPlaceName(data)}, ${data.filters.ano}`;
+  const place = withYear(idhPlaceName(data), data.filters.ano, ", ");
 
   return (
     <ProtoCard
-      footer={IDH_CARD_FOOTER}
+      footer={idhCardFooter(updatedAt)}
       title={title}
       subtitle={gap ? `${gap} · ${place}` : place}
       kind="grp"
@@ -124,9 +146,11 @@ const GroupCard = ({
         </>
       }
     >
+      {/* INTENTIONAL: chave pela posição, não pelo grupo. Assim a barra é a
+          mesma ao trocar de sexo para cor, e a largura anima. */}
       {values.map((item, index) => (
         <GroupItem
-          key={item.label}
+          key={index}
           item={item}
           color={GROUP_COLORS[index]}
           max={max}
@@ -141,19 +165,17 @@ const GroupCard = ({
 const NoGroupData = ({
   visao,
   data,
-  stale,
   onReset,
 }: {
   visao: GroupVisao;
   data: IdhPanelData;
-  stale: boolean;
   onReset: () => void;
 }) => (
-  <div aria-busy={stale} className={`${PROTO_CARD_CLASS} ${staleClass(stale)}`}>
+  <div className={PROTO_CARD_CLASS}>
     <ProtoCardNotice
       tone="warn"
       action={{
-        label: `Ver Nordeste, ${DEFAULT_IDH_FILTERS.ano}`,
+        label: `Ver Nordeste, ${data.yearRange.last}`,
         onClick: onReset,
       }}
     >
@@ -173,12 +195,14 @@ const NoGroupData = ({
 export const IdhGroupView = ({
   visao,
   data,
+  updatedAt,
   state,
   onRetry,
   onReset,
 }: {
   visao: GroupVisao;
   data: IdhPanelData;
+  updatedAt?: string;
   state: ProtoCardState;
   onRetry: () => void;
   onReset: () => void;
@@ -186,15 +210,8 @@ export const IdhGroupView = ({
   const hasData =
     compareIdhGroups(data[visao], data.filters.ano, "idh").values.length > 0;
 
-  if (showsIdhData(state) && !hasData) {
-    return (
-      <NoGroupData
-        visao={visao}
-        data={data}
-        stale={state === "stale"}
-        onReset={onReset}
-      />
-    );
+  if (state === "ok" && !hasData) {
+    return <NoGroupData visao={visao} data={data} onReset={onReset} />;
   }
 
   return (
@@ -205,6 +222,7 @@ export const IdhGroupView = ({
           {...card}
           visao={visao}
           data={data}
+          updatedAt={updatedAt}
           state={state}
           onRetry={onRetry}
         />

@@ -3,6 +3,7 @@ import type { ChoroplethBucket } from "@/features/panels/choropleth";
 import {
   firstValue,
   listYears,
+  NO_YEAR,
   UF_PATTERN,
   type SearchParams,
   type YearRange,
@@ -14,8 +15,6 @@ import {
   type SqlQuery,
   type SqlWhere,
 } from "@/features/panels/territorialSql";
-
-export const IDH_YEAR_RANGE: YearRange = { first: 2012, last: 2021 };
 
 // Classes do PNUD com as cores e os nomes da legenda do Power BI.
 export const IDH_MAP_BUCKETS: readonly ChoroplethBucket[] = [
@@ -40,36 +39,58 @@ export type IdhFilters = {
   uf?: string;
 };
 
-export const DEFAULT_IDH_FILTERS: IdhFilters = {
-  ano: IDH_YEAR_RANGE.last,
-  visao: "geral",
-};
+const DEFAULT_IDH_VISAO: IdhVisao = "geral";
+
+/**
+ * Filtros sem escolha da pessoa: o último ano do banco e a visão geral.
+ *
+ * @example defaultIdhFilters({ first: 2012, last: 2021 }) // { ano: 2021, visao: "geral" }
+ */
+export const defaultIdhFilters = (range: YearRange): IdhFilters => ({
+  ano: range.last,
+  visao: DEFAULT_IDH_VISAO,
+});
 
 const isVisao = (value?: string): value is IdhVisao =>
   IDH_VISOES.some((visao) => visao.key === value);
 
-export const parseIdhFilters = (params: SearchParams): IdhFilters => {
+/**
+ * Lê os filtros da URL; ano fora de `range` volta para o último ano.
+ *
+ * @example parseIdhFilters({ ano: "1990" }, { first: 2012, last: 2021 }) // { ano: 2021, visao: "geral" }
+ */
+export const parseIdhFilters = (
+  params: SearchParams,
+  range: YearRange,
+): IdhFilters => {
+  const defaults = defaultIdhFilters(range);
   const ano = Number(firstValue(params.ano));
   const visao = firstValue(params.visao);
   const uf = firstValue(params.uf)?.toUpperCase();
 
   return {
-    ano: listYears(IDH_YEAR_RANGE).includes(ano)
-      ? ano
-      : DEFAULT_IDH_FILTERS.ano,
-    visao: isVisao(visao) ? visao : DEFAULT_IDH_FILTERS.visao,
+    ano: listYears(range).includes(ano) ? ano : defaults.ano,
+    visao: isVisao(visao) ? visao : defaults.visao,
     ...(uf && UF_PATTERN.test(uf) ? { uf } : {}),
   };
 };
 
-export const buildIdhSearch = (filters: IdhFilters): string => {
+/**
+ * Monta a query string só com o que difere dos filtros padrão de `range`.
+ *
+ * @example buildIdhSearch({ ano: 2015, visao: "geral", uf: "PE" }, { first: 2012, last: 2021 }) // "?ano=2015&uf=PE"
+ */
+export const buildIdhSearch = (
+  filters: IdhFilters,
+  range: YearRange,
+): string => {
   const params = new URLSearchParams();
 
-  if (filters.ano !== DEFAULT_IDH_FILTERS.ano) {
+  if (filters.ano !== range.last) {
     params.set("ano", String(filters.ano));
   }
   if (filters.uf) params.set("uf", filters.uf);
-  if (filters.visao !== DEFAULT_IDH_FILTERS.visao) {
+  if (filters.visao !== DEFAULT_IDH_VISAO) {
     params.set("visao", filters.visao);
   }
   const search = params.toString();
@@ -98,6 +119,7 @@ export type IdhGroupSerie = { label: string; serie: IdhGroupPoint[] };
 
 export type IdhPanelData = {
   filters: IdhFilters;
+  yearRange: YearRange;
   ufs: UfOption[];
   serie: IdhYearPoint[];
   mapa: ChoroplethRegion[];
@@ -105,7 +127,7 @@ export type IdhPanelData = {
   cor: IdhGroupSerie[];
 };
 
-const GERAL_VIEW = "des_idh.idh_geral_novo_view";
+export const GERAL_VIEW = "des_idh.idh_geral_novo_view";
 
 // Nas views de sexo e cor a sigla está em estado_rm, não em sigla_uf (e a de
 // sexo também troca agregacao com estado_1). regiao_metropolitana e o sufixo
@@ -230,6 +252,7 @@ const loadGroups = async (
 export const loadIdhPanel = async (
   query: SqlQuery,
   requested: IdhFilters,
+  yearRange: YearRange,
 ): Promise<IdhPanelData> => {
   const ufs = await loadUfs(query);
   const uf = ufs.find((item) => item.sigla === requested.uf)?.sigla;
@@ -243,7 +266,7 @@ export const loadIdhPanel = async (
     loadGroups(query, filters, GROUPS.cor),
   ]);
 
-  return { filters, ufs, serie, mapa, sexo, cor };
+  return { filters, yearRange, ufs, serie, mapa, sexo, cor };
 };
 
 const describeIdhPlace = ({
@@ -292,8 +315,8 @@ export const describeIdhShareChips = (
 
   return [
     `Estado: ${uf?.nome ?? "Todos"}`,
-    `Ano: ${filters.ano}`,
-    ...(visao !== DEFAULT_IDH_FILTERS.visao && view ? [view.label] : []),
+    ...(filters.ano === NO_YEAR ? [] : [`Ano: ${filters.ano}`]),
+    ...(visao !== DEFAULT_IDH_VISAO && view ? [view.label] : []),
   ];
 };
 
@@ -312,10 +335,14 @@ export const idhPlaceName = ({
  * Painel vazio com os filtros pedidos, para a página montar o layout quando a
  * consulta falha (os cards mostram o erro com "Tentar de novo").
  *
- * @example emptyIdhPanel({ ano: 2021, visao: "geral" }).serie // []
+ * @example emptyIdhPanel({ ano: 2021, visao: "geral" }, { first: 2012, last: 2021 }).serie // []
  */
-export const emptyIdhPanel = (filters: IdhFilters): IdhPanelData => ({
+export const emptyIdhPanel = (
+  filters: IdhFilters,
+  yearRange: YearRange,
+): IdhPanelData => ({
   filters,
+  yearRange,
   ufs: [],
   serie: [],
   mapa: [],

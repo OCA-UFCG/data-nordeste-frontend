@@ -151,7 +151,7 @@ export const ProtoSaibaMais = ({
               name="chevronDown"
               size={22}
               stroke={2.4}
-              className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+              className={`transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
             />
           </button>
         </div>

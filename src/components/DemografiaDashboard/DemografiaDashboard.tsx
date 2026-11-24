@@ -6,7 +6,10 @@ import {
   PerfilEmptyLayout,
   PerfilGrids,
 } from "@/components/DemografiaDashboard/PerfilLayout";
-import { DEMOGRAFIA_SOURCE } from "@/components/DemografiaDashboard/demografiaTheme";
+import {
+  DEMOGRAFIA_BAR_TITLE,
+  DEMOGRAFIA_SOURCE,
+} from "@/components/DemografiaDashboard/demografiaTheme";
 import { usePorteMapView } from "@/components/DemografiaDashboard/PerfilPorteMapCard";
 import { PERFIL_CARD_SOURCE } from "@/components/DemografiaDashboard/perfilTexts";
 import {
@@ -20,16 +23,18 @@ import {
 } from "@/components/ProtoPanel/protoStyles";
 import { ProtoTerritorialFilters } from "@/components/ProtoPanel/ProtoTerritorialFilters";
 import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
+import { ProtoVejaMais } from "@/components/ProtoPanel/ProtoVejaMais";
 import { usePendingFilters } from "@/components/ProtoPanel/usePendingFilters";
 import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
+import { buildDemografiaAnalise } from "@/features/panels/demografia/demografiaAnalise";
 import {
   DEMOGRAFIA_MAX_PLACES,
-  DEMOGRAFIA_YEAR_RANGE,
   type DemografiaPanelData,
 } from "@/features/panels/demografia/demografiaPanel";
 import {
+  describeDefaultPlaceLabel,
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
@@ -41,54 +46,61 @@ import {
   defaultTerritorialFilters,
   listYears,
   type TerritorialFilters,
+  type YearRange,
 } from "@/features/panels/territorialFilters";
 import { cn } from "@/lib/utils";
 
-const YEARS = listYears(DEMOGRAFIA_YEAR_RANGE);
-
-const buildPerfilSearch = (filters: TerritorialFilters): string =>
-  buildTerritorialSearch(filters, DEMOGRAFIA_YEAR_RANGE);
+const BRAND = { icon: "users", title: DEMOGRAFIA_BAR_TITLE } as const;
 
 // O link de compartilhar leva os filtros da carga atual, com o caminho da página.
 const useCardMenuValue = (
   data: DemografiaPanelData,
+  search: string,
   pathname: string,
   catalogHref: string | null,
 ): ProtoCardMenuContextValue =>
   useMemo(
     () => ({
       share: {
-        path: `${pathname}${buildPerfilSearch(data.filters)}`,
+        path: `${pathname}${search}`,
         chips: describeTerritorialShareChips(data),
       },
       catalogHref,
       imageSource: PERFIL_CARD_SOURCE,
     }),
-    [data, pathname, catalogHref],
+    [data, search, pathname, catalogHref],
   );
 
 /**
- * Painel de perfil demográfico no formato do protótipo: barra de filtros,
- * grade de cards e a fonte com o catálogo. `failed`: a consulta falhou e os
- * cards mostram o erro com "Tentar de novo". Sem população no ano escolhido,
- * mostra o aviso e o mapa.
+ * Painel de perfil demográfico no formato do protótipo: barra de filtros com
+ * a marca, "Veja mais", grade de cards e a fonte com o catálogo. `years`: os
+ * censos do banco. `failed`: a consulta falhou e os cards mostram o erro com
+ * "Tentar de novo". Sem população no ano escolhido, mostra o aviso e o mapa.
  *
- * @example <DemografiaDashboard data={panel} catalogHref="/catalog?category=demografia" />
+ * @example <DemografiaDashboard data={panel} years={range} catalogHref="/catalog?category=demografia" />
  */
 export const DemografiaDashboard = ({
   data,
+  years,
   failed = false,
   catalogHref,
 }: {
   data: DemografiaPanelData;
+  years: YearRange;
   failed?: boolean;
   catalogHref: string | null;
 }) => {
-  const { isPending, pathname, applyFilters } =
-    usePanelNavigation(buildPerfilSearch);
+  const buildSearch = (filters: TerritorialFilters) =>
+    buildTerritorialSearch(filters, years);
+  const { isPending, pathname, applyFilters } = usePanelNavigation(buildSearch);
   const { retrying, retry } = useProtoRetry();
   const sticky = useProtoSticky();
-  const cardMenu = useCardMenuValue(data, pathname, catalogHref);
+  const cardMenu = useCardMenuValue(
+    data,
+    buildSearch(data.filters),
+    pathname,
+    catalogHref,
+  );
   const mapView = usePorteMapView();
 
   // Como no IDH e no PIB: a seleção mostra o filtro pedido na hora, e só o
@@ -98,12 +110,13 @@ export const DemografiaDashboard = ({
     applyFilters,
     isPending,
   );
-  const reset = () => request(defaultTerritorialFilters(DEMOGRAFIA_YEAR_RANGE));
+  const reset = () => request(defaultTerritorialFilters(years));
+  const place = describeTerritorialPlace(data);
   const layout = {
     data,
     selection,
     mapView,
-    place: describeTerritorialPlace(data),
+    place,
     states: resolvePerfilCardStates(
       { failed, retrying, pending },
       data.filters,
@@ -117,15 +130,14 @@ export const DemografiaDashboard = ({
   return (
     <ProtoToneContext.Provider value="perfil">
       <ProtoTerritorialFilters
+        brand={BRAND}
+        brandInBar
         data={{ ...data, filters: selection }}
-        years={YEARS}
+        years={listYears(years)}
         maxPlaces={DEMOGRAFIA_MAX_PLACES}
         onChange={request}
         onClear={reset}
-        isDefault={isDefaultTerritorialFilters(
-          selection,
-          DEMOGRAFIA_YEAR_RANGE,
-        )}
+        isDefault={isDefaultTerritorialFilters(selection, years)}
         top={sticky.filterTop}
         stuck={sticky.stuck}
         barRef={sticky.filterRef}
@@ -134,9 +146,18 @@ export const DemografiaDashboard = ({
         style={protoToneStyle("perfil")}
         className={`${PROTO_TEXT} mx-auto w-full max-w-[1440px] px-20 pt-8 pb-10 max-[1100px]:px-8 max-[1100px]:pt-6 max-[700px]:px-4 max-[700px]:pt-5 max-[700px]:pb-8`}
       >
+        <div className="mb-6 max-[700px]:mb-4">
+          <ProtoVejaMais
+            analysis={showEmpty ? null : buildDemografiaAnalise(data, place)}
+            state={layout.states.corRaca}
+          />
+        </div>
         <ProtoCardMenuContext.Provider value={cardMenu}>
           {showEmpty ? (
-            <PerfilEmptyLayout {...layout} />
+            <PerfilEmptyLayout
+              {...layout}
+              resetLabel={describeDefaultPlaceLabel(years)}
+            />
           ) : (
             <PerfilGrids {...layout} />
           )}

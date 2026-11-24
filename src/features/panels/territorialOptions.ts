@@ -2,6 +2,7 @@ import {
   TERRITORIAL_AREAS,
   type TerritorialArea,
   type TerritorialFilters,
+  withYear,
 } from "@/features/panels/territorialFilters";
 import {
   buildTerritorialWhere,
@@ -173,6 +174,16 @@ const describePlace = (selection: TerritorialSelection, nameArea: boolean) => {
 };
 
 /**
+ * Nome do lugar mais específico escolhido, sem o ano: o município, o estado
+ * ou a área ("Recife (PE)", "3 estados", "Nordeste").
+ *
+ * @example describeSelectedTerritory(selection) // "Pernambuco"
+ */
+export const describeSelectedTerritory = (
+  selection: TerritorialSelection,
+): string => describePlace(selection, true);
+
+/**
  * Texto do "Mostrando: …": o lugar mais específico escolhido e o ano.
  *
  * `nameArea`: sem UF nem município, mostra o nome da área ("Nordeste · 2021").
@@ -182,4 +193,5 @@ const describePlace = (selection: TerritorialSelection, nameArea: boolean) => {
 export const describeTerritorialSelection = (
   selection: TerritorialSelection,
   nameArea = false,
-): string => `${describePlace(selection, nameArea)} · ${selection.filters.ano}`;
+): string =>
+  withYear(describePlace(selection, nameArea), selection.filters.ano);

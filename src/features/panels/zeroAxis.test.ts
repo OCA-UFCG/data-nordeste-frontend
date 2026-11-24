@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildZeroAxis } from "@/features/panels/pib/pibAxis";
+import { buildZeroAxis } from "@/features/panels/zeroAxis";
 
 describe("buildZeroAxis", () => {
   it("covers the highest value in four round steps from zero", () => {

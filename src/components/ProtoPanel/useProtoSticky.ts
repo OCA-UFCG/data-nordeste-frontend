@@ -3,15 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSiteHeaderHeight } from "@/components/Panel/layout/useSiteHeaderHeight";
 
-// Altura de um elemento que está grudado; zero se ele está oculto ou estático
-// (a barra de abas só gruda entre 701 e 900 px).
-const stickyHeight = (element: HTMLElement | null) => {
-  if (!element || !element.offsetParent) return 0;
-
-  return getComputedStyle(element).position === "sticky"
-    ? element.offsetHeight
-    : 0;
-};
+/**
+ * Rolagem programática do painel: suave, menos com `prefers-reduced-motion`
+ * (no protótipo, `html{scroll-behavior:smooth}` some com a preferência).
+ *
+ * @example window.scrollTo({ top: 0, behavior: protoScrollBehavior() });
+ */
+export const protoScrollBehavior = (): ScrollBehavior =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? "auto"
+    : "smooth";
 
 const useMeasure = (measure: () => void) => {
   useEffect(() => {
@@ -28,33 +29,26 @@ const useMeasure = (measure: () => void) => {
 };
 
 /**
- * Encadeia o que gruda no topo, como no protótipo: cabeçalho do site, barra de
- * abas (até 900 px), barra de filtros e a coluna lateral 16 px abaixo dela.
- * `stuck` liga a sombra da barra de filtros quando ela gruda.
+ * Gruda a barra de filtros logo abaixo do cabeçalho do site, como no
+ * protótipo. `stuck` liga a sombra da barra quando ela gruda.
  *
  * @example const sticky = useProtoSticky(); <ProtoFilterBar barRef={sticky.filterRef} top={sticky.filterTop} stuck={sticky.stuck} />
  */
 export const useProtoSticky = () => {
   const header = useSiteHeaderHeight();
-  const tabsRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
-  const [sizes, setSizes] = useState({ tabs: 0, filter: 88, stuck: false });
+  const [sizes, setSizes] = useState({ filter: 88, stuck: false });
   const measure = useCallback(() => {
-    const tabs = stickyHeight(tabsRef.current);
     const filter = filterRef.current;
 
     const next = {
-      tabs,
       filter: filter?.offsetHeight ?? 88,
-      stuck:
-        !!filter && filter.getBoundingClientRect().top <= header + tabs + 1,
+      stuck: !!filter && filter.getBoundingClientRect().top <= header + 1,
     };
 
     // PERF: roda a cada rolagem; só renderiza de novo quando algo mudou.
     setSizes((current) =>
-      current.tabs === next.tabs &&
-      current.filter === next.filter &&
-      current.stuck === next.stuck
+      current.filter === next.filter && current.stuck === next.stuck
         ? current
         : next,
     );
@@ -70,19 +64,18 @@ export const useProtoSticky = () => {
       layout.getBoundingClientRect().top +
       window.scrollY -
       header -
-      sizes.tabs -
       sizes.filter;
 
     if (window.scrollY > top)
-      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+      window.scrollTo({
+        top: Math.max(0, top),
+        behavior: protoScrollBehavior(),
+      });
   };
 
   return {
-    tabsRef,
     filterRef,
-    tabsTop: header,
-    filterTop: header + sizes.tabs,
-    railTop: header + sizes.tabs + sizes.filter + 16,
+    filterTop: header,
     stuck: sizes.stuck,
     reveal,
   };

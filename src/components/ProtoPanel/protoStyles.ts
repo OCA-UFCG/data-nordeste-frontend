@@ -7,13 +7,16 @@ import type { CSSProperties } from "react";
 // do protótipo: o tema o escureceu para 4,5:1 com texto branco (WCAG 1.4.3).
 // A cor de destaque é uma variável CSS: cada painel define o seu tom em
 // `protoToneStyle` no elemento raiz (portais incluídos, porque saem da árvore).
-export type ProtoTone = "idh" | "perfil" | "pib";
+export type ProtoTone = "idh" | "perfil" | "pib" | "aridez";
 
 export type ProtoToneColors = {
   accent: string;
   accentStrong: string;
   accentSoft: string;
   accentLine: string;
+
+  // Fundo do chip dos ícones de destaque; sem ele, vale `accentSoft`.
+  accentChip?: string;
 };
 
 export const PROTO_TONES: Record<ProtoTone, ProtoToneColors> = {
@@ -34,6 +37,15 @@ export const PROTO_TONES: Record<ProtoTone, ProtoToneColors> = {
     accentStrong: "#c2570c",
     accentSoft: "#fff1e4",
     accentLine: "#fbd8b5",
+    accentChip: "#ffe7cf",
+  },
+
+  // Verde do painel de Meio Ambiente (`:root` de aridez.html).
+  aridez: {
+    accent: "#758f21",
+    accentStrong: "#596e1d",
+    accentSoft: "#f1f6d1",
+    accentLine: "#e1eda9",
   },
 };
 
@@ -51,6 +63,7 @@ export const protoToneStyle = (tone: ProtoTone): CSSProperties => {
     "--proto-accent-strong": colors.accentStrong,
     "--proto-accent-soft": colors.accentSoft,
     "--proto-accent-line": colors.accentLine,
+    "--proto-accent-chip": colors.accentChip ?? colors.accentSoft,
   };
 
   return style as CSSProperties;

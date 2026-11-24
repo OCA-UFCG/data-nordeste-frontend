@@ -141,10 +141,18 @@ export default async function DatasetPage({ params }: DatasetPageProps) {
             >
               Ver registro no Zenodo
             </Link>
+            {!!record.files.length && (
+              <Link
+                href="#arquivos"
+                className="rounded-md bg-green-800 px-4 py-2 text-sm font-semibold text-white"
+              >
+                Baixar arquivos
+              </Link>
+            )}
           </div>
 
           {!!record.files.length && (
-            <section className="flex flex-col gap-3">
+            <section id="arquivos" className="flex flex-col gap-3">
               <h2 className="text-2xl font-semibold">Arquivos</h2>
               <ul className="divide-y divide-grey-200 rounded-lg border border-grey-200">
                 {record.files.map((file) => (

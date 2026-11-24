@@ -1,19 +1,8 @@
 import type { Metadata } from "next";
-import {
-  getCatalogHref,
-  getMacroThemeHref,
-} from "@/components/Panel/texts/PanelTexts";
+import { getCatalogHref } from "@/components/Panel/texts/PanelTexts";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
-import {
-  PIB_LEAD,
-  PIB_SAIBA_MAIS_GLOSSARY,
-  PIB_SAIBA_MAIS_PARAGRAPHS,
-  PIB_SAIBA_MAIS_SUMMARY,
-  PIB_SAIBA_MAIS_TITLE,
-} from "@/components/PibDashboard/pibTexts";
-import { PIB_MACROTHEME, PIB_TITLE } from "@/components/PibDashboard/pibTheme";
-import { ProtoCover } from "@/components/ProtoPanel/ProtoCover";
-import { ProtoSaibaMais } from "@/components/ProtoPanel/ProtoSaibaMais";
+import { PibPageFrame } from "@/components/PibDashboard/PibPageFrame";
+import { PIB_MACROTHEME } from "@/components/PibDashboard/pibTheme";
 import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedPanelsSection";
 import { buildMetadata } from "@/config/seo";
 import { loadPibPanelContent } from "@/features/panels/pib/pibContent";
@@ -82,27 +71,13 @@ export default async function PibDemoPage({
 
   return (
     <HubTemplate>
-      <ProtoCover
-        tone="pib"
-        icon="usd"
-        title={PIB_TITLE}
-        lead={PIB_LEAD}
-        macroTheme={macroTheme}
-        publishedAt={content?.panel.date}
-      />
-      <PibDashboard
-        data={panel ?? emptyPibPanel(filters)}
-        failed={!panel}
-        catalogHref={getCatalogHref(macroTheme)}
-      />
-      <ProtoSaibaMais
-        tone="pib"
-        title={PIB_SAIBA_MAIS_TITLE}
-        summary={PIB_SAIBA_MAIS_SUMMARY}
-        paragraphs={[...PIB_SAIBA_MAIS_PARAGRAPHS]}
-        glossary={PIB_SAIBA_MAIS_GLOSSARY}
-        themeHref={getMacroThemeHref(macroTheme)}
-      />
+      <PibPageFrame macroTheme={macroTheme} publishedAt={content?.panel.date}>
+        <PibDashboard
+          data={panel ?? emptyPibPanel(filters)}
+          failed={!panel}
+          catalogHref={getCatalogHref(macroTheme)}
+        />
+      </PibPageFrame>
       {content ? <RelatedPanelsSection items={content.relatedItems} /> : null}
     </HubTemplate>
   );

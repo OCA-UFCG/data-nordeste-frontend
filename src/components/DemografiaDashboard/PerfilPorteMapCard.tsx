@@ -17,7 +17,10 @@ import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
 import type { DemografiaPanelData } from "@/features/panels/demografia/demografiaPanel";
 import { buildPerfilPorteTable } from "@/features/panels/demografia/perfilPorteTable";
 import { formatPessoas } from "@/features/panels/format";
-import type { TerritorialFilters } from "@/features/panels/territorialFilters";
+import {
+  type TerritorialFilters,
+  withYear,
+} from "@/features/panels/territorialFilters";
 
 const TITLE = "Porte dos municípios";
 const INFO =
@@ -89,7 +92,7 @@ export const PerfilPorteMapCard = ({
   const card = usePanelMapCard(PERFIL_CARD_SOURCE);
   const mapProps = usePorteMapProps(selection, onFiltersChange);
   const table = usePorteTable(data);
-  const subtitle = `${place} · ${data.filters.ano}`;
+  const subtitle = withYear(place, data.filters.ano);
 
   // O diálogo fica no `overlay` do card: dentro do corpo, o esqueleto do
   // carregando o desmontaria a cada filtro aplicado em tela cheia.

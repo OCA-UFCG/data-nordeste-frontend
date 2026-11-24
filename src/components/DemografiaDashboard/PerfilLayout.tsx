@@ -14,10 +14,8 @@ import {
   PROTO_CARD_CLASS,
   ProtoCardNotice,
 } from "@/components/ProtoPanel/ProtoCard";
-import { DEMOGRAFIA_YEAR_RANGE } from "@/features/panels/demografia/demografiaPanel";
 import type { PerfilCardStates } from "@/features/panels/demografia/perfilCardState";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
-import { describeDefaultPlaceLabel } from "@/features/panels/territorialPlace";
 
 type PerfilGridsProps = Omit<PerfilCardProps, "state"> & {
   states: PerfilCardStates;
@@ -29,7 +27,11 @@ type PerfilGridsProps = Omit<PerfilCardProps, "state"> & {
   mapView: PorteMapView;
 };
 
-export type PerfilLayoutProps = PerfilGridsProps & { onReset: () => void };
+// `resetLabel`: o atalho para o padrão ("Ver Nordeste · 2022"), com o ano do banco.
+export type PerfilLayoutProps = PerfilGridsProps & {
+  onReset: () => void;
+  resetLabel: string;
+};
 
 // Célula da grade: a coluna ou linha ocupa a altura toda, e o card a preenche.
 const Slot = ({
@@ -113,16 +115,14 @@ export const PerfilEmptyLayout = ({
   onFiltersChange,
   mapView,
   onReset,
+  resetLabel,
   ...card
 }: PerfilLayoutProps) => (
   <div>
     <article className={PROTO_CARD_CLASS}>
       <ProtoCardNotice
         tone="warn"
-        action={{
-          label: describeDefaultPlaceLabel(DEMOGRAFIA_YEAR_RANGE),
-          onClick: onReset,
-        }}
+        action={{ label: resetLabel, onClick: onReset }}
       >
         <b>ATENÇÃO:</b> não há dados para{" "}
         <b>{`${card.place} · ${card.data.filters.ano}`}</b>.

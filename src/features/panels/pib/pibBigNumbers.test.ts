@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPibBigNumbers,
+  describePibCaption,
   describePibChangePill,
 } from "@/features/panels/pib/pibBigNumbers";
 
@@ -20,7 +21,7 @@ describe("describePibChangePill", () => {
 
   it("shows the change to the previous year with its direction", () => {
     expect(describePibChangePill(SERIE, 1, (point) => point.pib)).toEqual({
-      text: "+10,0% em relação a 2018",
+      text: "+10,0% vs. 2018",
       direction: "up",
     });
     expect(
@@ -56,5 +57,15 @@ describe("buildPibBigNumbers", () => {
       null,
       null,
     ]);
+  });
+});
+
+describe("describePibCaption", () => {
+  it("puts the year before the place", () => {
+    const filters = { ano: 2021, area: "nordeste" as const };
+
+    expect(describePibCaption({ filters, ufs: [], municipios: [] })).toBe(
+      "2021 · Nordeste",
+    );
   });
 });

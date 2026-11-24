@@ -119,6 +119,20 @@ export const DataCard = ({
               }
             </div>
           )}
+          {files.length > 0 && (
+            <div className="flex flex-row flex-wrap items-center justify-between gap-3 lg:flex-nowrap lg:justify-end w-[150px] sm:w-[225px] h-[40px]">
+              <Button
+                asChild
+                variant="primary"
+                className="w-full text-[14px] font-medium text-[#F8F7F8]"
+              >
+                <Link href={`/catalog/${post.id}`}>
+                  <Icon id="icon-download" size={16} />
+                  Baixar arquivos
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -130,22 +144,7 @@ export const DataCard = ({
 
           <div className="flex flex-col gap-3 sm:hidden">
             <div className="grid grid-cols-2 gap-2">
-              <Button
-                asChild
-                variant="secondary"
-                className="w-full border border-[#DCDBDC] bg-transparent"
-              >
-                <Link href={`/catalog/${post.id}`}>
-                  <Icon
-                    id="icon-external"
-                    size={16}
-                    className="text-[#038f39]"
-                  />
-                  Ver todos
-                </Link>
-              </Button>
-
-              {files.slice(0, 1).map((file) => (
+              {files.slice(0, 2).map((file) => (
                 <button
                   key={file.name}
                   type="button"
@@ -161,6 +160,17 @@ export const DataCard = ({
                 </button>
               ))}
             </div>
+
+            <Button
+              asChild
+              variant="primary"
+              className="w-full text-[14px] font-medium text-[#F8F7F8]"
+            >
+              <Link href={`/catalog/${post.id}`}>
+                <Icon id="icon-download" size={16} />
+                Baixar arquivos
+              </Link>
+            </Button>
           </div>
 
           <div className="flex gap-2 items-center h-auto justify-between">
@@ -180,22 +190,6 @@ export const DataCard = ({
                   {file.name}
                 </button>
               ))}
-            </div>
-            <div className="hidden sm:block self-end">
-              <Button
-                asChild
-                variant="secondary"
-                className="bg-transparent border border-1 border-[#DCDBDC] md:w-[225px] w-[100px]"
-              >
-                <Link href={`/catalog/${post.id}`}>
-                  <Icon
-                    id="icon-external"
-                    size={16}
-                    className="text-[#038f39]"
-                  />
-                  <span className="hidden sm:block">Ver todos</span>
-                </Link>
-              </Button>
             </div>
           </div>
         </div>

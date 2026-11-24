@@ -1,34 +1,17 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
+import { useState } from "react";
+import { useIdhNavigation } from "@/components/IdhDashboard/useIdhNavigation";
 import { usePendingFilters } from "@/components/ProtoPanel/usePendingFilters";
 import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { resolveIdhCardStates } from "@/features/panels/idh/idhCardState";
 import {
-  buildIdhSearch,
-  DEFAULT_IDH_FILTERS,
+  defaultIdhFilters,
   type IdhFilters,
   type IdhPanelData,
   type IdhVisao,
 } from "@/features/panels/idh/idhPanel";
-
-// Trocar de aba não consulta o banco de novo: só atualiza a URL.
-const useIdhNavigation = () => {
-  const { isPending, pathname, applyFilters } =
-    usePanelNavigation(buildIdhSearch);
-  const showVisao = useCallback(
-    (filters: IdhFilters) =>
-      window.history.replaceState(
-        null,
-        "",
-        `${pathname}${buildIdhSearch(filters)}`,
-      ),
-    [pathname],
-  );
-
-  return { isPending, pathname, applyFilters, showVisao };
-};
+import type { YearRange } from "@/features/panels/territorialFilters";
 
 // A aba é estado local (trocar de aba só usa replaceState), mas acompanha a
 // `visao` do servidor quando um link muda ?visao= sem trocar de página.
@@ -67,13 +50,14 @@ const useIdhTabSelection = (
 const useIdhFilterActions = (
   selection: IdhFilters,
   tab: IdhVisao,
+  range: YearRange,
   request: (filters: IdhFilters) => void,
 ) => {
   const changeFilters = (next: IdhFilters) => request({ ...next, visao: tab });
 
   return {
     changeFilters,
-    reset: () => changeFilters(DEFAULT_IDH_FILTERS),
+    reset: () => changeFilters(defaultIdhFilters(range)),
     selectUf: (uf: string) =>
       changeFilters({
         ...selection,
@@ -85,7 +69,7 @@ const useIdhFilterActions = (
 
 // Navegação, retry, filtros pedidos e o estado de cada card; a aba fica fora.
 const useIdhLoad = (data: IdhPanelData, failed: boolean) => {
-  const navigation = useIdhNavigation();
+  const navigation = useIdhNavigation(data.yearRange);
   const { retrying, retry } = useProtoRetry();
   const filters = usePendingFilters(
     data.filters,
@@ -118,7 +102,12 @@ export const useIdhDashboard = (
     navigation.showVisao({ ...selection, visao });
     revealPanel();
   });
-  const actions = useIdhFilterActions(selection, tab, filters.request);
+  const actions = useIdhFilterActions(
+    selection,
+    tab,
+    data.yearRange,
+    filters.request,
+  );
   const { pathname } = navigation;
 
   return { tab, selectTab, selection, states, retry, pathname, actions };

@@ -93,6 +93,23 @@ describe("buildSerieGeometry", () => {
     expect(geometry.axisLabelX).toBe(46);
   });
 
+  it("grows into the free height but never below the prototype's", () => {
+    const tall = buildSerieGeometry({
+      width: 800,
+      height: 335,
+      points: NE_SERIE,
+    });
+    const short = buildSerieGeometry({
+      width: 800,
+      height: 100,
+      points: NE_SERIE,
+    });
+
+    expect(tall.height).toBe(335);
+    expect(tall.yearLabelY).toBe(325);
+    expect(short.height).toBe(290);
+  });
+
   it("is 250px tall at width 400", () => {
     const geometry = buildSerieGeometry({ width: 400, points: NE_SERIE });
 

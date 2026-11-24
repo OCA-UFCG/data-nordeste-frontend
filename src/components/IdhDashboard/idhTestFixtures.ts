@@ -1,59 +1,9 @@
-import { vi } from "vitest";
 import type { IdhCardStates } from "@/features/panels/idh/idhCardState";
 import type {
   IdhFilters,
   IdhPanelData,
   IdhYearPoint,
 } from "@/features/panels/idh/idhPanel";
-
-// jsdom não tem layout: o observador nunca dispara, então os gráficos que
-// medem a largura (linha, carrossel) ficam sem desenhar, o que basta aqui.
-class ResizeObserverFake {
-  observe() {}
-
-  unobserve() {}
-
-  disconnect() {}
-}
-
-// O embla observa quais slides estão visíveis; sem layout, nenhum está.
-class IntersectionObserverFake {
-  observe() {}
-
-  unobserve() {}
-
-  disconnect() {}
-
-  takeRecords() {
-    return [];
-  }
-}
-
-// O embla e o "Saiba mais" consultam media queries; nenhuma casa no jsdom.
-class MediaQueryListFake {
-  matches = false;
-
-  constructor(readonly media: string) {}
-
-  addEventListener() {}
-
-  removeEventListener() {}
-
-  addListener() {}
-
-  removeListener() {}
-}
-
-/**
- * Instala no jsdom o que o painel de IDH usa e o jsdom não tem.
- *
- * @example beforeEach(stubIdhBrowserApis)
- */
-export const stubIdhBrowserApis = () => {
-  vi.stubGlobal("ResizeObserver", ResizeObserverFake);
-  vi.stubGlobal("IntersectionObserver", IntersectionObserverFake);
-  vi.stubGlobal("matchMedia", (media: string) => new MediaQueryListFake(media));
-};
 
 const yearPoint = (ano: number, idh: number): IdhYearPoint => ({
   ano,
@@ -71,6 +21,7 @@ const yearPoint = (ano: number, idh: number): IdhYearPoint => ({
  */
 export const idhPanelFixture = (filters: IdhFilters): IdhPanelData => ({
   filters,
+  yearRange: { first: 2012, last: 2021 },
   ufs: [
     { sigla: "CE", nome: "Ceará" },
     { sigla: "PE", nome: "Pernambuco" },

@@ -1,12 +1,15 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
+import { idhPanelFixture } from "@/components/IdhDashboard/idhTestFixtures";
 import {
-  idhPanelFixture,
-  stubIdhBrowserApis,
-} from "@/components/IdhDashboard/idhTestFixtures";
+  emptyIdhPanel,
+  parseIdhFilters,
+  type IdhFilters,
+} from "@/features/panels/idh/idhPanel";
+import { NO_IDH_YEARS } from "@/features/panels/idh/idhYearRange";
+import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import type { PanelMapProps } from "@/components/PanelMap/PanelMap";
-import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 
 // O mapa é MapLibre (canvas); o dublê só guarda as props de cada montagem.
 const panelMapRenders = vi.hoisted(() => [] as PanelMapProps[]);
@@ -72,7 +75,7 @@ const mapState = (name: string) => screen.getByTitle(new RegExp(`^${name}:`));
 describe("IdhDashboard", () => {
   beforeEach(() => {
     panelMapRenders.length = 0;
-    stubIdhBrowserApis();
+    stubPanelBrowserApis();
     navigation.current = new PanelNavigationFake();
   });
 
@@ -90,6 +93,18 @@ describe("IdhDashboard", () => {
     expect(tab("Visão por sexo")).toHaveAttribute("aria-selected", "true");
   });
 
+  it("renders a single tab list, above the filter bar", () => {
+    render(dashboard(GERAL));
+
+    const [tabList] = screen.getAllByRole("tablist");
+    const clear = screen.getByRole("button", { name: "Limpar filtros" });
+
+    expect(screen.getAllByRole("tablist")).toHaveLength(1);
+    expect(
+      tabList.compareDocumentPosition(clear) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("follows the view when a link changes it on the server", () => {
     const { rerender } = render(dashboard(GERAL));
 
@@ -98,7 +113,7 @@ describe("IdhDashboard", () => {
     expect(tab("Visão por cor")).toHaveAttribute("aria-selected", "true");
   });
 
-  it("dims only the cards whose data the pending state changes", () => {
+  it("shows the skeleton only on the cards whose data the pending state changes", () => {
     const { rerender } = render(dashboard(GERAL));
 
     fireEvent.click(mapState("Pernambuco"));
@@ -149,5 +164,56 @@ describe("IdhDashboard", () => {
       uf: "PE",
       visao: "geral",
     });
+  });
+
+  it("offers the years of the database range", () => {
+    const data = {
+      ...idhPanelFixture({ ...GERAL, ano: 2023 }),
+      yearRange: { first: 2018, last: 2023 },
+    };
+
+    render(<IdhDashboard data={data} catalogHref="/catalog" />);
+    const years = within(screen.getAllByLabelText("Ano")[0])
+      .getAllByRole("option")
+      .map((option) => option.textContent);
+
+    expect(years).toEqual(["2018", "2019", "2020", "2021", "2022", "2023"]);
+  });
+
+  it("shows the Contentful date in the card footers, and nothing without it", () => {
+    const { rerender } = render(
+      <IdhDashboard
+        data={idhPanelFixture(GERAL)}
+        catalogHref="/catalog"
+        updatedAt="10/2026"
+      />,
+    );
+
+    expect(screen.getAllByText("Atualizado em 10/2026").length).toBeGreaterThan(
+      0,
+    );
+    rerender(dashboard(GERAL));
+
+    expect(screen.queryByText(/Atualizado em/)).toBeNull();
+  });
+
+  // Regressão (revisão da PR #411): sem o intervalo de anos, o resumo do
+  // celular e os subtítulos mostravam o ano 0 ("Nordeste · 0").
+  it("shows no year when the years query failed", () => {
+    const filters = parseIdhFilters({}, NO_IDH_YEARS);
+
+    render(
+      <IdhDashboard
+        data={emptyIdhPanel(filters, NO_IDH_YEARS)}
+        failed
+        catalogHref="/catalog"
+      />,
+    );
+    fireEvent.click(tab("Visão por sexo"));
+
+    expect(document.body.textContent).not.toMatch(/[·,]\s*0(?!\d)/);
+    expect(
+      screen.queryAllByRole("option", { name: "0", hidden: true }),
+    ).toEqual([]);
   });
 });

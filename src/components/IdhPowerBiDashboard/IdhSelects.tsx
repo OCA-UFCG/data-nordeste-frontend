@@ -5,24 +5,21 @@ import {
   ALL_OPTION,
   FilterSelect,
 } from "@/components/Panel/filters/TerritorialFilterBar";
+import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 import {
-  IDH_YEAR_RANGE,
-  type IdhFilters,
-} from "@/features/panels/idh/idhPanel";
-import { listYears } from "@/features/panels/territorialFilters";
+  listYears,
+  type YearRange,
+} from "@/features/panels/territorialFilters";
 import type { UfOption } from "@/features/panels/territorialOptions";
-
-const YEARS = listYears(IDH_YEAR_RANGE).map((year) => ({
-  value: String(year),
-  label: String(year),
-}));
 
 export const IdhSelects = ({
   filters,
+  yearRange,
   ufs,
   onChange,
 }: {
   filters: IdhFilters;
+  yearRange: YearRange;
   ufs: UfOption[];
   onChange: (next: IdhFilters) => void;
 }) => {
@@ -34,7 +31,10 @@ export const IdhSelects = ({
         id={`${id}-ano`}
         label="Ano"
         value={String(filters.ano)}
-        options={YEARS}
+        options={listYears(yearRange).map((year) => ({
+          value: String(year),
+          label: String(year),
+        }))}
         onChange={(value) => onChange({ ...filters, ano: Number(value) })}
       />
       <FilterSelect

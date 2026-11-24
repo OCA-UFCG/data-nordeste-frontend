@@ -4,8 +4,11 @@ import {
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
+  selectOnlyTerritorialUf,
 } from "@/features/panels/territorialPlace";
 import { DEMOGRAFIA_YEAR_RANGE } from "@/features/panels/demografia/demografiaPanel";
+import { NO_DEMOGRAFIA_YEARS } from "@/features/panels/demografia/demografiaYearRange";
+import { NO_YEAR } from "@/features/panels/territorialFilters";
 
 const OPTIONS = {
   ufs: [
@@ -81,6 +84,38 @@ describe("describeTerritorialShareChips", () => {
       "Município: Recife (PE)",
     ]);
   });
+
+  it("leaves the year out when the database gave none", () => {
+    const filters = { ano: NO_YEAR, area: "nordeste" as const };
+
+    expect(describeTerritorialShareChips({ ...OPTIONS, filters })).toEqual([
+      "Área: Nordeste",
+      "Estado: Todos",
+      "Município: Todos",
+    ]);
+  });
+});
+
+describe("selectOnlyTerritorialUf", () => {
+  const BASE = { ano: 2022, area: "nordeste" as const };
+
+  it("keeps only the clicked state and drops the municipality", () => {
+    expect(
+      selectOnlyTerritorialUf(
+        { ...BASE, uf: ["PB", "PE"], mun: ["2507507"] },
+        "RN",
+      ),
+    ).toEqual({ ...BASE, uf: ["RN"], mun: undefined });
+    expect(
+      selectOnlyTerritorialUf({ ...BASE, uf: ["PB", "PE"] }, "PE").uf,
+    ).toEqual(["PE"]);
+  });
+
+  it("clears the filter when the clicked state is the only one chosen", () => {
+    expect(selectOnlyTerritorialUf({ ...BASE, uf: ["PE"] }, "PE").uf).toBe(
+      undefined,
+    );
+  });
 });
 
 describe("isDefaultTerritorialFilters", () => {
@@ -110,5 +145,9 @@ describe("describeDefaultPlaceLabel", () => {
     expect(describeDefaultPlaceLabel(DEMOGRAFIA_YEAR_RANGE)).toBe(
       "Ver Nordeste · 2022",
     );
+  });
+
+  it("leaves the year out when the database gave none", () => {
+    expect(describeDefaultPlaceLabel(NO_DEMOGRAFIA_YEARS)).toBe("Ver Nordeste");
   });
 });

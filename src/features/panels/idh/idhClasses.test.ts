@@ -17,6 +17,7 @@ const point = (ano: number, idh: number) => ({
 
 const panelData = (uf?: string): IdhPanelData => ({
   filters: { ano: 2021, visao: "geral", ...(uf ? { uf } : {}) },
+  yearRange: { first: 2012, last: 2021 },
   ufs: [
     { sigla: "CE", nome: "Ceará" },
     { sigla: "MA", nome: "Maranhão" },
