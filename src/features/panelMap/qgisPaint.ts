@@ -45,7 +45,12 @@ export function classForValue(
   return index === -1 ? null : classes[index];
 }
 
-function classCondition(
+/**
+ * Condição MapLibre da classe `index` com a semântica de `classForValue`,
+ * sem olhar as classes anteriores. Compartilhada com o destaque da legenda.
+ * Ex.: `classCondition(["get", "v2023"], classes, 1)` → `["all", [">", …], ["<=", …]]`.
+ */
+export function classCondition(
   field: ExpressionSpecification,
   classes: QgisClass[],
   index: number,
@@ -56,18 +61,24 @@ function classCondition(
   return ["all", [lowerTest, field, lower], ["<=", field, upper]];
 }
 
-function hasNoNumberCondition(
+/** Condição "o campo é número". Ex.: `isNumberCondition(["get", "v2023"])`. */
+export function isNumberCondition(
   field: ExpressionSpecification,
 ): ExpressionSpecification {
   // WHY: o ExpressionSpecification do maplibre 4.7.1 não tipa o operador
   // `typeof`, embora a expressão exista em runtime.
-  const isNumber = [
+  return [
     "==",
     ["typeof", field],
     "number",
   ] as unknown as ExpressionSpecification;
+}
 
-  return ["!", isNumber];
+/** Condição "o campo não é número" (ausente, `null`, texto). */
+export function hasNoNumberCondition(
+  field: ExpressionSpecification,
+): ExpressionSpecification {
+  return ["!", isNumberCondition(field)];
 }
 
 /**

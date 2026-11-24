@@ -14,7 +14,11 @@ import {
   basemapLayerId,
   type BasemapKind,
 } from "@/lib/panelMap/basemaps";
-import { VEIL_COLOR, VEIL_OPACITY } from "@/features/panelMap/mapLayers";
+import {
+  CLASS_MUTED_COLOR,
+  VEIL_COLOR,
+  VEIL_OPACITY,
+} from "@/features/panelMap/mapLayers";
 
 export const PANEL_MAP_SOURCE = {
   features: "features",
@@ -28,6 +32,7 @@ export const PANEL_MAP_SOURCE = {
 export const PANEL_MAP_LAYER = {
   aridez: "aridez",
   indicatorFill: "indicator-fill",
+  classMuted: "class-muted",
   veilStates: "veil-states",
   veilFeatures: "veil-features",
   featureOutline: "feature-outline",
@@ -119,6 +124,19 @@ function veilLayer(id: string, source: string): LayerSpecification {
   };
 }
 
+// Destaque da legenda: escondido até o setClassHighlight, que decide por
+// feição a opacidade (0 na classe destacada, 1 nas outras: cinza sólido,
+// cobrindo também o raster da aridez). Fica sob o véu e a seleção.
+function classMutedLayer(): LayerSpecification {
+  return {
+    id: PANEL_MAP_LAYER.classMuted,
+    type: "fill",
+    source: PANEL_MAP_SOURCE.features,
+    layout: { visibility: "none" },
+    paint: { "fill-color": CLASS_MUTED_COLOR, "fill-opacity": 0 },
+  };
+}
+
 function hoverLayer(): LayerSpecification {
   const hovered: ExpressionSpecification = [
     "boolean",
@@ -155,6 +173,7 @@ function overlayLayers(): LayerSpecification[] {
 
   return [
     indicatorFillLayer(),
+    classMutedLayer(),
     veilLayer(layer.veilStates, states),
     veilLayer(layer.veilFeatures, features),
     lineLayer(layer.featureOutline, features, UNPAINTED_LINE),

@@ -8,6 +8,11 @@ import type { TerritorialArea } from "@/features/panels/territorialFilters";
 export const VEIL_COLOR = "#9ca3af";
 export const VEIL_OPACITY = 0.75;
 
+// Destaque da legenda: as feições fora da classe passam a cinza sólido, e as
+// da classe mantêm a cor (ou o raster). INTENTIONAL: decisão do usuário em
+// 24/11/2026 — cinza #e5e5e5 opaco, não um véu translúcido.
+export const CLASS_MUTED_COLOR = "#e5e5e5";
+
 export type Bounds = [[number, number], [number, number]];
 
 export type FitSources = {
@@ -21,7 +26,8 @@ type VeilFilters = {
   features: FilterSpecification | null;
 };
 
-function propertyIn(
+/** Feições com `property` em `values`. Ex.: `propertyIn("code", ["PE"])`. */
+export function propertyIn(
   property: string,
   values: string[],
 ): ExpressionSpecification {

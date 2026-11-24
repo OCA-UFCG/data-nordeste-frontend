@@ -57,6 +57,10 @@ export type PanelMapProps = {
 
   // Legenda da aridez: quantas feições por valor de classe da paleta.
   classCounts?: ReadonlyMap<number, number>;
+
+  // Aridez: classe predominante (valor da paleta) por `code` do município; é
+  // o que a pílula da legenda destaca no mapa. Sem ela, a aridez não destaca.
+  classOf?: ReadonlyMap<string, number>;
   onEngine?: (engine: PanelMapEngine | null) => void;
 
   // O usuário trocou o basemap (o card ajusta o crédito da imagem baixada).
@@ -124,7 +128,7 @@ function usePanelMapStage(props: PanelMapProps, geodata: ReadyGeodata) {
 
   usePanelMapRecorte(props, geodata, engine);
 
-  return { containerRef, controls, tooltip, failed };
+  return { containerRef, engine, controls, tooltip, failed };
 }
 
 const PanelMapStage = ({
@@ -132,7 +136,7 @@ const PanelMapStage = ({
   ...props
 }: PanelMapProps & { geodata: ReadyGeodata }) => {
   const stage = usePanelMapStage(props, geodata);
-  const { containerRef, controls, tooltip } = stage;
+  const { containerRef, engine, controls, tooltip } = stage;
 
   if (stage.failed) {
     return (
@@ -168,6 +172,8 @@ const PanelMapStage = ({
         area={props.area}
         ano={props.ano}
         classCounts={props.classCounts}
+        classOf={props.classOf}
+        engine={engine}
       />
     </div>
   );

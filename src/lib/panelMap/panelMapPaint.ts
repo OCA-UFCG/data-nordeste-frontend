@@ -72,10 +72,11 @@ function paintLine(map: MaplibreMap, layerId: string, outline: QgisOutline) {
  */
 export function paintIndicator(map: MaplibreMap, paint: IndicatorPaint): void {
   const inArea = areaFilter(paint.area);
-  const { indicatorFill, featureOutline, featureHover } = PANEL_MAP_LAYER;
+  const { indicatorFill, classMuted, featureOutline, featureHover } =
+    PANEL_MAP_LAYER;
 
   map.setPaintProperty(indicatorFill, "fill-color", paint.color);
-  [indicatorFill, featureOutline, featureHover].forEach((layerId) =>
+  [indicatorFill, classMuted, featureOutline, featureHover].forEach((layerId) =>
     map.setFilter(layerId, inArea),
   );
   paintLine(map, featureOutline, paint.outline);
@@ -113,4 +114,25 @@ export function applySelection(
 ): void {
   filterOrHide(map, PANEL_MAP_LAYER.selectionFeatures, filter);
   filterOrHide(map, PANEL_MAP_LAYER.selectionStates, filter);
+}
+
+/**
+ * Destaque da legenda: as feições da área fora de `filter` ficam cinza sólido
+ * (`CLASS_MUTED_COLOR`); as da classe destacada mantêm a cor ou o raster.
+ * Null desliga.
+ */
+export function applyClassHighlight(
+  map: MaplibreMap,
+  filter: FilterSpecification | null,
+): void {
+  const { classMuted } = PANEL_MAP_LAYER;
+
+  map.setLayoutProperty(classMuted, "visibility", filter ? "visible" : "none");
+  if (!filter) return;
+
+  // WHY a condição na opacidade e não no filtro da camada: o filtro já é o da
+  // área (paintIndicator), e fora dela não há cor para cobrir.
+  const inClass = filter as ExpressionSpecification;
+
+  map.setPaintProperty(classMuted, "fill-opacity", ["case", inClass, 0, 1]);
 }

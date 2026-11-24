@@ -24,6 +24,7 @@ import { formatSharePercent } from "@/features/panels/aridez/aridezFormat";
 import {
   aridezClassCounts,
   aridezMapValues,
+  aridezPredominantClasses,
 } from "@/features/panels/aridez/aridezMap";
 import type { AridezPanelData } from "@/features/panels/aridez/aridezPanel";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
@@ -37,7 +38,7 @@ const FULLSCREEN_SOURCE = panelMapImageSource(ARIDEZ_CARD_SOURCE);
 // classes fica abaixo da caixa.
 const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 
-// O número do tooltip e as contagens da legenda saem de todos os municípios da
+// O número do tooltip, as contagens da legenda e o destaque das classes saem de todos os municípios da
 // área (`data.mapa`): só mudam com Área e Ano, não com o zoom.
 const useAridezMapProps = (
   data: AridezPanelData,
@@ -46,6 +47,10 @@ const useAridezMapProps = (
 ): PanelMapProps => {
   const values = useMemo(() => aridezMapValues(data.mapa), [data.mapa]);
   const classCounts = useMemo(() => aridezClassCounts(data.mapa), [data.mapa]);
+  const classOf = useMemo(
+    () => aridezPredominantClasses(data.mapa),
+    [data.mapa],
+  );
 
   return {
     ...usePanelMapFilters(selection, onFiltersChange),
@@ -55,6 +60,7 @@ const useAridezMapProps = (
     label: ARIDEZ_MAP_TITLE,
     values,
     classCounts,
+    classOf,
   };
 };
 

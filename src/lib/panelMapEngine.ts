@@ -14,6 +14,7 @@ import {
   trackMoves,
 } from "@/lib/panelMap/panelMapInteraction";
 import {
+  applyClassHighlight,
   applySelection,
   applyVeil,
   type IndicatorPaint,
@@ -45,6 +46,10 @@ export interface PanelMapEngine {
   setIndicatorPaint(paint: IndicatorPaint): void;
   setVeil(veil: VeilFilters): void;
   setSelection(filter: FilterSpecification | null): void;
+
+  // Destaque da legenda: o filtro casa as feições da classe; as demais da
+  // área ficam cinza sólido (CLASS_MUTED_COLOR). Null desliga.
+  setClassHighlight(filter: FilterSpecification | null): void;
   setAridez(overlay: AridezOverlay | null): void;
   fitTo(bbox: Bounds): void;
   onMoveEnd(callback: (move: PanelMapMoveEnd) => void): void;
@@ -94,6 +99,7 @@ type PanelMapPaintControls = Pick<
   | "setIndicatorPaint"
   | "setVeil"
   | "setSelection"
+  | "setClassHighlight"
   | "setAridez"
 >;
 
@@ -104,6 +110,7 @@ function paintControls(map: MaplibreMap): PanelMapPaintControls {
     setIndicatorPaint: (paint) => paintIndicator(map, paint),
     setVeil: (veil) => applyVeil(map, veil),
     setSelection: (filter) => applySelection(map, filter),
+    setClassHighlight: (filter) => applyClassHighlight(map, filter),
     setAridez: (overlay) => showAridez(map, overlay),
   };
 }

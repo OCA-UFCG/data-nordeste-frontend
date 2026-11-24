@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   aridezClassCounts,
   aridezMapValues,
+  aridezPredominantClasses,
 } from "@/features/panels/aridez/aridezMap";
 import type { AridezMunicipio } from "@/features/panels/aridez/aridezPanel";
 
@@ -35,6 +36,26 @@ describe("aridezMapValues", () => {
 
   it("is empty without municipalities", () => {
     expect(aridezMapValues([]).size).toBe(0);
+  });
+});
+
+describe("aridezPredominantClasses", () => {
+  it("maps each municipality code to the dn_uni of its largest class", () => {
+    const classOf = aridezPredominantClasses([
+      town("1", 50, 20, 10, 5),
+      town("2", 0, 30, 20, 10),
+      town("3", 0, 10, 10, 0),
+    ]);
+
+    expect([...classOf]).toEqual([
+      ["1", 2],
+      ["2", 3],
+      ["3", 3],
+    ]);
+  });
+
+  it("leaves out municipalities without classified area", () => {
+    expect(aridezPredominantClasses([town("1", 0, 0, 0, 0)]).size).toBe(0);
   });
 });
 

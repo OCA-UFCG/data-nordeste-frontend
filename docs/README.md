@@ -339,6 +339,23 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   chosen ones and, at municipality level, the municipalities of those states
   that are not chosen (`veilFilters`, a layer filter). At area level there is
   no veil.
+- **Legend highlight** (as the old profile "porte" chips did): pointer over a
+  legend chip (mouse only) or keyboard/tap focus highlights that class; leaving
+  or blurring clears it. The chips are buttons described by a screen-reader
+  hint. `engine.setClassHighlight(filter)` gets the features of the class and
+  shows the `class-muted` layer over the other features of the area: solid
+  `#e5e5e5` (`CLASS_MUTED_COLOR`, user decision of 24/11/2026: opaque grey, not
+  a translucent fade), through a `fill-opacity` `case` (0 in the class, 1
+  elsewhere), so nothing outside the area is greyed; veil and selection stay
+  on top. The filter is `classHighlightFilter` / `chipHighlightFilter`
+  (`src/features/panelMap/classHighlight.ts`), built from the same
+  `classCondition` as the colours: first class that matches wins, so a class
+  excludes the earlier ones (the overlapping demografia ranges), the inverted
+  "Médio" matches nothing, and "Sem dado" is "no number or no class", as in
+  `countByClass`. In the aridez the raster stays as is: the chip greys out the
+  municipalities whose predominant class (`classOf`, from
+  `aridezPredominantClasses` in `AridezMapCard`) is another one; without
+  `classOf` it highlights nothing.
 - **Tooltip ranking:** position among the features of the area of interest in
   the year (`featuresInArea` + `rankWithinArea`, built on `rankRegions` from
   `features/panels/choropleth.ts`); in the IDH, among the 9 states. Features
