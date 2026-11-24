@@ -18,8 +18,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const rasterOf = (year: number) => ({
-  url: `/api/geodata/raster/aridez_${year}.png`,
+// `renderPanelMap` usa a área "nordeste" quando o teste não diz outra.
+const rasterOf = (year: number, area = "nordeste") => ({
+  url: `/api/geodata/raster/aridez_${year}_${area}.png`,
   bounds: MANIFEST_FIXTURE.aridez.bounds,
 });
 
@@ -62,6 +63,31 @@ describe("PanelMap aridez como camada principal", () => {
     rerender({ ano: 2001 });
 
     expect(engine.setAridez).toHaveBeenLastCalledWith(rasterOf(2000));
+  });
+
+  it("o raster é o recortado pela área do painel", async () => {
+    const { engine } = await renderPanelMap({
+      aridez: "base",
+      ano: 2021,
+      area: "semiarido",
+    });
+
+    expect(engine.setAridez).toHaveBeenLastCalledWith(
+      rasterOf(2020, "semiarido"),
+    );
+  });
+
+  it("trocar a área troca a imagem do raster", async () => {
+    const { engine, rerender } = await renderPanelMap({
+      aridez: "base",
+      ano: 2021,
+    });
+
+    rerender({ area: "caatinga" });
+
+    expect(engine.setAridez).toHaveBeenLastCalledWith(
+      rasterOf(2020, "caatinga"),
+    );
   });
 
   it("ano antes da 1ª década fica sem raster", async () => {

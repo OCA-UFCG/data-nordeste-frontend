@@ -1,7 +1,7 @@
 """Gera os arquivos do mapa dos painéis (`<out>/`) a partir da pasta bruta do Drive.
 
 Saídas: `vector/*.geojson` (inclui `municipios.geojson`, a malha sem indicador),
-`raster/aridez_<ano>.png`, `styles.json`,
+`raster/aridez_<ano>_<area>.png` (recortado pela área), `styles.json`,
 `manifest.json` e `data-issues.json`. IMPORTANT: nada aqui corrige dado do Drive;
 só renomeia propriedades, converte texto numérico para desenhar (o que não
 converter vira `null`, "sem dado") e reporta problemas em `data-issues.json`.
@@ -60,6 +60,12 @@ EXPECTED_SHAPEFILES = [
 ARIDEZ_QGZ = "indice_aridez/indice_aridez.qgz"
 ARIDEZ_TIF = "indice_aridez/raster/indice_aridez_{year}_4674_rec.tif"
 ARIDEZ_LAYER = "indice_aridez_{year}_4674_rec"
+# Um PNG por área do painel, recortado pelo polígono de `areas.geojson`.
+ARIDEZ_AREAS = tuple(AREA_FLAGS)
+# Grade fina (o original tem 0,1°) só para a borda do recorte seguir o polígono.
+ARIDEZ_CLIP_RESOLUTION_DEG = 0.01
+# NoData dos `.tif` do Drive (`gdalinfo`: "NoData Value=255"); fora da área também.
+ARIDEZ_NODATA = 255
 
 
 def run(cmd: list[str]) -> str:
@@ -170,14 +176,14 @@ def polygon_parts(geometry: dict) -> dict:
     return {"type": "MultiPolygon", "coordinates": polygons}
 
 
-def ogr_features(shp: Path, sql: str) -> list[dict]:
-    """Feições em EPSG:4326, simplificadas e com 5 casas, lidas do stdout do ogr2ogr."""
+def ogr_features(shp: Path, sql: str, simplify: bool = True) -> list[dict]:
+    """Feições em EPSG:4326, lidas do stdout do ogr2ogr; `simplify` as simplifica e grava com 5 casas."""
+    lighter = ["-simplify", str(SIMPLIFY_TOLERANCE_DEG), "-lco", f"COORDINATE_PRECISION={COORD_PRECISION}"]
     output = run([
         "ogr2ogr", "-f", "GeoJSON", "/vsistdout/", str(shp),
         "-dialect", "sqlite", "-sql", sql,
         "-t_srs", "EPSG:4326",
-        "-simplify", str(SIMPLIFY_TOLERANCE_DEG),
-        "-lco", f"COORDINATE_PRECISION={COORD_PRECISION}",
+        *(lighter if simplify else []),
     ])
     features = json.loads(output)["features"]
     for feature in features:
@@ -232,14 +238,18 @@ def build_municipios_vector(raw: Path, out: Path) -> None:
     write_feature_collection(out / "vector" / "municipios.geojson", features)
 
 
-def build_areas_vector(raw: Path, out: Path) -> None:
+def area_features(raw: Path, simplify: bool = True) -> list[dict]:
+    """Um polígono por área (`area`: nordeste, caatinga, sudene, semiarido)."""
     features = []
     for area, relative in AREA_POLYGONS.items():
         shp = raw / relative
-        features += ogr_features(shp, area_select(area, layer_name(shp)))
+        features += ogr_features(shp, area_select(area, layer_name(shp)), simplify)
     semiarido = raw / SEMIARIDO_SOURCE_SHP
-    features += ogr_features(semiarido, semiarido_select(layer_name(semiarido)))
-    write_feature_collection(out / "vector" / "areas.geojson", features)
+    return features + ogr_features(semiarido, semiarido_select(layer_name(semiarido)), simplify)
+
+
+def build_areas_vector(raw: Path, out: Path) -> None:
+    write_feature_collection(out / "vector" / "areas.geojson", area_features(raw))
 
 
 # ---------------------------------------------------------------- raster
@@ -291,23 +301,79 @@ def raster_bounds(tif: Path) -> list[list[float]]:
     return corner_bounds(json.loads(run(["gdalinfo", "-json", str(tif)]))["cornerCoordinates"])
 
 
-def build_aridez_png(tif: Path, palette: list[dict], png: Path) -> None:
-    png.parent.mkdir(parents=True, exist_ok=True)
+def aridez_png_name(year: int, area: str) -> str:
+    """Nome do PNG recortado. Ex.: `aridez_png_name(2020, "semiarido")` → `"aridez_2020_semiarido.png"`."""
+    return f"aridez_{year}_{area}.png"
+
+
+def clip_size(bounds: list[list[float]]) -> tuple[int, int]:
+    """Pixels da grade fina na mesma extensão. Ex.: 16,3° × 19,1° a 0,01° → `(1630, 1910)`."""
+    (west, south), (east, north) = bounds
+    return round((east - west) / ARIDEZ_CLIP_RESOLUTION_DEG), round((north - south) / ARIDEZ_CLIP_RESOLUTION_DEG)
+
+
+def aridez_upsample_command(tif: Path, bounds: list[list[float]], out_tif: Path) -> list[str]:
+    """`gdal_translate` para a grade fina, mesma extensão (o bounds do manifest segue valendo).
+
+    IMPORTANT: vizinho mais próximo só repete cada pixel; nenhum valor de classe muda.
+    WARNING: o gdalwarp aplica o recorte na grade da origem; sem este passo a borda
+    sairia em degraus de 0,1° em vez de seguir o polígono.
+    """
+    width, height = clip_size(bounds)
+    return ["gdal_translate", "-r", "nearest", "-outsize", str(width), str(height), str(tif), str(out_tif)]
+
+
+def aridez_clip_command(tif: Path, cutline: Path, area: str, out_tif: Path) -> list[str]:
+    """`gdalwarp` que recorta o raster pelo polígono da área; fora dele fica sem dado (transparente)."""
+    return [
+        "gdalwarp", "-overwrite", "-of", "GTiff", "-r", "near",
+        "-dstnodata", str(ARIDEZ_NODATA),
+        "-cutline", str(cutline), "-cwhere", f"area = '{area}'",
+        str(tif), str(out_tif),
+    ]
+
+
+def aridez_relief_command(tif: Path, colors: Path, png: Path) -> list[str]:
+    """`gdaldem color-relief` com a paleta do ano; sem dado vira transparente (`nv` da paleta)."""
+    return ["gdaldem", "color-relief", str(tif), str(colors), str(png), "-of", "PNG", "-alpha", "-nearest_color_entry"]
+
+
+def build_aridez_pngs(tif: Path, palette: list[dict], cutline: Path, png_dir: Path, year: int) -> list[list[float]]:
+    """Um PNG por área, recortado pelo polígono dela em `cutline`; devolve o bounds do `.tif`."""
+    bounds = raster_bounds(tif)
     with tempfile.TemporaryDirectory() as tmp:
         colors = Path(tmp) / "cores.txt"
         colors.write_text(relief_palette(palette), encoding="utf-8")
-        run(["gdaldem", "color-relief", str(tif), str(colors), str(png), "-of", "PNG", "-alpha", "-nearest_color_entry"])
+        fine = Path(tmp) / "fina.tif"
+        run(aridez_upsample_command(tif, bounds, fine))
+        for area in ARIDEZ_AREAS:
+            clipped = Path(tmp) / f"{area}.tif"
+            run(aridez_clip_command(fine, cutline, area, clipped))
+            run(aridez_relief_command(clipped, colors, png_dir / aridez_png_name(year, area)))
+    return bounds
+
+
+def write_aridez_cutline(raw: Path, path: Path) -> None:
+    """Áreas para o recorte do raster, sem simplificar e sem cortar casas.
+
+    WARNING: as do `areas.geojson` (simplificadas, 5 casas) têm anéis degenerados
+    e o gdalwarp recusa ("Cutline polygon is invalid", Sudene e Semiárido).
+    """
+    write_feature_collection(path, area_features(raw, simplify=False))
 
 
 def build_aridez(raw: Path, out: Path) -> tuple[list[dict], list[list[float]], list[dict]]:
-    """PNG por ano com a paleta do próprio ano; devolve paleta unida, bounds e issues."""
+    """PNGs por ano e área com a paleta do próprio ano; devolve paleta unida, bounds e issues."""
     root = qgis_style.read_qgs(raw / ARIDEZ_QGZ)
     palettes, bounds = {}, {}
-    for year in ARIDEZ_YEARS:
-        tif = raw / ARIDEZ_TIF.format(year=year)
-        palettes[year] = qgis_style.raster_palette(root, ARIDEZ_LAYER.format(year=year))
-        build_aridez_png(tif, palettes[year], out / "raster" / f"aridez_{year}.png")
-        bounds[year] = raster_bounds(tif)
+    (out / "raster").mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory() as tmp:
+        cutline = Path(tmp) / "areas.geojson"
+        write_aridez_cutline(raw, cutline)
+        for year in ARIDEZ_YEARS:
+            palettes[year] = qgis_style.raster_palette(root, ARIDEZ_LAYER.format(year=year))
+            tif = raw / ARIDEZ_TIF.format(year=year)
+            bounds[year] = build_aridez_pngs(tif, palettes[year], cutline, out / "raster", year)
     merged, issues = merge_palettes(palettes)
     return merged, bounds[ARIDEZ_YEARS[0]], issues + bounds_issues(bounds)
 

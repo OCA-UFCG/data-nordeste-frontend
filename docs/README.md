@@ -258,7 +258,7 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   files; `scripts/geodata/drive_manifest.json` keeps their IDs, so replacing a
   file in Drive keeps the ID. Geodata is never committed to this repository.
 - **Pipeline** (`scripts/geodata/`, Python 3 stdlib plus the GDAL CLIs
-  `ogr2ogr`, `gdal_translate` and `gdaldem`; no geopandas):
+  `ogr2ogr`, `gdal_translate`, `gdalwarp` and `gdaldem`; no geopandas):
 
   ```bash
   RAW=/tmp/geodata-raw; OUT=/tmp/geodata        # any empty dirs
@@ -270,8 +270,17 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   ```
 
   `build` writes `vector/*.geojson` (`pib`, `demografia`, `idh`, `estados`,
-  `areas`), `raster/aridez_<ano>.png`, `styles.json` (classes and outlines read
-  from the `.qgz`), `manifest.json` and `data-issues.json`. Downloaded files are
+  `areas`), `raster/aridez_<ano>_<area>.png`, `styles.json` (classes and outlines read
+  from the `.qgz`), `manifest.json` and `data-issues.json`. Each aridez PNG is
+  clipped to one area (`nordeste`, `semiarido`, `caatinga`, `sudene`; 16 files):
+  `gdal_translate -r nearest` repeats each 0.1° pixel on a 0.01° grid (same
+  extent, so `manifest.aridez.bounds` holds; no class value changes), then
+  `gdalwarp -cutline` with that area's polygon leaves the outside as nodata
+  (transparent after `gdaldem color-relief`). The cutline is the unsimplified
+  area polygons in a temp file: the simplified `areas.geojson` has degenerate
+  rings that gdalwarp rejects ("Cutline polygon is invalid"). Without the
+  finer grid the edge would follow the 0.1° source pixels, since gdalwarp
+  masks the cutline on the source grid. Downloaded files are
   untrusted data: never run anything from `$RAW`. `issues-pdf` needs
   `google-chrome` on the PATH. Tests:
   `python3 -m unittest discover -s scripts/geodata/tests -v`.
@@ -445,7 +454,10 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   fair use only, and heavy traffic would need another tile provider. The
   aridez raster is the main layer of the aridez panel only (`indicator="aridez"`,
   `aridez` defaults to `"base"`), always on, with the decade of the year filter
-  (1991 shows 1990, 2001 shows 2000, ...); no checkbox or selector.
+  (1991 shows 1990, 2001 shows 2000, ...); no checkbox or selector. It shows
+  only inside the panel's Área: the URL comes from
+  `aridezRasterFile(year, area)` (`features/panelMap/aridezRaster.ts`) and
+  changing the area swaps the image (`usePanelMapAridez`).
 - **Card pieces** (`src/components/PanelMap/`): `PanelMapCardActions` (the
   shared `ProtoFullscreenButton`, ⓘ and the menu with the basemap credit),
   `usePanelMapCard`, `PanelMapSkeleton` (the loading card keeps the map box
@@ -837,7 +849,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     dependencies are `["area","ano"]` (`aridezCardState.ts`): zoom never dims it,
     year or area changes dim it (`stale`, still mounted), and only a failed query
     and its retry show the skeleton (`PanelMapSkeleton`).
-  - Needs `vector/municipios.geojson` and `raster/aridez_<ano>.png` in the
+  - Needs `vector/municipios.geojson` and `raster/aridez_<ano>_<area>.png` in the
     geodata folder (`/opt/datane/geodata`); without them the map shows the
     "geodados indisponíveis" notice. The raster palette (`styles.json`) and the
     `ARIDEZ_CLASSES` colours of the other cards differ slightly; the values

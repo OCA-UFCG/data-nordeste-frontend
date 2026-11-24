@@ -120,6 +120,39 @@ class RasterStyleTest(unittest.TestCase):
         self.assertEqual(build.corner_bounds(corners), [[-48.7, -20.2], [-32.4, -1.1]])
 
 
+class AridezClipTest(unittest.TestCase):
+    BOUNDS = [[-48.6999985, -20.1999985], [-32.3999985, -1.0999985]]
+
+    def test_one_png_per_area_of_the_panel(self):
+        self.assertEqual(build.ARIDEZ_AREAS, ("nordeste", "semiarido", "caatinga", "sudene"))
+        self.assertEqual(build.aridez_png_name(2020, "semiarido"), "aridez_2020_semiarido.png")
+
+    def test_clip_size_keeps_extent_on_finer_grid(self):
+        self.assertEqual(build.clip_size(self.BOUNDS), (1630, 1910))
+
+    def test_clip_command_cuts_by_area_polygon(self):
+        cmd = build.aridez_clip_command(Path("f.tif"), Path("t/areas.geojson"), "caatinga", Path("c.tif"))
+        self.assertEqual(cmd[0], "gdalwarp")
+        cut = cmd.index("-cutline")
+        self.assertEqual(cmd[cut + 1 : cut + 4], ["t/areas.geojson", "-cwhere", "area = 'caatinga'"])
+        self.assertEqual(cmd[cmd.index("-dstnodata") + 1], "255")
+        self.assertNotIn("-crop_to_cutline", cmd)
+        self.assertEqual(cmd[-2:], ["f.tif", "c.tif"])
+
+    def test_upsample_command_repeats_pixels_on_finer_grid(self):
+        cmd = build.aridez_upsample_command(Path("a.tif"), self.BOUNDS, Path("f.tif"))
+        self.assertEqual(cmd[0], "gdal_translate")
+        self.assertEqual(cmd[cmd.index("-r") + 1], "nearest")
+        self.assertEqual(cmd[cmd.index("-outsize") + 1 : cmd.index("-outsize") + 3], ["1630", "1910"])
+        self.assertEqual(cmd[-2:], ["a.tif", "f.tif"])
+
+    def test_relief_command_makes_nodata_transparent(self):
+        cmd = build.aridez_relief_command(Path("c.tif"), Path("cores.txt"), Path("p.png"))
+        self.assertEqual(cmd[:5], ["gdaldem", "color-relief", "c.tif", "cores.txt", "p.png"])
+        self.assertIn("-alpha", cmd)
+        self.assertIn("-nearest_color_entry", cmd)
+
+
 class StylesTest(unittest.TestCase):
     def test_width_px_from_mm(self):
         self.assertEqual(build.width_px(0.15), 0.57)

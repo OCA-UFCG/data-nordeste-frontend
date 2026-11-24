@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   aridezModeFor,
+  aridezRasterFile,
   aridezRasterYear,
 } from "@/features/panelMap/aridezRaster";
 
@@ -48,5 +49,16 @@ describe("aridezModeFor", () => {
   it("o modo dito pelo painel vale", () => {
     expect(aridezModeFor("aridez", "off")).toBe("off");
     expect(aridezModeFor("demografia", "base")).toBe("base");
+  });
+});
+
+describe("aridezRasterFile", () => {
+  it("o PNG da década é o recortado pela área", () => {
+    expect(aridezRasterFile(2020, "semiarido")).toBe(
+      "raster/aridez_2020_semiarido.png",
+    );
+    expect(aridezRasterFile(1990, "nordeste")).toBe(
+      "raster/aridez_1990_nordeste.png",
+    );
   });
 });

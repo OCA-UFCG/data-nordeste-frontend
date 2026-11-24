@@ -1,4 +1,5 @@
 import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
+import type { TerritorialArea } from "@/features/panels/territorialFilters";
 
 /**
  * Década do raster de aridez para o ano do painel: o ano do manifest mais
@@ -12,6 +13,15 @@ export function aridezRasterYear(
   const reached = years.filter((year) => year <= ano);
 
   return reached.length > 0 ? Math.max(...reached) : null;
+}
+
+/**
+ * PNG da aridez da década recortado pela área do painel, relativo ao
+ * GEODATA_DIR: fora da área o pipeline deixa transparente.
+ * Ex.: `aridezRasterFile(2020, "semiarido")` → `"raster/aridez_2020_semiarido.png"`.
+ */
+export function aridezRasterFile(year: number, area: TerritorialArea): string {
+  return `raster/aridez_${year}_${area}.png`;
 }
 
 /**

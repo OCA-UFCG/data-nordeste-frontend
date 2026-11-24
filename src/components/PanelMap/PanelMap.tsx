@@ -126,7 +126,7 @@ function usePanelMapRecorte(
   const layers = { ...props, engine, geodata, aridez, mode };
   usePanelMapLayers(layers);
 
-  usePanelMapAridez(engine, geodata.manifest, aridez, props.ano);
+  usePanelMapAridez(engine, geodata.manifest, aridez, props.ano, props.area);
 
   // IMPORTANT: o zoom resolve a partir do recorte que o mapa desenha. Com
   // feições de estado, um município da barra prenderia o nível em município
