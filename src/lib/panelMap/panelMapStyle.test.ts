@@ -18,6 +18,7 @@ const ALWAYS_VISIBLE = [
   PANEL_MAP_LAYER.veilStates,
   PANEL_MAP_LAYER.veilFeatures,
   PANEL_MAP_LAYER.areaOutline,
+  PANEL_MAP_LAYER.featureHover,
   PANEL_MAP_LAYER.selectionFeatures,
   PANEL_MAP_LAYER.selectionStates,
 ];
@@ -28,7 +29,6 @@ describe("limites conforme o zoom", () => {
 
     expect(zooms[PANEL_MAP_LAYER.stateOutline]).toBe(STATE_ZOOM);
     expect(zooms[PANEL_MAP_LAYER.featureOutline]).toBe(MUNICIPALITY_ZOOM);
-    expect(zooms[PANEL_MAP_LAYER.featureHover]).toBe(MUNICIPALITY_ZOOM);
   });
 
   it("com feições de estado (IDH, Estados): o contorno delas aparece em qualquer zoom", () => {
@@ -36,10 +36,9 @@ describe("limites conforme o zoom", () => {
 
     expect(zooms[PANEL_MAP_LAYER.stateOutline]).toBe(STATE_ZOOM);
     expect(zooms[PANEL_MAP_LAYER.featureOutline]).toBeUndefined();
-    expect(zooms[PANEL_MAP_LAYER.featureHover]).toBeUndefined();
   });
 
-  it("área de interesse, classes, véu e seleção aparecem em qualquer zoom", () => {
+  it("área de interesse, classes, hover, véu e seleção aparecem em qualquer zoom", () => {
     [true, false].forEach((municipal) => {
       const zooms = minZooms(municipal);
 

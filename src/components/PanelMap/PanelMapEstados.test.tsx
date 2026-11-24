@@ -94,6 +94,21 @@ describe("PanelMap com featureLevel estado", () => {
     });
   });
 
+  // Regressão: o município da barra prendia o recorte no nível município, e
+  // o zoom em outro estado não mudava nada.
+  it("o zoom troca o estado mesmo com município escolhido na barra", async () => {
+    const { engine, props } = await renderEstados({
+      recorte: { uf: ["PE"], mun: ["2611606"] },
+    });
+
+    act(() => engine.emitMoveEnd({ zoom: 7, centerUf: "PB" }));
+
+    expect(props.onRecorteChange).toHaveBeenCalledWith({
+      uf: ["PB"],
+      mun: [],
+    });
+  });
+
   // Sem feição de município, o véu cobriria o próprio estado escolhido.
   it("município escolhido na barra vale pelo estado dele", async () => {
     const { engine } = await renderEstados({

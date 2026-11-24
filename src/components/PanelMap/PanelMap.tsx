@@ -25,6 +25,7 @@ import {
   type FeatureLevel,
   type MapFeatureMode,
   mapFeatureMode,
+  recorteForLevel,
   statesWithAreaFlags,
 } from "@/features/panelMap/featureLevel";
 import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
@@ -124,7 +125,12 @@ function usePanelMapRecorte(
 
   usePanelMapAridez(engine, geodata.manifest, aridez, props.ano);
 
-  useMapRecorte({ ...layers, onRecorteChange: onZoomRecorte });
+  // IMPORTANT: o zoom resolve a partir do recorte que o mapa desenha. Com
+  // feições de estado, um município da barra prenderia o nível em município
+  // (sem município no centro, nada muda) e afastar o tiraria sem aviso.
+  const recorte = recorteForLevel(props.recorte, mode.level);
+
+  useMapRecorte({ ...layers, recorte, onRecorteChange: onZoomRecorte });
 }
 
 // Na malha dos estados, as feições são os estados com as marcas de área que

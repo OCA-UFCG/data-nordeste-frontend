@@ -313,12 +313,14 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
 - **Boundaries by zoom** (`panelMapStyle.ts`, layer `minzoom` from the same
   `STATE_ZOOM` / `MUNICIPALITY_ZOOM`): the map opens on the area of interest
   with only its outline; state limits appear from the state level and
-  municipal limits (and the municipal hover outline) from the municipality
-  level. The class fill, veil and selection outline show at any zoom. With
-  state features (IDH, Estados view) their own outline and hover outline have
-  no `minzoom`: without them the uniform pink Estados mesh reads as one blob
-  at the area zoom (the separate state-outline layer still starts at
-  `STATE_ZOOM`). The engine's
+  municipal limits from the municipality level. The class fill, veil,
+  selection outline and hover outline show at any zoom (the hover is not a
+  boundary: it marks the feature the tooltip names). With state features
+  (IDH, Estados view) their own outline has no `minzoom`: without it the
+  uniform pink Estados mesh reads as one blob at the area zoom (the separate
+  state-outline layer still starts at `STATE_ZOOM`). In the Estados view the
+  zoom also resolves from the drawn recorte (`recorteForLevel`), so a
+  município chosen in the bar does not pin the level at municipality. The engine's
   `municipal` flag picks the variant when the style is built.
 - **Going up uses the anchor zoom.** The recorte is only cleared one level when
   the zoom falls more than 0.5 (`ZOOM_OUT_TOLERANCE`) below the anchor: the

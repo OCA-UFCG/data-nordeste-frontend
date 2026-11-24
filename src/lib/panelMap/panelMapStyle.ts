@@ -170,9 +170,9 @@ function stateOutlineLayer(): LayerSpecification {
   return withMinZoom(layer, STATE_ZOOM);
 }
 
-// WHY o hover dos estados não tem minzoom: no zoom da área ele é o único
-// sinal de qual estado está sob o ponteiro (IDH, vista Estados).
-function hoverLayer(municipal: boolean): LayerSpecification {
+// WHY o hover não tem minzoom: não é limite, é o sinal de qual feição o
+// tooltip está nomeando, em qualquer zoom (decisão do controlador).
+function hoverLayer(): LayerSpecification {
   const hovered: ExpressionSpecification = [
     "boolean",
     ["feature-state", "hover"],
@@ -185,12 +185,10 @@ function hoverLayer(municipal: boolean): LayerSpecification {
     HOVER_OUTLINE,
   );
 
-  const hover: LayerSpecification = {
+  return {
     ...layer,
     paint: { ...layer.paint, "line-opacity": ["case", hovered, 1, 0] },
   };
-
-  return municipal ? withMinZoom(hover, MUNICIPALITY_ZOOM) : hover;
 }
 
 // Sem área escolhida, o filtro não casa nada; o setIndicatorPaint troca.
@@ -214,7 +212,7 @@ function overlayLayers(municipal: boolean): LayerSpecification[] {
     veilLayer(layer.veilStates, states),
     veilLayer(layer.veilFeatures, features),
     featureOutlineLayer(municipal),
-    hoverLayer(municipal),
+    hoverLayer(),
     stateOutlineLayer(),
     areaOutlineLayer(),
     lineLayer(layer.selectionFeatures, features, SELECTION_OUTLINE, "none"),
