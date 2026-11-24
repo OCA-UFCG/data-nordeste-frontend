@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ReportDocsRefresh } from "@/components/ReportDocsRefresh/ReportDocsRefresh";
 import { Button } from "@/components/ui/button";
 import { buildMetadata } from "@/config/seo";
 import {
@@ -68,6 +69,20 @@ export default async function RefreshContentPage({
             Atualizar site
           </Button>
         </form>
+      </section>
+
+      <section className="mx-auto flex w-full max-w-[560px] flex-col gap-6 px-4 pb-16">
+        <h2 className="text-2xl font-semibold leading-tight text-[#292829]">
+          Atualizar relatórios
+        </h2>
+        <p className="text-base leading-7 text-[#4D4B4D]">
+          Os relatórios automáticos guardam o texto dos Google Docs e o
+          atualizam toda madrugada. Para ver uma correção antes disso, clique em
+          &quot;Atualizar relatórios&quot;. Cada documento é conferido antes: o
+          que tiver uma regra &quot;Para quando…&quot; com problema não é
+          atualizado e aparece listado aqui.
+        </p>
+        <ReportDocsRefresh />
       </section>
     </HubTemplate>
   );
