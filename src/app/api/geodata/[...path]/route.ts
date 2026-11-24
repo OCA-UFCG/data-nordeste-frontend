@@ -1,12 +1,23 @@
 import { readFile, stat } from "node:fs/promises";
+import { promisify } from "node:util";
+import { gzip } from "node:zlib";
 import { NextResponse, type NextRequest } from "next/server";
 import {
   geodataEtag,
+  gzipCacheKey,
   resolveGeodataFile,
+  shouldGzip,
   type GeodataFile,
 } from "@/features/geodata/geodataFile";
 
 const CACHE_CONTROL = "public, max-age=86400";
+const gzipAsync = promisify(gzip);
+
+// PERF: `next start` does not compress route handler responses (pib.geojson is
+// ~4.5 MB raw, ~1.3 MB gzipped). The files only change when the directory is
+// regenerated, so each one is compressed once per process; the etag in the key
+// retires the entry when that happens.
+const gzipCache = new Map<string, Buffer>();
 
 type GeodataContext = { params: Promise<{ path: string[] }> };
 
@@ -30,6 +41,45 @@ async function statFile(absolutePath: string) {
   }
 }
 
+async function gzippedBody(absolutePath: string, etag: string) {
+  const key = gzipCacheKey(absolutePath, etag);
+  const cached = gzipCache.get(key);
+  if (cached) return cached;
+
+  const compressed = await gzipAsync(await readFile(absolutePath));
+  gzipCache.set(key, compressed);
+
+  return compressed;
+}
+
+const BASE_HEADERS = {
+  "Cache-Control": CACHE_CONTROL,
+  "Vary": "Accept-Encoding",
+};
+
+async function fileResponse(
+  request: NextRequest,
+  file: GeodataFile,
+  etag: string,
+) {
+  const compress = shouldGzip(
+    file.contentType,
+    request.headers.get("Accept-Encoding"),
+  );
+  const body = compress
+    ? await gzippedBody(file.absolutePath, etag)
+    : await readFile(file.absolutePath);
+
+  return new NextResponse(new Uint8Array(body), {
+    headers: {
+      ...BASE_HEADERS,
+      "ETag": etag,
+      "Content-Type": file.contentType,
+      ...(compress && { "Content-Encoding": "gzip" }),
+    },
+  });
+}
+
 async function serveFile(
   request: NextRequest,
   file: GeodataFile,
@@ -43,16 +93,14 @@ async function serveFile(
   }
 
   const etag = geodataEtag(info.size, info.mtimeMs);
-  const headers = { "Cache-Control": CACHE_CONTROL, "ETag": etag };
   if (request.headers.get("If-None-Match") === etag) {
-    return new NextResponse(null, { status: 304, headers });
+    return new NextResponse(null, {
+      status: 304,
+      headers: { ...BASE_HEADERS, ETag: etag },
+    });
   }
 
-  const body = await readFile(file.absolutePath);
-
-  return new NextResponse(new Uint8Array(body), {
-    headers: { ...headers, "Content-Type": file.contentType },
-  });
+  return fileResponse(request, file, etag);
 }
 
 /**

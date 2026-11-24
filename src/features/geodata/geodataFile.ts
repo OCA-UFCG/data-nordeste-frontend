@@ -57,3 +57,36 @@ export function resolveGeodataFile(
 export function geodataEtag(size: number, mtimeMs: number): string {
   return `"${size}-${Math.trunc(mtimeMs)}"`;
 }
+
+function acceptsGzip(acceptEncoding: string | null): boolean {
+  if (!acceptEncoding) return false;
+
+  return acceptEncoding.split(",").some((entry) => {
+    const [coding, ...params] = entry.trim().toLowerCase().split(";");
+    const quality = params.find((param) => param.trim().startsWith("q="));
+
+    return (
+      coding.trim() === "gzip" && Number(quality?.trim().slice(2) ?? 1) > 0
+    );
+  });
+}
+
+/**
+ * Decides whether the response body goes out gzipped: only text formats
+ * (JSON/GeoJSON) and only when the client advertises gzip. PNG is already
+ * compressed, so gzip would just burn CPU.
+ * Example: `shouldGzip("application/geo+json", "gzip, br")` is `true`.
+ */
+export function shouldGzip(
+  contentType: string,
+  acceptEncoding: string | null,
+): boolean {
+  if (!contentType.includes("json")) return false;
+
+  return acceptsGzip(acceptEncoding);
+}
+
+/** In-process cache key for a gzipped file. Example: `"/g/a.json|\"10-1700000000000\""`. */
+export function gzipCacheKey(absolutePath: string, etag: string): string {
+  return `${absolutePath}|${etag}`;
+}

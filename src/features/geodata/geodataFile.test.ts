@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { geodataEtag, resolveGeodataFile } from "./geodataFile";
+import {
+  geodataEtag,
+  gzipCacheKey,
+  resolveGeodataFile,
+  shouldGzip,
+} from "./geodataFile";
 
 describe("resolveGeodataFile", () => {
   it("resolves a geojson under the root", () => {
@@ -49,5 +54,35 @@ describe("geodataEtag", () => {
   it("changes when size or mtime changes", () => {
     expect(geodataEtag(10, 1)).not.toBe(geodataEtag(11, 1));
     expect(geodataEtag(10, 1)).not.toBe(geodataEtag(10, 2));
+  });
+});
+
+describe("shouldGzip", () => {
+  it.each([
+    ["application/geo+json", "gzip"],
+    ["application/json", "br, gzip;q=0.8, deflate"],
+    ["application/json", "GZIP"],
+  ])("compresses %s when the client sends %s", (type, accept) => {
+    expect(shouldGzip(type, accept)).toBe(true);
+  });
+
+  it.each([
+    ["application/json", null],
+    ["application/json", ""],
+    ["application/json", "br, deflate"],
+    ["application/json", "gzip;q=0"],
+    ["image/png", "gzip, deflate, br"],
+  ])("keeps %s plain when the client sends %s", (type, accept) => {
+    expect(shouldGzip(type, accept)).toBe(false);
+  });
+});
+
+describe("gzipCacheKey", () => {
+  it("changes with the file path or the etag", () => {
+    const key = gzipCacheKey("/g/a.json", '"1-1"');
+
+    expect(key).not.toBe(gzipCacheKey("/g/b.json", '"1-1"'));
+    expect(key).not.toBe(gzipCacheKey("/g/a.json", '"1-2"'));
+    expect(key).toBe(gzipCacheKey("/g/a.json", '"1-1"'));
   });
 });
