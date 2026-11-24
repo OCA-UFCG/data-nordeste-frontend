@@ -365,9 +365,15 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   that are not chosen (`veilFilters`, a layer filter). At area level there is
   no veil.
 - **Legend highlight** (as the old profile "porte" chips did): pointer over a
-  legend chip (mouse only) or keyboard/tap focus highlights that class; leaving
-  or blurring clears it. The chips are buttons described by a screen-reader
-  hint. `engine.setClassHighlight(filter)` gets the features of the class and
+  legend chip (mouse only: `previewOnMouse` in `src/components/Panel/pointer.ts`,
+  shared with the bar charts), keyboard focus or a tap highlights that class.
+  Each source is tracked on its own (`chipHighlightReducer`,
+  `src/features/panelMap/chipHighlightState.ts`): leaving with the mouse does
+  not clear a focused chip, blurring clears focus and tap, and a tap
+  (`pointerup` that is not a mouse) toggles, because Safari does not focus
+  buttons on tap; a second tap also clears the focus Chrome gives the tapped
+  button. Mouse wins over focus, focus over tap. The chips are buttons
+  described by a screen-reader hint. `engine.setClassHighlight(filter)` gets the features of the class and
   shows the `class-muted` layer over the other features of the area: solid
   `#e5e5e5` (`CLASS_MUTED_COLOR`, user decision of 24/11/2026: opaque grey, not
   a translucent fade), through a `fill-opacity` `case` (0 in the class, 1
@@ -402,8 +408,8 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, tiles up to zoom 19), both
   with CORS open. The downloaded image credits the basemap active in the card
   (`usePanelMapCard` + `panelMapImageSource`: "© OpenStreetMap contributors"
-  for the Ocean, "Esri, Maxar, Earthstar Geographics" for the satellite); the
-  fullscreen footer shows the default (Ocean) credit. The OpenStreetMap tile
+  for the Padrão, "Esri, Maxar, Earthstar Geographics" for the satellite); the
+  fullscreen footer shows the default (Padrão) credit. The OpenStreetMap tile
   server is a shared volunteer service under the
   [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/):
   fair use only, and heavy traffic would need another tile provider. The

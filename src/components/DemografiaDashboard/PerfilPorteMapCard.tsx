@@ -63,28 +63,34 @@ const usePorteMapProps = (
   formatValue: formatPessoas,
 });
 
-const ViewToggle = ({
-  value,
-  onChange,
-}: {
+type ViewToggleProps = {
   value: MapView;
   onChange: (view: MapView) => void;
-}) => (
+};
+
+const ViewButton = ({
+  view,
+  value,
+  onChange,
+}: ViewToggleProps & { view: (typeof VIEWS)[number] }) => (
+  <button
+    type="button"
+    aria-pressed={view.key === value}
+    onClick={() => onChange(view.key)}
+    className="bg-white px-4 py-1.5 text-[13px] font-medium aria-pressed:bg-green-800 aria-pressed:text-white"
+  >
+    {view.label}
+  </button>
+);
+
+const ViewToggle = (props: ViewToggleProps) => (
   <div
     role="group"
     aria-label="Mostrar no mapa"
     className="mb-3 inline-flex flex-none self-start overflow-hidden rounded-[6px] border border-grey-300"
   >
     {VIEWS.map((view) => (
-      <button
-        key={view.key}
-        type="button"
-        aria-pressed={view.key === value}
-        onClick={() => onChange(view.key)}
-        className="bg-white px-4 py-1.5 text-[13px] font-medium aria-pressed:bg-green-800 aria-pressed:text-white"
-      >
-        {view.label}
-      </button>
+      <ViewButton key={view.key} view={view} {...props} />
     ))}
   </div>
 );

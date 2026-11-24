@@ -1,15 +1,27 @@
 "use client";
 
 import type { FeatureCollection } from "geojson";
-import { useEffect, useId, useMemo, useState } from "react";
+import {
+  type PointerEvent,
+  useEffect,
+  useId,
+  useMemo,
+  useReducer,
+} from "react";
 
-import { previewOnMouse } from "@/components/Panel/charts/RankedBars";
+import { previewOnMouse } from "@/components/Panel/pointer";
 
 import {
   countByClass,
   type LegendChip as LegendChipData,
   paletteChips,
 } from "@/features/panelMap/classCounts";
+import {
+  activeChip,
+  type ChipHighlightAction,
+  chipHighlightReducer,
+  NO_CHIP_HIGHLIGHT,
+} from "@/features/panelMap/chipHighlightState";
 import {
   chipHighlightFilter,
   type LegendHighlightSource,
@@ -23,56 +35,68 @@ import { formatNumber } from "@/features/panels/format";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 import type { PanelMapEngine } from "@/lib/panelMapEngine";
 
-// Mouse ou foco numa pílula destaca a classe no mapa (como a legenda por
-// porte do card antigo); sair ou perder o foco desfaz.
-type ChipHighlight = (chipIndex: number | null) => void;
+// Mouse, foco ou toque numa pílula destaca a classe no mapa (como a legenda
+// por porte do card antigo); cada fonte se desfaz sozinha
+// (`chipHighlightReducer`).
+type ChipHighlight = (action: ChipHighlightAction) => void;
 
-// WHY o hover só com mouse: no toque o pointerenter/leave vêm junto do toque;
-// lá o foco do botão tocado é que destaca, até o próximo toque fora.
+const hoverChip = (onHighlight: ChipHighlight) => (index: number | null) =>
+  onHighlight({ type: "hover", index });
+
+// WHY o toque no pointerup e não no clique: o Enter e o Espaço do teclado
+// também disparam o clique, e o teclado já destaca pelo foco.
+const tapChip =
+  (index: number, onHighlight: ChipHighlight) =>
+  (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType !== "mouse") onHighlight({ type: "tap", index });
+  };
+
+// WHY o hover só com mouse: no toque o pointerenter/leave vêm junto do toque.
 const chipHighlightHandlers = (index: number, onHighlight: ChipHighlight) => ({
-  onPointerEnter: previewOnMouse(() => onHighlight(index), null),
-  onPointerLeave: previewOnMouse(() => onHighlight(null), null),
-  onFocus: () => onHighlight(index),
-  onBlur: () => onHighlight(null),
+  onPointerEnter: previewOnMouse(hoverChip(onHighlight), index),
+  onPointerLeave: previewOnMouse(hoverChip(onHighlight), null),
+  onPointerUp: tapChip(index, onHighlight),
+  onFocus: () => onHighlight({ type: "focus", index }),
+  onBlur: () => onHighlight({ type: "blur" }),
 });
 
-const LegendChip = ({
-  chip: { label, color, count },
-  index,
-  hintId,
-  onHighlight,
-}: {
+const CHIP_CLASS =
+  "inline-flex items-center gap-1.5 rounded-[6px] border border-grey-300 bg-white px-2.5 py-1 text-[11.5px] font-medium hover:border-grey-500 focus-visible:outline-2 focus-visible:outline-(--proto-accent)";
+
+const chipText = ({ label, count }: LegendChipData) =>
+  count === undefined ? label : `${label} (${formatNumber(count)})`;
+
+type LegendChipProps = {
   chip: LegendChipData;
   index: number;
   hintId: string;
   onHighlight: ChipHighlight;
-}) => (
+};
+
+const LegendChip = ({ chip, index, hintId, onHighlight }: LegendChipProps) => (
   <li>
     <button
       type="button"
       aria-describedby={hintId}
       {...chipHighlightHandlers(index, onHighlight)}
-      className="inline-flex items-center gap-1.5 rounded-[6px] border border-grey-300 bg-white px-2.5 py-1 text-[11.5px] font-medium hover:border-grey-500 focus-visible:outline-2 focus-visible:outline-(--proto-accent)"
+      className={CHIP_CLASS}
     >
       <i
         aria-hidden="true"
         className="inline-block size-3 rounded-full border border-black/10"
-        style={{ background: color }}
+        style={{ background: chip.color }}
       />
-      {count === undefined ? label : `${label} (${formatNumber(count)})`}
+      {chipText(chip)}
     </button>
   </li>
 );
 
-const LegendChips = ({
-  label,
-  chips,
-  onHighlight,
-}: {
+type LegendChipsProps = Omit<LegendChipProps, "chip" | "index" | "hintId"> & {
   label: string;
   chips: LegendChipData[];
-  onHighlight: ChipHighlight;
-}) => {
+};
+
+const LegendChips = ({ label, chips, onHighlight }: LegendChipsProps) => {
   const hintId = useId();
 
   return (
@@ -108,7 +132,7 @@ type PanelMapLegendProps = {
 };
 
 const LEGEND_HINT =
-  "Passe o mouse ou o foco numa classe para destacá-la no mapa.";
+  "Passe o mouse, toque ou leve o foco a uma classe para destacá-la no mapa.";
 
 type ChipInputs = Omit<PanelMapLegendProps, "classOf" | "engine">;
 
@@ -164,7 +188,8 @@ function useHighlightSource(props: PanelMapLegendProps) {
 // Recalcula com o ano do momento: trocar o ano com o mouse parado na pílula
 // atualiza o destaque. A área não entra: o motor só apaga feições da área.
 function useChipHighlight(props: PanelMapLegendProps): ChipHighlight {
-  const [chipIndex, setChipIndex] = useState<number | null>(null);
+  const [state, dispatch] = useReducer(chipHighlightReducer, NO_CHIP_HIGHLIGHT);
+  const chipIndex = activeChip(state);
   const source = useHighlightSource(props);
   const { engine } = props;
 
@@ -175,14 +200,14 @@ function useChipHighlight(props: PanelMapLegendProps): ChipHighlight {
     engine?.setClassHighlight(filter);
   }, [engine, chipIndex, source]);
 
-  return setChipIndex;
+  return dispatch;
 }
 
 /**
  * Legenda do mapa, abaixo da caixa dele: uma pílula por classe do `.qgz` com
  * a contagem de feições da área no ano ("Pequeno (1.619)"), mais "Sem dado"
  * quando houver. Na aridez, a paleta do raster com as contagens que o painel
- * mandou em `classCounts` (sem elas, só as cores). Mouse ou foco numa
+ * mandou em `classCounts` (sem elas, só as cores). Mouse, foco ou toque numa
  * pílula destaca a classe no mapa (`engine.setClassHighlight`): as feições
  * das outras classes ficam cinza sólido.
  *

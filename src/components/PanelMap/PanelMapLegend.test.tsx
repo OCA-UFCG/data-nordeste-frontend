@@ -35,6 +35,43 @@ describe("PanelMapLegend destaque da classe", () => {
     expect(engine.setClassHighlight).toHaveBeenLastCalledWith(null);
   });
 
+  // O Safari não foca botões no toque: o toque alterna o destaque.
+  it("tocar uma pílula alterna o destaque", async () => {
+    const { engine } = await renderPanelMap();
+
+    fireEvent.pointerUp(chip(/> R\$ 500 Mi/), { pointerType: "touch" });
+
+    expect(engine.setClassHighlight).toHaveBeenLastCalledWith(
+      classHighlightFilter(PIB_CLASSES, 2023, 1),
+    );
+
+    fireEvent.pointerUp(chip(/> R\$ 500 Mi/), { pointerType: "touch" });
+
+    expect(engine.setClassHighlight).toHaveBeenLastCalledWith(null);
+  });
+
+  it("o clique do mouse não alterna (o mouse destaca pelo hover)", async () => {
+    const { engine } = await renderPanelMap();
+
+    fireEvent.pointerUp(chip(/> R\$ 500 Mi/), { pointerType: "mouse" });
+
+    expect(engine.setClassHighlight).not.toHaveBeenCalledWith(
+      expect.anything(),
+    );
+  });
+
+  it("tirar o mouse não desfaz o destaque da pílula com foco", async () => {
+    const { engine } = await renderPanelMap();
+
+    fireEvent.focus(chip(/≤ R\$ 500 Mi/));
+    fireEvent.pointerEnter(chip(/> R\$ 500 Mi/), { pointerType: "mouse" });
+    fireEvent.pointerLeave(chip(/> R\$ 500 Mi/), { pointerType: "mouse" });
+
+    expect(engine.setClassHighlight).toHaveBeenLastCalledWith(
+      classHighlightFilter(PIB_CLASSES, 2023, 0),
+    );
+  });
+
   it("o toque não destaca pelo ponteiro (o foco é que destaca)", async () => {
     const { engine } = await renderPanelMap();
 
@@ -84,7 +121,7 @@ describe("PanelMapLegend destaque da classe", () => {
     await renderPanelMap();
 
     expect(chip(/≤ R\$ 500 Mi/)).toHaveAccessibleDescription(
-      "Passe o mouse ou o foco numa classe para destacá-la no mapa.",
+      "Passe o mouse, toque ou leve o foco a uma classe para destacá-la no mapa.",
     );
   });
 });

@@ -5,10 +5,8 @@ import { EChart } from "@/components/EChart/EChart";
 import { ChartCard, ChartNotice } from "@/components/Panel/cards/ChartCard";
 import type { DataTableContent } from "@/components/Panel/cards/DataTable";
 import { ColumnChart } from "@/components/Panel/charts/ColumnChart";
-import {
-  RankedBars,
-  type PreviewHandler,
-} from "@/components/Panel/charts/RankedBars";
+import { RankedBars } from "@/components/Panel/charts/RankedBars";
+import { type PreviewHandler } from "@/components/Panel/pointer";
 import {
   FNE_BAR_CLASS,
   FNE_BAR_COLOR,

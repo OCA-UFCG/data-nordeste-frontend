@@ -38,8 +38,9 @@ const FULLSCREEN_SOURCE = panelMapImageSource(ARIDEZ_CARD_SOURCE);
 // classes fica abaixo da caixa.
 const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 
-// O número do tooltip, as contagens da legenda e o destaque das classes saem de todos os municípios da
-// área (`data.mapa`): só mudam com Área e Ano, não com o zoom.
+// O número do tooltip, as contagens da legenda e o destaque das classes saem
+// de todos os municípios da área (`data.mapa`): só mudam com Área e Ano, não
+// com o zoom.
 const useAridezMapProps = (
   data: AridezPanelData,
   selection: TerritorialFilters,
