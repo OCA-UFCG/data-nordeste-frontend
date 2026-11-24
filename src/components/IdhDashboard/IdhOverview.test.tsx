@@ -84,6 +84,14 @@ describe("IdhOverview", () => {
     expect(lastProps().recorte).toEqual({ uf: ["CE"], mun: [] });
   });
 
+  // A aridez vive só no painel dela: nem raster nem checkbox neste mapa.
+  it("keeps the aridez raster and its checkbox out of the map", () => {
+    render(overview(allIdhCards("ok")));
+
+    expect(lastProps().aridez ?? "off").toBe("off");
+    expect(screen.queryByRole("checkbox", { name: /aridez/i })).toBeNull();
+  });
+
   it("turns a state zoom into the filters of the filter bar request", () => {
     const onFiltersChange = vi.fn();
 

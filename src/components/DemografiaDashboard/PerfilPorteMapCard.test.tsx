@@ -105,6 +105,14 @@ describe("PerfilPorteMapCard", () => {
     expect(lastProps().recorte).toEqual({ uf: ["PB"], mun: [] });
   });
 
+  // A aridez vive só no painel dela: nem raster nem checkbox neste mapa.
+  it("keeps the aridez raster and its checkbox out of the map", () => {
+    renderCard();
+
+    expect(lastProps().aridez ?? "off").toBe("off");
+    expect(screen.queryByRole("checkbox", { name: /aridez/i })).toBeNull();
+  });
+
   it("titles the card and describes place and year in the subtitle", () => {
     renderCard();
 

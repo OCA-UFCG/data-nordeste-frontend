@@ -4,6 +4,8 @@ import {
   NO_DATA_COLOR,
   classColorExpression,
   classForValue,
+  indicatorFillColor,
+  TRANSPARENT_FILL,
   yearField,
 } from "@/features/panelMap/qgisPaint";
 import type { QgisClass } from "@/features/panelMap/geodataTypes";
@@ -157,5 +159,21 @@ describe("classColorExpression", () => {
       [">", ["get", "v2023"], 500000000],
       ["<=", ["get", "v2023"], 1000000000],
     ]);
+  });
+});
+
+describe("indicatorFillColor", () => {
+  const classes: QgisClass[] = [
+    { lower: 0, upper: 10, label: "Baixo", color: "#fff" },
+  ];
+
+  it("usa as classes do ano sem raster por baixo", () => {
+    expect(indicatorFillColor(classes, 2023, false)).toEqual(
+      classColorExpression(classes, 2023),
+    );
+  });
+
+  it("fica transparente com o raster como camada principal", () => {
+    expect(indicatorFillColor(classes, 2023, true)).toEqual(TRANSPARENT_FILL);
   });
 });

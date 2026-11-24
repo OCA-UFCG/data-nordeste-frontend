@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
+import type { PanelMapAridez } from "@/components/PanelMap/usePanelMapAridez";
 import type {
   MapFeatureProps,
   PanelIndicator,
@@ -26,13 +27,9 @@ import {
   sameRecorte,
 } from "@/features/panelMap/mapRecorte";
 import { recorteForClick } from "@/features/panelMap/mapSelection";
-import { classColorExpression } from "@/features/panelMap/qgisPaint";
+import { indicatorFillColor } from "@/features/panelMap/qgisPaint";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
-import type { IndicatorPaint, PanelMapEngine } from "@/lib/panelMapEngine";
-
-// Com a aridez ligada o raster fica legível por baixo: o preenchimento some,
-// mas contornos, véu, hover e tooltip continuam.
-const TRANSPARENT_FILL: IndicatorPaint["color"] = ["to-color", "rgba(0,0,0,0)"];
+import type { PanelMapEngine } from "@/lib/panelMapEngine";
 
 export type PanelMapLayersArgs = {
   engine: PanelMapEngine | null;
@@ -42,7 +39,7 @@ export type PanelMapLayersArgs = {
   area: TerritorialArea;
   recorte: MapRecorte;
   deepest: MapLevel;
-  aridezOn: boolean;
+  aridez: PanelMapAridez;
   onRecorteChange: (recorte: MapRecorte) => void;
 };
 
@@ -71,21 +68,19 @@ function useFitSources(geodata: ReadyGeodata): FitSources {
 }
 
 function useSourcesAndPaint(args: PanelMapLayersArgs, sources: FitSources) {
-  const { engine, geodata, indicator, ano, area, aridezOn } = args;
+  const { engine, geodata, indicator, ano, area, aridez } = args;
 
   useEffect(() => engine?.setSources(sources), [engine, sources]);
   useEffect(() => {
     const style = geodata.styles.indicators[indicator];
 
     engine?.setIndicatorPaint({
-      color: aridezOn
-        ? TRANSPARENT_FILL
-        : classColorExpression(style.classes, ano),
+      color: indicatorFillColor(style.classes, ano, aridez === "base"),
       outline: style.outline,
       stateOutline: geodata.styles.stateOutline,
       area,
     });
-  }, [engine, geodata, indicator, ano, area, aridezOn]);
+  }, [engine, geodata, indicator, ano, area, aridez]);
 }
 
 function fitRecorte(

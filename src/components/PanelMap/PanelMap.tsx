@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 
-import { AridezControl } from "@/components/PanelMap/AridezControl";
 import { BasemapSwitch } from "@/components/PanelMap/BasemapSwitch";
 import { PanelMapLegend } from "@/components/PanelMap/PanelMapLegend";
 import {
@@ -14,6 +13,10 @@ import {
   useGeodata,
 } from "@/components/PanelMap/useGeodata";
 import { useMapRecorte } from "@/components/PanelMap/useMapRecorte";
+import {
+  type PanelMapAridez,
+  usePanelMapAridez,
+} from "@/components/PanelMap/usePanelMapAridez";
 import { usePanelMapControls } from "@/components/PanelMap/usePanelMapControls";
 import { usePanelMapEngine } from "@/components/PanelMap/usePanelMapEngine";
 import { usePanelMapLayers } from "@/components/PanelMap/usePanelMapLayers";
@@ -40,6 +43,10 @@ export type PanelMapProps = {
   onRecorteChange: (recorte: MapRecorte) => void;
   formatValue: (value: number) => string;
   label: string;
+
+  // Raster do índice de aridez: "off" (padrão) não mostra; "base" mostra o da
+  // década do `ano`, sempre ligado, sob os contornos. Não há controle no mapa.
+  aridez?: PanelMapAridez;
   onEngine?: (engine: PanelMapEngine | null) => void;
 
   // O usuário trocou o basemap (o card ajusta o crédito da imagem baixada).
@@ -83,10 +90,12 @@ function usePanelMapRecorte(
   props: PanelMapProps,
   geodata: ReadyGeodata,
   engine: PanelMapEngine | null,
-  aridezOn: boolean,
 ) {
-  const layers = { ...props, engine, geodata, aridezOn };
+  const aridez = props.aridez ?? "off";
+  const layers = { ...props, engine, geodata, aridez };
   const onZoomRecorte = usePanelMapLayers(layers);
+
+  usePanelMapAridez(engine, geodata.manifest, aridez, props.ano);
 
   useMapRecorte({ ...layers, onRecorteChange: onZoomRecorte });
 }
@@ -99,35 +108,14 @@ function usePanelMapStage(props: PanelMapProps, geodata: ReadyGeodata) {
     createEngine: props.createEngine,
     onEngine: props.onEngine,
   });
-  const controls = usePanelMapControls(
-    engine,
-    geodata.manifest,
-    props.onBasemapChange,
-  );
+  const controls = usePanelMapControls(engine, props.onBasemapChange);
   const features = geodata.features;
   const tooltip = usePanelMapTooltip({ ...props, engine, features });
 
-  usePanelMapRecorte(props, geodata, engine, controls.aridez.on);
+  usePanelMapRecorte(props, geodata, engine);
 
   return { containerRef, controls, tooltip, failed };
 }
-
-type PanelMapOverlaysProps = {
-  controls: ReturnType<typeof usePanelMapControls>;
-  geodata: ReadyGeodata;
-};
-
-// Cada controle já vem posicionado no seu canto do mapa.
-const PanelMapOverlays = ({ controls, geodata }: PanelMapOverlaysProps) => (
-  <>
-    <AridezControl
-      years={geodata.manifest.aridez.years}
-      value={controls.aridez}
-      onChange={controls.setAridez}
-    />
-    <BasemapSwitch value={controls.basemap} onChange={controls.setBasemap} />
-  </>
-);
 
 const PanelMapStage = ({
   geodata,
@@ -157,7 +145,10 @@ const PanelMapStage = ({
             e anula o `absolute inset-0`; sem `h-full w-full` o contêiner fica com
             altura 0 e o canvas some. */}
         <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-        <PanelMapOverlays controls={controls} geodata={geodata} />
+        <BasemapSwitch
+          value={controls.basemap}
+          onChange={controls.setBasemap}
+        />
         <PanelMapTooltip tooltip={tooltip} />
       </div>
       <PanelMapLegend
@@ -166,7 +157,6 @@ const PanelMapStage = ({
         indicator={props.indicator}
         area={props.area}
         ano={props.ano}
-        aridezYear={controls.aridez.on ? controls.aridez.year : null}
       />
     </div>
   );

@@ -40,28 +40,12 @@ const LegendChips = ({
   </ul>
 );
 
-const AridezLegend = ({
-  styles,
-  year,
-}: {
-  styles: GeodataStyles;
-  year: number;
-}) => (
-  <div className="flex flex-wrap items-center gap-2">
-    <span className="text-[11.5px] font-medium text-grey-800">
-      Índice de aridez ({year}):
-    </span>
-    <LegendChips label="Legenda do índice de aridez" chips={styles.aridez} />
-  </div>
-);
-
 type PanelMapLegendProps = {
   styles: GeodataStyles;
   features: FeatureCollection;
   indicator: PanelIndicator;
   area: TerritorialArea;
   ano: number;
-  aridezYear: number | null;
 };
 
 // PERF: a contagem percorre ~1.800 municípios; só muda com feições, área e ano.
@@ -82,20 +66,16 @@ function useClassCounts(props: PanelMapLegendProps): ClassCount[] {
 /**
  * Legenda do mapa, abaixo da caixa dele: uma pílula por classe do `.qgz` com
  * a contagem de feições da área no ano ("Pequeno (1.619)"), mais "Sem dado"
- * quando houver. Com a aridez ligada, uma 2ª linha mostra a paleta do índice
- * da década escolhida, sem contagem.
+ * quando houver.
  *
- * @example <PanelMapLegend styles={styles} features={features} indicator="pib" area="nordeste" ano={2023} aridezYear={null} />
+ * @example <PanelMapLegend styles={styles} features={features} indicator="pib" area="nordeste" ano={2023} />
  */
 export const PanelMapLegend = (props: PanelMapLegendProps) => {
   const counts = useClassCounts(props);
 
   return (
-    <div className="mt-3 space-y-2">
+    <div className="mt-3">
       <LegendChips label="Legenda do mapa" chips={counts} />
-      {props.aridezYear === null ? null : (
-        <AridezLegend styles={props.styles} year={props.aridezYear} />
-      )}
     </div>
   );
 };

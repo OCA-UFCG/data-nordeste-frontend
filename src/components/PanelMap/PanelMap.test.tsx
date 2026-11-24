@@ -1,22 +1,21 @@
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  ENGINE_UNAVAILABLE,
-  PanelMap,
-  type PanelMapProps,
-} from "@/components/PanelMap/PanelMap";
+import { ENGINE_UNAVAILABLE, PanelMap } from "@/components/PanelMap/PanelMap";
 import { PanelMapEngineFactoryFake } from "@/components/PanelMap/panelMapEngineFake";
 import {
   GeodataFetchFake,
   JOAO_PESSOA,
-  MANIFEST_FIXTURE,
   PERNAMBUCO,
   PETROLINA,
   RECIFE,
   STYLES_FIXTURE,
 } from "@/components/PanelMap/panelMapFixtures";
+import {
+  panelMapProps,
+  renderPanelMap,
+} from "@/components/PanelMap/renderPanelMap";
 import { EMPTY_RECORTE, type MapRecorte } from "@/features/panelMap/mapRecorte";
 import { classColorExpression } from "@/features/panelMap/qgisPaint";
 
@@ -35,40 +34,6 @@ const UNAVAILABLE =
 afterEach(() => {
   vi.unstubAllGlobals();
 });
-
-function panelMapProps(
-  factory: PanelMapEngineFactoryFake,
-  overrides: Partial<PanelMapProps>,
-): PanelMapProps {
-  return {
-    indicator: "pib",
-    ano: 2023,
-    area: "nordeste",
-    recorte: EMPTY_RECORTE,
-    deepest: "municipio",
-    onRecorteChange: vi.fn<(recorte: MapRecorte) => void>(),
-    formatValue: (value) => `R$ ${value}`,
-    label: "Mapa do PIB por município",
-    createEngine: factory.create,
-    ...overrides,
-  };
-}
-
-async function renderPanelMap(overrides: Partial<PanelMapProps> = {}) {
-  vi.stubGlobal("fetch", new GeodataFetchFake().fetch);
-  const factory = new PanelMapEngineFactoryFake();
-  let props = panelMapProps(factory, overrides);
-  const view = render(<PanelMap {...props} />);
-  const rerender = (next: Partial<PanelMapProps>) => {
-    props = { ...props, ...next };
-    view.rerender(<PanelMap {...props} />);
-  };
-
-  // Pronto = o motor já recebeu as fontes (todos os efeitos do motor rodaram).
-  await waitFor(() => expect(factory.engine.setSources).toHaveBeenCalled());
-
-  return { factory, engine: factory.engine, props, view, rerender };
-}
 
 describe("PanelMap controles", () => {
   it("começa no basemap Oceano", async () => {
@@ -124,57 +89,6 @@ describe("PanelMap controles", () => {
     await userEvent.click(screen.getByRole("button", { name: "Satélite" }));
 
     expect(onBasemapChange).toHaveBeenLastCalledWith("satelite");
-  });
-
-  it("ligar a aridez mostra o raster da última década", async () => {
-    const { engine } = await renderPanelMap();
-
-    expect(engine.setAridez).toHaveBeenLastCalledWith(null);
-    await userEvent.click(
-      screen.getByRole("checkbox", { name: "Índice de aridez" }),
-    );
-
-    expect(engine.setAridez).toHaveBeenLastCalledWith({
-      url: "/api/geodata/raster/aridez_2020.png",
-      bounds: MANIFEST_FIXTURE.aridez.bounds,
-    });
-  });
-
-  it("a década escolhida troca o raster", async () => {
-    const { engine } = await renderPanelMap();
-
-    await userEvent.click(
-      screen.getByRole("checkbox", { name: "Índice de aridez" }),
-    );
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: "Década do índice de aridez" }),
-      "1990",
-    );
-
-    expect(engine.setAridez).toHaveBeenLastCalledWith({
-      url: "/api/geodata/raster/aridez_1990.png",
-      bounds: MANIFEST_FIXTURE.aridez.bounds,
-    });
-  });
-
-  it("com aridez ligada, o preenchimento fica transparente e a legenda ganha a paleta (regra 5)", async () => {
-    const { engine } = await renderPanelMap();
-    const checkbox = screen.getByRole("checkbox", { name: "Índice de aridez" });
-
-    await userEvent.click(checkbox);
-
-    expect(engine.setIndicatorPaint.mock.lastCall?.[0].color).toEqual([
-      "to-color",
-      "rgba(0,0,0,0)",
-    ]);
-    expect(screen.getByText("Árido")).toBeInTheDocument();
-
-    await userEvent.click(checkbox);
-
-    expect(engine.setIndicatorPaint.mock.lastCall?.[0].color).toEqual(
-      classColorExpression(STYLES_FIXTURE.indicators.pib.classes, 2023),
-    );
-    expect(screen.queryByText("Árido")).toBeNull();
   });
 });
 
@@ -233,24 +147,6 @@ describe("PanelMap legenda", () => {
     rerender({ ano: 2023 });
 
     expect(screen.getByText("Sem dado (2)")).toBeInTheDocument();
-  });
-
-  it("com a aridez ligada, uma 2ª linha mostra a paleta sem contagem", async () => {
-    await renderPanelMap();
-
-    await userEvent.click(
-      screen.getByRole("checkbox", { name: "Índice de aridez" }),
-    );
-    const aridez = screen.getByRole("list", {
-      name: "Legenda do índice de aridez",
-    });
-
-    expect(screen.getByText("Índice de aridez (2020):")).toBeInTheDocument();
-    expect(
-      within(aridez)
-        .getAllByRole("listitem")
-        .map((i) => i.textContent),
-    ).toEqual(["Árido", "Semiárido"]);
   });
 });
 

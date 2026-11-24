@@ -88,3 +88,23 @@ export function classColorExpression(
     NO_DATA_COLOR,
   ] as ExpressionSpecification;
 }
+
+// Com o raster da aridez por baixo o preenchimento some, mas as feições
+// continuam lá: contornos, véu, hover e tooltip seguem funcionando.
+export const TRANSPARENT_FILL: ExpressionSpecification = [
+  "to-color",
+  "rgba(0,0,0,0)",
+];
+
+/**
+ * Cor do preenchimento das feições: as classes do ano, ou transparente quando
+ * um raster é a camada principal do mapa.
+ * Ex.: `indicatorFillColor(classes, 2023, true)` → `TRANSPARENT_FILL`.
+ */
+export function indicatorFillColor(
+  classes: QgisClass[],
+  ano: number,
+  rasterBase: boolean,
+): ExpressionSpecification {
+  return rasterBase ? TRANSPARENT_FILL : classColorExpression(classes, ano);
+}
