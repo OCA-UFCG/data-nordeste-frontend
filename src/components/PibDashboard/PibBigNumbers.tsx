@@ -30,7 +30,6 @@ const pibBigNumbers = (data: PibPanelData): ProtoStatCell[] => {
   return buildPibBigNumbers(data.serie, data.filters.ano).map((cell) => ({
     icon: ICONS[cell.key],
     label: cell.label,
-    menuTitle: cell.label,
     caption,
     value: cell.value === null ? null : formatPibReais(cell.value),
     pill: cell.pill,
