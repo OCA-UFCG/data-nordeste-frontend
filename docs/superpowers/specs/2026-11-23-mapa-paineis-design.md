@@ -289,3 +289,23 @@ geometria, anos faltando, divergência entre classes e rótulos).
 - Limiares exatos de zoom e tolerância de simplificação (constantes nomeadas).
 - Cor e opacidade do véu (partindo do Atlas: `#9ca3af`, 0,75).
 - Layout dos controles dentro do card.
+
+## Adendo de 24/11/2026 — painel de aridez e `main` redesenhada
+
+Decidido com o usuário em 24/11/2026:
+
+- A `main` recebeu o redesenho dos painéis (#410 IDH, #411 perfil, #412 PIB) e um
+  painel próprio de aridez (#409, `/demo/aridez`). A branch traz a `main` e encaixa
+  o `PanelMap` nos cards de mapa redesenhados, mantendo o redesenho.
+- O checkbox "Índice de aridez" sai dos mapas do PIB, IDH e perfil: a aridez vive
+  só no painel dela.
+- Painel de aridez usa o mapa compartilhado:
+  - camada principal = raster do índice de aridez da década do filtro de ano
+    (1991→1990, 2001→2000, 2011→2010, 2021→2020), paleta do `indice_aridez.qgz`;
+  - limites estaduais e municipais por cima (malha municipal de `sudene_mun`);
+  - recorte por zoom área → estado → município aplicando os filtros do painel,
+    véu a partir do estado, basemaps Satélite/OpenStreetMap;
+  - tooltip: município, % da área suscetível à desertificação (ASD, do banco —
+    o mesmo número do card de municípios) e posição no ranking desse %;
+  - legenda abaixo do mapa: as quatro classes com a quantidade de municípios em
+    que cada classe é predominante (do banco).

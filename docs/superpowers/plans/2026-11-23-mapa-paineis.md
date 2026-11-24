@@ -384,3 +384,26 @@ IDs (levantados em 23/11/2026; pastas → arquivos):
 
 - Cobertura do spec: objetivos 1–11 → Tasks 9–12 (1), 8–9 (2), 5/9 (3), 3/9 (4), 6/9 (5), 9 (6), 7 (7), 2–3/8 (8), 7/9 (9), 1/3/14 (10), 2/14 (11). Ajuste ao spec: o véu é por filtro de camada (estados/municípios fora do recorte), não "mundo com furo" — mais simples e cobre "áreas não destacadas"; atualizar §3 do spec na Task 7.
 - Tipos conferidos entre tasks: `MapRecorte`, `PanelIndicator`, `QgisOutline`, `veilFilters`, `PanelMapEngine`.
+
+---
+
+## Adendo (24/11/2026): `main` redesenhada e painel de aridez
+
+Spec: seção "Adendo de 24/11/2026" do design.
+
+### Task 15: Trazer a `main` e reencaixar o mapa nos painéis redesenhados
+- Merge de `origin/main` na branch (sem rebase: a branch já tem 30 commits revisados). Conflitos: manter o redesenho da `main` (#409–#412) e reaplicar o `PanelMap` nos cards de mapa do PIB, perfil e IDH, com o mesmo contrato (`usePanelMapFilters`/`useRecorteFilters`, `PanelMapCardActions`, fullscreen via `renderStage`, legenda abaixo do mapa). Peças novas da `main` (`ProtoMapControls`, `statesOffMap`, `ProtoBinLegend`) continuam se outro painel ainda usar.
+- Verificar: `npx vitest run`, `npm run lint`, `npx tsc --noEmit`, `npm run build`.
+- Commit: o merge commit + `fix(panel-map): encaixa o mapa nos painéis redesenhados` se precisar.
+
+### Task 16: Tirar a aridez dos mapas do PIB, IDH e perfil
+- `PanelMap` ganha prop `aridez?: "overlay" | "base" | "off"` (padrão `"off"`); `AridezControl` some dos três cards. Testes: sem checkbox nos três.
+
+### Task 17: Malha municipal genérica nos geodados
+- `build.py` gera `vector/municipios.geojson` de `sudene_mun` (`code`, `name`, `uf`, flags de área; sem valores). Teste do SQL. Rodar o build no OUT.
+
+### Task 18: `PanelMap` para a aridez
+- `PanelIndicator` ganha `"aridez"`: base = raster da década (`aridezYearFor(ano)`: 1991→1990…), feições = `municipios.geojson` sem preenchimento (contornos, hover, véu, seleção), valores do tooltip/ranking vindos do painel por prop (`values: Map<code, number>`, formatador de %), legenda = paleta da aridez com contagens recebidas por prop (`classCounts`). Testes puros + componente.
+
+### Task 19: Card de mapa do painel de aridez
+- `AridezMapCard` usa o `PanelMap` (`indicator="aridez"`, `deepest: "municipio"`), filtros pelo mesmo `request` da barra, valores = % ASD por município do `AridezPanelData`, contagens = classe predominante por município. Remove o que ficar sem uso. Docs (`docs/README.md`, seção do painel de aridez).
