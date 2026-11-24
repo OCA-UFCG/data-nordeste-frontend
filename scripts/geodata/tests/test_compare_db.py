@@ -103,14 +103,14 @@ class CompareIndicatorTest(unittest.TestCase):
         self.assertEqual(issue["arquivo"], "pib/shapefile/pib.shp")
         self.assertEqual(issue["camada"], "pib")
         self.assertTrue(issue["problema"].startswith(compare_db.COMPARISON_PREFIX))
-        self.assertIn("100 Alfa (PB) v2022: mapa 1000, banco 900", issue["evidencia"])
+        self.assertIn("Alfa (PB) v2022: mapa 1000, banco 900", issue["evidencia"])
         self.assertIn("1 de 3", issue["evidencia"])
         self.assertIn("0,5%", issue["esperado"])
 
     def test_null_in_map_with_value_in_database_is_a_divergence(self):
         rows = [("100", 2022, 1000.0), ("200", 2023, 700.0)]
         [issue] = compare_db.compare_indicator("pib", FEATURES, rows)
-        self.assertIn("200 Beta (PB) v2023: mapa sem valor, banco 700", issue["evidencia"])
+        self.assertIn("Beta (PB) v2023: mapa sem valor, banco 700", issue["evidencia"])
 
     def test_examples_limited_and_worst_first(self):
         features = [
@@ -120,7 +120,7 @@ class CompareIndicatorTest(unittest.TestCase):
         rows = [(str(n), 2020, 100.0) for n in range(1, 16)]
         [issue] = compare_db.compare_indicator("pib", features, rows, max_examples=10)
         self.assertEqual(issue["evidencia"].count("; mapa") + issue["evidencia"].count(" v2020:"), 10)
-        self.assertIn("15 M15", issue["evidencia"])
+        self.assertIn("M15 (PB) v2020", issue["evidencia"])
         self.assertNotIn(" M1 (PB)", issue["evidencia"])
         self.assertIn("15 de 15", issue["evidencia"])
 
@@ -136,6 +136,9 @@ class CompareIndicatorTest(unittest.TestCase):
         [issue] = compare_db.compare_indicator("idh", features, [("PB", 2023, 0.76)])
         self.assertEqual(issue["arquivo"], "idh/shapefile/idh.shp")
         self.assertIn("v2023: mapa 0.7, banco 0.76", issue["evidencia"])
+        self.assertIn("Paraíba (PB) v2023", issue["evidencia"])
+        self.assertNotIn("PB Paraíba", issue["evidencia"])
+        self.assertNotIn("(PB) (PB)", issue["evidencia"])
 
 
 class MergeIssuesTest(unittest.TestCase):

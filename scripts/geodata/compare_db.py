@@ -86,7 +86,7 @@ def _percent(ratio: float) -> str:
 def _describe(key: Key, shape: float | None, db: float, names: dict[str, str]) -> str:
     code, year = key
     mapa = "sem valor" if shape is None else _number(shape)
-    return f"{code} {names.get(code, '?')} v{year}: mapa {mapa}, banco {_number(db)}"
+    return f"{names.get(code, code)} v{year}: mapa {mapa}, banco {_number(db)}"
 
 
 def find_divergences(
@@ -99,12 +99,19 @@ def find_divergences(
     return sorted(over, key=lambda pair: (-pair[1], pair[0])), len(common)
 
 
+def _feature_label(props: dict) -> str:
+    """`Nome (UF)`, sem repetir a sigla quando o nome já termina com ela (caso do IDH)."""
+    name, uf = props["name"], props.get("uf")
+    if not uf or name.endswith(f"({uf})"):
+        return name
+    return f"{name} ({uf})"
+
+
 def _feature_names(features: list[dict]) -> dict[str, str]:
     names = {}
     for feature in features:
         props = feature["properties"]
-        label = props["name"] if not props.get("uf") else f"{props['name']} ({props['uf']})"
-        names[str(props["code"]).strip()] = label
+        names[str(props["code"]).strip()] = _feature_label(props)
     return names
 
 
