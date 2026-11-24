@@ -370,11 +370,13 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   bar, the `.dg` grid (big number, municipalities, map, sex, age pyramid) and
   `.dg2` (census series, colour or race), "Saiba mais" without glossary.
 - Deliberate deviations from the prototype:
-  - The map shows both views: "Municípios" (default, the real municipal mesh
-    coloured by size band, ECharts canvas for performance through
-    `ChoroplethCanvas`) and "Estados" (the prototype's nine-state SVG, click
-    to filter). The prototype itself notes it draws states "em vez de
-    contornos municipais".
+  - The map is the shared MapLibre `PanelMap` (indicator "demografia", the
+    `.qgz` classes as delivered, including the inverted "Médio" range in the
+    legend), municipal level only. The "Estados" SVG view, the porte pills
+    (`PerfilPorteToggles`) and the highlight-by-porte state
+    (`useDemografiaHighlight`) are gone: zooming or clicking the map changes
+    Estado and Município in the panel filters through `usePanelMapFilters`
+    (the same `request` as the filter bar).
   - Estado and Município keep multiple selection (up to 100, as before),
     styled like the prototype selects; links with several places still work.
   - Axis and labels come from the data (`perfilCharts.ts`: `niceAxis`,
@@ -386,8 +388,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     chosen place and year.
 - Field widths follow the perfil prototype (`.fb-in .fl`: flexible 110–240 px,
   Ano up to 140 px); the IDH bar keeps its fixed 204 px.
-- Image download exists for the series and the colour or race chart (SVG);
-  the map is a canvas and the other cards are HTML.
+- Image download exists for the series and the colour or race chart (SVG) and,
+  for the map, comes from the MapLibre engine (`toImageSource`) with
+  "Basemap: Esri" credited in the source (`panelMapImageSource`).
 - Removed with this rebuild: `DemografiaCharts`, `DemografiaSaibaMais`,
   `PorteLegend`, `PyramidChart`, `ValueBars` and `buildPyramidOption`.
 - Card state: `resolvePanelCardState` (`src/features/panels/panelCardState.ts`)
@@ -401,14 +404,21 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   the prototype's `norm()` does. The server drops the ones outside the new
   area (`keepKnown` in `src/features/panels/territorialOptions.ts`), which
   keeps the multi-state selection. PIB clears both instead.
-- The fullscreen map receives `source` (the panel's source line) and an
-  optional `hint`: `MAP_SELECT_HINT` only shows on the states map, which
-  filters on click. The porte legend only shows in the "Municípios" view, in
-  the card and in the fullscreen.
-- The municipalities map is a canvas with no text for screen readers, so it
-  carries an `sr-only` table built by `buildPerfilPorteTable`, replacing the
-  table `ChoroplethMap` used to provide.
-
+- The fullscreen map is a second `PanelMap` (`renderStage`) wired to the same
+  filters; its state (`usePorteMapView`, only `fullscreen` now) lives in the
+  dashboard so it survives the swap to the empty layout.
+- The map is a canvas with no text for screen readers, so the card carries an
+  `sr-only` table built by `buildPerfilPorteTable`.
+- Shared by the PIB and the profile map cards (`src/components/PanelMap/`):
+  `usePanelMapFilters` (selection to recorte and back), `PanelMapCardActions`
+  (fullscreen button, ⓘ and the menu with the Esri credit) and
+  `panelMapTexts` (`PANEL_MAP_HINT`, `panelMapImageSource`).
+- Removed with the map swap: `PerfilPorteToggles`, `DemografiaMapa`
+  (`useDemografiaHighlight`, profile copy), `toggleTerritorialUf` and
+  `selectOnlyTerritorialUf` (`territorialPlace.ts`), `PIB_MAP_HINT` and
+  `PIB_MAP_IMAGE_SOURCE`. `ChoroplethCanvas`, `ChoroplethMap`,
+  `public/maps/*.json` and `ProtoStateMap` stay: the Power BI demos and the
+  IDH still use them.
 
 ## PIB Panel Demo (`/demo/pib`)
 
@@ -432,9 +442,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   - The map is by state only, as in the prototype. The previous demo's
     municipal map, its table and the "highlight an activity on the map" list
     are gone; the activity card shows the three largest, as the prototype does.
-  - Clicking a state leaves only that state in the filter
-    (`selectOnlyTerritorialUf`); clicking the only chosen one again clears it,
-    as in the IDH map. Several states are still possible through the Estado
+  - Zooming or clicking the map sets Estado and Município in the filter
+    (`usePanelMapFilters`); several states are possible through the Estado
     filter.
   - The VAB axis unit follows the data (`pibBarUnit`: trilhões, bilhões,
     milhões, mil) instead of the fixed "R$ bilhões", so a small municipality

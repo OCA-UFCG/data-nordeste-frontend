@@ -8,11 +8,8 @@ export const PIB_LEAD =
 // Fonte que vai no rodapé dos cards e na imagem baixada.
 export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
-// Título do card do mapa e a fonte da imagem baixada dele: o fundo do mapa é
-// do Esri, e a atribuição vai junto da fonte do dado.
+// Título do card do mapa.
 export const PIB_MAP_TITLE = "Mapa do PIB por município";
-export const PIB_MAP_IMAGE_SOURCE = `${PIB_CARD_SOURCE} · Basemap: Esri`;
-export const PIB_MAP_HINT = "Aproxime o mapa ou clique para filtrar o painel";
 
 // INTENTIONAL: sem "Atualizado em". O protótipo traz "11/2026" fixo e o banco
 // não informa quando o PIB foi carregado; inclua a data quando houver fonte.
