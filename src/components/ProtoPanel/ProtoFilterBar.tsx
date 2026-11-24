@@ -14,6 +14,7 @@ import {
   WRAP,
 } from "@/components/ProtoPanel/protoStyles";
 import { useProtoTone } from "@/components/ProtoPanel/protoTone";
+import { useInert } from "@/components/ProtoPanel/useInert";
 import { cn } from "@/lib/utils";
 
 // `#clearBtn`: vermelho quando há filtro; só o ícone no celular (com
@@ -226,16 +227,17 @@ export const ProtoFilterBar = ({
   const tone = useProtoTone();
   const showBrand = fillRow && brand;
   const barBrand = brandInBar ? brand : undefined;
+  const contentRef = useInert<HTMLDivElement>(Boolean(disabled));
 
-  // O React 18 só liga `inert` com string vazia; o tipo dele pede boolean.
   return (
     <div
       ref={barRef}
-      {...(disabled && ({ inert: "" } as object))}
       style={{ top, ...protoToneStyle(tone) }}
       className={`${PROTO_TEXT} sticky z-40 w-full border-b border-grey-300 bg-white transition-shadow duration-150 ${stuck ? "shadow-[0_6px_16px_-10px_rgba(41,40,41,0.45)]" : ""}`}
     >
+      {/* Inerte pelo DOM (`useInert`): o React 18 reclama de `inert=""` no JSX. */}
       <div
+        ref={contentRef}
         className={cn(
           WRAP,
           "flex min-h-[88px] items-end gap-4 py-3 max-[700px]:min-h-14 max-[700px]:items-center max-[700px]:gap-2 max-[700px]:py-2",
