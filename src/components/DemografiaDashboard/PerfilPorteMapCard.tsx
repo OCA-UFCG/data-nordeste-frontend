@@ -4,9 +4,6 @@ import { type ReactNode, useMemo, useState } from "react";
 import { useDemografiaHighlight } from "@/components/DemografiaDashboard/DemografiaMapa";
 import { PerfilPorteToggles } from "@/components/DemografiaDashboard/PerfilPorteToggles";
 import type { PerfilCardProps } from "@/components/DemografiaDashboard/perfilCardProps";
-import { PERFIL_CARD_SOURCE } from "@/components/DemografiaDashboard/perfilTexts";
-import { DataTable } from "@/components/Panel/cards/DataTable";
-import { ChoroplethCanvas } from "@/components/Panel/charts/ChoroplethMap";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
@@ -15,6 +12,11 @@ import {
   MAP_SELECT_HINT,
   ProtoMapFullscreen,
 } from "@/components/ProtoPanel/ProtoMapFullscreen";
+import {
+  PROTO_MAP_BOX_CLASS,
+  ProtoMunicipalCanvas,
+  ProtoMunicipalMapBox,
+} from "@/components/ProtoPanel/ProtoMunicipalMap";
 import {
   ProtoStateMap,
   type ProtoStateMapProps,
@@ -32,7 +34,6 @@ import { withYear } from "@/features/panels/territorialFilters";
 const TITLE = "Porte dos municípios";
 const INFO =
   "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Na vista Estados, clique em um estado para usá-lo como filtro do painel.";
-const MESH_URL = "/maps/municipios-sudene.json";
 const MUNICIPIOS_LABEL = "Mapa dos municípios por porte";
 const ESTADOS_LABEL = "Mapa dos estados do Nordeste";
 
@@ -40,15 +41,9 @@ const ESTADOS_LABEL = "Mapa dos estados do Nordeste";
 const ESTADO_FILL = DEMOGRAFIA_PORTE_COLORS.pequeno;
 const ESTADO_FILL_SELECTED = DEMOGRAFIA_PORTE_COLORS.medio;
 
-// 560 px é o `max-height` do mapa no protótipo (`.map-box`). Fixar a altura
-// (em vez da proporção da malha) evita que o card cresça para ~1 200 px; as
-// duas vistas usam a mesma caixa de mapa. O card ainda muda de altura ao
+// As duas vistas usam a mesma caixa de mapa. O card ainda muda de altura ao
 // alternar pela legenda de porte, que só existe na vista Municípios.
-const MAP_BOX_CLASS =
-  "h-[560px] w-full max-[1000px]:h-[480px] max-[700px]:h-[360px]";
-
-// Fundo azul do mar: o palco da tela cheia recebe só a cor, a moldura é dele.
-const MUNICIPIOS_STAGE_CLASS = "size-full bg-[#d4eef7]";
+const PERFIL_SEA = "#d4eef7";
 
 type MapView = "municipios" | "estados";
 type PorteHighlight = ReturnType<typeof useDemografiaHighlight>;
@@ -104,17 +99,17 @@ const estadosMap = (
 const municipiosCanvas = (
   data: DemografiaPanelData,
   highlightCodes: ReadonlySet<string> | undefined,
-  className?: string,
+  stage = false,
 ) => (
-  <ChoroplethCanvas
+  <ProtoMunicipalCanvas
     label={MUNICIPIOS_LABEL}
-    meshUrl={MESH_URL}
+    sea={PERFIL_SEA}
+    stage={stage}
     regions={data.mapa}
     buckets={DEMOGRAFIA_PORTES}
     valueLabel="População"
     formatValue={formatPessoas}
     highlightCodes={highlightCodes}
-    className={className}
   />
 );
 
@@ -129,8 +124,7 @@ const porteStage = (
   view === "estados"
     ? estados
     : {
-        renderStage: () =>
-          municipiosCanvas(data, porte.highlightCodes, MUNICIPIOS_STAGE_CLASS),
+        renderStage: () => municipiosCanvas(data, porte.highlightCodes, true),
       };
 
 const PorteLegend = ({ porte }: { porte: PorteHighlight }) => (
@@ -153,21 +147,14 @@ const usePorteMapData = (
   );
   const porte = useDemografiaHighlight(municipios);
 
-  // PERF: a tabela tem um item por município (~1 800). O elemento memorizado
-  // evita reconciliar todas as linhas a cada hover na legenda de porte.
-  const table = useMemo(
-    () => <DataTable content={buildPerfilPorteTable(data)} className="" />,
-    [data],
-  );
+  const table = useMemo(() => buildPerfilPorteTable(data), [data]);
 
   return { porte, table, estados: estadosMap(data, selectedUfs, onSelectUf) };
 };
 
 type PorteMapData = ReturnType<typeof usePorteMapData>;
 
-// O mapa da vista escolhida. Na de municípios, o canvas não tem texto para
-// leitores de tela: a tabela escondida ocupa o lugar da que o ChoroplethMap
-// anterior tinha (revisão da PR #401).
+// O mapa da vista escolhida; só a de municípios leva a tabela escondida.
 const PorteMapBox = ({
   view,
   data,
@@ -177,19 +164,19 @@ const PorteMapBox = ({
   data: DemografiaPanelData;
   map: PorteMapData;
 }) => (
-  <>
-    <div className="flex flex-1 items-center rounded-[8px] bg-[#d4eef7] p-1 max-[1000px]:p-2">
-      {view === "estados" ? (
-        <ProtoStateMap
-          {...map.estados}
-          className={`mx-auto block max-h-[560px] ${MAP_BOX_CLASS}`}
-        />
-      ) : (
-        municipiosCanvas(data, map.porte.highlightCodes, MAP_BOX_CLASS)
-      )}
-    </div>
-    {view === "municipios" ? <div className="sr-only">{map.table}</div> : null}
-  </>
+  <ProtoMunicipalMapBox
+    sea={PERFIL_SEA}
+    table={view === "municipios" ? map.table : undefined}
+  >
+    {view === "estados" ? (
+      <ProtoStateMap
+        {...map.estados}
+        className={`mx-auto block max-h-[560px] ${PROTO_MAP_BOX_CLASS}`}
+      />
+    ) : (
+      municipiosCanvas(data, map.porte.highlightCodes)
+    )}
+  </ProtoMunicipalMapBox>
 );
 
 const PorteCardActions = ({
@@ -225,7 +212,6 @@ const PorteFullscreen = ({
   <ProtoMapFullscreen
     {...frame}
     title={TITLE}
-    source={PERFIL_CARD_SOURCE}
     hint={view === "estados" ? MAP_SELECT_HINT : undefined}
     {...porteStage(view, data, map.porte, map.estados)}
   />

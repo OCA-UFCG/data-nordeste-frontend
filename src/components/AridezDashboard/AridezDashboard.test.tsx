@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AridezDashboard } from "@/components/AridezDashboard/AridezDashboard";
 import { aridezBigNumbers } from "@/components/AridezDashboard/AridezBigNumbers";
+import { ARIDEZ_CARD_SOURCE } from "@/components/AridezDashboard/aridezTexts";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import {
   emptyAridezPanel,
@@ -45,6 +46,13 @@ describe("aridezBigNumbers", () => {
 describe("AridezDashboard", () => {
   beforeEach(stubPanelBrowserApis);
   afterEach(() => vi.unstubAllGlobals());
+
+  // A fonte fica só na seção "Fonte dos dados" do painel, não em cada card.
+  it("shows no source under the charts", () => {
+    render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);
+
+    expect(screen.queryByText(ARIDEZ_CARD_SOURCE)).toBeNull();
+  });
 
   it("shows the panel brand in the desktop filter bar", () => {
     render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);

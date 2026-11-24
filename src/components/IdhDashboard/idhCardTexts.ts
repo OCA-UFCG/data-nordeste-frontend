@@ -1,10 +1,9 @@
-import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import {
   listYears,
   type YearRange,
 } from "@/features/panels/territorialFilters";
 
-// Textos dos cards do painel de IDH: o ⓘ de cada card e o rodapé com a fonte.
+// Textos dos cards do painel de IDH: o ⓘ de cada card.
 // Textos que dizem respeito ao IDH ficam aqui, não nos componentes do painel.
 
 // Textos do ⓘ de cada card, do protótipo. Diferem dele num ponto: no banco há
@@ -29,14 +28,3 @@ export const idhEvolutionInfo = (range: YearRange): string => {
 
   return `Média dos estados do Nordeste ou, com um estado no filtro, a série desse estado${period}. O IDH ajustado à desigualdade desconta as diferenças entre grupos da população. Clique em um ponto para escolher o ano.`;
 };
-
-/**
- * Rodapé dos cards: a fonte e, quando há, a data de atualização do Contentful
- * (sem ela, o rótulo some).
- *
- * @example idhCardFooter("10/2026") // { source: "Fonte: …", updatedAt: "10/2026" }
- */
-export const idhCardFooter = (updatedAt?: string) => ({
-  source: IDH_CARD_SOURCE,
-  ...(updatedAt ? { updatedAt } : {}),
-});

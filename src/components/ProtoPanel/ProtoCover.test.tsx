@@ -27,4 +27,20 @@ describe("ProtoCover", () => {
       "focus-visible:outline-(--proto-accent-strong)",
     );
   });
+
+  it("labels the date as the update date", () => {
+    render(
+      <ProtoCover
+        tone="pib"
+        icon="users"
+        title="Produto Interno Bruto (PIB)"
+        lead="Texto de abertura"
+        macroTheme="Economia e Renda"
+        updatedAt="2026-02-25"
+      />,
+    );
+
+    expect(screen.getByText("Atualizado em: 25/02/26")).toBeInTheDocument();
+    expect(screen.queryByText(/Publicado em/)).not.toBeInTheDocument();
+  });
 });

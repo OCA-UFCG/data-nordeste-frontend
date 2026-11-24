@@ -2,10 +2,13 @@
 
 import type { ReactNode } from "react";
 import { PibBars } from "@/components/PibDashboard/PibBars";
+import { PibInfoParagraphs } from "@/components/PibDashboard/PibInfoParagraphs";
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
 import {
-  PIB_CARD_FOOTER,
+  PIB_ATIVIDADE_INFO,
+  PIB_ATIVIDADE_UNIT,
   PIB_CARD_INFO,
+  PIB_VAB_TERM,
 } from "@/components/PibDashboard/pibTexts";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
 import {
@@ -20,7 +23,11 @@ import {
   buildAtividadeBars,
   buildVabBars,
 } from "@/features/panels/pib/pibBars";
-import { formatPibReais, formatPibTick } from "@/features/panels/pib/pibFormat";
+import {
+  formatPibReais,
+  formatPibTick,
+  formatPibUnit,
+} from "@/features/panels/pib/pibFormat";
 import {
   lacksPibSectorData,
   listPibYearsWithoutVab,
@@ -31,7 +38,7 @@ const VAB_TITLE = "Valor Adicionado Bruto (VAB) por setor";
 const ATIVIDADE_TITLE = "Participação da atividade com maior VAB no PIB";
 
 // Sem VAB (ano sem dado), o subtítulo fica com a unidade do protótipo.
-const NO_DATA_UNIT = "bilhões";
+const NO_DATA_UNIT = "R$ bilhões (Bi)";
 
 export type PibSectorCardProps = PibCardProps & {
   onSelectYear: (ano: number) => void;
@@ -95,12 +102,11 @@ const SectorCard = ({
 }: PibSectorCardProps & {
   title: string;
   unit: string;
-  info: string;
+  info: ReactNode;
   children: ReactNode;
 }) => (
   <ProtoCard
     {...status}
-    footer={PIB_CARD_FOOTER}
     title={title}
     subtitle={`${place} · ${data.filters.ano} · ${unit}`}
     kind="rank"
@@ -138,8 +144,13 @@ export const PibVabCard = (props: PibSectorCardProps) => {
     <SectorCard
       {...props}
       title={VAB_TITLE}
-      unit={`R$ ${bars.rows.length ? bars.unit.label : NO_DATA_UNIT}`}
-      info={PIB_CARD_INFO.vab(props.data.vabLastYear)}
+      unit={bars.rows.length ? formatPibUnit(bars.unit) : NO_DATA_UNIT}
+      info={
+        <>
+          <b>{PIB_VAB_TERM}</b>
+          {PIB_CARD_INFO.vab.slice(PIB_VAB_TERM.length)}
+        </>
+      }
     >
       {bars.rows.length ? (
         <>
@@ -150,10 +161,7 @@ export const PibVabCard = (props: PibSectorCardProps) => {
             formatValue={formatPibReais}
             formatTick={formatPibTick}
           />
-          <Hint>
-            Soma dos setores: {formatPibReais(bars.total)} · valores em R${" "}
-            {bars.unit.label} no eixo.
-          </Hint>
+          <Hint>VAB total: {formatPibReais(bars.total)}</Hint>
         </>
       ) : (
         <Hint>Sem VAB informado neste território.</Hint>
@@ -175,8 +183,8 @@ export const PibAtividadeCard = (props: PibSectorCardProps) => {
     <SectorCard
       {...props}
       title={ATIVIDADE_TITLE}
-      unit="% do PIB"
-      info={PIB_CARD_INFO.atividade(props.data.vabLastYear)}
+      unit={PIB_ATIVIDADE_UNIT}
+      info={<PibInfoParagraphs paragraphs={PIB_ATIVIDADE_INFO} />}
     >
       {bars.rows.length ? (
         <>
@@ -187,10 +195,6 @@ export const PibAtividadeCard = (props: PibSectorCardProps) => {
             formatValue={(value) => formatPercent(value)}
             formatTick={(value) => `${value}%`}
           />
-          <Hint>
-            Participação de cada atividade no PIB de {props.place} em{" "}
-            {props.data.filters.ano}.
-          </Hint>
         </>
       ) : (
         <Hint>Sem atividades com participação informada neste território.</Hint>

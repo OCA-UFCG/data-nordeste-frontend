@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, type Ref, useState } from "react";
+import { type ReactNode, type Ref, useState, version } from "react";
 import {
   ProtoIcon,
   type ProtoIconName,
@@ -15,6 +15,10 @@ import {
 } from "@/components/ProtoPanel/protoStyles";
 import { useProtoTone } from "@/components/ProtoPanel/protoTone";
 import { cn } from "@/lib/utils";
+
+// O app roda no React 19 do Next (`inert` booleano) e os testes no React 18,
+// que só liga `inert` com string vazia.
+const INERT_ON = version.startsWith("18.") ? "" : true;
 
 // `#clearBtn`: vermelho quando há filtro; só o ícone no celular (com
 // `brandInBar`, já a partir de 900 px, como no protótipo do IDH).
@@ -227,11 +231,10 @@ export const ProtoFilterBar = ({
   const showBrand = fillRow && brand;
   const barBrand = brandInBar ? brand : undefined;
 
-  // O React 18 só liga `inert` com string vazia; o tipo dele pede boolean.
   return (
     <div
       ref={barRef}
-      {...(disabled && ({ inert: "" } as object))}
+      {...(disabled && ({ inert: INERT_ON } as object))}
       style={{ top, ...protoToneStyle(tone) }}
       className={`${PROTO_TEXT} sticky z-40 w-full border-b border-grey-300 bg-white transition-shadow duration-150 ${stuck ? "shadow-[0_6px_16px_-10px_rgba(41,40,41,0.45)]" : ""}`}
     >

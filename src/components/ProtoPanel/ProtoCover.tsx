@@ -15,9 +15,9 @@ import { cn } from "@/lib/utils";
 const CRUMB_LINK =
   "text-inherit no-underline hover:underline focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-(--proto-accent-strong)";
 
-// "14/05/25", como no protótipo. UTC: a data do Contentful vem à meia-noite
-// UTC e, no fuso de Brasília, cairia no dia anterior.
-const formatPublishedAt = (date: string) =>
+// "14/05/25", como no protótipo. UTC: a data do Contentful vem à meia-noite de
+// Brasília (03:00 UTC); fixar o fuso mantém o dia em qualquer servidor.
+const formatUpdatedAt = (date: string) =>
   new Date(date).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
@@ -53,23 +53,23 @@ const Breadcrumbs = ({ title }: { title: string }) => (
 
 /**
  * Capa do painel (`.cover` do protótipo, em "Cinza Dados 50"): voltar, trilha,
- * data de publicação, macrotema, título e texto de abertura. É usada pela
+ * data de atualização, macrotema, título e texto de abertura. É usada pela
  * página (servidor), então recebe o `tone` e o `icon` em vez de ler o contexto.
  *
- * @example <ProtoCover tone="idh" icon="idh" title={IDH_TITLE} lead={IDH_LEAD} macroTheme="Desenvolvimento Social" publishedAt="2025-05-14" />
+ * @example <ProtoCover tone="idh" icon="idh" title={IDH_TITLE} lead={IDH_LEAD} macroTheme="Desenvolvimento Social" updatedAt="2025-05-14" />
  */
 export const ProtoCover = ({
   title,
   lead,
   macroTheme,
-  publishedAt,
+  updatedAt,
   icon,
   tone,
 }: {
   title: string;
   lead: string;
   macroTheme: string;
-  publishedAt?: string;
+  updatedAt?: string;
   icon: ProtoIconName;
   tone: ProtoTone;
 }) => (
@@ -86,9 +86,9 @@ export const ProtoCover = ({
       <div className="mb-5 flex min-h-10 items-center gap-4">
         <ProtoBackLink />
         <Breadcrumbs title={title} />
-        {publishedAt ? (
+        {updatedAt ? (
           <span className="ml-auto rounded-full border border-(--proto-accent-line) bg-(--proto-accent-soft) px-3 py-px text-xs leading-5 font-semibold whitespace-nowrap text-(--proto-accent-strong)">
-            Publicado em: {formatPublishedAt(publishedAt)}
+            Atualizado em: {formatUpdatedAt(updatedAt)}
           </span>
         ) : null}
       </div>

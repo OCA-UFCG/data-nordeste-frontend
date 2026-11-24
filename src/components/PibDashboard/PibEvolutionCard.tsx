@@ -6,8 +6,8 @@ import {
   PibLineChartSkeleton,
 } from "@/components/PibDashboard/PibLineChart";
 import {
-  PIB_CARD_FOOTER,
   PIB_CARD_INFO,
+  PIB_LINE_TITLE,
 } from "@/components/PibDashboard/pibTexts";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
@@ -15,15 +15,10 @@ import {
   ProtoCardMenu,
   useSvgChart,
 } from "@/components/ProtoPanel/ProtoCardMenu";
-
-const TITLE = "Evolução anual do PIB";
-
-// "2010 a 2023", pelos anos que a série realmente tem.
-const describeSpan = (years: number[]): string =>
-  years.length ? `${years[0]} a ${years[years.length - 1]} · ` : "";
+import { pibLineSubtitle } from "@/features/panels/pib/pibLineChart";
 
 /**
- * Card "Evolução anual do PIB": a série do território em linha, com o PIB
+ * Card "Dinâmica temporal do PIB total e do PIB per capita": a série do território em linha, com o PIB
  * total e o per capita. `ano`: o ano pedido, destacado na hora.
  *
  * @example <PibEvolutionCard data={panel} place="Nordeste" state="ok" ano={2021} onRetry={retry} onSelectYear={pickYear} />
@@ -36,20 +31,21 @@ export const PibEvolutionCard = ({
   ...status
 }: PibCardProps & { ano: number; onSelectYear: (ano: number) => void }) => {
   const chart = useSvgChart();
-  const span = describeSpan(data.serie.map((point) => point.ano));
 
   return (
     <ProtoCard
       {...status}
-      footer={PIB_CARD_FOOTER}
-      title={TITLE}
-      subtitle={`${place} · ${span}PIB total e per capita`}
+      title={PIB_LINE_TITLE}
+      subtitle={pibLineSubtitle(
+        place,
+        data.serie.map((point) => point.ano),
+      )}
       kind="line"
       skeleton={<PibLineChartSkeleton />}
       actions={
         <>
-          <ProtoCardInfo title={TITLE} text={PIB_CARD_INFO.line} />
-          <ProtoCardMenu title={TITLE} chart={chart} />
+          <ProtoCardInfo title={PIB_LINE_TITLE} text={PIB_CARD_INFO.line} />
+          <ProtoCardMenu title={PIB_LINE_TITLE} chart={chart} />
         </>
       }
     >

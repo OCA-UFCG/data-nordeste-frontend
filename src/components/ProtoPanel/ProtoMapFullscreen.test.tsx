@@ -6,19 +6,18 @@ import {
 } from "@/components/ProtoPanel/ProtoMapFullscreen";
 
 describe("ProtoMapFullscreen rodapé", () => {
-  it("mostra a fonte e esconde a dica quando não há hint", () => {
+  it("não mostra fonte nem rodapé quando não há hint", () => {
     render(
       <ProtoMapFullscreen
         open
         onOpenChange={() => {}}
         title="Mapa"
         subtitle="s"
-        source="Fonte: X"
         renderStage={() => <div />}
       />,
     );
 
-    expect(screen.getByText("Fonte: X")).toBeTruthy();
+    expect(screen.queryByText(/Fonte/)).toBeNull();
     expect(screen.queryByText(MAP_SELECT_HINT)).toBeNull();
   });
 
@@ -29,7 +28,6 @@ describe("ProtoMapFullscreen rodapé", () => {
         onOpenChange={() => {}}
         title="Mapa"
         subtitle="s"
-        source="Fonte: X"
         hint={MAP_SELECT_HINT}
         renderStage={() => <div />}
       />,

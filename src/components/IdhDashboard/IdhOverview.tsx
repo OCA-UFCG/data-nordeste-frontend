@@ -6,12 +6,10 @@ import { IdhLineChart } from "@/components/IdhDashboard/IdhLineChart";
 import { IdhMapLegend } from "@/components/IdhDashboard/IdhMapLegend";
 import { buildIdhMapProps } from "@/components/IdhDashboard/idhMapProps";
 import {
-  idhCardFooter,
   idhEvolutionInfo,
   IDH_CARD_INFO,
 } from "@/components/IdhDashboard/idhCardTexts";
 import { IdhRankingBars } from "@/components/IdhDashboard/IdhRanking";
-import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import {
   ProtoCard,
   type ProtoCardState,
@@ -69,7 +67,7 @@ const EvolutionCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={idhCardFooter(updatedAt)}
+      updatedAt={updatedAt}
       title={EVOLUTION_TITLE}
       mobileTitle="Evolução anual do IDH"
       subtitle={describeIdhSerie(data)}
@@ -112,7 +110,7 @@ const MapCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={idhCardFooter(updatedAt)}
+      updatedAt={updatedAt}
       title={MAP_TITLE}
       subtitle={subtitle}
       kind="map"
@@ -125,7 +123,6 @@ const MapCard = ({
           title="Mapa do IDH por estado"
           subtitle={subtitle}
           legend={<IdhMapLegend mapa={data.mapa} className="" />}
-          source={IDH_CARD_SOURCE}
           hint={MAP_SELECT_HINT}
         />
       }
@@ -157,7 +154,7 @@ const RankingCard = ({
 }: CardProps & { onSelectUf: (uf: string) => void }) => (
   <ProtoCard
     {...status}
-    footer={idhCardFooter(updatedAt)}
+    updatedAt={updatedAt}
     title={RANKING_TITLE}
     mobileTitle="Comparação entre os estados"
     subtitle={withYear(
