@@ -458,8 +458,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     title). Each Y axis has a title with its unit drawn inside the SVG, so the
     download keeps it ("PIB total (R$ bilhões)" top left, "PIB per capita (R$
     mil)" top right), plain pt-BR ticks in that unit, and the axis line, ticks
-    and title in the series color (text in the darker `*Ink` for AA). The
-    legend reads the same titles. `point.pib` and `point.perCapita` are in
+    and title in the series color (text in the darker `*Ink` for AA). No
+    series legend: the axis titles name the series. `point.pib` and `point.perCapita` are in
     reais; `pibLineUnits` divides. The total drops to milhões/mil when the
     series stays under R$ 1 bi (small municipalities), as the VAB axis does.
     Tooltip and value labels keep `formatPibReais`.

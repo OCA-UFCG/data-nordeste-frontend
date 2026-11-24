@@ -8,10 +8,6 @@ import {
   ProtoYearSlider,
   useLineYear,
 } from "@/components/ProtoPanel/ProtoLineYear";
-import {
-  ProtoSeriesLegend,
-  useHiddenSeries,
-} from "@/components/ProtoPanel/ProtoSeriesLegend";
 import { ProtoSkeleton } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoTooltip } from "@/components/ProtoPanel/ProtoTooltip";
 import { PROTO_CHART_FONT } from "@/components/ProtoPanel/protoStyles";
@@ -54,7 +50,7 @@ const SERIES: readonly PibLineSeries[] = [
 
 const AXIS_FONT_SIZE = "11.5";
 
-// Título do eixo e rótulo da legenda: "PIB total (R$ bilhões)".
+// Título do eixo: "PIB total (R$ bilhões)".
 const seriesTitle = (series: PibLineSeries, unit: PibBarUnit) =>
   `${series.shortLabel} (R$ ${unit.label})`;
 
@@ -214,13 +210,9 @@ const Line = ({
   );
 };
 
-const visibleSeries = (hidden: Set<PibLineKey>) =>
-  SERIES.filter((series) => !hidden.has(series.key));
-
 const LineSvg = ({
   geometry,
   svgRef,
-  hidden,
   selectedIndex,
   ano,
   units,
@@ -228,7 +220,6 @@ const LineSvg = ({
 }: LineYearHandlers & {
   geometry: PibLineGeometry;
   svgRef?: Ref<SVGSVGElement>;
-  hidden: Set<PibLineKey>;
   units: Units;
   selectedIndex: number;
   ano: number;
@@ -247,8 +238,7 @@ const LineSvg = ({
     >
       <Gridlines geometry={geometry} />
       <YearAxis geometry={geometry} />
-      {/* Cada eixo some junto com a sua série. */}
-      {visibleSeries(hidden).map((series) => (
+      {SERIES.map((series) => (
         <ValueAxis
           key={series.key}
           geometry={geometry}
@@ -256,7 +246,7 @@ const LineSvg = ({
           unit={units[series.key]}
         />
       ))}
-      {visibleSeries(hidden).map((series) => (
+      {SERIES.map((series) => (
         <Line
           key={series.key}
           geometry={geometry}
@@ -275,8 +265,8 @@ const LineSvg = ({
   );
 };
 
-const tooltipRows = (point: PibYearPoint, hidden: Set<PibLineKey>) =>
-  visibleSeries(hidden).map((series) => ({
+const tooltipRows = (point: PibYearPoint) =>
+  SERIES.map((series) => ({
     color: series.color,
     label: series.shortLabel,
     value: formatPibReais(series.pick(point)),
@@ -284,8 +274,8 @@ const tooltipRows = (point: PibYearPoint, hidden: Set<PibLineKey>) =>
 
 /**
  * Gráfico "Dinâmica temporal do PIB" (`#lineBox` do protótipo), em SVG: PIB
- * total e per capita, cada um com o seu eixo, título e unidade. Clique num ponto ou use as
- * setas para escolher o ano; a legenda mostra e esconde as séries.
+ * total e per capita, cada um com o seu eixo, título e unidade, sem legenda.
+ * Clique num ponto ou use as setas para escolher o ano.
  *
  * @example <PibLineChart serie={panel.serie} ano={2023} onSelectYear={pick} svgRef={chart.ref} />
  */
@@ -301,17 +291,8 @@ export const PibLineChart = ({
   svgRef?: Ref<SVGSVGElement>;
 }) => {
   const { ref: boxRef, width: boxWidth } = useElementWidth();
-  const { hidden, toggle } = useHiddenSeries<PibLineKey>();
   const years = useMemo(() => serie.map((point) => point.ano), [serie]);
   const units = useMemo(() => pibLineUnits(serie), [serie]);
-  const legend = useMemo(
-    () =>
-      SERIES.map((series) => ({
-        ...series,
-        label: seriesTitle(series, units[series.key]),
-      })),
-    [units],
-  );
   const { selectedIndex, hover, handlers } = useLineYear({
     years,
     ano,
@@ -331,7 +312,6 @@ export const PibLineChart = ({
 
   return (
     <>
-      <ProtoSeriesLegend series={legend} hidden={hidden} onToggle={toggle} />
       {/* Reserva a altura final antes de medir a largura: sem salto na hidratação. */}
       <div className="@container">
         <div ref={boxRef} className={`relative ${PIB_LINE_HEIGHT_CLASS}`}>
@@ -339,7 +319,6 @@ export const PibLineChart = ({
             <LineSvg
               geometry={geometry}
               svgRef={svgRef}
-              hidden={hidden}
               selectedIndex={selectedIndex}
               ano={ano}
               units={units}
@@ -355,7 +334,7 @@ export const PibLineChart = ({
         <ProtoTooltip
           at={hover}
           title={String(hoverPoint.ano)}
-          rows={tooltipRows(hoverPoint, hidden)}
+          rows={tooltipRows(hoverPoint)}
         />
       ) : null}
     </>
@@ -363,14 +342,13 @@ export const PibLineChart = ({
 };
 
 /**
- * Esqueleto do corpo do card com as alturas do gráfico pronto (legenda,
- * gráfico e dica), para o card não mudar de tamanho quando os dados chegam.
+ * Esqueleto do corpo do card com as alturas do gráfico pronto (gráfico e
+ * dica), para o card não mudar de tamanho quando os dados chegam.
  *
  * @example <ProtoCard skeleton={<PibLineChartSkeleton />} … />
  */
 export const PibLineChartSkeleton = () => (
   <>
-    <ProtoSkeleton className="mb-1.5 h-5 w-[45%]" />
     <div className="@container">
       <ProtoSkeleton className={PIB_LINE_HEIGHT_CLASS} />
     </div>

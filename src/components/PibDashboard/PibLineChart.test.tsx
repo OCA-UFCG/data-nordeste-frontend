@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   PIB_LINE_HEIGHT_CLASS,
@@ -71,21 +71,12 @@ describe("PibLineChart", () => {
     expect(svg.getByText("1.600")).toBeTruthy();
     expect(svg.getByText("40")).toBeTruthy();
     expect(svg.queryAllByText(/^R\$ [\d.,]+ (Bi|Tri|Mil)$/)).toHaveLength(2);
-    expect(
-      screen.getByRole("button", { name: "PIB total (R$ bilhões)" }),
-    ).toBeTruthy();
   });
 
-  it("hides the axis title and ticks together with the series", () => {
+  // Os títulos dos eixos já nomeiam as séries.
+  it("shows no series legend", () => {
     render(<PibLineChart serie={NORDESTE} ano={2023} onSelectYear={vi.fn()} />);
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "PIB per capita (R$ mil)" }),
-    );
-    const svg = chartSvg();
-
-    expect(svg.queryByText("PIB per capita (R$ mil)")).toBeNull();
-    expect(svg.queryByText("40")).toBeNull();
-    expect(svg.getByText("PIB total (R$ bilhões)")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /PIB total/ })).toBeNull();
   });
 });
