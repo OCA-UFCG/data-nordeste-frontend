@@ -31,6 +31,19 @@ export const describeTerritorialPlace = (
     .filter((part): part is string => part !== null)
     .join(" · ");
 
+/**
+ * Lugar de um mapa que segue só área e estados (sem os municípios, que ficam
+ * em destaque): "Semiárido · Pernambuco".
+ *
+ * @example describeTerritorialAreaPlace(selection) // "Semiárido · Pernambuco"
+ */
+export const describeTerritorialAreaPlace = (
+  selection: TerritorialSelection,
+): string =>
+  [areaLabel(selection.filters.area), describeSelectedUfs(selection)]
+    .filter((part): part is string => part !== null)
+    .join(" · ");
+
 const listOrAll = (names: string[]): string =>
   names.length ? names.join(", ") : "Todos";
 
@@ -71,7 +84,7 @@ export const toggleTerritorialUf = (
     return { ...filters, uf: next.length ? next : undefined, mun: undefined };
   }
 
-  // No limite, fica só o estado clicado, como no mapa do PIB e do IDH: o
+  // No limite, fica só o estado clicado, como no mapa do IDH: o
   // clique nunca parece quebrado, e com `maxPlaces = 1` vira o filtro de valor
   // único. Sem isso, o servidor cortava o excesso em silêncio (revisão da PR #400).
   if (current.length >= maxPlaces) return selectOnlyTerritorialUf(filters, uf);
@@ -82,8 +95,8 @@ export const toggleTerritorialUf = (
 };
 
 /**
- * Clicar num estado no mapa do PIB: o filtro fica só com ele. Clicar de novo
- * no único escolhido limpa o filtro, como no mapa do IDH. O município some,
+ * Clicar num estado no mapa (IDH e Aridez): o filtro fica só com ele. Clicar de
+ * novo no único escolhido limpa o filtro. O município some,
  * porque pode não ser do estado novo.
  *
  * @example selectOnlyTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB", "PE"] }, "PE").uf // ["PE"]

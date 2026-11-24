@@ -172,7 +172,7 @@ outside the repository and rendered through frontend route/component logic.
   is why `deploy-gamma.yml` and `deploy-prod.yml` build
   `linux/amd64,linux/arm64` while `deploy-beta.yml` does not. Dropping
   `linux/arm64` breaks the deploy with `no matching manifest for
-  linux/arm64/v8`. Consequence: `package-lock.json` must keep its
+linux/arm64/v8`. Consequence: `package-lock.json` must keep its
   `*-linux-arm64-*` entries, or the arm64 build fails resolving native
   binaries.
 - Do not document secrets or concrete environment values here. Use
@@ -304,8 +304,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 
 - The reference is the navigable prototype ("Painéis Data Nordeste", `idh.html`),
   reproduced in layout and behaviour: dark cover (back link, breadcrumb,
-  "Publicado em", macrotheme badge, lead), sticky filter bar, left rail of
-  views above 900 px (top tab bar below), cards with footer, ⓘ and ⋯ menu,
+  "Atualizado em", macrotheme badge, lead), sticky filter bar, left rail of
+  views above 900 px (top tab bar below), cards, ⓘ and ⋯ menu,
   "Saiba mais sobre o IDH" with "Ler mais" and glossary. It replaced the
   Power BI-faithful version of `129cef4` (gauges, no ranking).
 - The prototype building blocks (card, sheet, ⓘ, ⋯ menu, cover, filter bar
@@ -343,7 +343,11 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Contentful texts: the cover lead is the entry's `abovePanelDescription`
   (`IDH_LEAD` only as fallback) and the long `description` renders before
   "Saiba mais". The title stays `IDH_TITLE`: the "panels" entry `title` is the
-  lookup key (`"idh"`), not display text.
+  lookup key (`"idh"`), not display text. The PIB, perfil and aridez covers
+  follow the same rule (`PIB_LEAD`, `PERFIL_LEAD`, `ARIDEZ_LEAD` are copies of
+  the Contentful text, used only as fallback), so every demo cover opens with
+  the same paragraph as `/data-panel/<id>`. The cover badge says "Atualizado
+  em" with the entry `date`.
 - Switching views only calls `replaceState`; the active tab is local state that
   follows `data.filters.visao` when it changes. Do not put a `key` on
   `IdhDashboard`: it remounted the panel on the first filter after a tab
@@ -409,14 +413,15 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   the prototype's `norm()` does. The server drops the ones outside the new
   area (`keepKnown` in `src/features/panels/territorialOptions.ts`), which
   keeps the multi-state selection. PIB clears both instead.
-- The fullscreen map receives `source` (the panel's source line) and an
-  optional `hint`: `MAP_SELECT_HINT` only shows on the states map, which
-  filters on click. The porte legend only shows in the "Municípios" view, in
-  the card and in the fullscreen.
+- The fullscreen map takes an optional `hint`: `MAP_SELECT_HINT` only shows
+  on the states map, which filters on click. Neither the cards nor the
+  fullscreen show the source: the panel already has a "Fonte dos dados"
+  section, so `*_CARD_SOURCE` only goes into the downloaded image. IDH cards
+  keep only "Atualizado em" (`ProtoCard` `updatedAt`). The porte legend only
+  shows in the "Municípios" view, in the card and in the fullscreen.
 - The municipalities map is a canvas with no text for screen readers, so it
   carries an `sr-only` table built by `buildPerfilPorteTable`, replacing the
   table `ChoroplethMap` used to provide.
-
 
 ## PIB Panel Demo (`/demo/pib`)
 
@@ -425,41 +430,61 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   `ProtoPanel/` pieces in the "pib" tone (orange accent `#e5640f`, total
   `#f2761c`, per capita `#1e88c7`) and the real `eco_pib.vw_pib_municipal_pbi`
   data. Cover, sticky filter bar, two big numbers, the yearly line with one
-  axis per series, the state map and the two sector cards, "Saiba mais" and
-  related content.
+  axis per series, the municipal map and the two sector cards, "Saiba mais"
+  and related content.
 - Shared pieces extracted for this panel, so nothing was copied from the
   profile: `ProtoTerritorialFilters` (Ano, Área, Estado, Município; was
   `PerfilFilterBar`), `features/panels/territorialPlace.ts` (was
-  `demografia/perfilPlace.ts`), `ProtoSeriesLegend` (the line legend of the
-  IDH) and the `pair` variant of `ProtoStatCards`.
-- Data: the map query sums `pib_total` by state for the whole area and year,
-  ignoring the Estado and Município filters (the chosen state only gets the
-  outline). Sector data (VAB and activities) stops at 2021
+  `demografia/perfilPlace.ts`), and the `pair` variant of `ProtoStatCards`.
+- Map (content team review): "PIB total por município"
+  (`PIB_MAP_TITLE`), one query grouped by `cd_mun` (`pib_total` in reais,
+  `nome_municipio`, `sigla_uf`; the codes match `municipios-sudene.json`),
+  drawn with the shared `ProtoMunicipalCanvas`/`ProtoMunicipalMapBox`
+  (`ProtoPanel/ProtoMunicipalMap.tsx`, also used by the Perfil porte map)
+  and an `sr-only` table (`buildPibMunicipalTable`, on the shared
+  `buildMunicipalMapTable`). It follows Área, Ano and Estado (only the chosen
+  states' municipalities, so the mesh frames them); Município only highlights
+  (`pibMapFocus`: the others go grey, a single one is zoomed and outlined), so
+  changing it does not reload or dim the map. Clicking does not filter, as in
+  the Perfil municipal map. Classes (`PIB_MUNICIPAL_BINS`) are fixed so years
+  compare: < 50 Mi, 50–100 Mi, 100–250 Mi, 250 Mi–1 Bi, 1–5 Bi, > 5 Bi (2023
+  median in the Sudene area is about R$ 200 Mi, the largest above R$ 80 Bi).
+- Sector data (VAB and activities) stops at 2021
   (`PIB_VAB_LAST_YEAR`); 2022 and 2023 show the notice with "Ver 2021".
 - Deliberate deviations from the prototype:
-  - The map is by state only, as in the prototype. The previous demo's
-    municipal map, its table and the "highlight an activity on the map" list
-    are gone; the activity card shows the three largest, as the prototype does.
-  - Clicking a state leaves only that state in the filter
-    (`selectOnlyTerritorialUf`); clicking the only chosen one again clears it,
-    as in the IDH map. Several states are still possible through the Estado
-    filter.
+  - The map is by municipality, not by state as in the prototype (content
+    team review). The "highlight an activity on the map" list is gone; the
+    activity card shows the three largest, as the prototype does.
   - The VAB axis unit follows the data (`pibBarUnit`: trilhões, bilhões,
     milhões, mil) instead of the fixed "R$ bilhões", so a small municipality
     gets a readable axis.
+  - VAB card (content team review): subtitle unit with the label abbreviation
+    ("R$ milhões (Mi)", `formatPibUnit`), footer "VAB total: R$ 304,20 Mi", and
+    the ⓘ text `PIB_CARD_INFO.vab` with "Valor Adicionado Bruto (VAB)" in bold.
+  - Line card (content team review): title "Dinâmica temporal do PIB total e
+    do PIB per capita" (`PIB_LINE_TITLE`, also the SVG label and the image
+    title). Each Y axis has a title with its unit drawn inside the SVG, so the
+    download keeps it ("PIB total (R$ bilhões)" top left, "PIB per capita (R$
+    mil)" top right), plain pt-BR ticks in that unit, and the axis line, ticks
+    and title in the series color (text in the darker `*Ink` for AA). No
+    series legend: the axis titles name the series. `point.pib` and `point.perCapita` are in
+    reais; `pibLineUnits` divides. The total drops to milhões/mil when the
+    series stays under R$ 1 bi (small municipalities), as the VAB axis does.
+    Tooltip and value labels keep `formatPibReais`. Subtitle: place and year
+    span only (`pibLineSubtitle`). Below 560 px the two titles do not fit
+    side by side (~250 px in Inter): they stack as a two-row header with a
+    series marker, the selected year's value right-aligned on each row
+    instead of labels on the lines, the side margins follow the widest tick
+    label, and the selected year always shows on the X axis.
   - Money uses the existing formatter ("R$ 45,00 Mi"); the prototype drops
     decimals in millions. The change pill reads "em relação a 2022" (shared
     `formatYearChange`), not "vs. 2022".
   - No "Escolher outro ano" button in the year notice and no "Atualizado em"
-    in the card footers: the database does not say when the PIB was loaded
-    (`PIB_CARD_FOOTER`, marked `INTENTIONAL:`).
-  - Minas Gerais and Espírito Santo (Área da Sudene, Semiárido) have data but
-    no shape in the nine-state map; a hint under the legend says so
-    (`describeStatesOffMap`).
+    on the cards: the database does not say when the PIB was loaded.
   - "Saiba mais" keeps the Power BI definitions (PIB, per capita, VAB,
     participação) as the glossary; the prototype has only the paragraphs.
-- Image download exists for the line and the map (SVG); the sector bars are
-  HTML.
+- Image download exists for the line (SVG); the map is a canvas and the
+  sector bars are HTML.
 - Removed with this rebuild: `PibSectorCharts`, `AtividadeList`,
   `AtividadeHighlightChip`, `PibSaibaMais`, `TrendChart`, `HorizontalBarChart`
   and `trendOption`. Still exported but unused after it:
@@ -473,9 +498,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Card states as in the IDH (`resolvePibCardStates` in `pibCardState.ts`,
   built on the shared `resolveDependentCardStates` and `usePendingFilters`):
   while a filter loads, only the cards whose query depends on the changed
-  filter keep their data dimmed (`stale`); clicking a state leaves the map
-  alone, a year change leaves the yearly series alone. The selection (map
-  outline, chart year, filter bar) follows the requested filters at once.
+  filter keep their data dimmed (`stale`); changing the municipality leaves
+  the map alone, a year change leaves the yearly series alone. The selection
+  (map highlight, chart year, filter bar) follows the requested filters at once.
   Skeletons only after a failed query ("Tentar de novo" and loading beats
   error). The map fullscreen goes in `ProtoCard`'s `overlay` slot.
 - Big numbers: `buildPibBigNumbers` (`features/panels/pib/pibBigNumbers.ts`)
@@ -523,7 +548,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     for the whole area), with `content-visibility: auto`. The segment tooltip
     is the prototype's dark `ProtoTooltip`, driven by one delegated
     `pointermove` on the list, not a handler per segment.
-  - No "Atualizado em" in the card footers (`ARIDEZ_CARD_FOOTER`, as in PIB).
+  - No "Atualizado em" on the cards (no load date in the database, as in PIB).
 - The class columns card stretches to the municipal list beside it
   (`#c-cls .chartbox{flex:1}` in the prototype): the SVG is absolutely
   positioned in a growing box and `useElementWidth` also reports the height.

@@ -3,10 +3,7 @@
 import { memo, useState, type PointerEvent } from "react";
 import type { AridezCardProps } from "@/components/AridezDashboard/aridezCardProps";
 import { AridezClassLegend } from "@/components/AridezDashboard/AridezClassLegend";
-import {
-  ARIDEZ_CARD_FOOTER,
-  ARIDEZ_CARD_INFO,
-} from "@/components/AridezDashboard/aridezTexts";
+import { ARIDEZ_CARD_INFO } from "@/components/AridezDashboard/aridezTexts";
 import { ARIDEZ_COLORS } from "@/components/AridezDashboard/aridezTheme";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
@@ -178,7 +175,6 @@ export const AridezMunicipiosCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={ARIDEZ_CARD_FOOTER}
       title={TITLE}
       mobileTitle={MOBILE_TITLE}
       subtitle={`${place} · ${data.filters.ano} · % da área do município`}
