@@ -3,6 +3,7 @@ import {
   formatPibAxis,
   formatPibReais,
   formatPibTick,
+  formatPibUnit,
 } from "@/features/panels/pib/pibFormat";
 
 describe("formatPibReais", () => {
@@ -31,5 +32,17 @@ describe("formatPibTick", () => {
     expect(formatPibTick(120)).toBe("120");
     expect(formatPibTick(0.3)).toBe("0,3");
     expect(formatPibTick(1.255)).toBe("1,26");
+  });
+});
+
+describe("formatPibUnit", () => {
+  it("matches the abbreviations of the value labels", () => {
+    const unit = (label: string) => ({ divisor: 1, label });
+
+    expect(formatPibUnit(unit("trilhões"))).toBe("R$ trilhões (Tri)");
+    expect(formatPibUnit(unit("bilhões"))).toBe("R$ bilhões (Bi)");
+    expect(formatPibUnit(unit("milhões"))).toBe("R$ milhões (Mi)");
+    expect(formatPibUnit(unit("mil"))).toBe("R$ mil (Mil)");
+    expect(formatPibUnit(unit("reais"))).toBe("R$");
   });
 });

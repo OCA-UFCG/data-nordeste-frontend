@@ -32,7 +32,7 @@ export const ProtoFullscreenButton = ({
  * Legenda das faixas de um mapa coroplético (`.mleg` do protótipo): um ponto
  * na cor e o rótulo de cada faixa.
  *
- * @example <ProtoBinLegend bins={PIB_STATE_BINS} />
+ * @example <ProtoBinLegend bins={PIB_MUNICIPAL_BINS} />
  */
 export const ProtoBinLegend = ({
   bins,

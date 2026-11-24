@@ -16,12 +16,14 @@ const sectorCoverage = (vabLastYear: number | null) =>
 export const PIB_LINE_TITLE =
   "Dinâmica temporal do PIB total e do PIB per capita";
 
+// Trecho do ⓘ do VAB que o card destaca em negrito.
+export const PIB_VAB_TERM = "Valor Adicionado Bruto (VAB)";
+
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
   line: "PIB total no eixo da esquerda e PIB per capita no eixo da direita, cada um na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
-  map: "Cada estado recebe a cor da faixa do seu PIB total. Clique em um estado para usá-lo como filtro do painel.",
-  vab: (vabLastYear: number | null) =>
-    `Valor adicionado bruto de cada grande setor da economia.${sectorCoverage(vabLastYear)}`,
+  map: "Cada município recebe a cor da faixa do seu PIB total no ano. Com estados no filtro, o mapa mostra só os municípios deles; os municípios escolhidos ficam em destaque.",
+  vab: `${PIB_VAB_TERM} por setor representa o quanto cada setor da economia contribui para a geração de riqueza, ou seja, para o Produto Interno Bruto (PIB).`,
   atividade: (vabLastYear: number | null) =>
     `As três atividades com maior participação no PIB do território selecionado, em % do PIB.${sectorCoverage(vabLastYear)}`,
 } as const;

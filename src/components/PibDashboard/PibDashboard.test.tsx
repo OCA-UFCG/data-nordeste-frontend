@@ -123,6 +123,9 @@ describe("PibDashboard", () => {
 
     expect(sectorNotices()).toHaveLength(0);
     expect(screen.getAllByText("Serviços").length).toBeGreaterThan(0);
+    expect(screen.getByText(/VAB total: R\$ 500,00 Mi$/)).toBeInTheDocument();
+    expect(screen.getByText(/· R\$ milhões \(Mi\)$/)).toBeInTheDocument();
+    expect(screen.queryByText(/no eixo/)).not.toBeInTheDocument();
   });
 
   it("shows the notice for a year without sector data, whatever the year", () => {

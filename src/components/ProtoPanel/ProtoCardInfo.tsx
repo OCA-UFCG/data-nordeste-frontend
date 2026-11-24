@@ -1,6 +1,6 @@
 "use client";
 
-import { type MouseEvent, useState } from "react";
+import { type MouseEvent, type ReactNode, useState } from "react";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 import { ProtoSheet } from "@/components/ProtoPanel/ProtoSheet";
 import {
@@ -34,7 +34,13 @@ const InfoButton = (props: {
 );
 
 // No celular, o texto abre numa folha com o título do card.
-const InfoSheetButton = ({ title, text }: { title: string; text: string }) => {
+const InfoSheetButton = ({
+  title,
+  text,
+}: {
+  title: string;
+  text: ReactNode;
+}) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -49,7 +55,7 @@ const InfoSheetButton = ({ title, text }: { title: string; text: string }) => {
 
 // No desktop, passar o mouse mostra o balão e clicar o fixa até clicar fora,
 // como no protótipo.
-const InfoPopoverButton = ({ text }: { text: string }) => {
+const InfoPopoverButton = ({ text }: { text: ReactNode }) => {
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
   const tone = useProtoTone();
@@ -97,7 +103,7 @@ export const ProtoCardInfo = ({
   text,
 }: {
   title: string;
-  text: string;
+  text: ReactNode;
 }) =>
   useMediaQuery("(max-width: 700px)") ? (
     <InfoSheetButton title={title} text={text} />

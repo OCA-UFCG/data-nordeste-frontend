@@ -26,3 +26,18 @@ export const formatPibTick = (value: number): string => tick.format(value);
  */
 export const formatPibAxis = (value: number, unit: PibBarUnit): string =>
   formatPibTick(value / unit.divisor);
+
+const UNIT_ABBR: Record<string, string> = {
+  trilhões: "Tri",
+  bilhões: "Bi",
+  milhões: "Mi",
+  mil: "Mil",
+};
+
+/**
+ * Unidade do subtítulo, com a sigla que os rótulos de valor usam.
+ *
+ * @example formatPibUnit({ divisor: 1e6, label: "milhões" }) // "R$ milhões (Mi)"
+ */
+export const formatPibUnit = (unit: PibBarUnit): string =>
+  UNIT_ABBR[unit.label] ? `R$ ${unit.label} (${UNIT_ABBR[unit.label]})` : "R$";

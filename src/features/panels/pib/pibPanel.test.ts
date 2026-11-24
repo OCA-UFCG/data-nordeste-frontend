@@ -57,10 +57,20 @@ class PibDatabaseFake {
       ];
     }
     if (sql.includes("municipio_uf FROM")) return municipiosIn(params);
-    if (sql.includes("GROUP BY sigla_uf, estado_uf")) {
+    if (sql.includes("GROUP BY cd_mun")) {
       return [
-        { sigla_uf: "PB", estado_uf: "Paraíba", pib: "62397000000" },
-        { sigla_uf: "PE", estado_uf: "Pernambuco", pib: "181610000000" },
+        {
+          cd_mun: "2507507",
+          nome_municipio: "João Pessoa",
+          sigla_uf: "PB",
+          pib: "25560000000",
+        },
+        {
+          cd_mun: "2611606",
+          nome_municipio: "Recife",
+          sigla_uf: "PE",
+          pib: "66351305000",
+        },
       ];
     }
     if (sql.includes("GROUP BY ano")) {
@@ -153,7 +163,7 @@ describe("loadPibPanel", () => {
     expect(serie.params).toEqual(["PE", "2611606"]);
   });
 
-  it("sums the map by state for the whole area, ignoring the place filters", async () => {
+  it("maps the PIB by municipality for the area, year and states, not the municipalities", async () => {
     const db = new PibDatabaseFake();
     const panel = await loadPibPanel(db.query, {
       ano: 2017,
@@ -161,13 +171,15 @@ describe("loadPibPanel", () => {
       uf: ["PE"],
       mun: ["2611606"],
     });
-    const estados = db.callFor("GROUP BY sigla_uf, estado_uf");
+    const mapa = db.callFor("GROUP BY cd_mun");
 
-    expect(estados.sql).toContain("semiarido = 'Sim'");
-    expect(estados.params).toEqual([2017]);
-    expect(panel.estados).toEqual([
-      { code: "PB", name: "Paraíba", value: 62397000000 },
-      { code: "PE", name: "Pernambuco", value: 181610000000 },
+    expect(mapa.sql).toContain("SUM(pib_total)");
+    expect(mapa.sql).toContain("semiarido = 'Sim'");
+    expect(mapa.sql).not.toContain("cd_mun =");
+    expect(mapa.params).toEqual([2017, "PE"]);
+    expect(panel.mapa).toEqual([
+      { code: "2507507", name: "João Pessoa", uf: "PB", value: 25560000000 },
+      { code: "2611606", name: "Recife", uf: "PE", value: 66351305000 },
     ]);
   });
 
@@ -229,7 +241,7 @@ describe("emptyPibPanel", () => {
       ufs: [],
       municipios: [],
       serie: [],
-      estados: [],
+      mapa: [],
       vab: null,
       atividades: [],
       vabLastYear: null,
