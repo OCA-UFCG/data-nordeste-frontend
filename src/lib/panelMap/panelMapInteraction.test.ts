@@ -38,6 +38,10 @@ class MaplibreMovesFake {
     },
   );
 
+  readonly easeTo = vi.fn((_options: unknown, data: object) => {
+    this.end(data);
+  });
+
   readonly fitBounds = vi.fn(
     (_bbox: unknown, _options: unknown, data: object) => {
       this.zoom = 7;
@@ -94,6 +98,28 @@ describe("trackMoves", () => {
       expect.objectContaining({ maxZoom: 10 }),
       expect.anything(),
     );
+  });
+
+  // O zoom do usuário é mantido: só o centro muda, e o moveend conta como fit.
+  it("o centerOn centra no meio da caixa e mantém o zoom", () => {
+    const { map, moves, tracker } = trackedMoves();
+
+    map.zoom = 6.4;
+    tracker.centerOn([
+      [-42, -10],
+      [-36, -4],
+    ]);
+
+    expect(map.easeTo).toHaveBeenCalledWith(
+      expect.objectContaining({ center: [-39, -7], duration: 600 }),
+      expect.anything(),
+    );
+    expect(map.easeTo.mock.calls[0][0]).not.toHaveProperty("zoom");
+    expect(moves.at(-1)).toMatchObject({
+      programmatic: true,
+      fit: true,
+      fittedZoom: 6.4,
+    });
   });
 
   it("um resize é programático, mas não é fit e mantém o fittedZoom", () => {

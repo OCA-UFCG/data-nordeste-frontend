@@ -100,6 +100,14 @@ export function bboxOf(features: Feature[]): Bounds | null {
   ];
 }
 
+/** Centro `[lng, lat]` da caixa. Ex.: `[[0,0],[4,2]]` → `[2, 1]`. */
+export function boundsCenter([[west, south], [east, north]]: Bounds): [
+  number,
+  number,
+] {
+  return [(west + east) / 2, (south + north) / 2];
+}
+
 function featuresWhere(
   collection: FeatureCollection,
   property: string,

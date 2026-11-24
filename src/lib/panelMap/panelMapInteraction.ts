@@ -6,7 +6,7 @@ import type {
 } from "maplibre-gl";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
-import type { Bounds } from "@/features/panelMap/mapLayers";
+import { type Bounds, boundsCenter } from "@/features/panelMap/mapLayers";
 import {
   PANEL_MAP_LAYER,
   PANEL_MAP_SOURCE,
@@ -18,7 +18,7 @@ export type PanelMapMoveEnd = {
   centerMun?: string;
   programmatic: boolean;
 
-  // Só o fim de um fitTo. Um resize também é programático, mas não enquadrou.
+  // Só o fim de um fitTo ou centerOn. Um resize também é programático, mas não enquadrou.
   fit: boolean;
   fittedZoom: number;
 };
@@ -27,7 +27,7 @@ export type PanelMapHover = { props: MapFeatureProps; x: number; y: number };
 
 type FeatureId = FeatureIdentifier["id"];
 
-// Marca os moveend do fitTo, só para registrar o fittedZoom. WHY eventData e
+// Marca os moveend do fitTo e do centerOn, só para registrar o fittedZoom. WHY eventData e
 // não um flag: o flag fica preso quando o MapLibre não consegue enquadrar (sem
 // moveend) e erra quando um fitTo interrompe outro.
 const FIT_EVENT_DATA = { panelMapFit: true };
@@ -35,6 +35,7 @@ const FIT_EVENT_DATA = { panelMapFit: true };
 // Teto do enquadramento: um município pequeno não enche a tela inteira e
 // ficaria ampliado demais.
 const FIT_MAX_ZOOM = 10;
+const CENTER_DURATION_MS = 600;
 
 // IMPORTANT: só gesto do usuário vira filtro. Arrastar, roda do mouse, toque,
 // teclado e os botões +/− mandam `originalEvent` no moveend; o
@@ -91,8 +92,8 @@ function describeMoveEnd(
 
 /**
  * Enquadramentos e fins de movimento. `programmatic` é tudo que não foi gesto
- * do usuário (fitTo, resize); `fit` só o fim de um fitTo; `fittedZoom` é o
- * zoom em que o último fitTo terminou.
+ * do usuário (fitTo, centerOn, resize); `fit` só o fim de um fitTo ou centerOn;
+ * `fittedZoom` é o zoom em que o último deles terminou (no centerOn, o atual).
  */
 export function trackMoves(map: MaplibreMap, municipal: boolean) {
   let fittedZoom = map.getZoom();
@@ -108,6 +109,12 @@ export function trackMoves(map: MaplibreMap, municipal: boolean) {
       map.fitBounds(
         bbox,
         { padding: 24, duration: 600, maxZoom: FIT_MAX_ZOOM },
+        FIT_EVENT_DATA,
+      );
+    },
+    centerOn: (bbox: Bounds) => {
+      map.easeTo(
+        { center: boundsCenter(bbox), duration: CENTER_DURATION_MS },
         FIT_EVENT_DATA,
       );
     },

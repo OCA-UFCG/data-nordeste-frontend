@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  type MutableRefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
 import type {
@@ -99,77 +106,105 @@ function useSourcesAndPaint(
   }, [engine, geodata, paint, area]);
 }
 
-// O recorte como o nível das feições o desenha (`recorteForLevel`).
-function fitRecorte(
+// O recorte como o nível das feições o desenha (`recorteForLevel`). Enquadrar
+// (`fitTo`, com o teto de zoom) ou só centrar (`centerOn`, mantém o zoom).
+function frameRecorte(
   engine: PanelMapEngine,
   recorte: MapRecorte,
   { area, level }: { area: TerritorialArea; level: FeatureLevel },
   sources: FitSources,
+  fromZoom: boolean,
 ): void {
   const drawn = recorteForLevel(recorte, level);
   const target = fitTargetFor(drawn, area, sources);
 
-  if (target) engine.fitTo(target);
+  if (!target) return;
+  if (fromZoom) engine.centerOn(target);
+  else engine.fitTo(target);
 }
 
-// IMPORTANT: todo recorte novo é enquadrado (zoom, arraste, clique, barra,
-// limpar, montagem, área nova), com o mesmo teto de zoom do `fitTo`. Não há
-// exceção para o recorte que o próprio mapa emitiu: o filtro aplicado pelo zoom
-// centra o mapa como o da barra. WARNING: o enquadramento é programático (o
-// `moveend` dele não gera filtro e só troca a âncora do zoom), então não há
-// ciclo. `useStableRecorte` evita enquadrar duas vezes quando o recorte volta
-// do servidor com o mesmo conteúdo.
+// IMPORTANT: o recorte que o próprio zoom/arraste emitiu só centra o mapa e
+// mantém o zoom que o usuário escolheu; qualquer outro (barra, limpar, clique,
+// montagem, área nova) enquadra com `fitTo`. O marcador é consumido a cada
+// recorte novo: "limpar" e escolher de novo o mesmo estado pela barra precisa
+// enquadrar. WARNING: os dois movimentos são programáticos (o `moveend` deles
+// não gera filtro e só troca a âncora do zoom), então não há ciclo.
+// `useStableRecorte` evita mover duas vezes quando o recorte volta do servidor
+// com o mesmo conteúdo.
 function useRecorteFraming(
   args: PanelMapLayersArgs,
   sources: FitSources,
   recorte: MapRecorte,
+  zoomEmittedRef: MutableRefObject<MapRecorte | null>,
 ) {
   const { engine, area } = args;
   const { level } = args.mode;
 
   useEffect(() => {
     if (!engine) return;
+    const emitted = zoomEmittedRef.current;
+    const fromZoom = emitted !== null && sameRecorte(emitted, recorte);
     const drawn = recorteForLevel(recorte, level);
 
+    zoomEmittedRef.current = null;
     engine.setVeil(veilFilters(drawn));
     engine.setSelection(selectionFilter(drawn, level));
-    fitRecorte(engine, recorte, { area, level }, sources);
-  }, [engine, recorte, area, level, sources]);
+    frameRecorte(engine, recorte, { area, level }, sources, fromZoom);
+  }, [engine, recorte, area, level, sources, zoomEmittedRef]);
 }
 
-// Clique emite o recorte direto e o enquadramento vem da mudança de props.
-// Só emite quando o recorte muda: clicar no vazio com a área inteira não faz
-// nada.
+// Clique emite o recorte direto e o enquadramento vem da mudança de props
+// (não é marcado como do zoom: o clique enquadra). Só emite quando o recorte
+// muda: clicar no vazio com a área inteira não faz nada.
 function handleMapClick(
   clicked: MapFeatureProps | null,
   args: PanelMapLayersArgs,
+  zoomEmittedRef: MutableRefObject<MapRecorte | null>,
 ): void {
   const { mode, deepest, recorte } = args;
   const next = recorteForClick(clicked, mode.level, deepest, recorte);
 
   if (sameRecorte(next, recorte)) return;
+  zoomEmittedRef.current = null;
   args.onRecorteChange(next);
 }
 
 // WHY deps com `args` inteiro: o recorte do pai muda de objeto a cada render,
 // então o callback é trocado a cada render de qualquer jeito (troca barata).
-function useMapClicks(args: PanelMapLayersArgs) {
+function useMapClicks(
+  args: PanelMapLayersArgs,
+  zoomEmittedRef: MutableRefObject<MapRecorte | null>,
+) {
   useEffect(() => {
-    args.engine?.onMapClick((clicked) => handleMapClick(clicked, args));
-  }, [args]);
+    args.engine?.onMapClick((clicked) =>
+      handleMapClick(clicked, args, zoomEmittedRef),
+    );
+  }, [args, zoomEmittedRef]);
 }
 
 /**
  * Liga as camadas do motor às props: fontes, cores do ano, véu, seleção,
- * enquadramento e clique. Todo recorte novo é enquadrado, venha de onde vier.
+ * enquadramento e clique. Devolve o `onRecorteChange` que o zoom deve usar:
+ * ele marca o recorte como escolhido pelo próprio mapa, que então só centra
+ * (mantém o zoom) em vez de enquadrar.
  *
- * @example usePanelMapLayers(args);
+ * @example const onZoomRecorte = usePanelMapLayers(args); useMapRecorte({ engine, recorte, deepest, onRecorteChange: onZoomRecorte });
  */
-export function usePanelMapLayers(args: PanelMapLayersArgs): void {
+export function usePanelMapLayers(args: PanelMapLayersArgs) {
   const sources = useFitSources(args.geodata);
   const recorte = useStableRecorte(args.recorte);
+  const zoomEmittedRef = useRef<MapRecorte | null>(null);
+  const { onRecorteChange } = args;
 
   useSourcesAndPaint(args, sources, recorte);
-  useRecorteFraming(args, sources, recorte);
-  useMapClicks(args);
+  useRecorteFraming(args, sources, recorte, zoomEmittedRef);
+  useMapClicks(args, zoomEmittedRef);
+
+  return useCallback(
+    (recorte: MapRecorte) => {
+      zoomEmittedRef.current = recorte;
+      onRecorteChange(recorte);
+    },
+    [onRecorteChange],
+  );
 }

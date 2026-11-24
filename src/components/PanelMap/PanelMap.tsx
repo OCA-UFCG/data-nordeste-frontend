@@ -115,7 +115,7 @@ const PanelMapNotice = ({
   </div>
 );
 
-// Camadas e recorte pelo zoom: o zoom emite pelo `onRecorteChange` das props.
+// Camadas e recorte pelo zoom: o zoom usa o callback marcado pelas camadas.
 function usePanelMapRecorte(
   props: PanelMapProps,
   geodata: ReadyGeodata,
@@ -124,7 +124,7 @@ function usePanelMapRecorte(
 ) {
   const aridez = aridezModeFor(props.indicator, props.aridez);
   const layers = { ...props, engine, geodata, aridez, mode };
-  usePanelMapLayers(layers);
+  const onZoomRecorte = usePanelMapLayers(layers);
 
   usePanelMapAridez(engine, geodata.manifest, aridez, props.ano);
 
@@ -133,7 +133,7 @@ function usePanelMapRecorte(
   // (sem município no centro, nada muda) e afastar o tiraria sem aviso.
   const recorte = recorteForLevel(props.recorte, mode.level);
 
-  useMapRecorte({ ...layers, recorte });
+  useMapRecorte({ ...layers, recorte, onRecorteChange: onZoomRecorte });
 }
 
 // Na malha dos estados, as feições são os estados com as marcas de área que

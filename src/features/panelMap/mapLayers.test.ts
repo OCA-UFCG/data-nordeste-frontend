@@ -4,6 +4,7 @@ import type { Feature, FeatureCollection, Polygon } from "geojson";
 import {
   areaFilter,
   bboxOf,
+  boundsCenter,
   fitTargetFor,
   selectionFilter,
   veilFilters,
@@ -158,6 +159,26 @@ describe("bboxOf", () => {
     };
 
     expect(() => bboxOf([point])).toThrow(/Point/);
+  });
+});
+
+describe("boundsCenter", () => {
+  it("is the middle of the box", () => {
+    expect(
+      boundsCenter([
+        [-42, -10],
+        [-36, -4],
+      ]),
+    ).toEqual([-39, -7]);
+  });
+
+  it("is the point itself for a degenerate box", () => {
+    expect(
+      boundsCenter([
+        [-35, -8],
+        [-35, -8],
+      ]),
+    ).toEqual([-35, -8]);
   });
 });
 

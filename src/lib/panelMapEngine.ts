@@ -52,6 +52,10 @@ export interface PanelMapEngine {
   setClassHighlight(filter: FilterSpecification | null): void;
   setAridez(overlay: AridezOverlay | null): void;
   fitTo(bbox: Bounds): void;
+
+  // Centra no meio do `bbox` sem mudar o zoom. Programático e conta como fit
+  // (a âncora do zoom fica no zoom atual).
+  centerOn(bbox: Bounds): void;
   onMoveEnd(callback: (move: PanelMapMoveEnd) => void): void;
   onHover(callback: (hover: PanelMapHover | null) => void): void;
 
@@ -124,6 +128,7 @@ function engineFor(
   return {
     ...paintControls(map),
     fitTo: moves.fitTo,
+    centerOn: moves.centerOn,
     onMoveEnd: moves.onMoveEnd,
     onHover: trackHover(map).onHover,
     onMapClick: trackMapClicks(map).onMapClick,

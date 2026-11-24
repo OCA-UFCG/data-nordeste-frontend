@@ -116,7 +116,7 @@ describe("IdhOverview", () => {
   });
 
   // IMPORTANT: se o recorte devolvido pelo painel for igual ao que o mapa
-  // emitiu, o PanelMap enquadra uma vez só; diferente, enquadraria de novo.
+  // emitiu, o PanelMap centra uma vez só; diferente, enquadraria de novo.
   it("sends filters whose recorte equals the one the map emitted", () => {
     const onFiltersChange = vi.fn<(filters: IdhFilters) => void>();
     const emitted: MapRecorte = { uf: ["PE"], mun: [] };
