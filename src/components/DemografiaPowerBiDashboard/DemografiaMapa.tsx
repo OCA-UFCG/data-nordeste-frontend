@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { previewOnMouse } from "@/components/Panel/pointer";
+import { previewOnMouse } from "@/components/Panel/charts/RankedBars";
 import {
   municipiosPorPorte,
   type PorteGrupo,

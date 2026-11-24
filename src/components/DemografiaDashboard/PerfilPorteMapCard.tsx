@@ -1,24 +1,35 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
+import { useDemografiaHighlight } from "@/components/DemografiaDashboard/DemografiaMapa";
+import { PerfilPorteToggles } from "@/components/DemografiaDashboard/PerfilPorteToggles";
 import type { PerfilCardProps } from "@/components/DemografiaDashboard/perfilCardProps";
-import { PERFIL_CARD_SOURCE } from "@/components/DemografiaDashboard/perfilTexts";
-import { DataTable } from "@/components/Panel/cards/DataTable";
-import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
-import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
-import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
-import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
-import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
-import { usePanelMapFilters } from "@/components/PanelMap/usePanelMapFilters";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
-import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
-import type { DemografiaPanelData } from "@/features/panels/demografia/demografiaPanel";
+import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
+import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
+import { ProtoFullscreenButton } from "@/components/ProtoPanel/ProtoMapControls";
+import {
+  MAP_SELECT_HINT,
+  ProtoMapFullscreen,
+} from "@/components/ProtoPanel/ProtoMapFullscreen";
+import {
+  PROTO_MAP_BOX_CLASS,
+  ProtoMunicipalCanvas,
+  ProtoMunicipalMapBox,
+} from "@/components/ProtoPanel/ProtoMunicipalMap";
+import {
+  ProtoStateMap,
+  type ProtoStateMapProps,
+} from "@/components/ProtoPanel/ProtoStateMap";
+import {
+  DEMOGRAFIA_PORTE_COLORS,
+  DEMOGRAFIA_PORTES,
+  populacaoPorMunicipio,
+  type DemografiaPanelData,
+} from "@/features/panels/demografia/demografiaPanel";
 import { buildPerfilPorteTable } from "@/features/panels/demografia/perfilPorteTable";
 import { formatPessoas } from "@/features/panels/format";
-import {
-  type TerritorialFilters,
-  withYear,
-} from "@/features/panels/territorialFilters";
+import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "Porte populacional";
 const INFO = (
@@ -46,79 +57,185 @@ const INFO = (
 const MUNICIPIOS_LABEL = "Mapa dos municípios por porte";
 const ESTADOS_LABEL = "Mapa dos estados do Nordeste";
 
-// Altura fixa (`max-height` de 560 px do `.map-box` do protótipo): sem ela o
-// card cresceria com a proporção da malha.
-const MAP_BOX_CLASS =
-  "h-[560px] rounded-[8px] max-[1000px]:h-[480px] max-[700px]:h-[360px]";
+// Literais: o mapa é canvas e a imagem do card não usa variáveis CSS.
+const ESTADO_FILL = DEMOGRAFIA_PORTE_COLORS.pequeno;
+const ESTADO_FILL_SELECTED = DEMOGRAFIA_PORTE_COLORS.medio;
+
+// As duas vistas usam a mesma caixa de mapa. O card ainda muda de altura ao
+// alternar pela legenda de porte, que só existe na vista Municípios.
+const PERFIL_SEA = "#d4eef7";
 
 type MapView = "municipios" | "estados";
+type PorteHighlight = ReturnType<typeof useDemografiaHighlight>;
+type PorteStage = ProtoStateMapProps | { renderStage: () => ReactNode };
 
 const VIEWS: { key: MapView; label: string }[] = [
   { key: "municipios", label: "Municípios" },
   { key: "estados", label: "Estados" },
 ];
 
-// Municípios: as classes de porte, com a legenda. Estados: só a malha dos
-// estados, sem legenda, e zoom e clique filtram só a UF (mesmo `request`).
-const VIEW_PROPS: Record<MapView, Pick<PanelMapProps, "deepest" | "label">> = {
-  municipios: { deepest: "municipio", label: MUNICIPIOS_LABEL },
-  estados: { deepest: "estado", label: ESTADOS_LABEL },
-};
-
-const usePorteMapProps = (
-  view: MapView,
-  selection: TerritorialFilters,
-  onFiltersChange: (filters: TerritorialFilters) => void,
-): PanelMapProps => ({
-  ...usePanelMapFilters(selection, onFiltersChange),
-  ...VIEW_PROPS[view],
-  indicator: "demografia",
-  featureLevel: view === "estados" ? "estado" : "municipio",
-  formatValue: formatPessoas,
-  valueLabel: "População",
-});
-
-type ViewToggleProps = {
-  value: MapView;
-  onChange: (view: MapView) => void;
-};
-
-const ViewButton = ({
-  view,
+const ViewToggle = ({
   value,
   onChange,
-}: ViewToggleProps & { view: (typeof VIEWS)[number] }) => (
-  <button
-    type="button"
-    aria-pressed={view.key === value}
-    onClick={() => onChange(view.key)}
-    className="bg-white px-4 py-1.5 text-[13px] font-medium aria-pressed:bg-green-800 aria-pressed:text-white"
-  >
-    {view.label}
-  </button>
-);
-
-const ViewToggle = (props: ViewToggleProps) => (
+}: {
+  value: MapView;
+  onChange: (view: MapView) => void;
+}) => (
   <div
     role="group"
     aria-label="Mostrar no mapa"
     className="mb-3 inline-flex flex-none self-start overflow-hidden rounded-[6px] border border-grey-300"
   >
     {VIEWS.map((view) => (
-      <ViewButton key={view.key} view={view} {...props} />
+      <button
+        key={view.key}
+        type="button"
+        aria-pressed={view.key === value}
+        onClick={() => onChange(view.key)}
+        className="bg-white px-4 py-1.5 text-[13px] font-medium aria-pressed:bg-green-800 aria-pressed:text-white"
+      >
+        {view.label}
+      </button>
     ))}
   </div>
 );
 
-// O mapa é canvas e não tem texto para leitores de tela: a tabela escondida
-// ocupa o lugar dele (revisão da PR #401).
-// PERF: a tabela tem um item por município (~1 800). O elemento memorizado
-// evita reconciliar todas as linhas a cada mudança de filtro do mapa.
-const usePorteTable = (data: DemografiaPanelData) =>
-  useMemo(
-    () => <DataTable content={buildPerfilPorteTable(data)} className="" />,
-    [data],
+// Escolher um estado no mapa filtra o painel; a cor marca os escolhidos. Eles
+// vêm do filtro pedido, para o estado clicado ficar rosa antes da resposta.
+const estadosMap = (
+  data: DemografiaPanelData,
+  selected: string[],
+  onSelectUf: (uf: string) => void,
+): ProtoStateMapProps => ({
+  fillFor: (uf) => (selected.includes(uf) ? ESTADO_FILL_SELECTED : ESTADO_FILL),
+  describe: (uf) => data.ufs.find((item) => item.sigla === uf)?.nome ?? uf,
+  isSelectable: () => true,
+  label: ESTADOS_LABEL,
+  selectedUfs: selected,
+  onSelect: onSelectUf,
+});
+
+// Os municípios do mapa são a área toda; o porte é o que se destaca.
+const municipiosCanvas = (
+  data: DemografiaPanelData,
+  highlightCodes: ReadonlySet<string> | undefined,
+  stage = false,
+) => (
+  <ProtoMunicipalCanvas
+    label={MUNICIPIOS_LABEL}
+    sea={PERFIL_SEA}
+    stage={stage}
+    regions={data.mapa}
+    buckets={DEMOGRAFIA_PORTES}
+    valueLabel="População"
+    formatValue={formatPessoas}
+    highlightCodes={highlightCodes}
+  />
+);
+
+// A tela cheia do mapa de estados é o próprio `ProtoStateMap`; a de municípios
+// recebe o palco pronto, que tem o próprio zoom.
+const porteStage = (
+  view: MapView,
+  data: DemografiaPanelData,
+  porte: PorteHighlight,
+  estados: ProtoStateMapProps,
+): PorteStage =>
+  view === "estados"
+    ? estados
+    : {
+        renderStage: () => municipiosCanvas(data, porte.highlightCodes, true),
+      };
+
+const PorteLegend = ({ porte }: { porte: PorteHighlight }) => (
+  <PerfilPorteToggles
+    grupos={porte.grupos}
+    porte={porte.porte}
+    onSelect={porte.setPorte}
+    onPreview={porte.setPortePreview}
+  />
+);
+
+const usePorteMapData = (
+  data: DemografiaPanelData,
+  selectedUfs: string[],
+  onSelectUf: (uf: string) => void,
+) => {
+  const municipios = useMemo(
+    () => populacaoPorMunicipio(data.mapa),
+    [data.mapa],
   );
+  const porte = useDemografiaHighlight(municipios);
+
+  const table = useMemo(() => buildPerfilPorteTable(data), [data]);
+
+  return { porte, table, estados: estadosMap(data, selectedUfs, onSelectUf) };
+};
+
+type PorteMapData = ReturnType<typeof usePorteMapData>;
+
+// O mapa da vista escolhida; só a de municípios leva a tabela escondida.
+const PorteMapBox = ({
+  view,
+  data,
+  map,
+}: {
+  view: MapView;
+  data: DemografiaPanelData;
+  map: PorteMapData;
+}) => (
+  <ProtoMunicipalMapBox
+    sea={PERFIL_SEA}
+    table={view === "municipios" ? map.table : undefined}
+  >
+    {view === "estados" ? (
+      <ProtoStateMap
+        {...map.estados}
+        className={`mx-auto block max-h-[560px] ${PROTO_MAP_BOX_CLASS}`}
+      />
+    ) : (
+      municipiosCanvas(data, map.porte.highlightCodes)
+    )}
+  </ProtoMunicipalMapBox>
+);
+
+const PorteCardActions = ({
+  state,
+  onOpen,
+}: {
+  state: PerfilCardProps["state"];
+  onOpen: () => void;
+}) => (
+  <>
+    <ProtoFullscreenButton disabled={state !== "ok"} onClick={onOpen} />
+    <ProtoCardInfo title={TITLE} text={INFO} />
+    <ProtoCardMenu title={TITLE} />
+  </>
+);
+
+// Tela cheia da vista aberta: só o mapa de estados filtra ao clicar, então só
+// ele leva a dica.
+const PorteFullscreen = ({
+  view,
+  data,
+  map,
+  ...frame
+}: {
+  view: MapView;
+  data: DemografiaPanelData;
+  map: PorteMapData;
+  subtitle: string;
+  legend: ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => (
+  <ProtoMapFullscreen
+    {...frame}
+    title={TITLE}
+    hint={view === "estados" ? MAP_SELECT_HINT : undefined}
+    {...porteStage(view, data, map.porte, map.estados)}
+  />
+);
 
 /**
  * Vista e tela cheia do mapa de porte. Ficam no dashboard, não no card: a
@@ -141,68 +258,56 @@ export type PorteMapView = ReturnType<typeof usePorteMapView>;
  * mapa dos estados, que filtra o painel ao ser clicado. A legenda por porte
  * destaca os municípios de cada faixa.
  *
- * @example <PerfilPorteMapCard data={panel} place="Nordeste" state="ok" onRetry={retry} selection={filters} onFiltersChange={request} mapView={porteView} />
+ * @example <PerfilPorteMapCard data={panel} place="Nordeste" state="ok" onRetry={retry} selectedUfs={["PE"]} mapView={porteView} onSelectUf={toggleUf} />
  */
 export const PerfilPorteMapCard = ({
-  selection,
-  onFiltersChange,
+  selectedUfs,
   mapView,
+  onSelectUf,
   ...props
 }: PerfilCardProps & {
-  selection: TerritorialFilters;
-  onFiltersChange: (filters: TerritorialFilters) => void;
+  selectedUfs: string[];
   mapView: PorteMapView;
+  onSelectUf: (uf: string) => void;
 }) => {
   const { data, place, state } = props;
-  const { view } = mapView;
-  const card = usePanelMapCard(PERFIL_CARD_SOURCE);
-  const mapProps = usePorteMapProps(view, selection, onFiltersChange);
-  const table = usePorteTable(data);
+  const { view, setView, fullscreen, setFullscreen } = mapView;
+  const map = usePorteMapData(data, selectedUfs, onSelectUf);
   const subtitle = withYear(place, data.filters.ano);
 
+  // A legenda por porte só destaca municípios; no mapa de estados não teria
+  // efeito, então some (revisão da PR #401).
+  const legend =
+    view === "municipios" ? <PorteLegend porte={map.porte} /> : null;
+
   // O diálogo fica no `overlay` do card: dentro do corpo, o esqueleto do
-  // carregando o desmontaria a cada filtro aplicado em tela cheia.
+  // carregando o desmontaria a cada estado clicado em tela cheia.
   return (
     <ProtoCard
       title={TITLE}
       subtitle={subtitle}
       kind="map"
-      skeleton={<PanelMapSkeleton boxClassName={MAP_BOX_CLASS} />}
       state={state}
       onRetry={props.onRetry}
       bodyClassName="flex flex-col"
       actions={
-        <PanelMapCardActions
-          title={TITLE}
-          info={INFO}
-          imageSource={card.imageSource}
-          engine={card.engine}
-          disabled={state !== "ok"}
-          onOpenFullscreen={() => mapView.setFullscreen(true)}
-        />
+        <PorteCardActions state={state} onOpen={() => setFullscreen(true)} />
       }
       overlay={
-        <ProtoMapFullscreen
-          open={mapView.fullscreen}
-          onOpenChange={mapView.setFullscreen}
-          title={TITLE}
+        <PorteFullscreen
+          view={view}
+          data={data}
+          map={map}
           subtitle={subtitle}
-          hint={PANEL_MAP_HINT}
-          renderStage={(frame) => (
-            <PanelMap key={view} {...mapProps} className={frame} />
-          )}
+          legend={legend}
+          open={fullscreen}
+          onOpenChange={setFullscreen}
         />
       }
     >
-      <ViewToggle value={view} onChange={mapView.setView} />
-      {/* WHY `key`: o nível das feições é lido na montagem do motor. */}
-      <PanelMap
-        key={view}
-        {...mapProps}
-        {...card.mapBinding}
-        className={MAP_BOX_CLASS}
-      />
-      {view === "municipios" ? <div className="sr-only">{table}</div> : null}
+      <ViewToggle value={view} onChange={setView} />
+      <PorteMapBox view={view} data={data} map={map} />
+      {legend}
     </ProtoCard>
   );
 };

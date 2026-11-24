@@ -1,4 +1,5 @@
 import type { ChartPoint } from "@/features/panels/chartBase";
+import type { ChoroplethRegion } from "@/features/panels/chartOptions";
 import type {
   TerritorialFilters,
   YearRange,
@@ -23,6 +24,9 @@ export type PibYearPoint = { ano: number; pib: number; perCapita: number };
 
 export type PibPanelData = TerritorialSelection & {
   serie: PibYearPoint[];
+
+  // PIB total de cada município do mapa, em reais, no ano do filtro.
+  mapa: ChoroplethRegion[];
   vab: ChartPoint[] | null;
   atividades: ChartPoint[];
 
@@ -63,6 +67,7 @@ export const emptyPibPanel = (filters: TerritorialFilters): PibPanelData => ({
   ufs: [],
   municipios: [],
   serie: [],
+  mapa: [],
   vab: null,
   atividades: [],
   vabLastYear: null,
@@ -92,6 +97,34 @@ const loadSerie = async (query: SqlQuery, filters: TerritorialFilters) => {
     ano: row.ano,
     pib: toNumber(row.pib),
     perCapita: toNumber(row.per_capita),
+  }));
+};
+
+// Espelha `loadMapa` de pibPowerBiPanel.ts (mesma view): mexa nos dois.
+// O mapa segue área, ano e estados (a malha aproxima nos escolhidos); os
+// municípios do filtro só ganham destaque, por isso a consulta não os usa.
+const loadMapa = async (query: SqlQuery, filters: TerritorialFilters) => {
+  const where = buildTerritorialWhere(filters, {
+    byYear: true,
+    byMunicipality: false,
+  });
+  const rows = await query<{
+    cd_mun: string;
+    nome_municipio: string;
+    sigla_uf: string;
+    pib: NumericCell;
+  }>(
+    `SELECT cd_mun, nome_municipio, sigla_uf, SUM(pib_total) AS pib
+     FROM ${PIB_VIEW} WHERE ${where.sql}
+     GROUP BY cd_mun, nome_municipio, sigla_uf`,
+    where.params,
+  );
+
+  return rows.map((row) => ({
+    code: row.cd_mun.trim(),
+    name: row.nome_municipio,
+    uf: row.sigla_uf.trim(),
+    value: toNumber(row.pib),
   }));
 };
 
@@ -165,12 +198,13 @@ export const loadPibPanel = async (
     requested,
   );
   const { filters } = selection;
-  const [serie, vab, atividades, vabLastYear] = await Promise.all([
+  const [serie, mapa, vab, atividades, vabLastYear] = await Promise.all([
     loadSerie(query, filters),
+    loadMapa(query, filters),
     loadVab(query, filters),
     loadAtividades(query, filters),
     loadVabLastYear(query),
   ]);
 
-  return { ...selection, serie, vab, atividades, vabLastYear };
+  return { ...selection, serie, mapa, vab, atividades, vabLastYear };
 };

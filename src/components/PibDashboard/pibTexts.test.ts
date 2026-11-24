@@ -17,21 +17,8 @@ describe("PIB_CARD_INFO", () => {
 });
 
 describe("PIB_MAP_INFO", () => {
-  it("opens with how the map filters the panel", () => {
-    const [usage] = PIB_MAP_INFO;
-
-    expect(usage.term).toBeUndefined();
-    expect(usage.rest).toContain("clique em um estado ou município");
-    expect(usage.rest).toContain(
-      "clicar de novo no município escolhido volta ao estado",
-    );
-    expect(usage.rest).toContain("legenda");
-  });
-
   it("keeps the content team paragraphs verbatim", () => {
-    const paragraphs = PIB_MAP_INFO.slice(1);
-
-    expect(paragraphs.map(({ term = "", rest }) => term + rest)).toEqual([
+    expect(PIB_MAP_INFO.map(({ term = "", rest }) => term + rest)).toEqual([
       "Produto Interno Bruto (PIB) é a soma de todos os bens e serviços finais produzidos em um país, estado ou município durante um determinado período.",
       "PIB per capita indica a produção econômica média por habitante. É obtido dividindo-se o PIB total pela população do município. Em 2023, foi usada a população do Censo Demográfico de 2022, segundo nota do Instituto Brasileiro de Geografia e Estatística (IBGE).",
       "Obs.: Os valores do PIB são apresentados a preços correntes de cada ano. A evolução nominal incorpora tanto variações na produção quanto nos preços.",

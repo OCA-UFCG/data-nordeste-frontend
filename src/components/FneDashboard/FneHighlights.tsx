@@ -5,7 +5,7 @@ import { ChartCard, ChartNotice } from "@/components/Panel/cards/ChartCard";
 import {
   previewOnMouse,
   type PreviewHandler,
-} from "@/components/Panel/pointer";
+} from "@/components/Panel/charts/RankedBars";
 import type { FneVisao } from "@/features/panels/fne/fneFilters";
 import { FNE_FORMATTERS } from "@/features/panels/fne/fneLabels";
 import type { FneHighlight } from "@/features/panels/fne/fnePanel";

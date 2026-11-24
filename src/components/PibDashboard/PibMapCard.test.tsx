@@ -1,192 +1,142 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { PanelMapProps } from "@/components/PanelMap/PanelMap";
+import type { ComponentProps } from "react";
+import type { EChart } from "@/components/EChart/EChart";
 import { PibMapCard } from "@/components/PibDashboard/PibMapCard";
-import { PIB_CARD_SOURCE } from "@/components/PibDashboard/pibTexts";
+import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import {
-  ProtoCardMenuContext,
-  type ProtoCardMenuContextValue,
-} from "@/components/ProtoPanel/ProtoCardMenu";
-import type { MapRecorte } from "@/features/panelMap/mapRecorte";
-import { territorialToRecorte } from "@/features/panelMap/panelMapAdapters";
-import type { TerritorialFilters } from "@/features/panels/territorialFilters";
-import { formatPibReais } from "@/features/panels/pib/pibFormat";
+  emptyPibPanel,
+  type PibPanelData,
+} from "@/features/panels/pib/pibPanel";
 
-// O mapa é MapLibre (canvas); o dublê só guarda as props de cada montagem.
-const panelMapRenders = vi.hoisted(() => [] as PanelMapProps[]);
+// O jsdom não desenha: o gráfico de mentira guarda o que o mapa pede a ele.
+type EChartProps = ComponentProps<typeof EChart>;
 
-vi.mock("@/components/PanelMap/PanelMap", () => ({
-  PanelMap: (props: PanelMapProps) => {
-    panelMapRenders.push(props);
+const drawn: EChartProps[] = [];
 
-    return <div data-testid="panel-map" aria-label={props.label} />;
+vi.mock("@/components/EChart/EChart", () => ({
+  EChart: (props: EChartProps) => {
+    drawn.push(props);
+
+    return null;
   },
 }));
 
-// O jsdom não tem matchMedia; o menu pergunta se a tela é de celular.
-const DESKTOP_MEDIA = (query: string) => ({
-  matches: false,
-  media: query,
-  addEventListener: () => undefined,
-  removeEventListener: () => undefined,
+const feature = (code: string, lon: number) => ({
+  properties: { name: code, uf: "PE" },
+  geometry: {
+    coordinates: [
+      [
+        [lon, -8],
+        [lon + 1, -8],
+        [lon + 1, -9],
+        [lon, -9],
+      ],
+    ],
+  },
 });
 
-const SELECTION: TerritorialFilters = {
-  ano: 2021,
-  area: "semiarido",
-  uf: ["PB"],
+// Malha de dois municípios; sem ela o mapa não sai do "carregando".
+class MunicipalMeshFetchFake {
+  readonly urls: string[] = [];
+
+  readonly fetch = async (url: string) => {
+    this.urls.push(url);
+
+    return new Response(
+      JSON.stringify({
+        features: [feature("2504009", -36), feature("2611606", -35)],
+      }),
+    );
+  };
+}
+
+const PANEL: PibPanelData = {
+  ...emptyPibPanel({ ano: 2023, area: "nordeste" }),
+  mapa: [
+    { code: "2504009", name: "Campina Grande", uf: "PB", value: 11.3e9 },
+    { code: "2611606", name: "Recife", uf: "PE", value: 66.35e9 },
+  ],
 };
 
-const MENU: ProtoCardMenuContextValue = {
-  share: { path: "/demo/pib", chips: [] },
-  catalogHref: null,
-  imageSource: PIB_CARD_SOURCE,
-};
-
-const lastProps = (): PanelMapProps =>
-  panelMapRenders[panelMapRenders.length - 1];
-
-const renderCard = (
-  onFiltersChange: (filters: TerritorialFilters) => void = vi.fn(),
-) =>
+const renderCard = (selectedMuns: string[] = []) =>
   render(
-    <ProtoCardMenuContext.Provider value={MENU}>
-      <PibMapCard
-        selection={SELECTION}
-        onFiltersChange={onFiltersChange}
-        state="ok"
-        onRetry={vi.fn()}
-      />
-    </ProtoCardMenuContext.Provider>,
+    <PibMapCard
+      data={PANEL}
+      place="Nordeste"
+      selectedMuns={selectedMuns}
+      state="ok"
+      onRetry={() => {}}
+    />,
   );
 
-const emit = (recorte: MapRecorte) =>
-  act(() => lastProps().onRecorteChange(recorte));
-
 describe("PibMapCard", () => {
+  let mesh: MunicipalMeshFetchFake;
+
   beforeEach(() => {
-    panelMapRenders.length = 0;
-    vi.stubGlobal("matchMedia", DESKTOP_MEDIA);
+    drawn.length = 0;
+    stubPanelBrowserApis();
+    mesh = new MunicipalMeshFetchFake();
+    vi.stubGlobal("fetch", mesh.fetch);
   });
+
   afterEach(() => vi.unstubAllGlobals());
 
-  it("renders the municipal PIB map for the requested area, year and selection", () => {
-    renderCard();
-
-    expect(lastProps()).toMatchObject({
-      indicator: "pib",
-      ano: 2021,
-      area: "semiarido",
-      deepest: "municipio",
-      label: "Mapa do PIB total por município",
-      formatValue: formatPibReais,
-      valueLabel: "PIB",
-    });
-    expect(lastProps().recorte).toEqual({ uf: ["PB"], mun: [] });
-  });
-
-  // A aridez vive só no painel dela: nem raster nem checkbox neste mapa.
-  it("keeps the aridez raster and its checkbox out of the map", () => {
-    renderCard();
-
-    expect(lastProps().aridez ?? "off").toBe("off");
-    expect(screen.queryByRole("checkbox", { name: /aridez/i })).toBeNull();
-  });
-
-  it("titles the card and describes area and year in the subtitle", () => {
+  it("titles the card as the municipal PIB map, with place and year", () => {
     renderCard();
 
     expect(
       screen.getByRole("heading", { name: "PIB total por município" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/^PIB total · .+ · 2021$/)).toBeInTheDocument();
-  });
-
-  it("turns a state zoom into the panel filters, dropping empty municipalities", () => {
-    const onFiltersChange = vi.fn();
-
-    renderCard(onFiltersChange);
-    emit({ uf: ["PE"], mun: [] });
-
-    expect(onFiltersChange).toHaveBeenCalledWith({
-      ano: 2021,
-      area: "semiarido",
-      uf: ["PE"],
-      mun: undefined,
-    });
-  });
-
-  // IMPORTANT: se o recorte devolvido pelo painel for igual ao que o mapa
-  // emitiu, o PanelMap enquadra uma vez só; diferente, enquadraria de novo.
-  it("sends filters whose recorte equals the one the map emitted", () => {
-    const onFiltersChange = vi.fn<(filters: TerritorialFilters) => void>();
-    const emitted: MapRecorte = { uf: ["PE"], mun: ["2611606"] };
-
-    renderCard(onFiltersChange);
-    emit(emitted);
-
-    const [requested] = onFiltersChange.mock.calls[0];
-
-    expect(territorialToRecorte(requested)).toEqual(emitted);
-  });
-
-  it("opens a second municipal map in the fullscreen dialog wired to the same filters", () => {
-    const onFiltersChange = vi.fn();
-
-    renderCard(onFiltersChange);
-    fireEvent.click(
-      screen.getByRole("button", { name: "Abrir mapa em tela cheia" }),
-    );
-
-    expect(screen.getAllByTestId("panel-map")).toHaveLength(2);
-    emit({ uf: ["CE"], mun: [] });
-    expect(onFiltersChange).toHaveBeenCalledWith(
-      expect.objectContaining({ uf: ["CE"] }),
-    );
-  });
-
-  it("credits the OpenStreetMap basemap in the downloaded image source", async () => {
-    renderCard();
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "Mais opções: PIB total por município",
-      }),
-    );
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Baixar imagem" }),
-    );
-
+    ).toBeTruthy();
     expect(
-      await screen.findByText(
-        `${PIB_CARD_SOURCE} · Basemap: © OpenStreetMap contributors`,
-      ),
-    ).toBeInTheDocument();
+      screen.getByText("PIB total por município · Nordeste · 2023"),
+    ).toBeTruthy();
+    expect(screen.queryByText(/por estado/)).toBeNull();
   });
 
-  // O PanelMap só enquadra no fitTo: a altura não pode seguir a coluna dos
-  // setores, que muda com o ano e o município com o mapa montado.
-  it("keeps a fixed map height instead of following the sector column", () => {
+  it("draws the municipal mesh and lists each municipality for screen readers", () => {
     renderCard();
 
-    const frame = lastProps().className ?? "";
-
-    expect(frame).toMatch(/(^| )h-\[480px\]/);
-    expect(frame).not.toContain("flex-1");
+    expect(mesh.urls).toEqual(["/maps/municipios-sudene.json"]);
+    expect(
+      screen.getByRole("row", { name: /Recife \(PE\) R\$ 66,35 Bi/ }),
+    ).toBeTruthy();
   });
 
-  it("explains how the map filters and the PIB terms in the info balloon", async () => {
+  it("fills the box the grid gives it, with no fixed height of its own", async () => {
+    renderCard();
+
+    await waitFor(() => expect(drawn.length).toBeGreaterThan(0));
+    const className = drawn.at(-1)?.className ?? "";
+
+    expect(className).toContain("absolute inset-1");
+    expect(className).not.toMatch(/(^| )h-\[/);
+  });
+
+  it("sends the chosen municipality to the canvas as the highlighted one", async () => {
+    renderCard(["2611606"]);
+
+    await waitFor(() => expect(drawn.length).toBeGreaterThan(0));
+    const [series] = [drawn.at(-1)?.restyleOption?.series].flat() as {
+      data: { name: string; itemStyle: { borderWidth?: number } }[];
+    }[];
+    const borders = Object.fromEntries(
+      series.data.map((item) => [item.name, item.itemStyle.borderWidth]),
+    );
+
+    expect(borders).toEqual({ "2504009": undefined, "2611606": 3 });
+  });
+
+  it("explains the PIB terms in bold paragraphs in the info balloon", async () => {
     renderCard();
 
     fireEvent.click(screen.getByRole("button", { name: "Sobre este gráfico" }));
     const term = await screen.findByText("Produto Interno Bruto (PIB)");
-    const paragraphs = term.closest("p")?.parentElement?.querySelectorAll("p");
 
     expect(term.tagName).toBe("B");
     expect(screen.getByText("PIB per capita").tagName).toBe("B");
-    expect(paragraphs).toHaveLength(4);
-    expect(paragraphs?.[0].textContent).toMatch(
-      /clique em um estado ou município/,
-    );
-    expect(paragraphs?.[0].textContent).toMatch(/legenda/);
+    expect(
+      term.closest("p")?.parentElement?.querySelectorAll("p"),
+    ).toHaveLength(3);
   });
 });

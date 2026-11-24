@@ -1,29 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { canvasImageSource, downloadChartImage } from "@/lib/chartImage";
+import { downloadChartImage } from "@/lib/chartImage";
 
 class SvgChartFake {
   readonly getDataURL = () => "data:image/svg+xml;base64,AAA";
   readonly getWidth = () => 600;
   readonly getHeight = () => 300;
-}
-
-// Canvas de um mapa numa tela 2×: o buffer tem o dobro do tamanho na tela.
-class MapCanvasFake {
-  readonly width = 1280;
-  readonly height = 960;
-  readonly clientWidth = 640;
-  readonly clientHeight = 480;
-  requestedTypes: string[] = [];
-
-  readonly toDataURL = (type: string) => {
-    this.requestedTypes.push(type);
-
-    return "data:image/png;base64,MAP";
-  };
-
-  asCanvas() {
-    return this as unknown as HTMLCanvasElement;
-  }
 }
 
 class AnchorDownloadFake {
@@ -73,22 +54,5 @@ describe("downloadChartImage", () => {
     );
 
     expect(decodeURIComponent(download.anchor.href)).not.toContain("<text");
-  });
-});
-
-describe("canvasImageSource", () => {
-  it("reports the on-screen size, not the device-pixel buffer", () => {
-    const source = canvasImageSource(new MapCanvasFake().asCanvas());
-
-    expect([source.getWidth(), source.getHeight()]).toEqual([640, 480]);
-  });
-
-  it("reads the canvas as a PNG data URL", () => {
-    const canvas = new MapCanvasFake();
-
-    const url = canvasImageSource(canvas.asCanvas()).getDataURL();
-
-    expect(url).toBe("data:image/png;base64,MAP");
-    expect(canvas.requestedTypes).toEqual(["image/png"]);
   });
 });

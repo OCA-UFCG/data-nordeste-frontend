@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   describeDefaultPlaceLabel,
+  describeTerritorialAreaPlace,
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
+  selectOnlyTerritorialUf,
+  toggleTerritorialUf,
 } from "@/features/panels/territorialPlace";
 import { DEMOGRAFIA_YEAR_RANGE } from "@/features/panels/demografia/demografiaPanel";
 import { NO_DEMOGRAFIA_YEARS } from "@/features/panels/demografia/demografiaYearRange";
@@ -95,6 +98,70 @@ describe("describeTerritorialShareChips", () => {
   });
 });
 
+describe("selectOnlyTerritorialUf", () => {
+  const BASE = { ano: 2022, area: "nordeste" as const };
+
+  it("keeps only the clicked state and drops the municipality", () => {
+    expect(
+      selectOnlyTerritorialUf(
+        { ...BASE, uf: ["PB", "PE"], mun: ["2507507"] },
+        "RN",
+      ),
+    ).toEqual({ ...BASE, uf: ["RN"], mun: undefined });
+    expect(
+      selectOnlyTerritorialUf({ ...BASE, uf: ["PB", "PE"] }, "PE").uf,
+    ).toEqual(["PE"]);
+  });
+
+  it("clears the filter when the clicked state is the only one chosen", () => {
+    expect(selectOnlyTerritorialUf({ ...BASE, uf: ["PE"] }, "PE").uf).toBe(
+      undefined,
+    );
+  });
+});
+
+describe("toggleTerritorialUf", () => {
+  it("adds a state that is not chosen yet and drops the municipality", () => {
+    const filters = {
+      ano: 2022,
+      area: "nordeste" as const,
+      uf: ["PB"],
+      mun: ["2507507"],
+    };
+
+    expect(toggleTerritorialUf(filters, "PE", 9)).toEqual({
+      ano: 2022,
+      area: "nordeste",
+      uf: ["PB", "PE"],
+      mun: undefined,
+    });
+  });
+
+  it("removes a state already chosen and clears the list when it was the last", () => {
+    const filters = { ano: 2022, area: "nordeste" as const, uf: ["PE"] };
+
+    expect(toggleTerritorialUf(filters, "PE", 9).uf).toBeUndefined();
+  });
+
+  it("keeps only the clicked state once the place limit is reached", () => {
+    const filters = { ano: 2022, area: "nordeste" as const, uf: ["PB", "RN"] };
+
+    expect(toggleTerritorialUf(filters, "PE", 2).uf).toEqual(["PE"]);
+  });
+
+  it("still removes a chosen state when the limit is reached", () => {
+    const filters = { ano: 2022, area: "nordeste" as const, uf: ["PB", "RN"] };
+
+    expect(toggleTerritorialUf(filters, "RN", 2).uf).toEqual(["PB"]);
+  });
+
+  it("behaves as a single-value filter with a limit of one", () => {
+    const filters = { ano: 2022, area: "nordeste" as const, uf: ["PB"] };
+
+    expect(toggleTerritorialUf(filters, "PE", 1).uf).toEqual(["PE"]);
+  });
+});
+
 describe("isDefaultTerritorialFilters", () => {
   it("is true only for the last census, Nordeste, no state and no municipality", () => {
     const range = DEMOGRAFIA_YEAR_RANGE;
@@ -126,5 +193,20 @@ describe("describeDefaultPlaceLabel", () => {
 
   it("leaves the year out when the database gave none", () => {
     expect(describeDefaultPlaceLabel(NO_DEMOGRAFIA_YEARS)).toBe("Ver Nordeste");
+  });
+});
+
+describe("describeTerritorialAreaPlace", () => {
+  it("names area and states but omits the chosen municipality", () => {
+    const filters = {
+      ano: 2022,
+      area: "semiarido" as const,
+      uf: ["PE"],
+      mun: ["2611606"],
+    };
+
+    expect(describeTerritorialAreaPlace({ ...OPTIONS, filters })).toBe(
+      "Semiárido · Pernambuco",
+    );
   });
 });

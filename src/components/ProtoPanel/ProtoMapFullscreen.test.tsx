@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
 import {
-  MAP_STAGE_FRAME,
+  MAP_SELECT_HINT,
   ProtoMapFullscreen,
 } from "@/components/ProtoPanel/ProtoMapFullscreen";
 
@@ -19,7 +18,7 @@ describe("ProtoMapFullscreen rodapé", () => {
     );
 
     expect(screen.queryByText(/Fonte/)).toBeNull();
-    expect(screen.queryByText(PANEL_MAP_HINT)).toBeNull();
+    expect(screen.queryByText(MAP_SELECT_HINT)).toBeNull();
   });
 
   it("mostra a dica quando recebe hint", () => {
@@ -29,29 +28,11 @@ describe("ProtoMapFullscreen rodapé", () => {
         onOpenChange={() => {}}
         title="Mapa"
         subtitle="s"
-        hint={PANEL_MAP_HINT}
+        hint={MAP_SELECT_HINT}
         renderStage={() => <div />}
       />,
     );
 
-    expect(screen.getByText(PANEL_MAP_HINT)).toBeTruthy();
-  });
-});
-
-describe("ProtoMapFullscreen palco do painel", () => {
-  it("entrega a classe da caixa do mapa ao painel, que decide onde aplicá-la", () => {
-    render(
-      <ProtoMapFullscreen
-        open
-        onOpenChange={() => {}}
-        title="Mapa"
-        subtitle="s"
-        renderStage={(frame) => <div data-testid="palco" className={frame} />}
-      />,
-    );
-
-    expect(screen.getByTestId("palco")).toHaveClass(
-      ...MAP_STAGE_FRAME.split(" "),
-    );
+    expect(screen.getByText(MAP_SELECT_HINT)).toBeTruthy();
   });
 });

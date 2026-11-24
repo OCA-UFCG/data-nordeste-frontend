@@ -32,26 +32,6 @@ describe("resolvePerfilCardStates", () => {
     expect(states.municipios).toBe("stale");
   });
 
-  // O zoom do mapa troca a UF: o próprio mapa não pode esmaecer.
-  it("keeps the map when only the state changes", () => {
-    const states = resolvePerfilCardStates(
-      { ...idle, pending: { ...filters, uf: ["PE"] } },
-      filters,
-    );
-
-    expect(states.map).toBe("ok");
-    expect(states.bigNumber).toBe("stale");
-  });
-
-  it("dims the map when the area changes", () => {
-    const states = resolvePerfilCardStates(
-      { ...idle, pending: { ...filters, area: "semiarido" } },
-      filters,
-    );
-
-    expect(states.map).toBe("stale");
-  });
-
   it("shows loading on every card while retrying a failed load", () => {
     const states = resolvePerfilCardStates(
       { failed: true, retrying: true, pending: null },

@@ -9,7 +9,7 @@ import {
 } from "@/components/Panel/charts/ColumnChart";
 import { HorizontalBarChart } from "@/components/Panel/charts/HorizontalBarChart";
 import { PyramidChart } from "@/components/Panel/charts/PyramidChart";
-import type { PreviewHandler } from "@/components/Panel/pointer";
+import type { PreviewHandler } from "@/components/Panel/charts/RankedBars";
 import { ValueBars } from "@/components/Panel/charts/ValueBars";
 import type { ChartPoint } from "@/features/panels/chartOptions";
 import {
