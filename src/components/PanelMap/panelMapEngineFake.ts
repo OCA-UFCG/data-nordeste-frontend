@@ -25,7 +25,8 @@ type SelectionFilter = Parameters<PanelMapEngine["setSelection"]>[0];
 export class PanelMapEngineFake implements PanelMapEngine {
   private moveEndListener: ((move: PanelMapMoveEnd) => void) | null = null;
   private hoverListener: ((hover: PanelMapHover | null) => void) | null = null;
-  private clickListener: ((props: MapFeatureProps) => void) | null = null;
+  private clickListener: ((props: MapFeatureProps | null) => void) | null =
+    null;
 
   readonly setBasemap = vi.fn<(kind: BasemapKind) => void>();
   readonly setSources = vi.fn<(sources: FitSources) => void>();
@@ -55,8 +56,8 @@ export class PanelMapEngineFake implements PanelMapEngine {
     },
   );
 
-  readonly onClickFeature = vi.fn(
-    (callback: (props: MapFeatureProps) => void) => {
+  readonly onMapClick = vi.fn(
+    (callback: (props: MapFeatureProps | null) => void) => {
       this.clickListener = callback;
     },
   );
@@ -80,7 +81,8 @@ export class PanelMapEngineFake implements PanelMapEngine {
     this.hoverListener?.(hover);
   }
 
-  emitClick(props: MapFeatureProps): void {
+  /** Clique no mapa; `null` é um clique fora de qualquer feição. */
+  emitClick(props: MapFeatureProps | null): void {
     this.clickListener?.(props);
   }
 }

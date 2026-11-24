@@ -338,13 +338,20 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   in the PIB and profile; skeletons in the IDH). It only emits
   at the end of a user gesture and only if the recorte changed; programmatic
   moves (fit to the filters, resize) never emit, which avoids a
-  filter → fit → zoom → different filter loop. Click emits the recorte of the
-  clicked feature directly (municipality; the state in the IDH or in a card
-  that stops at state) through the prop change (a click is not marked as a
-  zoom emission, so the map fits it). Clicking the feature that already is
-  the current recorte goes up one level (`recorteForClick`): municipality →
-  its state, state → `EMPTY_RECORTE` (back to the area of interest). With
-  several selected, clicking one selects only it (no level change).
+  filter → fit → zoom → different filter loop. Every map click (`onMapClick`, the feature
+  under the cursor or `null`) goes through `recorteForClick`, and the result is
+  emitted through the prop change (a click is not marked as a zoom emission, so
+  the map fits it) only when it differs from the current recorte. Rules, by the
+  current recorte: **area** — a feature is selected (municipality; the state in
+  the IDH, the profile "Estados" view or a card that stops at state), a click
+  on empty map does nothing; **state** — a municipality inside the selected
+  state(s) is selected (with several states, one of them is narrowed to), while
+  clicking the state itself (state-level maps or cards that stop at state), a
+  feature of another state under the veil, or empty map (ocean, outside the
+  area) goes back to `EMPTY_RECORTE`; **municipality** — any click (the
+  municipality itself, another one, outside) goes back to its state. So
+  clicking outside the highlighted cut always goes up one level. Drags are not
+  clicks (MapLibre's `click` excludes them).
 - **Gestures and zoom cap** (`src/lib/panelMap/panelMapOptions.ts`): the
   map inside the card uses MapLibre's cooperative gestures (Ctrl/⌘ + wheel,
   two fingers on touch, prompt in Portuguese) so it does not hijack the page

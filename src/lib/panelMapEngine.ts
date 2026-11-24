@@ -9,7 +9,7 @@ import { type AridezOverlay, showAridez } from "@/lib/panelMap/panelMapAridez";
 import {
   type PanelMapHover,
   type PanelMapMoveEnd,
-  trackFeatureClicks,
+  trackMapClicks,
   trackHover,
   trackMoves,
 } from "@/lib/panelMap/panelMapInteraction";
@@ -54,7 +54,9 @@ export interface PanelMapEngine {
   fitTo(bbox: Bounds): void;
   onMoveEnd(callback: (move: PanelMapMoveEnd) => void): void;
   onHover(callback: (hover: PanelMapHover | null) => void): void;
-  onClickFeature(callback: (props: MapFeatureProps) => void): void;
+
+  // Todo clique no mapa: a feição sob o cursor, ou null fora das feições.
+  onMapClick(callback: (props: MapFeatureProps | null) => void): void;
   toImageSource(): ChartImageSource;
   destroy(): void;
 }
@@ -124,7 +126,7 @@ function engineFor(
     fitTo: moves.fitTo,
     onMoveEnd: moves.onMoveEnd,
     onHover: trackHover(map).onHover,
-    onClickFeature: trackFeatureClicks(map).onClickFeature,
+    onMapClick: trackMapClicks(map).onMapClick,
     toImageSource: () => canvasImageSource(map.getCanvas()),
     destroy,
   };

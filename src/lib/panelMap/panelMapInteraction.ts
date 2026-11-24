@@ -171,18 +171,20 @@ export function trackHover(map: MaplibreMap) {
   };
 }
 
-/** Clique numa feição do indicador → callback com as propriedades dela. */
-export function trackFeatureClicks(map: MaplibreMap) {
-  let listener: ((props: MapFeatureProps) => void) | null = null;
+/**
+ * Todo clique no mapa → callback com as propriedades da feição do indicador
+ * sob o cursor, ou `null` quando não há (mar, fora da área, véu sem feição).
+ * O `click` do MapLibre já ignora arrastos e não dispara em moves programáticos.
+ */
+export function trackMapClicks(map: MaplibreMap) {
+  let listener: ((props: MapFeatureProps | null) => void) | null = null;
 
-  map.on("click", PANEL_MAP_LAYER.indicatorFill, (event) => {
-    const feature = event.features?.[0];
-
-    if (feature) listener?.(feature.properties as MapFeatureProps);
+  map.on("click", (event) => {
+    listener?.(indicatorFeatureAt(map, event.point) ?? null);
   });
 
   return {
-    onClickFeature: (callback: (props: MapFeatureProps) => void) => {
+    onMapClick: (callback: (props: MapFeatureProps | null) => void) => {
       listener = callback;
     },
   };

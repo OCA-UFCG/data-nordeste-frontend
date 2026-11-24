@@ -26,29 +26,50 @@ function pickedRecorte(
   return { uf: [feature.uf], mun: [feature.code] };
 }
 
+// Um nível acima do recorte: município → estado, estado → área de interesse.
+function oneLevelUp(current: MapRecorte): MapRecorte {
+  if (current.mun.length > 0) return { uf: current.uf, mun: [] };
+
+  return EMPTY_RECORTE;
+}
+
+// Estado ao qual a feição pertence (com feições de estado, ela mesma).
+function ufOfFeature(feature: MapFeatureProps, level: FeatureLevel): string {
+  return level === "estado" ? feature.code : feature.uf;
+}
+
 /**
- * Recorte escolhido pelo clique numa feição do mapa. Com feições de estado
- * (IDH, vista Estados) a feição é o estado; com as municipais é o município,
- * ou o estado dele quando o painel não desce até município. Clicar na feição
- * que já é o recorte atual volta um nível: município → estado, estado → área
- * de interesse (`EMPTY_RECORTE`).
- * Seleção múltipla: o recorte atual só "é" a feição quando é exatamente ela;
- * clicar numa de várias selecionadas escolhe só essa, sem voltar nível.
- * Ex.: clique em Recife (`deepest: "municipio"`) → `{ uf: ["PE"], mun: ["2611606"] }`;
- * clique de novo, com esse recorte atual → `{ uf: ["PE"], mun: [] }`.
+ * Recorte escolhido pelo clique no mapa. `clicked` é a feição sob o cursor, ou
+ * `null` quando o clique caiu fora das feições do indicador (mar, fora da
+ * área). Com feições de estado (IDH, vista Estados) a feição é o estado; com
+ * as municipais é o município, ou o estado dele quando o painel não desce até
+ * município. Regras, pelo recorte atual:
+ * - área: a feição vira o recorte; clique no vazio não muda nada.
+ * - estado: uma feição dentro do(s) estado(s) escolhido(s) vira o recorte
+ *   (município, ou só aquele estado se eram vários); clicar no próprio estado
+ *   (já era o recorte), em outro estado ou no vazio volta à área.
+ * - município: qualquer clique volta ao estado, inclusive no próprio município.
+ * Ex.: clique em Recife (`deepest: "municipio"`) com `EMPTY_RECORTE` →
+ * `{ uf: ["PE"], mun: ["2611606"] }`; qualquer clique depois → `{ uf: ["PE"], mun: [] }`;
+ * outro clique fora de PE → `EMPTY_RECORTE`.
  */
 export function recorteForClick(
-  feature: MapFeatureProps,
+  clicked: MapFeatureProps | null,
   level: FeatureLevel,
   deepest: MapLevel,
   current: MapRecorte,
 ): MapRecorte {
-  const picked = pickedRecorte(feature, level, deepest);
+  if (current.mun.length > 0) return oneLevelUp(current);
+  if (current.uf.length === 0) {
+    return clicked ? pickedRecorte(clicked, level, deepest) : current;
+  }
+  if (!clicked || !current.uf.includes(ufOfFeature(clicked, level))) {
+    return oneLevelUp(current);
+  }
 
-  if (!sameRecorte(picked, current)) return picked;
-  if (picked.mun.length > 0) return { uf: picked.uf, mun: [] };
+  const picked = pickedRecorte(clicked, level, deepest);
 
-  return EMPTY_RECORTE;
+  return sameRecorte(picked, current) ? oneLevelUp(current) : picked;
 }
 
 /**

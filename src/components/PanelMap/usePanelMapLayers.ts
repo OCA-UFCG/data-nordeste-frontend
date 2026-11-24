@@ -146,28 +146,30 @@ function useRecorteFraming(
 }
 
 // Clique emite o recorte direto e o enquadramento vem da mudança de props
-// (não é marcado como do zoom). Clicar no recorte atual emite o nível acima,
-// então o recorte sempre muda.
-function handleFeatureClick(
-  feature: MapFeatureProps,
+// (não é marcado como do zoom). Só emite quando o recorte muda: clicar no vazio
+// com a área inteira não faz nada.
+function handleMapClick(
+  clicked: MapFeatureProps | null,
   args: PanelMapLayersArgs,
   zoomEmittedRef: MutableRefObject<MapRecorte | null>,
 ): void {
   const { mode, deepest, recorte } = args;
+  const next = recorteForClick(clicked, mode.level, deepest, recorte);
 
+  if (sameRecorte(next, recorte)) return;
   zoomEmittedRef.current = null;
-  args.onRecorteChange(recorteForClick(feature, mode.level, deepest, recorte));
+  args.onRecorteChange(next);
 }
 
 // WHY deps com `args` inteiro: o recorte do pai muda de objeto a cada render,
 // então o callback é trocado a cada render de qualquer jeito (troca barata).
-function useFeatureClicks(
+function useMapClicks(
   args: PanelMapLayersArgs,
   zoomEmittedRef: MutableRefObject<MapRecorte | null>,
 ) {
   useEffect(() => {
-    args.engine?.onClickFeature((feature) =>
-      handleFeatureClick(feature, args, zoomEmittedRef),
+    args.engine?.onMapClick((clicked) =>
+      handleMapClick(clicked, args, zoomEmittedRef),
     );
   }, [args, zoomEmittedRef]);
 }
@@ -187,7 +189,7 @@ export function usePanelMapLayers(args: PanelMapLayersArgs) {
 
   useSourcesAndPaint(args, sources, recorte);
   useRecorteFraming(args, sources, recorte, zoomEmittedRef);
-  useFeatureClicks(args, zoomEmittedRef);
+  useMapClicks(args, zoomEmittedRef);
 
   return useCallback(
     (recorte: MapRecorte) => {

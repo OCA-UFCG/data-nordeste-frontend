@@ -25,7 +25,7 @@ import {
 
 const TITLE = "Porte dos municípios";
 const INFO =
-  "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Aproxime ou clique no mapa para filtrar o painel por estado e por município; clicar de novo no que já está filtrado volta um nível. Na vista Estados, só por estado.";
+  "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Aproxime ou clique no mapa para filtrar o painel por estado e por município; clicar fora do destaque volta um nível. Na vista Estados, só por estado.";
 const ESTADOS_LABEL = "Mapa dos estados";
 
 // Rodapé da tela cheia; a imagem baixada do card credita o basemap ativo
