@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  idhCardFooter,
-  IDH_CARD_INFO,
-} from "@/components/IdhDashboard/idhCardTexts";
+import { IDH_CARD_INFO } from "@/components/IdhDashboard/idhCardTexts";
 import { IDH_COLORS } from "@/components/IdhDashboard/idhColors";
 import {
   PROTO_CARD_CLASS,
@@ -133,7 +130,7 @@ const GroupCard = ({
 
   return (
     <ProtoCard
-      footer={idhCardFooter(updatedAt)}
+      updatedAt={updatedAt}
       title={title}
       subtitle={gap ? `${gap} · ${place}` : place}
       kind="grp"

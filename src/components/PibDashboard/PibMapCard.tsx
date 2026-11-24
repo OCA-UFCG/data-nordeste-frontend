@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
-import {
-  PIB_CARD_FOOTER,
-  PIB_CARD_INFO,
-  PIB_CARD_SOURCE,
-} from "@/components/PibDashboard/pibTexts";
+import { PIB_CARD_INFO } from "@/components/PibDashboard/pibTexts";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
 import { ProtoCard, ProtoSkeleton } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
@@ -95,7 +91,6 @@ export const PibMapCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={PIB_CARD_FOOTER}
       title={TITLE}
       subtitle={subtitle}
       kind="map"
@@ -109,7 +104,6 @@ export const PibMapCard = ({
           title={TITLE}
           subtitle={subtitle}
           legend={<ProtoBinLegend bins={PIB_STATE_BINS} className="" />}
-          source={PIB_CARD_SOURCE}
           hint={MAP_SELECT_HINT}
         />
       }

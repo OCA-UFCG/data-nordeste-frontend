@@ -5,10 +5,7 @@ import {
   PibLineChart,
   PibLineChartSkeleton,
 } from "@/components/PibDashboard/PibLineChart";
-import {
-  PIB_CARD_FOOTER,
-  PIB_CARD_INFO,
-} from "@/components/PibDashboard/pibTexts";
+import { PIB_CARD_INFO } from "@/components/PibDashboard/pibTexts";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import {
@@ -41,7 +38,6 @@ export const PibEvolutionCard = ({
   return (
     <ProtoCard
       {...status}
-      footer={PIB_CARD_FOOTER}
       title={TITLE}
       subtitle={`${place} · ${span}PIB total e per capita`}
       kind="line"

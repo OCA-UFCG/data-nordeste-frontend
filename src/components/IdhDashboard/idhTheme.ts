@@ -10,5 +10,5 @@ export const IDH_LEAD =
 // links de catálogo e de "Ver mais sobre o tema" dependem dele).
 export const IDH_MACROTHEME = "Desenvolvimento Social";
 
-// Fonte do rodapé dos cards, do mapa em tela cheia e da imagem baixada.
+// Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const IDH_CARD_SOURCE = "Fonte: PNAD/IBGE · Data Nordeste";

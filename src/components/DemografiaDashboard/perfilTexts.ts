@@ -5,7 +5,7 @@
 export const PERFIL_LEAD =
   "Conheça quem vive no Nordeste: o tamanho da população, a divisão por sexo, faixa etária e cor ou raça, o porte dos municípios e a evolução ao longo dos Censos.";
 
-// Fonte que vai no rodapé e na imagem baixada dos cards.
+// Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const PERFIL_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
 export const PERFIL_SAIBA_MAIS_TITLE = "Saiba mais sobre o perfil demográfico";

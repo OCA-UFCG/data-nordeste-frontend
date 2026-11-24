@@ -210,10 +210,7 @@ type FrameProps = {
   subtitle: string;
   legend?: ReactNode;
 
-  // Fonte exibida no rodapé do diálogo.
-  source: string;
-
-  // Dica de uso no rodapé; sem ela, o rodapé não mostra a dica.
+  // Dica de uso no rodapé; sem ela, não há rodapé.
   hint?: string;
 };
 
@@ -303,7 +300,6 @@ const FullscreenContent = ({
   title,
   subtitle,
   legend,
-  source,
   hint,
   stage,
 }: Omit<FrameProps, "open" | "onOpenChange"> & { stage: StageProps }) => {
@@ -358,10 +354,11 @@ const FullscreenContent = ({
         <MapStage map={stage} mapView={mapView} />
       )}
       {legend ? <div className="mx-1 mt-3">{legend}</div> : null}
-      <div className="mx-1 mt-3 flex justify-between gap-3 border-t border-grey-200 pt-3 text-[13px] text-grey-800">
-        <span>{source}</span>
-        {hint ? <span className="max-[700px]:hidden">{hint}</span> : null}
-      </div>
+      {hint ? (
+        <p className="mx-1 mt-3 border-t border-grey-200 pt-3 text-[13px] text-grey-800 max-[700px]:hidden">
+          {hint}
+        </p>
+      ) : null}
     </DialogContent>
   );
 };
@@ -369,12 +366,11 @@ const FullscreenContent = ({
 /**
  * Mapa em tela cheia (`.mmodal` do protótipo): ampliar, reduzir, ajustar
  * (botões, roda do mouse ou teclas + − 0), arrastar e clicar num estado para
- * filtrar o painel. `legend` (opcional) é a legenda do painel, já montada;
- * `source` é a fonte do rodapé e `hint` (ex.: `MAP_SELECT_HINT`) a dica de
- * uso. Com `renderStage`, o palco é do painel (ex.: mapa de municípios) e o
+ * filtrar o painel. `legend` (opcional) é a legenda do painel, já montada, e
+ * `hint` (ex.: `MAP_SELECT_HINT`), a dica de uso. Com `renderStage`, o palco é do painel (ex.: mapa de municípios) e o
  * cabeçalho, a legenda e o rodapé continuam os mesmos.
  *
- * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" legend={<IdhMapLegend mapa={mapa} />} source={IDH_CARD_SOURCE} hint={MAP_SELECT_HINT} fillFor={fill} describe={describe} isSelectable={isSelectable} label="Mapa" selectedUf="PE" onSelect={toggleUf} />
+ * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" legend={<IdhMapLegend mapa={mapa} />} hint={MAP_SELECT_HINT} fillFor={fill} describe={describe} isSelectable={isSelectable} label="Mapa" selectedUf="PE" onSelect={toggleUf} />
  */
 export const ProtoMapFullscreen = (props: ProtoMapFullscreenProps) => (
   <Dialog open={props.open} onOpenChange={props.onOpenChange}>
@@ -383,7 +379,6 @@ export const ProtoMapFullscreen = (props: ProtoMapFullscreenProps) => (
         title={props.title}
         subtitle={props.subtitle}
         legend={props.legend}
-        source={props.source}
         hint={props.hint}
         stage={props}
       />

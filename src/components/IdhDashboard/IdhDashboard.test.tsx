@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
 import { idhPanelFixture } from "@/components/IdhDashboard/idhTestFixtures";
+import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import {
   emptyIdhPanel,
   parseIdhFilters,
@@ -155,6 +156,13 @@ describe("IdhDashboard", () => {
       .map((option) => option.textContent);
 
     expect(years).toEqual(["2018", "2019", "2020", "2021", "2022", "2023"]);
+  });
+
+  // A fonte fica só na seção "Fonte dos dados" do painel, não em cada card.
+  it("shows no source under the charts", () => {
+    render(dashboard(GERAL));
+
+    expect(screen.queryByText(IDH_CARD_SOURCE)).toBeNull();
   });
 
   it("shows the Contentful date in the card footers, and nothing without it", () => {

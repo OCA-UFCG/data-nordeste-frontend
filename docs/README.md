@@ -305,7 +305,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - The reference is the navigable prototype ("Painéis Data Nordeste", `idh.html`),
   reproduced in layout and behaviour: dark cover (back link, breadcrumb,
   "Publicado em", macrotheme badge, lead), sticky filter bar, left rail of
-  views above 900 px (top tab bar below), cards with footer, ⓘ and ⋯ menu,
+  views above 900 px (top tab bar below), cards, ⓘ and ⋯ menu,
   "Saiba mais sobre o IDH" with "Ler mais" and glossary. It replaced the
   Power BI-faithful version of `129cef4` (gauges, no ranking).
 - The prototype building blocks (card, sheet, ⓘ, ⋯ menu, cover, filter bar
@@ -409,9 +409,11 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   the prototype's `norm()` does. The server drops the ones outside the new
   area (`keepKnown` in `src/features/panels/territorialOptions.ts`), which
   keeps the multi-state selection. PIB clears both instead.
-- The fullscreen map receives `source` (the panel's source line) and an
-  optional `hint`: `MAP_SELECT_HINT` only shows on the states map, which
-  filters on click. The porte legend only shows in the "Municípios" view, in
+- The fullscreen map takes an optional `hint`: `MAP_SELECT_HINT` only shows
+  on the states map, which filters on click. Neither the cards nor the
+  fullscreen show the source: the panel already has a "Fonte dos dados"
+  section, so `*_CARD_SOURCE` only goes into the downloaded image. IDH cards
+  keep only "Atualizado em" (`ProtoCard` `updatedAt`). The porte legend only shows in the "Municípios" view, in
   the card and in the fullscreen.
 - The municipalities map is a canvas with no text for screen readers, so it
   carries an `sr-only` table built by `buildPerfilPorteTable`, replacing the

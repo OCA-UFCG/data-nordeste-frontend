@@ -123,9 +123,6 @@ const Responsive = ({ wide, narrow }: { wide: string; narrow?: string }) =>
     wide
   );
 
-// Rodapé com a fonte; sem `footer`, o card não mostra rodapé.
-export type ProtoCardFooter = { source: string; updatedAt?: string };
-
 export type ProtoCardProps = {
   title: string;
   mobileTitle?: string;
@@ -136,7 +133,9 @@ export type ProtoCardProps = {
   kind: ProtoCardKind;
   onRetry: () => void;
   bodyClassName?: string;
-  footer?: ProtoCardFooter;
+
+  // INTENTIONAL: sem fonte no card; ela fica na seção "Fonte dos dados" do painel.
+  updatedAt?: string;
 
   // Esqueleto com a altura do corpo pronto, no lugar do genérico do `kind`.
   skeleton?: ReactNode;
@@ -174,23 +173,20 @@ const CardBody = ({
   return children;
 };
 
-const CardFooter = ({ footer }: { footer: ProtoCardFooter }) => (
-  <div className="mt-3.5 flex justify-between gap-3 text-[11px] leading-4 text-grey-1100">
-    <span>{footer.source}</span>
-    {footer.updatedAt ? (
-      <span className="text-grey-800">Atualizado em {footer.updatedAt}</span>
-    ) : null}
-  </div>
+const CardUpdatedAt = ({ updatedAt }: { updatedAt: string }) => (
+  <p className="mt-3.5 text-right text-[11px] leading-4 text-grey-800">
+    Atualizado em {updatedAt}
+  </p>
 );
 
 /**
  * Card de gráfico do painel ("Caixa do gráfico" do protótipo): cabeçalho com
  * ações, corpo com os estados (esmaecido com o dado anterior, carregando e
- * erro) e o rodapé com a fonte (quando `footer` é dado). `overlay` é renderizado
+ * erro) e a data de atualização (quando `updatedAt` é dado). `overlay` é renderizado
  * depois do rodapé, fora do corpo, e sobrevive aos estados (ex.: diálogo em
  * tela cheia).
  *
- * @example <ProtoCard title="Mapa do IDH por estado" subtitle="…" actions={…} state="ok" kind="map" onRetry={retry} footer={{ source: "Fonte: …" }} overlay={<ProtoMapFullscreen … />}>…</ProtoCard>
+ * @example <ProtoCard title="Mapa do IDH por estado" subtitle="…" actions={…} state="ok" kind="map" onRetry={retry} updatedAt="10/2026" overlay={<ProtoMapFullscreen … />}>…</ProtoCard>
  */
 export const ProtoCard = (props: ProtoCardProps) => (
   <article className={PROTO_CARD_CLASS}>
@@ -218,7 +214,7 @@ export const ProtoCard = (props: ProtoCardProps) => (
         {props.children}
       </CardBody>
     </div>
-    {props.footer ? <CardFooter footer={props.footer} /> : null}
+    {props.updatedAt ? <CardUpdatedAt updatedAt={props.updatedAt} /> : null}
     {props.overlay}
   </article>
 );

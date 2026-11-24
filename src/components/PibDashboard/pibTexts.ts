@@ -5,12 +5,8 @@
 export const PIB_LEAD =
   "Acompanhe a riqueza gerada pelos estados do Nordeste: o PIB total e per capita ao longo do tempo, a comparação entre estados e a contribuição de cada setor da economia.";
 
-// Fonte que vai no rodapé dos cards e na imagem baixada.
+// Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
-
-// INTENTIONAL: sem "Atualizado em". O protótipo traz "11/2026" fixo e o banco
-// não informa quando o PIB foi carregado; inclua a data quando houver fonte.
-export const PIB_CARD_FOOTER = { source: PIB_CARD_SOURCE } as const;
 
 // O ano vem do banco; sem ele (carregando ou erro), a frase sai.
 const sectorCoverage = (vabLastYear: number | null) =>

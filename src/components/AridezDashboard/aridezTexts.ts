@@ -4,12 +4,9 @@
 export const ARIDEZ_LEAD =
   "O painel de Índice de Aridez reúne dados sobre a disponibilidade hídrica e a suscetibilidade à desertificação nos territórios abrangidos pelo Data Nordeste. As informações permitem analisar a classificação climática dos municípios, a extensão das áreas suscetíveis à desertificação e sua distribuição territorial. O exame desses dados possibilita entender os padrões de disponibilidade hídrica dos territórios, identificar áreas sob maior pressão ambiental e subsidiar estratégias de convivência com a seca e de mitigação dos processos de desertificação.";
 
+// Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const ARIDEZ_CARD_SOURCE =
   "Fonte: XAVIER et al. (2019) · Observatório da Caatinga e Desertificação";
-
-// INTENTIONAL: sem "Atualizado em". O protótipo traz "14/05/2025" fixo e o
-// banco não informa quando os dados foram carregados (mesma regra do PIB).
-export const ARIDEZ_CARD_FOOTER = { source: ARIDEZ_CARD_SOURCE } as const;
 
 export const ARIDEZ_CARD_INFO = {
   classes:
