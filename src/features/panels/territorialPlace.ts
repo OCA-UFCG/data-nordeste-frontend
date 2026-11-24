@@ -52,22 +52,6 @@ export const describeTerritorialShareChips = (
 ];
 
 /**
- * Clicar num estado no mapa da aridez: o filtro fica só com ele. Clicar de
- * novo no único escolhido limpa o filtro. O município some, porque pode não
- * ser do estado novo.
- *
- * @example selectOnlyTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB", "PE"] }, "PE").uf // ["PE"]
- */
-export const selectOnlyTerritorialUf = (
-  filters: TerritorialFilters,
-  uf: string,
-): TerritorialFilters => {
-  const alreadyOnly = filters.uf?.length === 1 && filters.uf[0] === uf;
-
-  return { ...filters, uf: alreadyOnly ? undefined : [uf], mun: undefined };
-};
-
-/**
  * Os filtros estão no padrão (Nordeste, último ano, sem estado nem município)?
  * Decide se o "Limpar filtros" fica desligado.
  *

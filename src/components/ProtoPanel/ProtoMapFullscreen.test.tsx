@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
 import {
-  MAP_SELECT_HINT,
   MAP_STAGE_FRAME,
   ProtoMapFullscreen,
 } from "@/components/ProtoPanel/ProtoMapFullscreen";
@@ -20,7 +20,7 @@ describe("ProtoMapFullscreen rodapé", () => {
     );
 
     expect(screen.getByText("Fonte: X")).toBeTruthy();
-    expect(screen.queryByText(MAP_SELECT_HINT)).toBeNull();
+    expect(screen.queryByText(PANEL_MAP_HINT)).toBeNull();
   });
 
   it("mostra a dica quando recebe hint", () => {
@@ -31,12 +31,12 @@ describe("ProtoMapFullscreen rodapé", () => {
         title="Mapa"
         subtitle="s"
         source="Fonte: X"
-        hint={MAP_SELECT_HINT}
+        hint={PANEL_MAP_HINT}
         renderStage={() => <div />}
       />,
     );
 
-    expect(screen.getByText(MAP_SELECT_HINT)).toBeTruthy();
+    expect(screen.getByText(PANEL_MAP_HINT)).toBeTruthy();
   });
 });
 
