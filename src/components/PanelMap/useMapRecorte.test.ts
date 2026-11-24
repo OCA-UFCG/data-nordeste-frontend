@@ -31,6 +31,14 @@ describe("useMapRecorte", () => {
     expect(onRecorteChange).not.toHaveBeenCalled();
   });
 
+  it("ignora o fim de um enquadramento (fitTo)", () => {
+    const { engine, onRecorteChange } = renderMapRecorte(EMPTY_RECORTE);
+
+    engine.emitMoveEnd({ zoom: 7, centerUf: "PE", fit: true, fittedZoom: 7 });
+
+    expect(onRecorteChange).not.toHaveBeenCalled();
+  });
+
   it("zoom 7 sobre PE sem filtro escolhe PE uma vez", () => {
     const { engine, onRecorteChange } = renderMapRecorte(EMPTY_RECORTE);
 
@@ -69,7 +77,7 @@ describe("useMapRecorte", () => {
     const { engine, onRecorteChange, hook } = renderMapRecorte(EMPTY_RECORTE);
 
     // Último fit em 5; o usuário aproxima até 7 sobre PE e PE vira o filtro.
-    engine.emitMoveEnd({ zoom: 5, programmatic: true, fittedZoom: 5 });
+    engine.emitMoveEnd({ zoom: 5, fit: true, fittedZoom: 5 });
     engine.emitMoveEnd({ zoom: 7, centerUf: "PE", fittedZoom: 5 });
     hook.rerender({ recorte: { uf: ["PE"], mun: [] }, deepest: "estado" });
 
@@ -86,7 +94,7 @@ describe("useMapRecorte", () => {
     // grande) em 6.
     engine.emitMoveEnd({ zoom: 7, centerUf: "PE", fittedZoom: 5 });
     hook.rerender({ recorte: { uf: ["PE"], mun: [] }, deepest: "estado" });
-    engine.emitMoveEnd({ zoom: 6, programmatic: true, fittedZoom: 6 });
+    engine.emitMoveEnd({ zoom: 6, fit: true, fittedZoom: 6 });
 
     // 6,2 não está abaixo de 6 − 0,5: PE fica (com a âncora velha, 7, limparia).
     engine.emitMoveEnd({ zoom: 6.2, centerUf: "PE", fittedZoom: 6 });
@@ -101,5 +109,18 @@ describe("useMapRecorte", () => {
     engine.emitMoveEnd({ zoom: 7, centerUf: "PE" });
 
     expect(onRecorteChange).not.toHaveBeenCalled();
+  });
+
+  it("redimensionar o mapa não apaga a âncora do zoom", () => {
+    const { engine, onRecorteChange, hook } = renderMapRecorte(EMPTY_RECORTE);
+
+    engine.emitMoveEnd({ zoom: 7, centerUf: "PE", fittedZoom: 5 });
+    hook.rerender({ recorte: { uf: ["PE"], mun: [] }, deepest: "estado" });
+
+    // Resize do container: programático, sem fit, com o fittedZoom antigo.
+    engine.emitMoveEnd({ zoom: 7, programmatic: true, fittedZoom: 5 });
+    engine.emitMoveEnd({ zoom: 6, centerUf: "PE", fittedZoom: 5 });
+
+    expect(onRecorteChange).toHaveBeenLastCalledWith(EMPTY_RECORTE);
   });
 });

@@ -25,14 +25,13 @@ type MoveContext = Omit<UseMapRecorteArgs, "engine"> & {
 // subir de nível". Depois de um fit é o zoom do fit; depois de um recorte que o
 // próprio usuário escolheu é o zoom em que ele o escolheu. Sem isso, quem
 // aproximou até um estado só o limparia afastando abaixo do fit antigo da área.
+// WARNING: só `fit` troca a âncora. Um resize do container também é
+// programático, mas traz o `fittedZoom` do fit antigo e apagaria a âncora.
 function handleMoveEnd(move: PanelMapMoveEnd, context: MoveContext): void {
   const { anchorZoomRef, recorte, deepest, onRecorteChange } = context;
 
-  if (move.programmatic) {
-    anchorZoomRef.current = move.fittedZoom;
-
-    return;
-  }
+  if (move.fit) anchorZoomRef.current = move.fittedZoom;
+  if (move.programmatic) return;
   const next = resolveRecorte({
     ...move,
     fittedZoom: anchorZoomRef.current ?? move.fittedZoom,

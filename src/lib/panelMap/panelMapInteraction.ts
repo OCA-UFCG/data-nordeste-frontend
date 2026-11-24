@@ -17,6 +17,9 @@ export type PanelMapMoveEnd = {
   centerUf?: string;
   centerMun?: string;
   programmatic: boolean;
+
+  // Só o fim de um fitTo. Um resize também é programático, mas não enquadrou.
+  fit: boolean;
   fittedZoom: number;
 };
 
@@ -71,14 +74,15 @@ function describeMoveEnd(
     zoom: map.getZoom(),
     ...centerCodes(map, municipal),
     programmatic: !isUserMove(event),
+    fit: "panelMapFit" in event,
     fittedZoom,
   };
 }
 
 /**
  * Enquadramentos e fins de movimento. `programmatic` é tudo que não foi gesto
- * do usuário (fitTo, resize); `fittedZoom` é o zoom em que o último fitTo
- * terminou.
+ * do usuário (fitTo, resize); `fit` só o fim de um fitTo; `fittedZoom` é o
+ * zoom em que o último fitTo terminou.
  */
 export function trackMoves(map: MaplibreMap, municipal: boolean) {
   let fittedZoom = map.getZoom();

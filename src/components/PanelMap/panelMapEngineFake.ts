@@ -60,9 +60,19 @@ export class PanelMapEngineFake implements PanelMapEngine {
     },
   );
 
-  /** Fim de movimento; por padrão um gesto do usuário com o último fit em zoom 5. */
+  /**
+   * Fim de movimento; por padrão um gesto do usuário com o último fit em zoom
+   * 5. `fit: true` vale como programático, como no motor de verdade.
+   */
   emitMoveEnd(move: Partial<PanelMapMoveEnd> & { zoom: number }): void {
-    this.moveEndListener?.({ programmatic: false, fittedZoom: 5, ...move });
+    const programmatic = move.programmatic ?? move.fit ?? false;
+
+    this.moveEndListener?.({
+      fit: false,
+      fittedZoom: 5,
+      ...move,
+      programmatic,
+    });
   }
 
   emitHover(hover: PanelMapHover | null): void {
