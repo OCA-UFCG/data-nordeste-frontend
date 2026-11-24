@@ -10,6 +10,7 @@ import type {
   PanelMapEngine,
   PanelMapEngineOptions,
   PanelMapHover,
+  PanelMapHoverLevel,
   PanelMapMoveEnd,
   VeilFilters,
 } from "@/lib/panelMapEngine";
@@ -36,6 +37,7 @@ export class PanelMapEngineFake implements PanelMapEngine {
   readonly setClassHighlight = vi.fn<(filter: SelectionFilter) => void>();
   readonly setAridez = vi.fn<(overlay: AridezOverlay | null) => void>();
   readonly fitTo = vi.fn<(bbox: Bounds) => void>();
+  readonly setHoverLevel = vi.fn<(level: PanelMapHoverLevel) => void>();
   readonly destroy = vi.fn<() => void>();
 
   readonly toImageSource = vi.fn(
@@ -77,8 +79,11 @@ export class PanelMapEngineFake implements PanelMapEngine {
     });
   }
 
-  emitHover(hover: PanelMapHover | null): void {
-    this.hoverListener?.(hover);
+  /** Hover; sem `level`, o da feição do indicador (o padrão do motor). */
+  emitHover(
+    hover: (Omit<PanelMapHover, "level"> & Partial<PanelMapHover>) | null,
+  ): void {
+    this.hoverListener?.(hover && { level: "feicao", ...hover });
   }
 
   /** Clique no mapa; `null` é um clique fora de qualquer feição. */

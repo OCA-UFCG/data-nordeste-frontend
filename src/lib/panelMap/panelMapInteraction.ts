@@ -1,16 +1,8 @@
-import type {
-  FeatureIdentifier,
-  MapLayerMouseEvent,
-  Map as MaplibreMap,
-  PointLike,
-} from "maplibre-gl";
+import type { Map as MaplibreMap, PointLike } from "maplibre-gl";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
 import type { Bounds } from "@/features/panelMap/mapLayers";
-import {
-  PANEL_MAP_LAYER,
-  PANEL_MAP_SOURCE,
-} from "@/lib/panelMap/panelMapStyle";
+import { PANEL_MAP_LAYER } from "@/lib/panelMap/panelMapStyle";
 
 export type PanelMapMoveEnd = {
   zoom: number;
@@ -22,10 +14,6 @@ export type PanelMapMoveEnd = {
   fit: boolean;
   fittedZoom: number;
 };
-
-export type PanelMapHover = { props: MapFeatureProps; x: number; y: number };
-
-type FeatureId = FeatureIdentifier["id"];
 
 // Marca os moveend do fitTo, só para registrar o fittedZoom. WHY eventData e
 // não um flag: o flag fica preso quando o MapLibre não consegue enquadrar (sem
@@ -121,60 +109,6 @@ export function trackMoves(map: MaplibreMap, municipal: boolean) {
     },
     onMoveEnd: (callback: (move: PanelMapMoveEnd) => void) => {
       listener = callback;
-    },
-  };
-}
-
-// Uma feição com contorno de hover por vez; o id é o `code` (promoteId).
-class FeatureHoverTracker {
-  private hoveredId: FeatureId | null = null;
-  listener: ((hover: PanelMapHover | null) => void) | null = null;
-
-  constructor(private readonly map: MaplibreMap) {}
-
-  readonly hover = (event: MapLayerMouseEvent) => {
-    const feature = event.features?.[0];
-
-    if (feature?.id === undefined) return this.clear();
-    this.highlight(feature.id);
-    this.listener?.({
-      props: feature.properties as MapFeatureProps,
-      x: event.point.x,
-      y: event.point.y,
-    });
-  };
-
-  readonly clear = () => {
-    this.highlight(null);
-    this.listener?.(null);
-  };
-
-  private highlight(id: FeatureId | null) {
-    const { map, hoveredId } = this;
-    const source = PANEL_MAP_SOURCE.features;
-
-    if (hoveredId !== null && hoveredId !== id) {
-      map.setFeatureState({ source, id: hoveredId }, { hover: false });
-    }
-    if (id !== null) map.setFeatureState({ source, id }, { hover: true });
-    map.getCanvas().style.cursor = id === null ? "" : "pointer";
-    this.hoveredId = id;
-  }
-}
-
-/**
- * Hover nas feições do indicador: contorno escuro por feature-state, cursor de
- * clique e o callback com as propriedades e a posição (null ao sair).
- */
-export function trackHover(map: MaplibreMap) {
-  const tracker = new FeatureHoverTracker(map);
-
-  map.on("mousemove", PANEL_MAP_LAYER.indicatorFill, tracker.hover);
-  map.on("mouseleave", PANEL_MAP_LAYER.indicatorFill, tracker.clear);
-
-  return {
-    onHover: (callback: (hover: PanelMapHover | null) => void) => {
-      tracker.listener = callback;
     },
   };
 }

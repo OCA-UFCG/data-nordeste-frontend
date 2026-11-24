@@ -39,6 +39,7 @@ export const PANEL_MAP_LAYER = {
   featureOutline: "feature-outline",
   featureHover: "feature-hover",
   stateOutline: "state-outline",
+  stateHover: "state-hover",
   areaOutline: "area-outline",
   selectionFeatures: "selection-features",
   selectionStates: "selection-states",
@@ -171,19 +172,16 @@ function stateOutlineLayer(): LayerSpecification {
 }
 
 // WHY o hover não tem minzoom: não é limite, é o sinal de qual feição o
-// tooltip está nomeando, em qualquer zoom (decisão do controlador).
-function hoverLayer(): LayerSpecification {
+// tooltip está nomeando, em qualquer zoom (decisão do controlador). Há um por
+// fonte: o das feições e o dos estados (hover por estado só com a área de
+// interesse, `hoverLevelFor`); o dos estados fica acima do contorno estadual.
+function hoverLayer(id: string, source: string): LayerSpecification {
   const hovered: ExpressionSpecification = [
     "boolean",
     ["feature-state", "hover"],
     false,
   ];
-  const { featureHover } = PANEL_MAP_LAYER;
-  const layer = lineLayer(
-    featureHover,
-    PANEL_MAP_SOURCE.features,
-    HOVER_OUTLINE,
-  );
+  const layer = lineLayer(id, source, HOVER_OUTLINE);
 
   return {
     ...layer,
@@ -212,8 +210,9 @@ function overlayLayers(municipal: boolean): LayerSpecification[] {
     veilLayer(layer.veilStates, states),
     veilLayer(layer.veilFeatures, features),
     featureOutlineLayer(municipal),
-    hoverLayer(),
+    hoverLayer(layer.featureHover, features),
     stateOutlineLayer(),
+    hoverLayer(layer.stateHover, states),
     areaOutlineLayer(),
     lineLayer(layer.selectionFeatures, features, SELECTION_OUTLINE, "none"),
     lineLayer(layer.selectionStates, states, SELECTION_OUTLINE, "none"),

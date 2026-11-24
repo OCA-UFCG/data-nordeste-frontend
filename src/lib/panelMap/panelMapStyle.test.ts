@@ -23,6 +23,7 @@ const ALWAYS_VISIBLE = [
   PANEL_MAP_LAYER.veilFeatures,
   PANEL_MAP_LAYER.areaOutline,
   PANEL_MAP_LAYER.featureHover,
+  PANEL_MAP_LAYER.stateHover,
   PANEL_MAP_LAYER.selectionFeatures,
   PANEL_MAP_LAYER.selectionStates,
 ];
@@ -53,5 +54,27 @@ describe("limites conforme o zoom", () => {
   it("o limite municipal aparece um nível antes do limiar do filtro", () => {
     expect([STATE_ZOOM, MUNICIPALITY_ZOOM]).toEqual([6.5, 8.5]);
     expect(MUNICIPAL_LINES_ZOOM).toBe(7.5);
+  });
+});
+
+describe("contornos de hover", () => {
+  const layerById = (id: string) =>
+    panelMapStyle("padrao", true).layers.find((layer) => layer.id === id);
+
+  it("há um por fonte: o das feições e o dos estados, acesos por feature-state", () => {
+    const featureHover = layerById(PANEL_MAP_LAYER.featureHover);
+    const stateHover = layerById(PANEL_MAP_LAYER.stateHover);
+
+    expect(featureHover).toMatchObject({ source: "features" });
+    expect(stateHover).toMatchObject({ source: "states" });
+    expect(stateHover?.paint).toEqual(featureHover?.paint);
+  });
+
+  it("o hover dos estados fica acima do contorno estadual", () => {
+    const ids = panelMapStyle("padrao", true).layers.map((layer) => layer.id);
+
+    expect(ids.indexOf(PANEL_MAP_LAYER.stateHover)).toBeGreaterThan(
+      ids.indexOf(PANEL_MAP_LAYER.stateOutline),
+    );
   });
 });

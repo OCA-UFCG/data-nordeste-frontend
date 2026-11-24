@@ -8,9 +8,12 @@ import type { BasemapKind } from "@/lib/panelMap/basemaps";
 import { type AridezOverlay, showAridez } from "@/lib/panelMap/panelMapAridez";
 import {
   type PanelMapHover,
+  type PanelMapHoverLevel,
+  trackHover,
+} from "@/lib/panelMap/panelMapHover";
+import {
   type PanelMapMoveEnd,
   trackMapClicks,
-  trackHover,
   trackMoves,
 } from "@/lib/panelMap/panelMapInteraction";
 import {
@@ -32,8 +35,9 @@ export { BASEMAPS, type BasemapKind } from "@/lib/panelMap/basemaps";
 export type { AridezOverlay } from "@/lib/panelMap/panelMapAridez";
 export type {
   PanelMapHover,
-  PanelMapMoveEnd,
-} from "@/lib/panelMap/panelMapInteraction";
+  PanelMapHoverLevel,
+} from "@/lib/panelMap/panelMapHover";
+export type { PanelMapMoveEnd } from "@/lib/panelMap/panelMapInteraction";
 export type { IndicatorPaint, VeilFilters } from "@/lib/panelMap/panelMapPaint";
 
 type MaplibreModule = typeof import("maplibre-gl");
@@ -57,6 +61,10 @@ export interface PanelMapEngine {
   fitTo(bbox: Bounds): void;
   onMoveEnd(callback: (move: PanelMapMoveEnd) => void): void;
   onHover(callback: (hover: PanelMapHover | null) => void): void;
+
+  // O que o hover nomeia: a feição do indicador ou o estado do município sob o
+  // ponteiro (`hoverLevelFor`). Trocar apaga o hover atual.
+  setHoverLevel(level: PanelMapHoverLevel): void;
 
   // Todo clique no mapa: a feição sob o cursor, ou null fora das feições.
   onMapClick(callback: (props: MapFeatureProps | null) => void): void;
@@ -122,12 +130,14 @@ function engineFor(
   destroy: () => void,
 ): PanelMapEngine {
   const moves = trackMoves(map, municipal);
+  const hover = trackHover(map);
 
   return {
     ...paintControls(map),
     fitTo: moves.fitTo,
     onMoveEnd: moves.onMoveEnd,
-    onHover: trackHover(map).onHover,
+    onHover: hover.onHover,
+    setHoverLevel: hover.setHoverLevel,
     onMapClick: trackMapClicks(map).onMapClick,
     toImageSource: () => canvasImageSource(map.getCanvas()),
     destroy,

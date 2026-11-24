@@ -437,6 +437,28 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   the year (`featuresInArea` + `rankWithinArea`, built on `rankRegions` from
   `features/panels/choropleth.ts`); in the IDH, among the 9 states. Features
   without a number in the year show "sem dado" and are not ranked.
+- **Hover level** (`hoverLevelFor` in `src/features/panelMap/hoverLevel.ts`,
+  user decision 24/11/2026, the Atlas da Desertificação behaviour: the hover
+  names the next level down of the recorte). On municipal maps (PIB, perfil,
+  aridez) with only the area of interest (no Estado/Município), the hover is
+  by **state**; with a state or municipality chosen, by municipality, as
+  before. The IDH (state features) always hovers its own feature. The engine
+  (`setHoverLevel`, `src/lib/panelMap/panelMapHover.ts`) still listens on the
+  area-filtered indicator layer and, at state level, lights the hovered
+  municipality's state on the `states` source (`state-hover` layer, same
+  outline as the feature hover, any zoom, above the state outline). So only
+  states with municipalities in the area light up, and the part of a state
+  outside the area (e.g. MG in the Semiárido) shows no tooltip although the
+  outline covers the whole state. Switching the level clears the current
+  hover (a click on a state switches it with the pointer still on the map).
+  The state tooltip is "Nome (UF)" (name from `estados.geojson`), "<label>:
+  <value>" and "Nº de M" among the states with a number in the area
+  (`describeState` in `stateTotals.ts`). The value is the sum of the
+  municipalities' `v<ano>` inside the area (`stateTotalsInArea`; municipalities
+  without a number are skipped, a state with none is "sem dado") unless the
+  card passes `stateValues`: the aridez does, with the ASD share of the state
+  (`aridezStateShares`: summed ASD area over summed classified area of its
+  municipalities in the area, not the mean of the municipal %).
 - **The map does not correct data.** Values, classes and geometries are drawn
   as delivered: the "Médio" population range with inverted limits, the
   negative PIB lower limit and the rest show in the legend as they are. Only
@@ -883,7 +905,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   aridez · área · ano" uses `selection.ano`.
   - Hover shows the municipality and its % of ASD (`formatSharePercent`, the
     same number as the municipalities card) with its rank in the area, from the
-    `values` prop. The legend below the map is the raster palette
+    `values` prop; with only the area of interest it shows the state and its %
+    of ASD (`stateValues`, `aridezStateShares`; `AridezMunicipio.uf` comes from
+    `sigla_uf`). The legend below the map is the raster palette
     (`styles.json`) with, per class, the number of municipalities where it is
     the predominant class (largest area among `dn_uni` 2..5; a tie goes to the
     drier class), from `classCounts`. Both come from pure functions in

@@ -33,8 +33,10 @@ export const ARIDEZ_BASE_YEAR = 1991;
 // Limita o tamanho da URL e do array do `= ANY($n)`, como nos outros painéis.
 export const ARIDEZ_MAX_PLACES = 100;
 
+// `uf`: a sigla do estado; o mapa soma as áreas por estado no hover por estado.
 export type AridezMunicipio = {
   cdMun: string;
+  uf: string;
   nome: string;
   areas: AridezAreas;
 };
@@ -127,6 +129,12 @@ const areasOrNull = (byYear: Map<number, AridezAreas>, ano: number) => {
   return areas && hasArea(areas) ? areas : null;
 };
 
+type MunicipioClassRow = ClassRow & {
+  cd_mun: string;
+  sigla_uf: string;
+  municipio_uf: string;
+};
+
 const loadMunicipios = async (
   query: SqlQuery,
   filters: TerritorialFilters,
@@ -135,15 +143,17 @@ const loadMunicipios = async (
     byYear: true,
     byMunicipality: true,
   });
-  const rows = await query<ClassRow & { cd_mun: string; municipio_uf: string }>(
-    `SELECT cd_mun, municipio_uf, ${CLASS_SUMS} FROM ${ARIDEZ_VIEW}
-     WHERE ${where.sql} GROUP BY cd_mun, municipio_uf ORDER BY municipio_uf`,
+  const rows = await query<MunicipioClassRow>(
+    `SELECT cd_mun, sigla_uf, municipio_uf, ${CLASS_SUMS} FROM ${ARIDEZ_VIEW}
+     WHERE ${where.sql} GROUP BY cd_mun, sigla_uf, municipio_uf
+     ORDER BY municipio_uf`,
     where.params,
   );
 
   return rows
     .map((row) => ({
       cdMun: row.cd_mun,
+      uf: row.sigla_uf,
       nome: row.municipio_uf,
       areas: toAreas(row),
     }))

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 
 import { BasemapSwitch } from "@/components/PanelMap/BasemapSwitch";
 import { PanelMapLegend } from "@/components/PanelMap/PanelMapLegend";
@@ -27,6 +27,7 @@ import {
   recorteForLevel,
 } from "@/features/panelMap/featureLevel";
 import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
+import { hoverLevelFor } from "@/features/panelMap/hoverLevel";
 import type { MapLevel, MapRecorte } from "@/features/panelMap/mapRecorte";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 import type {
@@ -62,6 +63,12 @@ export type PanelMapProps = {
   // (aridez: a malha não tem valores). Sem eles, o `v<ano>` do GeoJSON;
   // feição fora do mapa = "sem dado".
   values?: ReadonlyMap<string, number>;
+
+  // Hover por estado (só a área de interesse ativa): o número de cada estado
+  // por sigla. Obrigatório quando os `values` não se somam (aridez: % de ASD
+  // do estado, não a soma dos %). Sem ele, a soma do `v<ano>` dos municípios
+  // do estado que estão na área.
+  stateValues?: ReadonlyMap<string, number>;
 
   // Legenda da aridez: quantas feições por valor de classe da paleta.
   classCounts?: ReadonlyMap<number, number>;
@@ -107,6 +114,17 @@ const PanelMapNotice = ({
   </div>
 );
 
+// Só com a área de interesse, o hover das feições municipais nomeia estados.
+function useHoverLevel(
+  engine: PanelMapEngine | null,
+  level: FeatureLevel,
+  recorte: MapRecorte,
+) {
+  const hoverLevel = hoverLevelFor(level, recorte);
+
+  useEffect(() => engine?.setHoverLevel(hoverLevel), [engine, hoverLevel]);
+}
+
 // Camadas e recorte pelo zoom: o zoom emite pelo `onRecorteChange` das props.
 function usePanelMapRecorte(
   props: PanelMapProps,
@@ -126,6 +144,7 @@ function usePanelMapRecorte(
   const recorte = recorteForLevel(props.recorte, level);
 
   useMapRecorte({ ...layers, recorte });
+  useHoverLevel(engine, level, props.recorte);
 }
 
 // Motor, controles, camadas e tooltip, já com os geodados em mãos.
@@ -141,8 +160,8 @@ function usePanelMapStage(
     onEngine: props.onEngine,
   });
   const controls = usePanelMapControls(engine, props.onBasemapChange);
-  const { features } = geodata;
-  const tooltip = usePanelMapTooltip({ ...props, engine, features });
+  const { features, states } = geodata;
+  const tooltip = usePanelMapTooltip({ ...props, engine, features, states });
 
   usePanelMapRecorte(props, geodata, engine, level);
 

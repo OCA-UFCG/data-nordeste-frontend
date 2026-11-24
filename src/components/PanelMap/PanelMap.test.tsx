@@ -1,4 +1,4 @@
-import { act, render, screen, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -20,6 +20,9 @@ import { EMPTY_RECORTE, type MapRecorte } from "@/features/panelMap/mapRecorte";
 import { classColorExpression } from "@/features/panelMap/qgisPaint";
 
 const PE: MapRecorte = { uf: ["PE"], mun: [] };
+
+// Como o motor entrega o estado no hover por estado: só a sigla.
+const STATE_PE = { code: "PE", name: "PE", uf: "PE" };
 const NORDESTE_BBOX = [
   [-48, -18],
   [-35, -5],
@@ -414,6 +417,60 @@ describe("PanelMap tooltip", () => {
     act(() => engine.emitHover(null));
 
     expect(screen.queryByRole("tooltip")).toBeNull();
+  });
+});
+
+describe("PanelMap hover por estado (só a área de interesse)", () => {
+  it("só com a área, o hover nomeia estados; com estado escolhido, municípios", async () => {
+    const { engine, rerender } = await renderPanelMap();
+
+    expect(engine.setHoverLevel).toHaveBeenLastCalledWith("estado");
+
+    rerender({ recorte: PE });
+
+    await waitFor(() =>
+      expect(engine.setHoverLevel).toHaveBeenLastCalledWith("feicao"),
+    );
+  });
+
+  it("no IDH (feições de estado) o hover é sempre a própria feição", async () => {
+    const { engine } = await renderPanelMap({ indicator: "idh", ano: 2024 });
+
+    expect(engine.setHoverLevel).toHaveBeenLastCalledWith("feicao");
+  });
+
+  it("mostra o estado, a soma dos municípios dele na área e a posição", async () => {
+    const { engine } = await renderPanelMap();
+
+    act(() =>
+      engine.emitHover({ level: "estado", props: STATE_PE, x: 0, y: 0 }),
+    );
+
+    const tooltip = screen.getByRole("tooltip");
+
+    expect(tooltip).toHaveTextContent("Pernambuco (PE)");
+    expect(tooltip).toHaveTextContent("PIB: R$ 69000000000");
+    expect(tooltip).toHaveTextContent("1º de 2");
+  });
+
+  it("soma só os municípios da área de interesse", async () => {
+    const { engine } = await renderPanelMap({ area: "semiarido" });
+
+    act(() =>
+      engine.emitHover({ level: "estado", props: STATE_PE, x: 0, y: 0 }),
+    );
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("PIB: R$ 9000000000");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 1");
+  });
+
+  it("com estado escolhido, o hover do município segue como antes", async () => {
+    const { engine } = await renderPanelMap({ recorte: PE });
+
+    act(() => engine.emitHover({ level: "feicao", props: RECIFE, x: 0, y: 0 }));
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Recife (PE)");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 3");
   });
 });
 
