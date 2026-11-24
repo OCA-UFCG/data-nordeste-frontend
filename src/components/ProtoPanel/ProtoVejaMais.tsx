@@ -1,92 +1,33 @@
 "use client";
 
-import { useId, useState } from "react";
-import { ProtoSkeleton } from "@/components/ProtoPanel/ProtoCard";
+import {
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
-import { CARD_SHADOW, staleClass } from "@/components/ProtoPanel/protoStyles";
+import { ProtoSheet } from "@/components/ProtoPanel/ProtoSheet";
+import { FOCUS_RING } from "@/components/ProtoPanel/protoStyles";
+import {
+  AnalysisText,
+  analysisKey,
+} from "@/components/ProtoPanel/ProtoVejaMaisText";
 import type { PanelAnalysis } from "@/features/panels/panelAnalysis";
 import type { PanelCardState } from "@/features/panels/panelCardState";
 
-const NO_TEXT =
-  "Não há texto disponível para a combinação de filtros selecionada.";
-const ERROR_TEXT = "Não foi possível carregar o texto.";
+const TITLE = "Veja análise";
+const PHONE_QUERY = "(max-width: 700px)";
 
-const analysisKey = (analysis: PanelAnalysis | null) =>
-  analysis ? JSON.stringify(analysis) : null;
+// Cartão (computador) ou folha inferior (celular), escolhido no clique.
+type VejaMaisMode = "closed" | "card" | "sheet";
 
-const previewOf = (state: PanelCardState, analysis: PanelAnalysis | null) => {
-  if (state === "loading") return "Carregando texto…";
-  if (state === "error") return ERROR_TEXT;
-
-  return analysis?.blocks[0]?.text ?? "Sem texto para estes filtros";
-};
-
-const AnalysisSkeleton = () => (
-  <div aria-busy="true" aria-label="Carregando texto" className="flex flex-col">
-    <ProtoSkeleton className="h-4 w-[55%]" />
-    <ProtoSkeleton className="mt-2.5 h-3.5 w-full" />
-    <ProtoSkeleton className="mt-1.5 h-3.5 w-[85%]" />
-  </div>
-);
-
-// `.anl-tx ul` do protótipo: itens com a seta na cor do painel.
-const AnalysisList = ({ items }: { items: string[] }) => (
-  <ul>
-    {items.map((item) => (
-      <li
-        key={item}
-        className="relative mb-1 pl-[22px] text-base leading-6 text-grey-1100 before:absolute before:left-0 before:font-bold before:text-(--proto-accent-strong) before:content-['→']"
-      >
-        {item}
-      </li>
-    ))}
-  </ul>
-);
-
-const AnalysisText = ({
-  state,
-  analysis,
-  flash,
-}: {
-  state: PanelCardState;
-  analysis: PanelAnalysis | null;
-  flash: boolean;
-}) => {
-  if (state === "loading") return <AnalysisSkeleton />;
-  if (state === "error" || !analysis) {
-    return (
-      <p className="text-base leading-6 text-grey-800">
-        {state === "error" ? ERROR_TEXT : NO_TEXT}
-      </p>
-    );
-  }
-
-  // `key`: cada texto novo remonta o bloco e reinicia o brilho.
-  return (
-    <div
-      key={analysisKey(analysis)}
-      className={`max-w-[78ch] rounded-[4px] ${flash ? "animate-proto-flash motion-reduce:animate-none" : ""} ${staleClass(state === "stale")}`}
-    >
-      {analysis.blocks.map((block) => (
-        <div key={block.title} className="mb-3.5 last:mb-0">
-          <h4 className="mb-1 text-[15px] leading-[22px] font-bold text-grey-1100">
-            {block.title}
-          </h4>
-          {block.text ? (
-            <p className="text-base leading-6 text-grey-1100">{block.text}</p>
-          ) : null}
-          {block.items ? <AnalysisList items={block.items} /> : null}
-        </div>
-      ))}
-      <p className="mt-3 text-[12.5px] leading-4 text-grey-800">
-        {analysis.footnote}
-      </p>
-    </div>
-  );
-};
+const FLOATING_SHADOW = "shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]";
 
 // Ponto vermelho do protótipo (`.anl-dot`): o texto mudou com o filtro
-// enquanto a barra estava fechada.
+// enquanto o cartão estava fechado.
 const UpdatedDot = () => (
   <i
     title="Texto atualizado"
@@ -94,13 +35,110 @@ const UpdatedDot = () => (
   />
 );
 
+// Esc fecha o cartão. A folha do celular já trata o Esc pelo diálogo do Radix.
+const useCloseOnEscape = (active: boolean, close: () => void) => {
+  useEffect(() => {
+    if (!active) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [active, close]);
+};
+
+// Ponto e brilho: o que mudou desde a última vez que o texto foi aberto ou
+// fechado, e se já houve alguma troca desde o carregamento.
+const useAnalysisNews = (analysis: PanelAnalysis | null) => {
+  const current = analysisKey(analysis);
+  const [seen, setSeen] = useState(current);
+  const [first] = useState(current);
+
+  return {
+    flash: current !== first,
+    changedSinceSeen: current !== null && current !== seen,
+    markSeen: () => setSeen(current),
+  };
+};
+
+const FloatingButton = ({
+  buttonRef,
+  open,
+  controls,
+  updated,
+  onClick,
+}: {
+  buttonRef: RefObject<HTMLButtonElement | null>;
+  open: boolean;
+  controls: string;
+  updated: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    ref={buttonRef}
+    type="button"
+    aria-expanded={open}
+    aria-controls={controls}
+    onClick={onClick}
+    className={`fixed right-6 bottom-6 z-40 inline-flex min-h-12 items-center gap-2 rounded-full bg-(--proto-accent-strong) px-5 text-[15px] leading-5 font-bold text-white hover:brightness-110 max-[700px]:right-4 max-[700px]:bottom-4 ${FLOATING_SHADOW} ${FOCUS_RING}`}
+  >
+    <ProtoIcon name="text" size={20} />
+    {TITLE}
+    {updated ? <UpdatedDot /> : null}
+  </button>
+);
+
+const AnalysisCard = ({
+  id,
+  onClose,
+  children,
+}: {
+  id: string;
+  onClose: () => void;
+  children: ReactNode;
+}) => {
+  const titleId = useId();
+
+  return (
+    <div
+      id={id}
+      role="dialog"
+      aria-labelledby={titleId}
+      className={`fixed right-6 bottom-[88px] z-40 flex max-h-[min(60vh,560px)] w-[400px] max-w-[calc(100vw-32px)] flex-col rounded-[12px] border border-grey-300 bg-white ${FLOATING_SHADOW}`}
+    >
+      <div className="flex items-center justify-between border-b border-grey-300 py-3 pr-3 pl-5">
+        <h2
+          id={titleId}
+          className="text-lg leading-6 font-semibold text-grey-1100"
+        >
+          {TITLE}
+        </h2>
+        <button
+          type="button"
+          aria-label="Fechar"
+          onClick={onClose}
+          className={`grid size-10 place-items-center rounded-[6px] hover:bg-grey-100 ${FOCUS_RING}`}
+        >
+          <ProtoIcon name="close" size={20} stroke={2.2} />
+        </button>
+      </div>
+      <div className="overflow-auto px-5 py-4">{children}</div>
+    </div>
+  );
+};
+
 /**
- * "Veja mais" de um painel (`.anl` do protótipo): barra expansível no topo do
- * painel com um texto gerado a partir dos filtros. Fechada, mostra a prévia do
- * primeiro parágrafo e um ponto quando o texto mudou desde a última leitura.
+ * "Veja análise" de um painel: botão flutuante no canto inferior direito que
+ * abre o texto gerado a partir dos filtros, num cartão (computador) ou na folha
+ * inferior (celular). O botão ganha um ponto quando o texto mudou desde a
+ * última leitura.
  *
- * INTENTIONAL: o protótipo também tem a versão em botão flutuante, alternada
- * pela faixa preta do topo, que só existe para o teste; o painel usa a barra.
+ * INTENTIONAL: até 24/11/2026 era a barra expansível no topo do painel
+ * (`.anl` do protótipo). O time preferiu a versão em botão flutuante, que o
+ * protótipo também tinha; o cartão não é modal para a pessoa trocar os
+ * filtros e ver o texto mudar com ele aberto.
  *
  * @example <ProtoVejaMais analysis={buildAridezAnalise(input)} state="ok" />
  */
@@ -111,74 +149,51 @@ export const ProtoVejaMais = ({
   analysis: PanelAnalysis | null;
   state: PanelCardState;
 }) => {
-  const bodyId = useId();
-  const buttonId = useId();
-  const current = analysisKey(analysis);
-  const [open, setOpen] = useState(false);
-  const [seen, setSeen] = useState(current);
+  const cardId = useId();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [mode, setMode] = useState<VejaMaisMode>("closed");
+  const news = useAnalysisNews(analysis);
+  const open = mode !== "closed";
 
-  // O brilho só vem depois da primeira troca de texto, não ao carregar.
-  const [first] = useState(current);
-  const flash = current !== first;
-  const updated =
-    !open && state === "ok" && current !== null && current !== seen;
-
-  // Ao abrir e ao fechar: o texto que mudou com a barra aberta já foi lido.
+  // Ao abrir e ao fechar: o texto que mudou com o cartão aberto já foi lido.
   const toggle = () => {
-    setSeen(current);
-    setOpen(!open);
+    news.markSeen();
+    if (open) return setMode("closed");
+    setMode(window.matchMedia(PHONE_QUERY).matches ? "sheet" : "card");
   };
 
+  const close = () => {
+    news.markSeen();
+    setMode("closed");
+    buttonRef.current?.focus();
+  };
+
+  useCloseOnEscape(mode === "card", close);
+  const text = (
+    <AnalysisText state={state} analysis={analysis} flash={news.flash} />
+  );
+
   return (
-    <section
-      aria-label="Veja mais"
-      className={`rounded-[8px] border border-grey-300 bg-white ${CARD_SHADOW}`}
-    >
-      <button
-        id={buttonId}
-        type="button"
-        aria-expanded={open}
-        aria-controls={bodyId}
+    <>
+      <FloatingButton
+        buttonRef={buttonRef}
+        open={open}
+        controls={cardId}
+        updated={!open && state === "ok" && news.changedSinceSeen}
         onClick={toggle}
-        className="flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-[8px] px-5 py-4 text-left text-grey-1100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-grey-1100 max-[700px]:gap-2.5 max-[700px]:p-4"
+      />
+      {mode === "card" ? (
+        <AnalysisCard id={cardId} onClose={close}>
+          {text}
+        </AnalysisCard>
+      ) : null}
+      <ProtoSheet
+        open={mode === "sheet"}
+        onOpenChange={(next) => (next ? null : close())}
+        title={TITLE}
       >
-        <span className="grid size-8 flex-none place-items-center rounded-[8px] bg-(--proto-accent-soft) text-(--proto-accent-strong)">
-          <ProtoIcon name="text" size={20} />
-        </span>
-        <span className="flex-none text-[15px] leading-5 font-bold max-[700px]:flex-1">
-          Veja mais
-          {updated ? <UpdatedDot /> : null}
-        </span>
-        <span
-          className={`min-w-0 flex-1 truncate text-sm leading-5 text-grey-800 max-[700px]:hidden ${open ? "invisible" : ""}`}
-        >
-          {previewOf(state, analysis)}
-        </span>
-        <span className="inline-flex flex-none items-center gap-1 text-sm font-semibold">
-          {open ? "Recolher" : "Expandir"}
-          <ProtoIcon
-            name="chevronDown"
-            size={18}
-            stroke={2.2}
-            className={`transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
-          />
-        </span>
-      </button>
-      {/* `.anl-b` do protótipo: abre e fecha deslizando (grid-rows 0fr → 1fr).
-          `invisible` (com transição) tira o texto fechado do leitor de tela e
-          do Tab, mas só depois de a barra terminar de recolher. */}
-      <div
-        id={bodyId}
-        role="region"
-        aria-labelledby={buttonId}
-        className={`grid transition-[grid-template-rows,visibility] duration-[220ms] ease-out motion-reduce:transition-none ${open ? "grid-rows-[1fr]" : "invisible grid-rows-[0fr]"}`}
-      >
-        <div className="min-h-0 overflow-hidden">
-          <div className="px-5 pb-5 pl-16 max-[700px]:px-4">
-            <AnalysisText state={state} analysis={analysis} flash={flash} />
-          </div>
-        </div>
-      </div>
-    </section>
+        {text}
+      </ProtoSheet>
+    </>
   );
 };
