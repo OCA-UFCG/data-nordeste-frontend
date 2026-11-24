@@ -80,6 +80,7 @@ describe("PibMapCard", () => {
       deepest: "municipio",
       label: "Mapa do PIB por município",
       formatValue: formatPibReais,
+      valueLabel: "PIB",
     });
     expect(lastProps().recorte).toEqual({ uf: ["PB"], mun: [] });
   });

@@ -39,6 +39,7 @@ const usePibMapProps = (
   indicator: "pib",
   deepest: "municipio",
   formatValue: formatPibReais,
+  valueLabel: "PIB",
   label: PIB_MAP_TITLE,
 });
 

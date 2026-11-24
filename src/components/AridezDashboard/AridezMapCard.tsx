@@ -58,6 +58,7 @@ const useAridezMapProps = (
     indicator: "aridez",
     deepest: "municipio",
     formatValue: formatSharePercent,
+    valueLabel: "Área suscetível",
     label: ARIDEZ_MAP_TITLE,
     values,
     classCounts,

@@ -303,8 +303,9 @@ describe("PanelMap tooltip", () => {
     const tooltip = screen.getByRole("tooltip");
 
     expect(tooltip).toHaveTextContent("João Pessoa (PB)");
-    expect(tooltip).toHaveTextContent("R$ 28442131000");
-    expect(tooltip).toHaveTextContent("2º de 3 no ranking");
+    expect(tooltip).toHaveTextContent("PIB: R$ 28442131000");
+    expect(tooltip).toHaveTextContent("2º de 3");
+    expect(tooltip).not.toHaveTextContent("ranking");
     expect(tooltip).toHaveStyle({ left: "52px", top: "42px" });
   });
 
@@ -313,7 +314,7 @@ describe("PanelMap tooltip", () => {
 
     act(() => engine.emitHover({ props: PETROLINA, x: 0, y: 0 }));
 
-    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 1 no ranking");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 1");
   });
 
   it("some quando o ponteiro sai das feições", async () => {

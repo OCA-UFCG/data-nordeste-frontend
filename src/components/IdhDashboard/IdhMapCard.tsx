@@ -59,6 +59,7 @@ const useIdhMapProps = (
 
   // Duas casas, como o IDH nos shapes do Drive (a terceira seria inventada).
   formatValue: formatIdhCard,
+  valueLabel: "IDH",
   label: IDH_MAP_LABEL,
 });
 

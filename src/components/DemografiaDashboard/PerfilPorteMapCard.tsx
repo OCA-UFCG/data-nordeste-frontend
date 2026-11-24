@@ -61,6 +61,7 @@ const usePorteMapProps = (
   indicator: "demografia",
   featureLevel: view === "estados" ? "estado" : "municipio",
   formatValue: formatPessoas,
+  valueLabel: "População",
 });
 
 type ViewToggleProps = {

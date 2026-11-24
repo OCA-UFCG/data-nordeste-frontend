@@ -5,7 +5,8 @@ import { formatNumber } from "@/features/panels/format";
 
 export const NO_DATA_LABEL = "sem dado";
 
-// `value` null: a feição não tem número para mostrar (só o nome).
+// `value` é a linha "<rótulo>: <número>"; null: a feição não tem número para
+// mostrar (só o nome).
 export type MapTooltipText = {
   title: string;
   value: string | null;
@@ -58,29 +59,37 @@ function titleOf({ name, uf }: MapFeatureProps): string {
   return name.endsWith(`(${uf})`) ? name : `${name} (${uf})`;
 }
 
+/** Como o tooltip nomeia e formata o número da feição. */
+export type MapValueFormat = {
+  valueLabel: string;
+  formatValue: (value: number) => string;
+};
+
 /**
  * Texto do tooltip. `total` é o número de feições ranqueadas na área.
- * Ex.: valor 50, posição 12 de 1794 → `{ value: "50", rank: "12º de 1.794" }`.
+ * Ex.: PIB 50, posição 12 de 1794 → `{ value: "PIB: R$ 50", rank: "12º de 1.794" }`.
  */
 export function describeMapFeature(
   feature: MapFeatureProps,
   readValue: FeatureValueReader,
   ranks: Map<string, number>,
   total: number,
-  formatValue: (value: number) => string,
+  { valueLabel, formatValue }: MapValueFormat,
 ): MapTooltipText {
   const title = titleOf(feature);
   const value = readValue(feature);
   const position = ranks.get(feature.code);
 
-  if (value === null) return { title, value: NO_DATA_LABEL, rank: null };
-  if (position === undefined) {
-    return { title, value: formatValue(value), rank: null };
+  if (value === null) {
+    return { title, value: `${valueLabel}: ${NO_DATA_LABEL}`, rank: null };
   }
+  const line = `${valueLabel}: ${formatValue(value)}`;
+
+  if (position === undefined) return { title, value: line, rank: null };
 
   return {
     title,
-    value: formatValue(value),
+    value: line,
     rank: `${formatNumber(position)}º de ${formatNumber(total)}`,
   };
 }

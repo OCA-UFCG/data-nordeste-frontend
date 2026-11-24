@@ -111,6 +111,7 @@ describe("AridezMapCard", () => {
       deepest: "municipio",
       label: "Índice de aridez por município",
       formatValue: formatSharePercent,
+      valueLabel: "Área suscetível",
     });
     expect(lastProps().recorte).toEqual({ uf: ["PB"], mun: [] });
   });

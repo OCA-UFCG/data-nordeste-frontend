@@ -90,6 +90,7 @@ const aridezMap = {
   ano: 2021,
   values: ASD,
   formatValue: (value: number) => `${value}%`,
+  valueLabel: "Área suscetível",
   label: "Mapa do índice de aridez",
 } as const;
 
@@ -119,8 +120,10 @@ describe("PanelMap do painel de aridez", () => {
 
     act(() => engine.emitHover({ props: RECIFE, x: 0, y: 0 }));
 
-    expect(screen.getByRole("tooltip")).toHaveTextContent("10%");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("2º de 2 no ranking");
+    expect(screen.getByRole("tooltip")).toHaveTextContent(
+      "Área suscetível: 10%",
+    );
+    expect(screen.getByRole("tooltip")).toHaveTextContent("2º de 2");
   });
 
   it("município sem valor do painel fica sem dado e fora do ranking", async () => {
@@ -128,8 +131,10 @@ describe("PanelMap do painel de aridez", () => {
 
     act(() => engine.emitHover({ props: JOAO_PESSOA, x: 0, y: 0 }));
 
-    expect(screen.getByRole("tooltip")).toHaveTextContent("sem dado");
-    expect(screen.getByRole("tooltip")).not.toHaveTextContent("ranking");
+    expect(screen.getByRole("tooltip")).toHaveTextContent(
+      "Área suscetível: sem dado",
+    );
+    expect(screen.getByRole("tooltip")).not.toHaveTextContent("º de");
   });
 
   it("ranqueia só entre os municípios da área", async () => {
@@ -140,7 +145,7 @@ describe("PanelMap do painel de aridez", () => {
 
     act(() => engine.emitHover({ props: PETROLINA, x: 0, y: 0 }));
 
-    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 1 no ranking");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 1");
   });
 
   it("clique num município escolhe o município", async () => {

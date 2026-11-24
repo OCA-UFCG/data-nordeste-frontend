@@ -106,6 +106,7 @@ describe("PerfilPorteMapCard", () => {
       deepest: "municipio",
       label: "Porte dos municípios",
       formatValue: formatPessoas,
+      valueLabel: "População",
     });
     expect(lastProps().recorte).toEqual({ uf: ["PB"], mun: [] });
   });

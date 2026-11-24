@@ -27,6 +27,9 @@ export type PanelMapTooltipArgs = {
   values?: ReadonlyMap<string, number>;
   formatValue: (value: number) => string;
 
+  // Nome do número no tooltip ("PIB: R$ 1 mi").
+  valueLabel: string;
+
   // Feições sem valores (malha dos estados): o tooltip mostra só o nome.
   nameOnly?: boolean;
 };
@@ -56,13 +59,13 @@ function useAreaRanks(
  * O ranking é entre as feições da área de interesse no ano (IDH: os 9 estados);
  * com `values`, os números são os do painel, por `code`.
  *
- * @example const tooltip = usePanelMapTooltip({ engine, features, indicator: "pib", area, ano, formatValue });
+ * @example const tooltip = usePanelMapTooltip({ engine, features, indicator: "pib", area, ano, formatValue, valueLabel: "PIB" });
  */
 export function usePanelMapTooltip(
   args: PanelMapTooltipArgs,
 ): PanelMapTooltipState | null {
   const [hover, setHover] = useState<PanelMapHover | null>(null);
-  const { engine, ano, values, formatValue } = args;
+  const { engine, ano, values, formatValue, valueLabel } = args;
   const readValue = useMemo(
     () => featureValueReader(ano, values),
     [ano, values],
@@ -73,13 +76,10 @@ export function usePanelMapTooltip(
   if (!hover) return null;
   const text = args.nameOnly
     ? describeMapFeatureName(hover.props)
-    : describeMapFeature(
-        hover.props,
-        readValue,
-        ranks,
-        ranks.size,
+    : describeMapFeature(hover.props, readValue, ranks, ranks.size, {
+        valueLabel,
         formatValue,
-      );
+      });
 
   return { ...text, x: hover.x, y: hover.y };
 }
@@ -87,8 +87,9 @@ export function usePanelMapTooltip(
 type PanelMapTooltipProps = { tooltip: PanelMapTooltipState | null };
 
 /**
- * Caixa escura junto do ponteiro, dentro do mapa. `pointer-events-none` para
- * não roubar o hover das feições.
+ * Cartão branco junto do ponteiro, dentro do mapa, no estilo dos tooltips dos
+ * painéis: nome, "<indicador>: <valor>" e posição no ranking. `pointer-events-none`
+ * para não roubar o hover das feições.
  *
  * @example <PanelMapTooltip tooltip={tooltip} />
  */
@@ -100,15 +101,17 @@ export const PanelMapTooltip = ({ tooltip }: PanelMapTooltipProps) => {
   return (
     <div
       role="tooltip"
-      className="pointer-events-none absolute z-20 max-w-60 rounded-[6px] bg-grey-1100 px-3 py-2 text-xs leading-4 text-white shadow-lg"
+      className="pointer-events-none absolute z-20 max-w-60 rounded-[6px] border border-grey-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
       style={{ left, top }}
     >
-      <p className="font-semibold">{tooltip.title}</p>
+      <p className="text-[13px] leading-5 text-grey-700">{tooltip.title}</p>
       {tooltip.value === null ? null : (
-        <p className="mt-1 tabular-nums">{tooltip.value}</p>
+        <p className="text-base font-bold leading-6 text-grey-1100 tabular-nums">
+          {tooltip.value}
+        </p>
       )}
       {tooltip.rank ? (
-        <p className="mt-0.5 text-grey-300">{tooltip.rank} no ranking</p>
+        <p className="text-xs leading-4 text-grey-600">{tooltip.rank}</p>
       ) : null}
     </div>
   );

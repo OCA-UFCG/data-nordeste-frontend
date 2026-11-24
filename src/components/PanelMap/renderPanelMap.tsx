@@ -19,6 +19,7 @@ export function panelMapProps(
     deepest: "municipio",
     onRecorteChange: vi.fn<(recorte: MapRecorte) => void>(),
     formatValue: (value) => `R$ ${value}`,
+    valueLabel: "PIB",
     label: "Mapa do PIB por município",
     createEngine: factory.create,
     ...overrides,

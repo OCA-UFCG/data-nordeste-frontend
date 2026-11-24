@@ -20,7 +20,10 @@ const feature = (
   ...overrides,
 });
 
-const format = (value: number) => `R$ ${value}`;
+const format = {
+  valueLabel: "PIB",
+  formatValue: (value: number) => `R$ ${value}`,
+};
 const byYear = featureValueReader(2023);
 
 describe("rankWithinArea", () => {
@@ -67,7 +70,7 @@ describe("describeMapFeature", () => {
       format,
     );
 
-    expect(result).toMatchObject({ value: "sem dado", rank: null });
+    expect(result).toMatchObject({ value: "PIB: sem dado", rank: null });
   });
 
   it("shows no data when the year is missing", () => {
@@ -75,7 +78,7 @@ describe("describeMapFeature", () => {
 
     expect(
       describeMapFeature(missing, byYear, new Map(), 10, format).value,
-    ).toBe("sem dado");
+    ).toBe("PIB: sem dado");
   });
 
   it("formats the value and the rank with the area total", () => {
@@ -90,7 +93,7 @@ describe("describeMapFeature", () => {
 
     expect(result).toEqual({
       title: "Cidade a (PE)",
-      value: "R$ 50",
+      value: "PIB: R$ 50",
       rank: "12º de 1.794",
     });
   });
@@ -154,9 +157,9 @@ describe("featureValueReader", () => {
     );
     const text = describeMapFeature(feature("a", null), read, ranks, 2, format);
 
-    expect(text).toMatchObject({ value: "R$ 80", rank: "2º de 2" });
+    expect(text).toMatchObject({ value: "PIB: R$ 80", rank: "2º de 2" });
     expect(
       describeMapFeature(feature("c", 1), read, ranks, 2, format),
-    ).toMatchObject({ value: "sem dado", rank: null });
+    ).toMatchObject({ value: "PIB: sem dado", rank: null });
   });
 });

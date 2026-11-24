@@ -77,6 +77,7 @@ describe("IdhOverview", () => {
       deepest: "estado",
       label: "Mapa do IDH por estado do Nordeste",
       formatValue: formatIdhCard,
+      valueLabel: "IDH",
     });
 
     // Duas casas, a precisão do IDH nos shapes do Drive.

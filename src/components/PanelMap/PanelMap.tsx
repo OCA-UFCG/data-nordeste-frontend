@@ -50,6 +50,9 @@ export type PanelMapProps = {
   deepest: MapLevel;
   onRecorteChange: (recorte: MapRecorte) => void;
   formatValue: (value: number) => string;
+
+  // Nome do indicador no tooltip: "<valueLabel>: <valor formatado>".
+  valueLabel: string;
   label: string;
 
   // O que cada feição é. "estado" troca os municípios pela malha dos estados,
@@ -229,8 +232,8 @@ const PanelMapStage = ({
  * do painel (`values`, `classCounts`). Sem geodados no ambiente, mostra um
  * aviso no lugar do mapa e o card continua de pé.
  *
- * @example <PanelMap indicator="aridez" ano={2021} area="semiarido" recorte={recorte} deepest="municipio" onRecorteChange={apply} values={asdPorMunicipio} classCounts={predominantes} formatValue={formatPercent} label="Mapa do índice de aridez" />
- * @example <PanelMap indicator="pib" ano={2023} area="nordeste" recorte={recorte} deepest="municipio" onRecorteChange={apply} formatValue={formatPibReais} label="Mapa do PIB por município" />
+ * @example <PanelMap indicator="aridez" ano={2021} area="semiarido" recorte={recorte} deepest="municipio" onRecorteChange={apply} values={asdPorMunicipio} classCounts={predominantes} formatValue={formatPercent} valueLabel="Área suscetível" label="Mapa do índice de aridez" />
+ * @example <PanelMap indicator="pib" ano={2023} area="nordeste" recorte={recorte} deepest="municipio" onRecorteChange={apply} formatValue={formatPibReais} valueLabel="PIB" label="Mapa do PIB por município" />
  */
 export const PanelMap = (props: PanelMapProps) => {
   const geodata = useGeodata(props.indicator);
