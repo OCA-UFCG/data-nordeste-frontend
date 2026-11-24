@@ -104,7 +104,7 @@ describe("PerfilPorteMapCard", () => {
       ano: 2022,
       area: "semiarido",
       deepest: "municipio",
-      label: "Porte dos municípios",
+      label: "Mapa dos municípios por porte",
       formatValue: formatPessoas,
       valueLabel: "População",
     });
@@ -123,7 +123,7 @@ describe("PerfilPorteMapCard", () => {
     renderCard();
 
     expect(
-      screen.getByRole("heading", { name: "Porte dos municípios" }),
+      screen.getByRole("heading", { name: "Porte populacional" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Semiárido · 2022")).toBeInTheDocument();
   });
@@ -207,7 +207,7 @@ describe("PerfilPorteMapCard", () => {
       indicator: "demografia",
       featureLevel: "estado",
       deepest: "estado",
-      label: "Mapa dos estados",
+      label: "Mapa dos estados do Nordeste",
       area: "semiarido",
     });
     expect(lastProps().recorte).toEqual({ uf: ["PB"], mun: [] });
@@ -225,8 +225,8 @@ describe("PerfilPorteMapCard", () => {
     const maps = screen.getAllByTestId("panel-map");
 
     expect(maps.map((map) => map.getAttribute("aria-label"))).toEqual([
-      "Mapa dos estados",
-      "Mapa dos estados",
+      "Mapa dos estados do Nordeste",
+      "Mapa dos estados do Nordeste",
     ]);
     expect(panelMapRenders.every((props) => props.deepest === "estado")).toBe(
       true,
@@ -237,7 +237,7 @@ describe("PerfilPorteMapCard", () => {
     renderCard(vi.fn(), { ...CLOSED, view: "estados" });
 
     expect(
-      screen.queryByRole("table", { name: "Porte dos municípios em 2022" }),
+      screen.queryByRole("table", { name: "Porte populacional em 2022" }),
     ).toBeNull();
   });
 
@@ -245,7 +245,7 @@ describe("PerfilPorteMapCard", () => {
     renderCard();
 
     expect(
-      screen.getByRole("table", { name: "Porte dos municípios em 2022" }),
+      screen.getByRole("table", { name: "Porte populacional em 2022" }),
     ).toBeInTheDocument();
     expect(screen.getByText("João Pessoa (PB)")).toBeInTheDocument();
   });
@@ -253,7 +253,7 @@ describe("PerfilPorteMapCard", () => {
   it("credits the OpenStreetMap basemap in the downloaded image source", async () => {
     renderCard();
     fireEvent.click(
-      screen.getByRole("button", { name: "Mais opções: Porte dos municípios" }),
+      screen.getByRole("button", { name: "Mais opções: Porte populacional" }),
     );
     fireEvent.click(
       await screen.findByRole("button", { name: "Baixar imagem" }),

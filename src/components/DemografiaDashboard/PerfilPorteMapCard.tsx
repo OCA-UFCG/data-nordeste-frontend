@@ -61,7 +61,7 @@ const VIEWS: { key: MapView; label: string }[] = [
 // Municípios: as classes de porte, com a legenda. Estados: só a malha dos
 // estados, sem legenda, e zoom e clique filtram só a UF (mesmo `request`).
 const VIEW_PROPS: Record<MapView, Pick<PanelMapProps, "deepest" | "label">> = {
-  municipios: { deepest: "municipio", label: TITLE },
+  municipios: { deepest: "municipio", label: MUNICIPIOS_LABEL },
   estados: { deepest: "estado", label: ESTADOS_LABEL },
 };
 
