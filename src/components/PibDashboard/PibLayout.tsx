@@ -32,7 +32,9 @@ export type PibLayoutProps = Omit<PibCardProps, "state"> & {
 };
 
 // `.pgrid` do protótipo: o mapa e, ao lado, a coluna dos dois cards de setor,
-// que dividem a altura. Abaixo de 1000 px vira uma coluna só.
+// que dividem a altura. Quem manda na altura é a coluna dos setores: o mapa a
+// acompanha (com um mínimo) e não estica os cards. Abaixo de 1000 px vira uma
+// coluna só.
 const BOTTOM_GRID =
   "grid grid-cols-2 items-stretch gap-6 max-[1000px]:grid-cols-1 max-[1000px]:gap-4";
 const SECTOR_COLUMN =

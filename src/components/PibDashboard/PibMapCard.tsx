@@ -17,7 +17,6 @@ import {
 } from "@/components/ProtoPanel/ProtoMapControls";
 import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
 import {
-  PROTO_MAP_BOX_CLASS,
   ProtoMunicipalCanvas,
   ProtoMunicipalMapBox,
 } from "@/components/ProtoPanel/ProtoMunicipalMap";
@@ -29,12 +28,12 @@ import {
   type PibMapFocus,
 } from "@/features/panels/pib/pibMunicipios";
 
-// O mapa pronto: a caixa com a altura do mapa e a legenda (em duas linhas no
-// celular).
+// O mapa pronto: a caixa com a altura mínima do mapa e a legenda (em duas
+// linhas no celular).
 const MAP_SKELETON = (
   <>
     <div className="p-1">
-      <ProtoSkeleton className={PROTO_MAP_BOX_CLASS} />
+      <ProtoSkeleton className="h-[360px] max-[1000px]:h-[480px] max-[700px]:h-[360px]" />
     </div>
     <ProtoSkeleton className="mt-3 h-4 w-[60%] max-[700px]:h-10" />
   </>
@@ -50,6 +49,7 @@ const pibCanvas = ({ data, place, focus }: PibMapSource, stage = false) => (
     label={`Mapa do ${PIB_MAP_TITLE}, ${place}`}
     sea={PIB_COLORS.sea}
     stage={stage}
+    fill={!stage}
     regions={data.mapa}
     buckets={PIB_MUNICIPAL_BINS}
     valueLabel="PIB total"
@@ -115,8 +115,8 @@ export const PibMapCard = ({
         </>
       }
     >
-      {/* O mapa tem altura fixa (PROTO_MAP_BOX_CLASS); a legenda fica logo abaixo. */}
-      <ProtoMunicipalMapBox sea={PIB_COLORS.sea} table={table}>
+      {/* A altura do mapa vem da grade (coluna dos setores); a legenda fica abaixo. */}
+      <ProtoMunicipalMapBox fill sea={PIB_COLORS.sea} table={table}>
         {pibCanvas(source)}
       </ProtoMunicipalMapBox>
       <ProtoBinLegend bins={PIB_MUNICIPAL_BINS} />

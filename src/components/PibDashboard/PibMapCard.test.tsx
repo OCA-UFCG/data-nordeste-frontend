@@ -103,6 +103,16 @@ describe("PibMapCard", () => {
     ).toBeTruthy();
   });
 
+  it("fills the box the grid gives it, with no fixed height of its own", async () => {
+    renderCard();
+
+    await waitFor(() => expect(drawn.length).toBeGreaterThan(0));
+    const className = drawn.at(-1)?.className ?? "";
+
+    expect(className).toContain("absolute inset-1");
+    expect(className).not.toMatch(/(^| )h-\[/);
+  });
+
   it("sends the chosen municipality to the canvas as the highlighted one", async () => {
     renderCard(["2611606"]);
 
