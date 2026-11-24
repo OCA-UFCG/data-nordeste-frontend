@@ -338,22 +338,18 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   in the PIB and profile; skeletons in the IDH). It only emits
   at the end of a user gesture and only if the recorte changed; programmatic
   moves (fit to the filters, resize) never emit, which avoids a
-  filter → fit → zoom → different filter loop. **Framing rule:** a recorte from anywhere
-  except the map's own zoom/pan (click, filter bar, clearing, mount, new area)
-  fits (`engine.fitTo(fitTargetFor(...))`, capped at zoom 10). A recorte that
-  the zoom or pan itself applied only **centres** the map on the cut area and
-  **keeps the current zoom** (`engine.centerOn(...)`: `easeTo` to the centre of
-  the same bbox, no `fitBounds`), so the user's zoom is not changed under them
-  (changed on user request, 24/11/2026, correcting the earlier "always fit").
-  `useMapRecorte` emits through the callback `usePanelMapLayers` returns, which
-  marks the recorte as zoom-emitted; the marker is consumed when the matching
-  recorte prop arrives (a click is never marked). Both moves are programmatic:
-  their `moveend` never emits a filter and sets the anchor zoom (`fit: true`;
-  for `centerOn`, the unchanged current zoom), so zooming out more than 0.5
-  below the anchor still clears. `useStableRecorte` keeps the pending → server
-  round trip with the same content from moving twice. Every map click (`onMapClick`, the feature
+  filter → fit → zoom → different filter loop. **Framing rule: every recorte
+  change fits** (`engine.fitTo(fitTargetFor(...))`, capped at zoom 10),
+  wherever it came from: a zoom or pan released on a new recorte, a click, the
+  filter bar, clearing, mount or a new area. A recorte applied by the zoom
+  itself therefore centres the map on the filtered state or municipality, like
+  the bar does (changed on user request, 24/11/2026; before, the map did not
+  re-fit after its own zoom). The fit is programmatic: its `moveend` never
+  emits a filter and only sets the anchor zoom (`fit: true`).
+  `useStableRecorte` keeps the pending → server round trip with the same
+  content from fitting twice. Every map click (`onMapClick`, the feature
   under the cursor or `null`) goes through `recorteForClick`, and the result is
-  emitted and fitted (not just centred) through the prop change only when it differs from the
+  emitted and fitted through the prop change only when it differs from the
   current recorte. Rules, by the
   current recorte: **area** — a feature is selected (municipality; the state in
   the IDH, the profile "Estados" view or a card that stops at state), a click

@@ -217,7 +217,7 @@ describe("PanelMap pintura e enquadramento", () => {
 });
 
 describe("PanelMap recorte pelo zoom (regras 3 e 4)", () => {
-  it("o recorte que o próprio zoom escolheu só centra e pinta o véu", async () => {
+  it("o recorte que o próprio zoom escolheu enquadra e pinta o véu", async () => {
     const { engine, props, rerender } = await renderPanelMap();
 
     act(() => engine.emitMoveEnd({ zoom: 7, centerUf: "PE" }));
@@ -227,53 +227,36 @@ describe("PanelMap recorte pelo zoom (regras 3 e 4)", () => {
     engine.setSelection.mockClear();
     rerender({ recorte: PE });
 
-    expect(engine.fitTo).not.toHaveBeenCalled();
-    expect(engine.centerOn).toHaveBeenCalledTimes(1);
-    expect(engine.centerOn).toHaveBeenCalledWith(PE_BBOX);
+    expect(engine.fitTo).toHaveBeenCalledTimes(1);
+    expect(engine.fitTo).toHaveBeenCalledWith(PE_BBOX);
     expect(engine.setVeil).toHaveBeenCalledTimes(1);
     expect(engine.setSelection).toHaveBeenCalledTimes(1);
   });
 
-  it("o centro do zoom não gera filtro, mantém a âncora e o zoom-out abaixo dela limpa", async () => {
+  it("o enquadramento do zoom não gera filtro e o zoom-out abaixo da âncora limpa", async () => {
     const { engine, props, rerender } = await renderPanelMap();
 
     act(() => engine.emitMoveEnd({ zoom: 7, centerUf: "PE" }));
     rerender({ recorte: PE });
 
-    // Fim do centerOn: programático, conta como fit, zoom e âncora inalterados.
+    // Fim do fit programático: âncora no zoom em que o enquadramento terminou.
     act(() =>
-      engine.emitMoveEnd({ zoom: 7, centerUf: "PE", fit: true, fittedZoom: 7 }),
+      engine.emitMoveEnd({
+        zoom: 6.8,
+        centerUf: "PE",
+        fit: true,
+        fittedZoom: 6.8,
+      }),
     );
 
     expect(props.onRecorteChange).toHaveBeenCalledTimes(1);
-    expect(engine.fitTo).not.toHaveBeenCalledWith(PE_BBOX);
 
-    act(() => engine.emitMoveEnd({ zoom: 6.4, centerUf: "PE", fittedZoom: 7 }));
+    act(() =>
+      engine.emitMoveEnd({ zoom: 6.2, centerUf: "PE", fittedZoom: 6.8 }),
+    );
 
     expect(props.onRecorteChange).toHaveBeenCalledTimes(2);
     expect(props.onRecorteChange).toHaveBeenLastCalledWith(EMPTY_RECORTE);
-  });
-
-  it("recorte vindo da barra enquadra com fitTo, sem centerOn", async () => {
-    const { engine, rerender } = await renderPanelMap();
-
-    engine.fitTo.mockClear();
-    rerender({ recorte: PE });
-
-    expect(engine.fitTo).toHaveBeenCalledWith(PE_BBOX);
-    expect(engine.centerOn).not.toHaveBeenCalled();
-  });
-
-  it("clique enquadra com fitTo, sem centerOn", async () => {
-    const { engine, props, rerender } = await renderPanelMap();
-
-    act(() => engine.emitClick(PERNAMBUCO));
-    expect(props.onRecorteChange).toHaveBeenCalled();
-    engine.fitTo.mockClear();
-    rerender({ recorte: PE });
-
-    expect(engine.fitTo).toHaveBeenCalledWith(PE_BBOX);
-    expect(engine.centerOn).not.toHaveBeenCalled();
   });
 
   it("limpar e escolher de novo o mesmo recorte pela barra enquadra", async () => {

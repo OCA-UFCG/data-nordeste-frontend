@@ -186,12 +186,10 @@ Funções puras (parse do `.qgs`, montagem do manifest, checagens) testadas com
 - **Município** (zoom alto; não existe no IDH): o município sob o centro vira o
   filtro `mun`; véu fora dele.
 - Clique numa feição: enquadra nela (o que, pelo zoom, aplica o filtro).
-- Recorte novo vindo de fora do zoom (barra, clique, limpar, montagem, área
-  nova) é enquadrado (`fitTo`). O recorte que o próprio zoom aplicou ao soltar
-  o gesto só **centra** o mapa na área recortada e **mantém o zoom atual**
-  (`centerOn`, sem `fitBounds`). Correção a pedido do usuário em 24/11/2026: a
-  versão anterior enquadrava também depois do zoom e mudava o zoom dele. Os dois
-  movimentos são programáticos: não geram filtro e trocam a âncora do zoom.
+- Todo recorte novo é enquadrado, inclusive o que o próprio zoom aplicou ao
+  soltar o gesto: o mapa centra no estado/município filtrado como na barra
+  (alterado a pedido do usuário em 24/11/2026; antes o mapa não reenquadrava
+  depois do próprio zoom). O enquadramento é programático e não gera filtro.
 - Filtro com vários estados/municípios: véu fora da união; enquadra a união. O
   zoom manual depois volta ao filtro único do alvo central.
 - O filtro é aplicado pelo mesmo caminho que a barra de filtros usa (URL +

@@ -36,7 +36,6 @@ export class PanelMapEngineFake implements PanelMapEngine {
   readonly setClassHighlight = vi.fn<(filter: SelectionFilter) => void>();
   readonly setAridez = vi.fn<(overlay: AridezOverlay | null) => void>();
   readonly fitTo = vi.fn<(bbox: Bounds) => void>();
-  readonly centerOn = vi.fn<(bbox: Bounds) => void>();
   readonly destroy = vi.fn<() => void>();
 
   readonly toImageSource = vi.fn(
