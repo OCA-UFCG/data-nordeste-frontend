@@ -36,8 +36,9 @@ const FIT_EVENT_DATA = { panelMapFit: true };
 // ficaria ampliado demais.
 const FIT_MAX_ZOOM = 10;
 
-// IMPORTANT: só gesto do usuário vira filtro. Arrastar, roda do mouse, toque,
-// teclado e os botões +/− mandam `originalEvent` no moveend; o
+// IMPORTANT: só gesto do usuário vira filtro. Arrastar, girar, roda do mouse,
+// toque, teclado, os botões +/− e a bússola mandam `originalEvent` no
+// moveend (girar não muda zoom nem centro, então o recorte fica); o
 // fitTo e o resize do container (ResizeObserver → map.resize) não. Sem isto,
 // redimensionar a janela viraria um recorte que ninguém escolheu.
 function isUserMove(event: object): boolean {
@@ -103,11 +104,18 @@ export function trackMoves(map: MaplibreMap, municipal: boolean) {
     listener?.(describeMoveEnd(map, municipal, event, fittedZoom));
   });
 
+  // WHY bearing: o `fitBounds` sem ele volta o mapa para o norte; quem girou
+  // o mapa mantém o giro (o norte volta pela bússola).
   return {
     fitTo: (bbox: Bounds) => {
       map.fitBounds(
         bbox,
-        { padding: 24, duration: 600, maxZoom: FIT_MAX_ZOOM },
+        {
+          padding: 24,
+          duration: 600,
+          maxZoom: FIT_MAX_ZOOM,
+          bearing: map.getBearing(),
+        },
         FIT_EVENT_DATA,
       );
     },

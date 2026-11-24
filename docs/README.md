@@ -384,6 +384,20 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   prop). Double-click zoom is off, because it interrupted the fit of the
   click. `fitTo` stops at zoom 10, so a small municipality is not zoomed in
   too far.
+- **Scale and compass** (`addPanelMapControls` in `panelMapOptions.ts`, user
+  request 24/11/2026): every panel map (card and fullscreen) has a metric
+  `ScaleControl` (max 100 px) at the bottom left, clear of the compact
+  attribution (bottom right; the legend sits below the frame), and a
+  `NavigationControl` with the compass at the top right. The map rotates
+  (right-button or Ctrl + drag, two-finger twist) but never tilts
+  (`pitchWithRotate`/`touchPitch` off, `maxPitch: 0`); the needle follows the
+  bearing and clicking it resets to north. Button titles are in Portuguese
+  (`locale`: "Aproximar", "Afastar", "Alinhar ao norte", the attribution
+  toggle and the canvas label "Mapa"). A rotation
+  `moveend` carries `originalEvent`, so it is a user move, but it changes
+  neither zoom nor centre and the recorte stays. `fitTo` keeps the current
+  bearing (MapLibre's `fitBounds` would snap back to north). Both controls are
+  DOM, so they are not in the "Baixar imagem" PNG (only the canvas is).
 - **Feature level** (`src/features/panelMap/featureLevel.ts`): what each
   feature is, a municipality or a state (`featureLevelFor`). The IDH is
   "estado" (its GeoJSON already has the states, with values); every other

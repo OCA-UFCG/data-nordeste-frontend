@@ -23,7 +23,10 @@ import {
   showBasemap,
   type VeilFilters,
 } from "@/lib/panelMap/panelMapPaint";
-import { panelMapOptions } from "@/lib/panelMap/panelMapOptions";
+import {
+  addPanelMapControls,
+  panelMapOptions,
+} from "@/lib/panelMap/panelMapOptions";
 
 export { BASEMAPS, type BasemapKind } from "@/lib/panelMap/basemaps";
 export type { AridezOverlay } from "@/lib/panelMap/panelMapAridez";
@@ -85,8 +88,7 @@ function createMap(
 ): MaplibreMap {
   const map = new maplibre.Map(panelMapOptions(container, options));
 
-  map.touchZoomRotate.disableRotation();
-  map.addControl(new maplibre.NavigationControl({ showCompass: false }));
+  addPanelMapControls(map, maplibre);
 
   return map;
 }
