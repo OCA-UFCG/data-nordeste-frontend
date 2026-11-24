@@ -154,7 +154,10 @@ const PanelMapStage = ({
       aria-label={props.label}
       className={`${FRAME} ${props.className ?? ""}`}
     >
-      <div ref={containerRef} className="absolute inset-0" />
+      {/* IMPORTANT: o maplibre-gl.css força `.maplibregl-map { position: relative }`
+          e anula o `absolute inset-0`; sem `h-full w-full` o contêiner fica com
+          altura 0 e o canvas some. */}
+      <div ref={containerRef} className="absolute inset-0 h-full w-full" />
       <PanelMapOverlays controls={controls} geodata={geodata} props={props} />
       <PanelMapTooltip tooltip={tooltip} />
     </div>

@@ -89,6 +89,15 @@ describe("PanelMap controles", () => {
     });
   });
 
+  // O maplibre-gl.css força `position: relative` no contêiner; sem tamanho
+  // explícito ele fica com altura 0 (o jsdom não tem cascata de CSS: guarda a classe).
+  it("dá ao contêiner do motor altura e largura explícitas", async () => {
+    const { factory } = await renderPanelMap();
+
+    const container = factory.create.mock.calls[0][0];
+    expect(container).toHaveClass("h-full", "w-full");
+  });
+
   // No card, Ctrl/⌘ + roda e dois dedos; a tela cheia fica com o padrão.
   it("pede gestos cooperativos ao motor quando o card pede", async () => {
     const { factory } = await renderPanelMap({ cooperative: true });
