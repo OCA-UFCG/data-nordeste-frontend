@@ -30,7 +30,7 @@ const FULLSCREEN_SOURCE = panelMapImageSource(PERFIL_CARD_SOURCE);
 // Altura fixa (`max-height` de 560 px do `.map-box` do protótipo): sem ela o
 // card cresceria com a proporção da malha.
 const MAP_BOX_CLASS =
-  "h-[560px] overflow-hidden rounded-[8px] max-[1000px]:h-[480px] max-[700px]:h-[360px]";
+  "h-[560px] rounded-[8px] max-[1000px]:h-[480px] max-[700px]:h-[360px]";
 
 const usePorteMapProps = (
   selection: TerritorialFilters,
@@ -119,13 +119,11 @@ export const PerfilPorteMapCard = ({
           subtitle={subtitle}
           source={FULLSCREEN_SOURCE}
           hint={PANEL_MAP_HINT}
-          renderStage={() => <PanelMap {...mapProps} />}
+          renderStage={(frame) => <PanelMap {...mapProps} className={frame} />}
         />
       }
     >
-      <div className={MAP_BOX_CLASS}>
-        <PanelMap {...mapProps} {...card.mapBinding} />
-      </div>
+      <PanelMap {...mapProps} {...card.mapBinding} className={MAP_BOX_CLASS} />
       <div className="sr-only">{table}</div>
     </ProtoCard>
   );

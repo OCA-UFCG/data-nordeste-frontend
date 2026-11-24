@@ -1,7 +1,9 @@
+import type { FeatureCollection } from "geojson";
 import { describe, expect, it } from "vitest";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
 import {
+  featureProps,
   featuresInArea,
   recorteForClick,
 } from "@/features/panelMap/mapSelection";
@@ -63,5 +65,20 @@ describe("featuresInArea", () => {
     expect(featuresInArea([PERNAMBUCO], "idh", "semiarido")).toEqual([
       PERNAMBUCO,
     ]);
+  });
+});
+
+describe("featureProps", () => {
+  it("devolve as propriedades das feições, na ordem do arquivo", () => {
+    const collection: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [RECIFE, PETROLINA].map((properties) => ({
+        type: "Feature",
+        properties,
+        geometry: { type: "Point", coordinates: [0, 0] },
+      })),
+    };
+
+    expect(featureProps(collection)).toEqual([RECIFE, PETROLINA]);
   });
 });

@@ -201,7 +201,11 @@ type MapProps = ProtoStateMapProps;
 
 // O palco: o mapa por estado (com zoom e arrasto) ou o que o painel passar em
 // `renderStage` (o mapa de municípios, que tem o próprio zoom).
-type StageProps = MapProps | { renderStage: () => ReactNode };
+// `renderStage` recebe `MAP_STAGE_FRAME`: o painel o aplica só na caixa do mapa,
+// para a legenda dele ficar abaixo, fora do `overflow-hidden`.
+type StageProps =
+  | MapProps
+  | { renderStage: (frameClassName: string) => ReactNode };
 
 type FrameProps = {
   open: boolean;
@@ -353,7 +357,9 @@ const FullscreenContent = ({
         </DialogClose>
       </div>
       {"renderStage" in stage ? (
-        <div className={MAP_STAGE_FRAME}>{stage.renderStage()}</div>
+        <div className="flex min-h-0 flex-col max-[700px]:flex-1">
+          {stage.renderStage(MAP_STAGE_FRAME)}
+        </div>
       ) : (
         <MapStage map={stage} mapView={mapView} />
       )}
@@ -372,9 +378,10 @@ const FullscreenContent = ({
  * filtrar o painel. `legend` (opcional) é a legenda do painel, já montada;
  * `source` é a fonte do rodapé e `hint` (ex.: `MAP_SELECT_HINT`) a dica de
  * uso. Com `renderStage`, o palco é do painel (ex.: mapa de municípios) e o
- * cabeçalho, a legenda e o rodapé continuam os mesmos.
+ * cabeçalho, a legenda e o rodapé continuam os mesmos; ele só entrega a classe da
+ * caixa do mapa (`frameClassName`) e deixa a legenda do painel abaixo dela.
  *
- * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" source={IDH_CARD_SOURCE} hint={MAP_SELECT_HINT} renderStage={() => <PanelMap {...mapProps} />} />
+ * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" source={IDH_CARD_SOURCE} hint={MAP_SELECT_HINT} renderStage={(frame) => <PanelMap {...mapProps} className={frame} />} />
  */
 export const ProtoMapFullscreen = (props: ProtoMapFullscreenProps) => (
   <Dialog open={props.open} onOpenChange={props.onOpenChange}>

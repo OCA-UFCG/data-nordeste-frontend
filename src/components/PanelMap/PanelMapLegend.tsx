@@ -1,92 +1,101 @@
 "use client";
 
+import type { FeatureCollection } from "geojson";
+import { useMemo } from "react";
+
+import { type ClassCount, countByClass } from "@/features/panelMap/classCounts";
 import type {
   GeodataStyles,
   PanelIndicator,
 } from "@/features/panelMap/geodataTypes";
-import { NO_DATA_COLOR } from "@/features/panelMap/qgisPaint";
+import { featureProps, featuresInArea } from "@/features/panelMap/mapSelection";
+import { formatNumber } from "@/features/panels/format";
+import type { TerritorialArea } from "@/features/panels/territorialFilters";
 
-type LegendEntry = { key: string; label: string; color: string };
+type LegendChipData = { label: string; color: string; count?: number };
 
-const LegendItem = ({ entry }: { entry: LegendEntry }) => (
-  <li className="flex items-center gap-1.5">
+// Mesmas pílulas da legenda por porte do card antigo, só que estáticas.
+const LegendChip = ({ label, color, count }: LegendChipData) => (
+  <li className="inline-flex items-center gap-1.5 rounded-[6px] border border-grey-300 bg-white px-2.5 py-1 text-[11.5px] font-medium">
     <i
-      aria-hidden
-      className="inline-block size-2.5 shrink-0 rounded-[2px] border border-black/10"
-      style={{ background: entry.color }}
+      aria-hidden="true"
+      className="inline-block size-3 rounded-full border border-black/10"
+      style={{ background: color }}
     />
-    <span>{entry.label}</span>
+    {count === undefined ? label : `${label} (${formatNumber(count)})`}
   </li>
 );
 
-const LegendList = ({
-  title,
-  entries,
+const LegendChips = ({
+  label,
+  chips,
 }: {
-  title: string;
-  entries: LegendEntry[];
+  label: string;
+  chips: LegendChipData[];
 }) => (
-  <div>
-    <p className="mb-1 font-semibold text-grey-1100">{title}</p>
-    <ul className="space-y-0.5">
-      {entries.map((entry) => (
-        <LegendItem key={entry.key} entry={entry} />
-      ))}
-    </ul>
-  </div>
+  <ul aria-label={label} className="flex flex-wrap gap-2">
+    {chips.map((chip, index) => (
+      <LegendChip key={`${index}-${chip.label}`} {...chip} />
+    ))}
+  </ul>
 );
 
-function indicatorEntries(
-  styles: GeodataStyles,
-  indicator: PanelIndicator,
-): LegendEntry[] {
-  const classes = styles.indicators[indicator].classes.map((item, index) => ({
-    key: `class-${index}`,
-    label: item.label,
-    color: item.color,
-  }));
-
-  return [
-    ...classes,
-    { key: "no-data", label: "Sem dado", color: NO_DATA_COLOR },
-  ];
-}
-
-function aridezEntries(styles: GeodataStyles): LegendEntry[] {
-  return styles.aridez.map((item) => ({
-    key: `aridez-${item.value}`,
-    label: item.label,
-    color: item.color,
-  }));
-}
+const AridezLegend = ({
+  styles,
+  year,
+}: {
+  styles: GeodataStyles;
+  year: number;
+}) => (
+  <div className="flex flex-wrap items-center gap-2">
+    <span className="text-[11.5px] font-medium text-grey-800">
+      Índice de aridez ({year}):
+    </span>
+    <LegendChips label="Legenda do índice de aridez" chips={styles.aridez} />
+  </div>
+);
 
 type PanelMapLegendProps = {
   styles: GeodataStyles;
+  features: FeatureCollection;
   indicator: PanelIndicator;
-  label: string;
+  area: TerritorialArea;
+  ano: number;
   aridezYear: number | null;
 };
 
+// PERF: a contagem percorre ~1.800 municípios; só muda com feições, área e ano.
+function useClassCounts(props: PanelMapLegendProps): ClassCount[] {
+  const { styles, features, indicator, area, ano } = props;
+
+  return useMemo(
+    () =>
+      countByClass(
+        featuresInArea(featureProps(features), indicator, area),
+        styles.indicators[indicator].classes,
+        ano,
+      ),
+    [styles, features, indicator, area, ano],
+  );
+}
+
 /**
- * Legenda do mapa: as classes do `.qgz` do indicador, como vieram, e — com a
- * aridez ligada — também a paleta do índice de aridez da década escolhida.
- * Fica no canto inferior esquerdo do mapa.
+ * Legenda do mapa, abaixo da caixa dele: uma pílula por classe do `.qgz` com
+ * a contagem de feições da área no ano ("Pequeno (1.619)"), mais "Sem dado"
+ * quando houver. Com a aridez ligada, uma 2ª linha mostra a paleta do índice
+ * da década escolhida, sem contagem.
  *
- * @example <PanelMapLegend styles={styles} indicator="pib" label="PIB" aridezYear={null} />
+ * @example <PanelMapLegend styles={styles} features={features} indicator="pib" area="nordeste" ano={2023} aridezYear={null} />
  */
-export const PanelMapLegend = ({
-  styles,
-  indicator,
-  label,
-  aridezYear,
-}: PanelMapLegendProps) => (
-  <div className="absolute bottom-2.5 left-2.5 z-10 max-w-56 space-y-2 rounded-[6px] border border-grey-300 bg-white/95 px-2.5 py-2 text-[11px] leading-4 text-grey-800 shadow-sm">
-    <LegendList title={label} entries={indicatorEntries(styles, indicator)} />
-    {aridezYear === null ? null : (
-      <LegendList
-        title={`Índice de aridez (${aridezYear})`}
-        entries={aridezEntries(styles)}
-      />
-    )}
-  </div>
-);
+export const PanelMapLegend = (props: PanelMapLegendProps) => {
+  const counts = useClassCounts(props);
+
+  return (
+    <div className="mt-3 space-y-2">
+      <LegendChips label="Legenda do mapa" chips={counts} />
+      {props.aridezYear === null ? null : (
+        <AridezLegend styles={props.styles} year={props.aridezYear} />
+      )}
+    </div>
+  );
+};

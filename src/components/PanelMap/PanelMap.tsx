@@ -48,14 +48,21 @@ export type PanelMapProps = {
   // Gestos cooperativos (Ctrl/⌘ + roda, dois dedos): o mapa no card não
   // sequestra a rolagem da página. A tela cheia deixa desligado.
   cooperative?: boolean;
+
+  // Classes do quadro do mapa (a legenda fica abaixo dele): é dele a altura,
+  // então defina uma, ex.: `h-[480px]`. Sem ela, `min-h-80`.
   className?: string;
   createEngine?: typeof createPanelMapEngine;
 };
 
-const FRAME = "relative h-full min-h-80 w-full overflow-hidden";
+const FRAME = "relative w-full overflow-hidden";
+const DEFAULT_FRAME_HEIGHT = "min-h-80";
+
+const frameClass = (className: string | undefined) =>
+  `${FRAME} ${className ?? DEFAULT_FRAME_HEIGHT}`;
 
 const PanelMapNotice = ({
-  className = "",
+  className,
   busy = false,
   children,
 }: {
@@ -65,7 +72,7 @@ const PanelMapNotice = ({
 }) => (
   <div
     aria-busy={busy}
-    className={`${FRAME} flex items-center justify-center bg-grey-100 p-6 text-center text-sm text-grey-800 ${className}`}
+    className={`${frameClass(className)} flex items-center justify-center bg-grey-100 p-6 text-center text-sm text-grey-800`}
   >
     <p>{children}</p>
   </div>
@@ -108,15 +115,10 @@ function usePanelMapStage(props: PanelMapProps, geodata: ReadyGeodata) {
 type PanelMapOverlaysProps = {
   controls: ReturnType<typeof usePanelMapControls>;
   geodata: ReadyGeodata;
-  props: PanelMapProps;
 };
 
 // Cada controle já vem posicionado no seu canto do mapa.
-const PanelMapOverlays = ({
-  controls,
-  geodata,
-  props,
-}: PanelMapOverlaysProps) => (
+const PanelMapOverlays = ({ controls, geodata }: PanelMapOverlaysProps) => (
   <>
     <AridezControl
       years={geodata.manifest.aridez.years}
@@ -124,12 +126,6 @@ const PanelMapOverlays = ({
       onChange={controls.setAridez}
     />
     <BasemapSwitch value={controls.basemap} onChange={controls.setBasemap} />
-    <PanelMapLegend
-      styles={geodata.styles}
-      indicator={props.indicator}
-      label={props.label}
-      aridezYear={controls.aridez.on ? controls.aridez.year : null}
-    />
   </>
 );
 
@@ -148,18 +144,30 @@ const PanelMapStage = ({
     );
   }
 
+  // INTENTIONAL: a legenda é irmã do quadro, não filha: o quadro tem altura
+  // fixa e `overflow-hidden`, e dentro dele a legenda seria cortada.
   return (
-    <div
-      role="region"
-      aria-label={props.label}
-      className={`${FRAME} ${props.className ?? ""}`}
-    >
-      {/* IMPORTANT: o maplibre-gl.css força `.maplibregl-map { position: relative }`
-          e anula o `absolute inset-0`; sem `h-full w-full` o contêiner fica com
-          altura 0 e o canvas some. */}
-      <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-      <PanelMapOverlays controls={controls} geodata={geodata} props={props} />
-      <PanelMapTooltip tooltip={tooltip} />
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div
+        role="region"
+        aria-label={props.label}
+        className={frameClass(props.className)}
+      >
+        {/* IMPORTANT: o maplibre-gl.css força `.maplibregl-map { position: relative }`
+            e anula o `absolute inset-0`; sem `h-full w-full` o contêiner fica com
+            altura 0 e o canvas some. */}
+        <div ref={containerRef} className="absolute inset-0 h-full w-full" />
+        <PanelMapOverlays controls={controls} geodata={geodata} />
+        <PanelMapTooltip tooltip={tooltip} />
+      </div>
+      <PanelMapLegend
+        styles={geodata.styles}
+        features={geodata.features}
+        indicator={props.indicator}
+        area={props.area}
+        ano={props.ano}
+        aridezYear={controls.aridez.on ? controls.aridez.year : null}
+      />
     </div>
   );
 };

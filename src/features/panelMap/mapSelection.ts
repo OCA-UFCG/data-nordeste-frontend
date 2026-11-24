@@ -1,3 +1,5 @@
+import type { FeatureCollection } from "geojson";
+
 import type {
   MapFeatureProps,
   PanelIndicator,
@@ -35,4 +37,14 @@ export function featuresInArea(
   if (indicator === "idh") return features;
 
   return features.filter((feature) => feature[area] === 1);
+}
+
+/**
+ * Propriedades de cada feição da coleção, na ordem do arquivo.
+ * Ex.: `featureProps(geodata.features)` → `[{ code: "2611606", … }, …]`.
+ */
+export function featureProps(collection: FeatureCollection): MapFeatureProps[] {
+  return collection.features.map(
+    (feature) => feature.properties as MapFeatureProps,
+  );
 }

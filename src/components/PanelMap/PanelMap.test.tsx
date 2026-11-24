@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -176,12 +176,81 @@ describe("PanelMap controles", () => {
     );
     expect(screen.queryByText("Árido")).toBeNull();
   });
+});
 
-  it("a legenda mostra as classes do qgz do indicador", async () => {
+describe("PanelMap legenda", () => {
+  it("mostra as classes do qgz com a contagem de feições da área no ano", async () => {
+    await renderPanelMap();
+    const legend = screen.getByRole("list", { name: "Legenda do mapa" });
+
+    expect(
+      within(legend)
+        .getAllByRole("listitem")
+        .map((i) => i.textContent),
+    ).toEqual(["≤ R$ 500 Mi (0)", "> R$ 500 Mi (3)"]);
+  });
+
+  it("fica abaixo do quadro do mapa, fora dele", async () => {
+    await renderPanelMap();
+    const frame = screen.getByRole("region");
+    const legend = screen.getByRole("list", { name: "Legenda do mapa" });
+
+    expect(frame).not.toContainElement(legend);
+    expect(frame.nextElementSibling).toContainElement(legend);
+    expect(screen.queryByText("Mapa do PIB por município")).toBeNull();
+  });
+
+  it("a altura vai para o quadro do mapa, não para a legenda", async () => {
+    await renderPanelMap({ className: "h-[480px]" });
+
+    expect(screen.getByRole("region")).toHaveClass("h-[480px]");
+  });
+
+  it("conta só as feições da área escolhida", async () => {
+    await renderPanelMap({ area: "semiarido" });
+
+    expect(screen.getByText("> R$ 500 Mi (1)")).toBeInTheDocument();
+  });
+
+  it("o ano sem valores mostra Sem dado; com valores, não mostra", async () => {
+    const { rerender } = await renderPanelMap();
+
+    expect(screen.queryByText(/Sem dado/)).toBeNull();
+    rerender({ ano: 2022 });
+
+    expect(screen.getByText("Sem dado (3)")).toBeInTheDocument();
+  });
+
+  it("formata a contagem em pt-BR", async () => {
+    const { rerender } = await renderPanelMap({
+      indicator: "idh",
+      deepest: "estado",
+      ano: 2024,
+    });
+
+    expect(screen.getByText("Até 0,7 (1)")).toBeInTheDocument();
+    expect(screen.getByText("> 0,7 (1)")).toBeInTheDocument();
+    rerender({ ano: 2023 });
+
+    expect(screen.getByText("Sem dado (2)")).toBeInTheDocument();
+  });
+
+  it("com a aridez ligada, uma 2ª linha mostra a paleta sem contagem", async () => {
     await renderPanelMap();
 
-    expect(screen.getByText("≤ R$ 500 Mi")).toBeInTheDocument();
-    expect(screen.getByText("> R$ 500 Mi")).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "Índice de aridez" }),
+    );
+    const aridez = screen.getByRole("list", {
+      name: "Legenda do índice de aridez",
+    });
+
+    expect(screen.getByText("Índice de aridez (2020):")).toBeInTheDocument();
+    expect(
+      within(aridez)
+        .getAllByRole("listitem")
+        .map((i) => i.textContent),
+    ).toEqual(["Árido", "Semiárido"]);
   });
 });
 

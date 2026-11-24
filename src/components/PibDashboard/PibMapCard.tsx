@@ -28,8 +28,7 @@ const FULLSCREEN_SOURCE = panelMapImageSource(PIB_CARD_SOURCE);
 
 // Altura fixa: o mapa preenche o card ao lado da coluna dos setores sem
 // depender da proporção da malha.
-const MAP_BOX_CLASS =
-  "h-[480px] overflow-hidden rounded-[8px] max-[1000px]:h-[400px]";
+const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 
 const usePibMapProps = (
   selection: TerritorialFilters,
@@ -80,7 +79,7 @@ export const PibMapCard = ({
           subtitle={subtitle}
           source={FULLSCREEN_SOURCE}
           hint={PANEL_MAP_HINT}
-          renderStage={() => <PanelMap {...mapProps} />}
+          renderStage={(frame) => <PanelMap {...mapProps} className={frame} />}
         />
       }
       actions={
@@ -94,9 +93,7 @@ export const PibMapCard = ({
         />
       }
     >
-      <div className={MAP_BOX_CLASS}>
-        <PanelMap {...mapProps} {...card.mapBinding} />
-      </div>
+      <PanelMap {...mapProps} {...card.mapBinding} className={MAP_BOX_CLASS} />
     </ProtoCard>
   );
 };

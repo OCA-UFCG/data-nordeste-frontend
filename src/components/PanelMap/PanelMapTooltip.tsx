@@ -3,11 +3,8 @@
 import type { FeatureCollection } from "geojson";
 import { useEffect, useMemo, useState } from "react";
 
-import type {
-  MapFeatureProps,
-  PanelIndicator,
-} from "@/features/panelMap/geodataTypes";
-import { featuresInArea } from "@/features/panelMap/mapSelection";
+import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
+import { featureProps, featuresInArea } from "@/features/panelMap/mapSelection";
 import {
   describeMapFeature,
   type MapTooltipText,
@@ -35,9 +32,7 @@ function useAreaRanks(args: PanelMapTooltipArgs): Map<string, number> {
   const { features, indicator, area, ano } = args;
 
   return useMemo(() => {
-    const props = features.features.map(
-      (feature) => feature.properties as MapFeatureProps,
-    );
+    const props = featureProps(features);
 
     return rankWithinArea(featuresInArea(props, indicator, area), ano);
   }, [features, indicator, area, ano]);

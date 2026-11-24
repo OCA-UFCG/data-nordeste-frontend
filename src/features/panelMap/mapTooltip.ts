@@ -11,7 +11,8 @@ export type MapTooltipText = {
   rank: string | null;
 };
 
-function valueOf(feature: MapFeatureProps, ano: number): number | null {
+/** Valor da feição no ano, ou `null` quando ausente ou não numérico. */
+export function valueOf(feature: MapFeatureProps, ano: number): number | null {
   const value = feature[yearField(ano) as `v${number}`];
 
   return typeof value === "number" ? value : null;
