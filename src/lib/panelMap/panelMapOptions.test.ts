@@ -17,20 +17,26 @@ function rasterSource(
   return style.sources[id] as RasterSourceSpecification;
 }
 
+const cardOptions = (cooperative: boolean) => ({
+  basemap: "padrao" as const,
+  cooperative,
+  municipal: true,
+});
+
 describe("panelMapOptions", () => {
   const container = document.createElement("div");
 
   it("liga os gestos cooperativos só quando pedido (card × tela cheia)", () => {
-    expect(panelMapOptions(container, "padrao", true).cooperativeGestures).toBe(
-      true,
-    );
     expect(
-      panelMapOptions(container, "padrao", false).cooperativeGestures,
+      panelMapOptions(container, cardOptions(true)).cooperativeGestures,
+    ).toBe(true);
+    expect(
+      panelMapOptions(container, cardOptions(false)).cooperativeGestures,
     ).toBe(false);
   });
 
   it("traduz o aviso dos gestos cooperativos", () => {
-    const { locale } = panelMapOptions(container, "padrao", true);
+    const { locale } = panelMapOptions(container, cardOptions(true));
 
     expect(locale["CooperativeGesturesHandler.WindowsHelpText"]).toContain(
       "Ctrl",
@@ -39,14 +45,14 @@ describe("panelMapOptions", () => {
 
   // O duplo clique interromperia o enquadramento do clique numa feição.
   it("desliga o zoom por duplo clique e o box zoom", () => {
-    expect(panelMapOptions(container, "padrao", false)).toMatchObject({
+    expect(panelMapOptions(container, cardOptions(false))).toMatchObject({
       doubleClickZoom: false,
       boxZoom: false,
     });
   });
 
   it("o Padrão usa os ladrilhos do OpenStreetMap, que vão até o nível 19", () => {
-    const options = panelMapOptions(container, "padrao", true);
+    const options = panelMapOptions(container, cardOptions(true));
     const padrao = rasterSource(options, basemapLayerId("padrao"));
 
     expect(padrao.tiles).toEqual([

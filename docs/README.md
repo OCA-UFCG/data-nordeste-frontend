@@ -310,6 +310,15 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   there is no feature, and the recorte stays as it is, except when zooming out
   to the area level (below the anchor minus the tolerance): that clears the
   recorte without a centre feature, since the empty recorte always round-trips.
+- **Boundaries by zoom** (`panelMapStyle.ts`, layer `minzoom` from the same
+  `STATE_ZOOM` / `MUNICIPALITY_ZOOM`): the map opens on the area of interest
+  with only its outline; state limits appear from the state level and
+  municipal limits (and the municipal hover outline) from the municipality
+  level. The class fill, veil and selection outline show at any zoom. With
+  state features (IDH, Estados view) their outline is a state limit and also
+  starts at `STATE_ZOOM`; their hover outline has no `minzoom`, since at the
+  area zoom it is the only cue of the state under the pointer. The engine's
+  `municipal` flag picks the variant when the style is built.
 - **Going up uses the anchor zoom.** The recorte is only cleared one level when
   the zoom falls more than 0.5 (`ZOOM_OUT_TOLERANCE`) below the anchor: the
   zoom of the last programmatic fit, or the zoom at which the user chose the

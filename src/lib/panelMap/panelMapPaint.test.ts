@@ -22,7 +22,7 @@ const IN_CLASS: FilterSpecification = [
 ];
 
 const mutedLayer = () =>
-  panelMapStyle("padrao").layers.find(
+  panelMapStyle("padrao", true).layers.find(
     (layer) => layer.id === PANEL_MAP_LAYER.classMuted,
   );
 
@@ -38,7 +38,7 @@ describe("camada do destaque da legenda", () => {
   });
 
   it("fica sobre o preenchimento e sob o véu", () => {
-    const ids = panelMapStyle("padrao").layers.map((layer) => layer.id);
+    const ids = panelMapStyle("padrao", true).layers.map((layer) => layer.id);
     const muted = ids.indexOf(PANEL_MAP_LAYER.classMuted);
 
     expect(muted).toBe(ids.indexOf(PANEL_MAP_LAYER.indicatorFill) + 1);

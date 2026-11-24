@@ -19,6 +19,7 @@ import {
   VEIL_COLOR,
   VEIL_OPACITY,
 } from "@/features/panelMap/mapLayers";
+import { MUNICIPALITY_ZOOM, STATE_ZOOM } from "@/features/panelMap/mapRecorte";
 
 export const PANEL_MAP_SOURCE = {
   features: "features",
@@ -137,7 +138,39 @@ function classMutedLayer(): LayerSpecification {
   };
 }
 
-function hoverLayer(): LayerSpecification {
+// Limites conforme o zoom, nos mesmos limiares do recorte (mapRecorte): a
+// área de interesse sempre; os estados a partir do nível estado; os
+// municípios a partir do nível município. O preenchimento das classes, o
+// véu e a seleção aparecem em qualquer zoom. Com feições de estado (IDH,
+// vista Estados), o contorno delas é limite de estado e segue STATE_ZOOM.
+function withMinZoom<Layer extends LayerSpecification>(
+  layer: Layer,
+  minzoom: number,
+): Layer {
+  return { ...layer, minzoom };
+}
+
+function featureOutlineLayer(municipal: boolean): LayerSpecification {
+  const { featureOutline } = PANEL_MAP_LAYER;
+  const layer = lineLayer(
+    featureOutline,
+    PANEL_MAP_SOURCE.features,
+    UNPAINTED_LINE,
+  );
+
+  return withMinZoom(layer, municipal ? MUNICIPALITY_ZOOM : STATE_ZOOM);
+}
+
+function stateOutlineLayer(): LayerSpecification {
+  const { states } = PANEL_MAP_SOURCE;
+  const layer = lineLayer(PANEL_MAP_LAYER.stateOutline, states, UNPAINTED_LINE);
+
+  return withMinZoom(layer, STATE_ZOOM);
+}
+
+// WHY o hover dos estados não tem minzoom: no zoom da área ele é o único
+// sinal de qual estado está sob o ponteiro (IDH, vista Estados).
+function hoverLayer(municipal: boolean): LayerSpecification {
   const hovered: ExpressionSpecification = [
     "boolean",
     ["feature-state", "hover"],
@@ -150,10 +183,12 @@ function hoverLayer(): LayerSpecification {
     HOVER_OUTLINE,
   );
 
-  return {
+  const hover: LayerSpecification = {
     ...layer,
     paint: { ...layer.paint, "line-opacity": ["case", hovered, 1, 0] },
   };
+
+  return municipal ? withMinZoom(hover, MUNICIPALITY_ZOOM) : hover;
 }
 
 // Sem área escolhida, o filtro não casa nada; o setIndicatorPaint troca.
@@ -167,7 +202,7 @@ function areaOutlineLayer(): LayerSpecification {
 }
 
 // Camadas acima dos basemaps, de baixo para cima.
-function overlayLayers(): LayerSpecification[] {
+function overlayLayers(municipal: boolean): LayerSpecification[] {
   const { features, states } = PANEL_MAP_SOURCE;
   const layer = PANEL_MAP_LAYER;
 
@@ -176,9 +211,9 @@ function overlayLayers(): LayerSpecification[] {
     classMutedLayer(),
     veilLayer(layer.veilStates, states),
     veilLayer(layer.veilFeatures, features),
-    lineLayer(layer.featureOutline, features, UNPAINTED_LINE),
-    hoverLayer(),
-    lineLayer(layer.stateOutline, states, UNPAINTED_LINE),
+    featureOutlineLayer(municipal),
+    hoverLayer(municipal),
+    stateOutlineLayer(),
     areaOutlineLayer(),
     lineLayer(layer.selectionFeatures, features, SELECTION_OUTLINE, "none"),
     lineLayer(layer.selectionStates, states, SELECTION_OUTLINE, "none"),
@@ -202,17 +237,21 @@ function panelMapSources(): StyleSpecification["sources"] {
 /**
  * Estilo inicial do mapa dos painéis: os dois basemaps (só `basemap` visível),
  * as fontes GeoJSON vazias e todas as camadas na ordem de desenho. As cores do
- * indicador e os filtros chegam depois, pelo motor.
+ * indicador e os filtros chegam depois, pelo motor. `municipal`: as feições
+ * são municípios (decide o zoom em que o contorno delas aparece).
  *
- * @example new maplibre.Map({ container, style: panelMapStyle("padrao") })
+ * @example new maplibre.Map({ container, style: panelMapStyle("padrao", true) })
  */
-export function panelMapStyle(basemap: BasemapKind): StyleSpecification {
+export function panelMapStyle(
+  basemap: BasemapKind,
+  municipal: boolean,
+): StyleSpecification {
   return {
     version: 8,
     sources: panelMapSources(),
     layers: [
       ...BASEMAP_KINDS.map((kind) => basemapLayer(kind, basemap)),
-      ...overlayLayers(),
+      ...overlayLayers(municipal),
     ],
   };
 }

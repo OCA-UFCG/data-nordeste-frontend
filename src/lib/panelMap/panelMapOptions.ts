@@ -32,21 +32,27 @@ const COOPERATIVE_GESTURES_LOCALE = {
     "Use dois dedos para mover o mapa",
 };
 
+export type PanelMapOptionsInput = {
+  basemap: BasemapKind;
+  cooperative: boolean;
+  municipal: boolean;
+};
+
 /**
  * Opções do `new maplibre.Map` dos painéis. `cooperative` liga os gestos
  * cooperativos (Ctrl/⌘ + roda, dois dedos no toque) para o mapa dentro do
  * card não sequestrar a rolagem da página; a tela cheia usa os gestos normais.
+ * `municipal` vai para o estilo (zoom dos contornos das feições).
  *
- * @example new maplibre.Map(panelMapOptions(div, "padrao", true))
+ * @example new maplibre.Map(panelMapOptions(div, { basemap: "padrao", cooperative: true, municipal: true }))
  */
 export function panelMapOptions(
   container: HTMLElement,
-  basemap: BasemapKind,
-  cooperative: boolean,
+  { basemap, cooperative, municipal }: PanelMapOptionsInput,
 ): MapOptions {
   return {
     container,
-    style: panelMapStyle(basemap),
+    style: panelMapStyle(basemap, municipal),
     bounds: NORDESTE_BOUNDS,
 
     // IMPORTANT: sem isto o toDataURL do "Baixar imagem" sai em branco.

@@ -81,10 +81,7 @@ function createMap(
   container: HTMLElement,
   options: PanelMapEngineOptions,
 ): MaplibreMap {
-  const { basemap, cooperative } = options;
-  const map = new maplibre.Map(
-    panelMapOptions(container, basemap, cooperative),
-  );
+  const map = new maplibre.Map(panelMapOptions(container, options));
 
   map.touchZoomRotate.disableRotation();
   map.addControl(new maplibre.NavigationControl({ showCompass: false }));
