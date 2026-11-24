@@ -8,14 +8,12 @@ import {
   ProtoCardMenu,
   useSvgChart,
 } from "@/components/ProtoPanel/ProtoCardMenu";
-import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 import {
   ProtoTooltip,
   type TooltipAt,
 } from "@/components/ProtoPanel/ProtoTooltip";
 import { PROTO_CHART_FONT } from "@/components/ProtoPanel/protoStyles";
 import { useElementWidth } from "@/components/ProtoPanel/useElementWidth";
-import { describeCorRaca } from "@/features/panels/demografia/demografiaAnalise";
 import {
   buildCorRacaGeometry,
   type CorRacaGeometry,
@@ -144,35 +142,15 @@ const CorRacaChart = ({
   );
 };
 
-// `.cor-note`: a leitura do censo, uma linha por parágrafo.
-const CorRacaNote = ({ lines }: { lines: string[] }) => (
-  <div className="cor-note mt-2.5 flex gap-2 text-[11.5px] leading-[17px] text-grey-800">
-    <ProtoIcon
-      name="infoS"
-      size={16}
-      stroke={2.2}
-      className="mt-px flex-none"
-    />
-    <div>
-      {lines.map((line) => (
-        <p key={line} className="mb-1">
-          {line}
-        </p>
-      ))}
-    </div>
-  </div>
-);
-
 /**
- * Card "População por cor ou raça": colunas por cor ou raça, com a leitura
- * do censo (a mais declarada e a variação desde o censo anterior) embaixo.
+ * Card "População por cor ou raça": colunas por cor ou raça. A leitura do
+ * censo fica no "Veja mais".
  *
  * @example <PerfilCorRacaCard data={panel} place="Nordeste" state="ok" onRetry={retry} />
  */
 export const PerfilCorRacaCard = (props: PerfilCardProps) => {
   const chart = useSvgChart();
   const { data } = props;
-  const lines = describeCorRaca(data.corRaca, data.corRacaAnterior);
 
   return (
     <ProtoCard
@@ -189,7 +167,6 @@ export const PerfilCorRacaCard = (props: PerfilCardProps) => {
       }
     >
       <CorRacaChart data={data} svgRef={chart.ref} />
-      {lines.length ? <CorRacaNote lines={lines} /> : null}
     </ProtoCard>
   );
 };
