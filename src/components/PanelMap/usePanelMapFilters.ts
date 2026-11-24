@@ -31,12 +31,13 @@ const TERRITORIAL_ADAPTER: RecorteAdapter<TerritorialFilters> = {
  * para o `request` da barra. Cada painel passa o seu `adapter`.
  *
  * IMPORTANT: o recorte vem direto de `selection` e volta direto para o
- * `request`. O PanelMap só evita reenquadrar se o recorte que recebe depois
- * for igual ao que emitiu; normalizar em qualquer ponto do caminho faria o
- * mapa "pular" a cada zoom. A volta só é exata porque o mapa emite apenas
- * códigos de feições da área atual (UF e município da mesma feição do
- * indicador, `centerCodes` em `panelMapInteraction.ts`): um código que o
- * servidor descarta (`keepKnown`) volta diferente e o mapa reenquadra.
+ * `request`. Todo recorte novo é enquadrado, e o PanelMap só enquadra uma vez
+ * se o recorte que recebe depois for igual ao que emitiu; normalizar em
+ * qualquer ponto do caminho faria o mapa enquadrar de novo a cada zoom. A volta
+ * só é exata porque o mapa emite apenas códigos de feições da área atual (UF e
+ * município da mesma feição do indicador, `centerCodes` em
+ * `panelMapInteraction.ts`): um código que o servidor descarta (`keepKnown`)
+ * volta diferente e o mapa reenquadra.
  *
  * @example const { recorte, onRecorteChange } = useRecorteFilters(selection, IDH_ADAPTER, request);
  */

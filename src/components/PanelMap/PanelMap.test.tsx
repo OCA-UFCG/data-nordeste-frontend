@@ -217,7 +217,7 @@ describe("PanelMap pintura e enquadramento", () => {
 });
 
 describe("PanelMap recorte pelo zoom (regras 3 e 4)", () => {
-  it("o recorte que o próprio zoom escolheu não enquadra, só pinta o véu", async () => {
+  it("o recorte que o próprio zoom escolheu enquadra e pinta o véu", async () => {
     const { engine, props, rerender } = await renderPanelMap();
 
     act(() => engine.emitMoveEnd({ zoom: 7, centerUf: "PE" }));
@@ -227,9 +227,36 @@ describe("PanelMap recorte pelo zoom (regras 3 e 4)", () => {
     engine.setSelection.mockClear();
     rerender({ recorte: PE });
 
-    expect(engine.fitTo).not.toHaveBeenCalled();
+    expect(engine.fitTo).toHaveBeenCalledTimes(1);
+    expect(engine.fitTo).toHaveBeenCalledWith(PE_BBOX);
     expect(engine.setVeil).toHaveBeenCalledTimes(1);
     expect(engine.setSelection).toHaveBeenCalledTimes(1);
+  });
+
+  it("o enquadramento do zoom não gera filtro e o zoom-out abaixo da âncora limpa", async () => {
+    const { engine, props, rerender } = await renderPanelMap();
+
+    act(() => engine.emitMoveEnd({ zoom: 7, centerUf: "PE" }));
+    rerender({ recorte: PE });
+
+    // Fim do fit programático: âncora no zoom em que o enquadramento terminou.
+    act(() =>
+      engine.emitMoveEnd({
+        zoom: 6.8,
+        centerUf: "PE",
+        fit: true,
+        fittedZoom: 6.8,
+      }),
+    );
+
+    expect(props.onRecorteChange).toHaveBeenCalledTimes(1);
+
+    act(() =>
+      engine.emitMoveEnd({ zoom: 6.2, centerUf: "PE", fittedZoom: 6.8 }),
+    );
+
+    expect(props.onRecorteChange).toHaveBeenCalledTimes(2);
+    expect(props.onRecorteChange).toHaveBeenLastCalledWith(EMPTY_RECORTE);
   });
 
   it("limpar e escolher de novo o mesmo recorte pela barra enquadra", async () => {

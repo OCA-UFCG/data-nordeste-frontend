@@ -338,10 +338,19 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   in the PIB and profile; skeletons in the IDH). It only emits
   at the end of a user gesture and only if the recorte changed; programmatic
   moves (fit to the filters, resize) never emit, which avoids a
-  filter → fit → zoom → different filter loop. Every map click (`onMapClick`, the feature
+  filter → fit → zoom → different filter loop. **Framing rule: every recorte
+  change fits** (`engine.fitTo(fitTargetFor(...))`, capped at zoom 10),
+  wherever it came from: a zoom or pan released on a new recorte, a click, the
+  filter bar, clearing, mount or a new area. A recorte applied by the zoom
+  itself therefore centres the map on the filtered state or municipality, like
+  the bar does (changed on user request, 24/11/2026; before, the map did not
+  re-fit after its own zoom). The fit is programmatic: its `moveend` never
+  emits a filter and only sets the anchor zoom (`fit: true`).
+  `useStableRecorte` keeps the pending → server round trip with the same
+  content from fitting twice. Every map click (`onMapClick`, the feature
   under the cursor or `null`) goes through `recorteForClick`, and the result is
-  emitted through the prop change (a click is not marked as a zoom emission, so
-  the map fits it) only when it differs from the current recorte. Rules, by the
+  emitted and fitted through the prop change only when it differs from the
+  current recorte. Rules, by the
   current recorte: **area** — a feature is selected (municipality; the state in
   the IDH, the profile "Estados" view or a card that stops at state), a click
   on empty map does nothing; **state** — a municipality inside the selected
