@@ -14,7 +14,7 @@ const MUNICIPAL_MESH_URL = "/maps/municipios-sudene.json";
 
 // 560 px é o `max-height` do mapa no protótipo (`.map-box`). Fixar a altura
 // (em vez da proporção da malha) evita que o card cresça para ~1 200 px.
-export const MUNICIPAL_MAP_BOX_CLASS =
+export const PROTO_MAP_BOX_CLASS =
   "h-[560px] w-full max-[1000px]:h-[480px] max-[700px]:h-[360px]";
 
 export type ProtoMunicipalCanvasProps = Omit<
@@ -41,7 +41,7 @@ export const ProtoMunicipalCanvas = ({
   <ChoroplethCanvas
     {...props}
     meshUrl={MUNICIPAL_MESH_URL}
-    className={stage ? "size-full" : MUNICIPAL_MAP_BOX_CLASS}
+    className={stage ? "size-full" : PROTO_MAP_BOX_CLASS}
     background={stage ? sea : undefined}
   />
 );

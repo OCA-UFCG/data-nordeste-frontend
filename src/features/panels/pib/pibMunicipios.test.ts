@@ -19,6 +19,19 @@ describe("PIB_MUNICIPAL_BINS", () => {
   });
 });
 
+describe("PIB_MUNICIPAL_BINS limits", () => {
+  it("sends max - 1 to its own bin and max to the next one, for every bin", () => {
+    PIB_MUNICIPAL_BINS.slice(0, -1).forEach((bin, index) => {
+      expect(getBucket(PIB_MUNICIPAL_BINS, bin.max - 1)).toBe(
+        PIB_MUNICIPAL_BINS[index],
+      );
+      expect(getBucket(PIB_MUNICIPAL_BINS, bin.max)).toBe(
+        PIB_MUNICIPAL_BINS[index + 1],
+      );
+    });
+  });
+});
+
 describe("buildPibMunicipalTable", () => {
   it("lists municipalities by PIB, largest first, with value and class", () => {
     const table = buildPibMunicipalTable({

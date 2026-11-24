@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from "react";
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
-import { PIB_CARD_INFO } from "@/components/PibDashboard/pibTexts";
+import {
+  PIB_CARD_INFO,
+  PIB_MAP_TITLE,
+} from "@/components/PibDashboard/pibTexts";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
 import { ProtoCard, ProtoSkeleton } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
@@ -13,7 +16,7 @@ import {
 } from "@/components/ProtoPanel/ProtoMapControls";
 import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
 import {
-  MUNICIPAL_MAP_BOX_CLASS,
+  PROTO_MAP_BOX_CLASS,
   ProtoMunicipalCanvas,
   ProtoMunicipalMapBox,
 } from "@/components/ProtoPanel/ProtoMunicipalMap";
@@ -25,14 +28,12 @@ import {
   type PibMapFocus,
 } from "@/features/panels/pib/pibMunicipios";
 
-export const PIB_MAP_TITLE = "PIB total por município";
-
 // O mapa pronto: a caixa com a altura do mapa e a legenda (em duas linhas no
 // celular).
 const MAP_SKELETON = (
   <>
     <div className="p-1">
-      <ProtoSkeleton className={MUNICIPAL_MAP_BOX_CLASS} />
+      <ProtoSkeleton className={PROTO_MAP_BOX_CLASS} />
     </div>
     <ProtoSkeleton className="mt-3 h-4 w-[60%] max-[700px]:h-10" />
   </>
@@ -61,7 +62,7 @@ const pibCanvas = ({ data, place, focus }: PibMapSource, stage = false) => (
  * destaque; o clique não filtra, como no mapa de municípios do perfil.
  * `selectedMuns`: os municípios do filtro pedido, destacados na hora.
  *
- * @example <PibMapCard data={panel} place="Nordeste · Recife (PE)" selectedMuns={["2611606"]} state="ok" onRetry={retry} />
+ * @example <PibMapCard data={panel} place="Nordeste · Pernambuco" selectedMuns={["2611606"]} state="ok" onRetry={retry} />
  */
 export const PibMapCard = ({
   data,
@@ -110,6 +111,7 @@ export const PibMapCard = ({
         </>
       }
     >
+      {/* O mapa tem altura fixa (PROTO_MAP_BOX_CLASS); a legenda fica logo abaixo. */}
       <ProtoMunicipalMapBox sea={PIB_COLORS.sea} table={table}>
         {pibCanvas(source)}
       </ProtoMunicipalMapBox>

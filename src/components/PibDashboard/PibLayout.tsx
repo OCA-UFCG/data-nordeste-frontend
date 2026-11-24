@@ -16,6 +16,9 @@ import { describeDefaultPlaceLabel } from "@/features/panels/territorialPlace";
 export type PibLayoutProps = Omit<PibCardProps, "state"> & {
   states: PibCardStates;
 
+  // Lugar do mapa: área e estados, sem o município (só destacado no mapa).
+  mapPlace: string;
+
   // Filtros pedidos (iguais a `data.filters` fora da navegação): o ano da
   // série e os municípios destacados no mapa já mostram o pedido.
   selection: TerritorialFilters;
@@ -39,11 +42,12 @@ const SECTOR_COLUMN =
  * Grade do painel do PIB (`.pib-stack` do protótipo): números de destaque, a
  * série anual e, lado a lado, o mapa e os dois cards de setor.
  *
- * @example <PibGrids data={panel} selection={filters} place="Nordeste" states={states} onRetry={retry} onSelectYear={pickYear} onShowSectorYear={showYear} onPickYear={focusYear} />
+ * @example <PibGrids data={panel} selection={filters} place="Nordeste" mapPlace="Nordeste" states={states} onRetry={retry} onSelectYear={pickYear} onShowSectorYear={showYear} onPickYear={focusYear} />
  */
 export const PibGrids = ({
   selection,
   states,
+  mapPlace,
   onSelectYear,
   onShowSectorYear,
   onPickYear,
@@ -63,9 +67,11 @@ export const PibGrids = ({
     />
     <div className={BOTTOM_GRID}>
       <PibMapCard
-        {...card}
+        data={card.data}
+        place={mapPlace}
         selectedMuns={selection.mun ?? []}
         state={states.map}
+        onRetry={card.onRetry}
       />
       <div className={SECTOR_COLUMN}>
         <PibVabCard
@@ -87,13 +93,15 @@ export const PibGrids = ({
 
 /**
  * Sem PIB para o território e o ano escolhidos: um aviso com o atalho para o
- * padrão do painel e o mapa sozinho (`.pgrid.solo` do protótipo).
+ * padrão do painel e, abaixo, o mapa, que segue o filtro de Estado
+ * (`.pgrid.solo` do protótipo).
  *
- * @example <PibEmptyLayout data={panel} selection={filters} place="Caatinga" states={states} onRetry={retry} onSelectYear={pickYear} onReset={reset} />
+ * @example <PibEmptyLayout data={panel} selection={filters} place="Caatinga" mapPlace="Caatinga" states={states} onRetry={retry} onSelectYear={pickYear} onReset={reset} />
  */
 export const PibEmptyLayout = ({
   selection,
   states,
+  mapPlace,
   onReset,
   ...card
 }: PibLayoutProps) => (
@@ -113,9 +121,11 @@ export const PibEmptyLayout = ({
       </ProtoCardNotice>
     </article>
     <PibMapCard
-      {...card}
+      data={card.data}
+      place={mapPlace}
       selectedMuns={selection.mun ?? []}
       state={states.map}
+      onRetry={card.onRetry}
     />
   </div>
 );

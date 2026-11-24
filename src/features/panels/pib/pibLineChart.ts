@@ -34,6 +34,7 @@ const MIN_WIDTH = 300;
 // O eixo do per capita sobra 40% acima do maior valor: a linha dele fica
 // abaixo da do PIB total em vez de as duas se sobreporem.
 const PER_CAPITA_HEADROOM = 1.4;
+const ZERO_AXIS_STEPS = 4;
 
 // Rótulo acima do ponto (-12) ou abaixo dele; nos dois últimos anos o de
 // baixo desce mais, porque fica à esquerda do ponto e cruzaria a linha.
@@ -171,9 +172,15 @@ export const buildPibLineGeometry = ({
   const frame = frameFor(width);
   const pib = serie.map((point) => point.pib);
   const perCapita = serie.map((point) => point.perCapita);
-  const pibAxis = buildZeroAxis(Math.max(...pib));
+  const units = pibLineUnits(serie);
+
+  // Série toda zerada: o eixo vai a 4 unidades, senão cada rótulo sairia "0".
+  const pibAxis = buildZeroAxis(
+    Math.max(...pib) || ZERO_AXIS_STEPS * units.pib.divisor,
+  );
   const perCapitaAxis = buildZeroAxis(
-    Math.max(...perCapita) * PER_CAPITA_HEADROOM,
+    Math.max(...perCapita) * PER_CAPITA_HEADROOM ||
+      ZERO_AXIS_STEPS * units.perCapita.divisor,
   );
   const x = xScale(width, frame, serie.length);
   const yPib = yScale(width, frame, pibAxis.max);

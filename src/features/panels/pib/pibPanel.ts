@@ -100,6 +100,7 @@ const loadSerie = async (query: SqlQuery, filters: TerritorialFilters) => {
   }));
 };
 
+// Espelha `loadMapa` de pibPowerBiPanel.ts (mesma view): mexa nos dois.
 // O mapa segue área, ano e estados (a malha aproxima nos escolhidos); os
 // municípios do filtro só ganham destaque, por isso a consulta não os usa.
 const loadMapa = async (query: SqlQuery, filters: TerritorialFilters) => {

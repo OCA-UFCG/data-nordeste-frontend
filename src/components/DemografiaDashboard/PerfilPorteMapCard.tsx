@@ -13,7 +13,7 @@ import {
   ProtoMapFullscreen,
 } from "@/components/ProtoPanel/ProtoMapFullscreen";
 import {
-  MUNICIPAL_MAP_BOX_CLASS,
+  PROTO_MAP_BOX_CLASS,
   ProtoMunicipalCanvas,
   ProtoMunicipalMapBox,
 } from "@/components/ProtoPanel/ProtoMunicipalMap";
@@ -171,7 +171,7 @@ const PorteMapBox = ({
     {view === "estados" ? (
       <ProtoStateMap
         {...map.estados}
-        className={`mx-auto block max-h-[560px] ${MUNICIPAL_MAP_BOX_CLASS}`}
+        className={`mx-auto block max-h-[560px] ${PROTO_MAP_BOX_CLASS}`}
       />
     ) : (
       municipiosCanvas(data, map.porte.highlightCodes)

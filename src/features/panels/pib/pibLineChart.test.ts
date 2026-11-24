@@ -165,6 +165,25 @@ describe("buildPibLineGeometry", () => {
   });
 });
 
+describe("buildPibLineGeometry with an all-zero series", () => {
+  it("spans four units on each axis instead of printing 0 on every tick", () => {
+    const serie = [
+      { ano: 2022, pib: 0, perCapita: 0 },
+      { ano: 2023, pib: 0, perCapita: 0 },
+    ];
+    const { ticks } = buildPibLineGeometry({
+      width: 820,
+      serie,
+      selectedIndex: 1,
+    });
+
+    expect(ticks.map((tick) => tick.pib)).toEqual([0, 1e3, 2e3, 3e3, 4e3]);
+    expect(ticks.map((tick) => tick.perCapita)).toEqual([
+      0, 1e3, 2e3, 3e3, 4e3,
+    ]);
+  });
+});
+
 describe("pibLineUnits", () => {
   it("puts the total in billions and the per capita in thousands", () => {
     expect(pibLineUnits(SERIE)).toEqual({

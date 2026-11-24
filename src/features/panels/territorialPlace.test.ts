@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   describeDefaultPlaceLabel,
+  describeTerritorialAreaPlace,
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
@@ -192,5 +193,20 @@ describe("describeDefaultPlaceLabel", () => {
 
   it("leaves the year out when the database gave none", () => {
     expect(describeDefaultPlaceLabel(NO_DEMOGRAFIA_YEARS)).toBe("Ver Nordeste");
+  });
+});
+
+describe("describeTerritorialAreaPlace", () => {
+  it("names area and states but omits the chosen municipality", () => {
+    const filters = {
+      ano: 2022,
+      area: "semiarido" as const,
+      uf: ["PE"],
+      mun: ["2611606"],
+    };
+
+    expect(describeTerritorialAreaPlace({ ...OPTIONS, filters })).toBe(
+      "Semiárido · Pernambuco",
+    );
   });
 });

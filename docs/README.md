@@ -172,7 +172,7 @@ outside the repository and rendered through frontend route/component logic.
   is why `deploy-gamma.yml` and `deploy-prod.yml` build
   `linux/amd64,linux/arm64` while `deploy-beta.yml` does not. Dropping
   `linux/arm64` breaks the deploy with `no matching manifest for
-  linux/arm64/v8`. Consequence: `package-lock.json` must keep its
+linux/arm64/v8`. Consequence: `package-lock.json` must keep its
   `*-linux-arm64-*` entries, or the arm64 build fails resolving native
   binaries.
 - Do not document secrets or concrete environment values here. Use
@@ -423,7 +423,6 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   carries an `sr-only` table built by `buildPerfilPorteTable`, replacing the
   table `ChoroplethMap` used to provide.
 
-
 ## PIB Panel Demo (`/demo/pib`)
 
 - Same approach as the IDH and demographic profile panels: the reference is
@@ -436,8 +435,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Shared pieces extracted for this panel, so nothing was copied from the
   profile: `ProtoTerritorialFilters` (Ano, Área, Estado, Município; was
   `PerfilFilterBar`), `features/panels/territorialPlace.ts` (was
-  `demografia/perfilPlace.ts`), `ProtoSeriesLegend` (the line legend of the
-  IDH) and the `pair` variant of `ProtoStatCards`.
+  `demografia/perfilPlace.ts`), and the `pair` variant of `ProtoStatCards`.
 - Map (content team review): "PIB total por município"
   (`PIB_MAP_TITLE`), one query grouped by `cd_mun` (`pib_total` in reais,
   `nome_municipio`, `sigla_uf`; the codes match `municipios-sudene.json`),

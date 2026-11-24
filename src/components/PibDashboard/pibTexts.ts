@@ -16,6 +16,9 @@ const sectorCoverage = (vabLastYear: number | null) =>
 export const PIB_LINE_TITLE =
   "Dinâmica temporal do PIB total e do PIB per capita";
 
+// Título do card do mapa, também no subtítulo da tela cheia e no rótulo.
+export const PIB_MAP_TITLE = "PIB total por município";
+
 // Trecho do ⓘ do VAB que o card destaca em negrito.
 export const PIB_VAB_TERM = "Valor Adicionado Bruto (VAB)";
 
