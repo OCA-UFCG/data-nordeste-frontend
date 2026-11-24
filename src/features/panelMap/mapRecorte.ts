@@ -7,9 +7,9 @@ export const EMPTY_RECORTE: MapRecorte = { uf: [], mun: [] };
 export const STATE_ZOOM = 6.5;
 export const MUNICIPALITY_ZOOM = 8.5;
 
-// Os limites aparecem um nível ANTES do filtro: o usuário vê a divisa do
-// estado/município antes de o zoom filtrar por ela.
-export const STATE_LINES_ZOOM = STATE_ZOOM - 1;
+// O limite municipal aparece um nível ANTES do filtro: o usuário vê a divisa
+// do município antes de o zoom filtrar por ela. O estadual aparece em qualquer
+// zoom (decisão do usuário, 24/11/2026).
 export const MUNICIPAL_LINES_ZOOM = MUNICIPALITY_ZOOM - 1;
 export const ZOOM_OUT_TOLERANCE = 0.5;
 

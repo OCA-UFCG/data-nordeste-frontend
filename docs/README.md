@@ -319,17 +319,16 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   there is no feature, and the recorte stays as it is, except when zooming out
   to the area level (below the anchor minus the tolerance): that clears the
   recorte without a centre feature, since the empty recorte always round-trips.
-- **Boundaries by zoom** (`panelMapStyle.ts`, layer `minzoom` from
-  `STATE_LINES_ZOOM` = `STATE_ZOOM` - 1 and `MUNICIPAL_LINES_ZOOM` =
-  `MUNICIPALITY_ZOOM` - 1): the map opens on the area of interest with only
-  its outline; state limits appear one zoom level before the state filter
-  (5.5) and municipal limits one level before the municipality filter (7.5),
-  so the limits show before the zoom filters by them (the filter thresholds
-  themselves are unchanged). The class fill, veil,
+- **Boundaries by zoom** (`panelMapStyle.ts`; only the municipal layer has a
+  `minzoom`, from `MUNICIPAL_LINES_ZOOM` = `MUNICIPALITY_ZOOM` - 1): the map
+  opens on the area of interest with its outline. State limits show at every
+  zoom (user decision, 24/11/2026: they used to start at 5.5 and vanished when
+  zoomed out); municipal limits appear one level before the municipality
+  filter (7.5), so they show before the zoom filters by them (the filter
+  thresholds themselves are unchanged). The class fill, veil,
   selection outline and hover outline show at any zoom (the hover is not a
   boundary: it marks the feature the tooltip names). With state features
-  (IDH) their own outline has no `minzoom` (the separate state-outline layer
-  still starts at `STATE_LINES_ZOOM`). State outlines keep
+  (IDH) their own outline has no `minzoom` either. State outlines keep
   the `.qgz` colour but never draw thinner than `STATE_OUTLINE_MIN_WIDTH_PX`
   (1.5 px, `visibleStateOutline` in `qgisPaint.ts`): the `.qgz` width is a print
   one (0.15 mm = 0.57 px) and the limits were invisible on screen (user
