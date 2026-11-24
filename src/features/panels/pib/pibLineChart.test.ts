@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildPibLineGeometry } from "@/features/panels/pib/pibLineChart";
+import {
+  buildPibLineGeometry,
+  pibLineUnits,
+} from "@/features/panels/pib/pibLineChart";
 import type { PibYearPoint } from "@/features/panels/pib/pibPanel";
 
 // PIB e per capita do Nordeste no protótipo, 2010 a 2023.
@@ -26,11 +29,11 @@ describe("buildPibLineGeometry", () => {
       selectedIndex: 13,
     });
 
-    expect(geometry.height).toBe(340);
+    expect(geometry.height).toBe(360);
     expect(geometry.margin).toEqual({
       left: 72,
       right: 72,
-      top: 22,
+      top: 44,
       bottom: 34,
     });
     expect(geometry.ticks.map((tick) => tick.pib)).toEqual([
@@ -39,8 +42,8 @@ describe("buildPibLineGeometry", () => {
     expect(geometry.ticks.map((tick) => tick.perCapita)).toEqual([
       0, 10000, 20000, 30000, 40000,
     ]);
-    expect(geometry.ticks[0].y).toBe(306);
-    expect(geometry.ticks[4].y).toBe(22);
+    expect(geometry.ticks[0].y).toBe(326);
+    expect(geometry.ticks[4].y).toBe(44);
   });
 
   it("spreads the years from the left to the right margin", () => {
@@ -93,6 +96,30 @@ describe("buildPibLineGeometry", () => {
     expect(labels?.perCapita.y).toBe(points.perCapita[0].y + 22);
   });
 
+  it.each([820, 340])(
+    "keeps the axis titles above the value label of the top point at %i px",
+    (width) => {
+      // Altura de maiúscula do rótulo (13 px) com o contorno branco, e o
+      // descendente do "(" no título (12 px).
+      const LABEL_TOP = 12;
+      const TITLE_DESCENT = 4;
+      const geometry = buildPibLineGeometry({
+        width,
+        serie: [
+          { ano: 2022, pib: 8e11, perCapita: 1e4 },
+          { ano: 2023, pib: 1.6e12, perCapita: 1.1e4 },
+        ],
+        selectedIndex: 1,
+      });
+      const label = geometry.labels?.pib;
+
+      expect(label?.y).toBe(geometry.margin.top - 12);
+      expect((label?.y ?? 0) - LABEL_TOP).toBeGreaterThan(
+        geometry.titleY + TITLE_DESCENT,
+      );
+    },
+  );
+
   it("shrinks below 560 px and shows one year in four", () => {
     const geometry = buildPibLineGeometry({
       width: 340,
@@ -101,7 +128,7 @@ describe("buildPibLineGeometry", () => {
     });
 
     expect(geometry.narrow).toBe(true);
-    expect(geometry.height).toBe(300);
+    expect(geometry.height).toBe(320);
     expect(geometry.margin.left).toBe(56);
     expect(
       geometry.years.filter((year) => year.show).map((year) => year.year),
@@ -135,5 +162,23 @@ describe("buildPibLineGeometry", () => {
     expect(() =>
       buildPibLineGeometry({ width: 820, serie: SERIE, selectedIndex: 14 }),
     ).toThrow("selectedIndex 14 for a series of 14 years");
+  });
+});
+
+describe("pibLineUnits", () => {
+  it("puts the total in billions and the per capita in thousands", () => {
+    expect(pibLineUnits(SERIE)).toEqual({
+      pib: { divisor: 1e9, label: "bilhões" },
+      perCapita: { divisor: 1e3, label: "mil" },
+    });
+  });
+
+  it("drops the total to millions for a series under R$ 1 bi", () => {
+    const serie = [{ ano: 2023, pib: 3.5e8, perCapita: 12000 }];
+
+    expect(pibLineUnits(serie).pib).toEqual({
+      divisor: 1e6,
+      label: "milhões",
+    });
   });
 });

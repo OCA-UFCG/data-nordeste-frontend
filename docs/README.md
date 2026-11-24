@@ -453,6 +453,16 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   - The VAB axis unit follows the data (`pibBarUnit`: trilhões, bilhões,
     milhões, mil) instead of the fixed "R$ bilhões", so a small municipality
     gets a readable axis.
+  - Line card (content team review): title "Dinâmica temporal do PIB total e
+    do PIB per capita" (`PIB_LINE_TITLE`, also the SVG label and the image
+    title). Each Y axis has a title with its unit drawn inside the SVG, so the
+    download keeps it ("PIB total (R$ bilhões)" top left, "PIB per capita (R$
+    mil)" top right), plain pt-BR ticks in that unit, and the axis line, ticks
+    and title in the series color (text in the darker `*Ink` for AA). The
+    legend reads the same titles. `point.pib` and `point.perCapita` are in
+    reais; `pibLineUnits` divides. The total drops to milhões/mil when the
+    series stays under R$ 1 bi (small municipalities), as the VAB axis does.
+    Tooltip and value labels keep `formatPibReais`.
   - Money uses the existing formatter ("R$ 45,00 Mi"); the prototype drops
     decimals in millions. The change pill reads "em relação a 2022" (shared
     `formatYearChange`), not "vs. 2022".

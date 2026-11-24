@@ -1,8 +1,5 @@
-import {
-  capitalizeScale,
-  formatReaisAxis,
-  formatReaisCompact,
-} from "@/features/panels/format";
+import { capitalizeScale, formatReaisCompact } from "@/features/panels/format";
+import type { PibBarUnit } from "@/features/panels/pib/pibBars";
 
 /**
  * Valor em reais na escala do próprio número, como nos cards e rótulos do
@@ -13,14 +10,6 @@ import {
 export const formatPibReais = (value: number): string =>
   capitalizeScale(formatReaisCompact(value));
 
-/**
- * Rótulo de eixo em reais: sem casas quando o valor é redondo na escala.
- *
- * @example formatPibAxis(400_000_000_000) // "R$ 400 Bi"
- */
-export const formatPibAxis = (value: number): string =>
-  capitalizeScale(formatReaisAxis(value));
-
 const tick = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
 
 /**
@@ -29,3 +18,11 @@ const tick = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
  * @example formatPibTick(0.3) // "0,3"
  */
 export const formatPibTick = (value: number): string => tick.format(value);
+
+/**
+ * Marca de eixo sem "R$" nem escala: a unidade vai no título do eixo.
+ *
+ * @example formatPibAxis(1_600_000_000_000, { divisor: 1e9, label: "bilhões" }) // "1.600"
+ */
+export const formatPibAxis = (value: number, unit: PibBarUnit): string =>
+  formatPibTick(value / unit.divisor);

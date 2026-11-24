@@ -1,4 +1,5 @@
 import { buildZeroAxis } from "@/features/panels/zeroAxis";
+import { pibBarUnit, type PibBarUnit } from "@/features/panels/pib/pibBars";
 import type { PibYearPoint } from "@/features/panels/pib/pibPanel";
 
 export type PibLineKey = "pib" | "perCapita";
@@ -15,6 +16,7 @@ export type PibLineGeometry = {
   height: number;
   narrow: boolean;
   margin: { left: number; right: number; top: number; bottom: number };
+  titleY: number;
   ticks: PibLineTick[];
   years: { year: number; x: number; show: boolean; selected: boolean }[];
   selectedX: number | null;
@@ -26,7 +28,7 @@ export type PibLineGeometry = {
 // mostra um ano a cada quatro. PibLineChart.tsx repete os dois em classes
 // Tailwind (literais); um teste garante que batem.
 export const PIB_LINE_NARROW_WIDTH = 560;
-export const PIB_LINE_HEIGHT = { narrow: 300, wide: 340 } as const;
+export const PIB_LINE_HEIGHT = { narrow: 320, wide: 360 } as const;
 const MIN_WIDTH = 300;
 
 // O eixo do per capita sobra 40% acima do maior valor: a linha dele fica
@@ -39,6 +41,10 @@ const LABEL_ABOVE = -12;
 const LABEL_BELOW = 22;
 const LABEL_BELOW_LATE = 36;
 
+// Título de cada eixo, na faixa acima do gráfico (margin.top) e acima dos
+// rótulos de valor do ano escolhido.
+const TITLE_Y = 14;
+
 const frameFor = (width: number) => {
   const narrow = width < PIB_LINE_NARROW_WIDTH;
 
@@ -48,7 +54,7 @@ const frameFor = (width: number) => {
     margin: {
       left: narrow ? 56 : 72,
       right: narrow ? 52 : 72,
-      top: 22,
+      top: 44,
       bottom: 34,
     },
   };
@@ -118,8 +124,27 @@ const buildLabels = (
   };
 };
 
+// PIB total em bilhões, como pede a equipe de conteúdo; abaixo de R$ 1 bi
+// (municípios pequenos) a unidade desce, senão o eixo sairia todo em "0,0x".
+const PIB_MAX_UNIT = 1e9;
+
 /**
- * Geometria do gráfico "Evolução anual do PIB": duas linhas, cada uma com o
+ * Unidade de cada eixo do gráfico de linha: o PIB total em bilhões (ou
+ * menos, se a série não chega a R$ 1 bi) e o per capita sempre em R$ mil.
+ *
+ * @example pibLineUnits(serie).pib // { divisor: 1e9, label: "bilhões" }
+ */
+export const pibLineUnits = (
+  serie: readonly PibYearPoint[],
+): Record<PibLineKey, PibBarUnit> => ({
+  pib: pibBarUnit(
+    Math.min(Math.max(1e3, ...serie.map((point) => point.pib)), PIB_MAX_UNIT),
+  ),
+  perCapita: pibBarUnit(1e3),
+});
+
+/**
+ * Geometria do gráfico "Dinâmica temporal do PIB": duas linhas, cada uma com o
  * seu eixo (PIB total à esquerda, per capita à direita), com as medidas do
  * protótipo. `serie` precisa de ao menos um ano.
  *
@@ -166,6 +191,7 @@ export const buildPibLineGeometry = ({
     height: frame.height,
     narrow: frame.narrow,
     margin: frame.margin,
+    titleY: TITLE_Y,
     ticks: pibAxis.ticks.map((value, index) => ({
       y: yPib(value),
       pib: value,

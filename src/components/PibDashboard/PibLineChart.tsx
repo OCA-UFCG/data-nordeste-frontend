@@ -1,6 +1,7 @@
 "use client";
 
 import { type Ref, useMemo } from "react";
+import { PIB_LINE_TITLE } from "@/components/PibDashboard/pibTexts";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
 import {
   type LineYearHandlers,
@@ -16,17 +17,18 @@ import { ProtoTooltip } from "@/components/ProtoPanel/ProtoTooltip";
 import { PROTO_CHART_FONT } from "@/components/ProtoPanel/protoStyles";
 import { useElementWidth } from "@/components/ProtoPanel/useElementWidth";
 import { formatPibAxis, formatPibReais } from "@/features/panels/pib/pibFormat";
+import type { PibBarUnit } from "@/features/panels/pib/pibBars";
 import {
   buildPibLineGeometry,
   type PibLineGeometry,
   type PibLineKey,
+  pibLineUnits,
 } from "@/features/panels/pib/pibLineChart";
 import type { PibYearPoint } from "@/features/panels/pib/pibPanel";
 import { linePath } from "@/features/panels/svgPath";
 
 type PibLineSeries = {
   key: PibLineKey;
-  label: string;
   shortLabel: string;
   color: string;
   ink: string;
@@ -36,7 +38,6 @@ type PibLineSeries = {
 const SERIES: readonly PibLineSeries[] = [
   {
     key: "pib",
-    label: "PIB total (R$)",
     shortLabel: "PIB total",
     color: PIB_COLORS.total,
     ink: PIB_COLORS.totalInk,
@@ -44,7 +45,6 @@ const SERIES: readonly PibLineSeries[] = [
   },
   {
     key: "perCapita",
-    label: "PIB per capita (R$ mil)",
     shortLabel: "PIB per capita",
     color: PIB_COLORS.perCapita,
     ink: PIB_COLORS.perCapitaInk,
@@ -54,53 +54,77 @@ const SERIES: readonly PibLineSeries[] = [
 
 const AXIS_FONT_SIZE = "11.5";
 
-// Altura do gráfico e do esqueleto: PIB_LINE_HEIGHT acima de PIB_LINE_NARROW_WIDTH.
-export const PIB_LINE_HEIGHT_CLASS = "min-h-[300px] @[560px]:min-h-[340px]";
+// Título do eixo e rótulo da legenda: "PIB total (R$ bilhões)".
+const seriesTitle = (series: PibLineSeries, unit: PibBarUnit) =>
+  `${series.shortLabel} (R$ ${unit.label})`;
 
-// Cada eixo some junto com a sua série.
-const TickLabels = ({
-  geometry,
-  hidden,
-}: {
-  geometry: PibLineGeometry;
-  hidden: Set<PibLineKey>;
-}) => (
+type Units = Record<PibLineKey, PibBarUnit>;
+
+// Altura do gráfico e do esqueleto: PIB_LINE_HEIGHT acima de PIB_LINE_NARROW_WIDTH.
+export const PIB_LINE_HEIGHT_CLASS = "min-h-[320px] @[560px]:min-h-[360px]";
+
+const Gridlines = ({ geometry }: { geometry: PibLineGeometry }) => (
   <>
     {geometry.ticks.map((tick) => (
-      <g key={tick.pib}>
-        <line
-          x1={geometry.margin.left}
-          x2={geometry.width - geometry.margin.right}
-          y1={tick.y}
-          y2={tick.y}
-          stroke={PIB_COLORS.line}
-          strokeDasharray="3 4"
-        />
-        {hidden.has("pib") ? null : (
-          <text
-            x={geometry.margin.left - 8}
-            y={tick.y + 4}
-            textAnchor="end"
-            fontSize={AXIS_FONT_SIZE}
-            fill={PIB_COLORS.muted}
-          >
-            {formatPibAxis(tick.pib)}
-          </text>
-        )}
-        {hidden.has("perCapita") ? null : (
-          <text
-            x={geometry.width - geometry.margin.right + 8}
-            y={tick.y + 4}
-            fontSize={AXIS_FONT_SIZE}
-            fill={PIB_COLORS.muted}
-          >
-            {formatPibAxis(tick.perCapita)}
-          </text>
-        )}
-      </g>
+      <line
+        key={tick.pib}
+        x1={geometry.margin.left}
+        x2={geometry.width - geometry.margin.right}
+        y1={tick.y}
+        y2={tick.y}
+        stroke={PIB_COLORS.line}
+        strokeDasharray="3 4"
+      />
     ))}
   </>
 );
+
+// Título, marcas e linha de um eixo, na cor da série (texto na tinta escura,
+// que passa o contraste AA no branco).
+const ValueAxis = ({
+  geometry,
+  series,
+  unit,
+}: {
+  geometry: PibLineGeometry;
+  series: PibLineSeries;
+  unit: PibBarUnit;
+}) => {
+  const { width, height, margin } = geometry;
+  const left = series.key === "pib";
+  const axisX = left ? margin.left : width - margin.right;
+
+  return (
+    <g fill={series.ink} fontSize={AXIS_FONT_SIZE}>
+      <text
+        x={left ? 0 : width}
+        y={geometry.titleY}
+        textAnchor={left ? "start" : "end"}
+        fontSize="12"
+        fontWeight="600"
+      >
+        {seriesTitle(series, unit)}
+      </text>
+      <line
+        x1={axisX}
+        x2={axisX}
+        y1={margin.top}
+        y2={height - margin.bottom}
+        stroke={series.color}
+      />
+      {geometry.ticks.map((tick) => (
+        <text
+          key={tick.pib}
+          x={left ? axisX - 8 : axisX + 8}
+          y={tick.y + 4}
+          textAnchor={left ? "end" : "start"}
+        >
+          {formatPibAxis(left ? tick.pib : tick.perCapita, unit)}
+        </text>
+      ))}
+    </g>
+  );
+};
 
 const YearAxis = ({ geometry }: { geometry: PibLineGeometry }) => (
   <>
@@ -190,17 +214,22 @@ const Line = ({
   );
 };
 
+const visibleSeries = (hidden: Set<PibLineKey>) =>
+  SERIES.filter((series) => !hidden.has(series.key));
+
 const LineSvg = ({
   geometry,
   svgRef,
   hidden,
   selectedIndex,
   ano,
+  units,
   ...handlers
 }: LineYearHandlers & {
   geometry: PibLineGeometry;
   svgRef?: Ref<SVGSVGElement>;
   hidden: Set<PibLineKey>;
+  units: Units;
   selectedIndex: number;
   ano: number;
 }) => {
@@ -212,13 +241,22 @@ const LineSvg = ({
       viewBox={`0 0 ${width} ${height}`}
       height={height}
       role="group"
-      aria-label={`Evolução anual do PIB total e do PIB per capita, ${years[0]?.year} a ${years[years.length - 1]?.year}`}
+      aria-label={`${PIB_LINE_TITLE}, ${years[0]?.year} a ${years[years.length - 1]?.year}`}
       fontFamily={PROTO_CHART_FONT}
       className="block w-full touch-pan-y overflow-visible [font-variant-numeric:tabular-nums]"
     >
-      <TickLabels geometry={geometry} hidden={hidden} />
+      <Gridlines geometry={geometry} />
       <YearAxis geometry={geometry} />
-      {SERIES.filter((series) => !hidden.has(series.key)).map((series) => (
+      {/* Cada eixo some junto com a sua série. */}
+      {visibleSeries(hidden).map((series) => (
+        <ValueAxis
+          key={series.key}
+          geometry={geometry}
+          series={series}
+          unit={units[series.key]}
+        />
+      ))}
+      {visibleSeries(hidden).map((series) => (
         <Line
           key={series.key}
           geometry={geometry}
@@ -238,15 +276,15 @@ const LineSvg = ({
 };
 
 const tooltipRows = (point: PibYearPoint, hidden: Set<PibLineKey>) =>
-  SERIES.filter((series) => !hidden.has(series.key)).map((series) => ({
+  visibleSeries(hidden).map((series) => ({
     color: series.color,
     label: series.shortLabel,
     value: formatPibReais(series.pick(point)),
   }));
 
 /**
- * Gráfico "Evolução anual do PIB" (`#lineBox` do protótipo), em SVG: PIB
- * total e per capita, cada um com o seu eixo. Clique num ponto ou use as
+ * Gráfico "Dinâmica temporal do PIB" (`#lineBox` do protótipo), em SVG: PIB
+ * total e per capita, cada um com o seu eixo, título e unidade. Clique num ponto ou use as
  * setas para escolher o ano; a legenda mostra e esconde as séries.
  *
  * @example <PibLineChart serie={panel.serie} ano={2023} onSelectYear={pick} svgRef={chart.ref} />
@@ -265,6 +303,15 @@ export const PibLineChart = ({
   const { ref: boxRef, width: boxWidth } = useElementWidth();
   const { hidden, toggle } = useHiddenSeries<PibLineKey>();
   const years = useMemo(() => serie.map((point) => point.ano), [serie]);
+  const units = useMemo(() => pibLineUnits(serie), [serie]);
+  const legend = useMemo(
+    () =>
+      SERIES.map((series) => ({
+        ...series,
+        label: seriesTitle(series, units[series.key]),
+      })),
+    [units],
+  );
   const { selectedIndex, hover, handlers } = useLineYear({
     years,
     ano,
@@ -284,7 +331,7 @@ export const PibLineChart = ({
 
   return (
     <>
-      <ProtoSeriesLegend series={SERIES} hidden={hidden} onToggle={toggle} />
+      <ProtoSeriesLegend series={legend} hidden={hidden} onToggle={toggle} />
       {/* Reserva a altura final antes de medir a largura: sem salto na hidratação. */}
       <div className="@container">
         <div ref={boxRef} className={`relative ${PIB_LINE_HEIGHT_CLASS}`}>
@@ -295,6 +342,7 @@ export const PibLineChart = ({
               hidden={hidden}
               selectedIndex={selectedIndex}
               ano={ano}
+              units={units}
               {...handlers}
             />
           ) : null}

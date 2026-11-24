@@ -12,9 +12,13 @@ export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 const sectorCoverage = (vabLastYear: number | null) =>
   vabLastYear === null ? "" : ` Os dados setoriais vão até ${vabLastYear}.`;
 
+// Título do card da linha, também no rótulo do SVG e na imagem baixada.
+export const PIB_LINE_TITLE =
+  "Dinâmica temporal do PIB total e do PIB per capita";
+
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
-  line: "PIB total (eixo da esquerda, em R$) e PIB per capita (eixo da direita, em R$ mil). Clique em um ponto para mudar o ano.",
+  line: "PIB total no eixo da esquerda e PIB per capita no eixo da direita, cada um na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
   map: "Cada estado recebe a cor da faixa do seu PIB total. Clique em um estado para usá-lo como filtro do painel.",
   vab: (vabLastYear: number | null) =>
     `Valor adicionado bruto de cada grande setor da economia.${sectorCoverage(vabLastYear)}`,
