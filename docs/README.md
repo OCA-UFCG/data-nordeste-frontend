@@ -342,8 +342,9 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   change fits** (`engine.fitTo(fitTargetFor(...))`, capped at zoom 10),
   wherever it came from: a zoom or pan released on a new recorte, a click, the
   filter bar, clearing, mount or a new area. A recorte applied by the zoom
-  itself therefore centres the map on the filtered state or municipality, like
-  the bar does (changed on user request, 24/11/2026; before, the map did not
+  itself therefore fits the filtered state or municipality (centre and zoom), like
+  the bar does. User decision, 24/11/2026: "centralizar e ajustar o zoom fica
+  melhor" (a centre-only variant was tried and reverted; before, the map did not
   re-fit after its own zoom). The fit is programmatic: its `moveend` never
   emits a filter and only sets the anchor zoom (`fit: true`).
   `useStableRecorte` keeps the pending → server round trip with the same
