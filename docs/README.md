@@ -319,7 +319,8 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   moves the anchor; a container resize also is programmatic but would bring the
   old fit zoom and erase it.
 - **The map filters the panel through the bar's own `request(...)`**, so the
-  other cards reload and dim (`stale`) exactly as with the bar. It only emits
+  other cards reload exactly as with the bar (previous data dimmed, `stale`,
+  in the PIB and profile; skeletons in the IDH). It only emits
   at the end of a user gesture and only if the recorte changed; programmatic
   moves (fit to the filters, resize) never emit, which avoids a
   filter → fit → zoom → different filter loop. Click emits the recorte of the
@@ -365,15 +366,21 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/):
   fair use only, and heavy traffic would need another tile provider. The
   aridez raster has a decade selector (1990, 2000, 2010, 2020).
+- **Card pieces** (`src/components/PanelMap/`): `PanelMapCardActions` (the
+  shared `ProtoFullscreenButton`, ⓘ and the menu with the basemap credit),
+  `usePanelMapCard`, `PanelMapSkeleton` (the loading card keeps the map box
+  height and the legend row; the IDH map card turns into it on every year
+  change, which remounts the map) and `panelMapTexts`.
 - **Removed by this swap** (see each panel section): `IdhMapLegend`,
   `buildIdhMapProps`, `buildIdhLegend`; `pibStates.ts` (`PIB_STATE_BINS`,
-  `describeStatesOffMap`), `buildPibMapProps` and the card
-  legend; `PerfilPorteToggles`, `DemografiaMapa`, `toggleTerritorialUf`,
-  `selectOnlyTerritorialUf`, `PIB_MAP_HINT`, `PIB_MAP_IMAGE_SOURCE`.
-- **`ProtoStateMap` is no longer used by any panel card.** Only the
-  non-`renderStage` branch of `ProtoMapFullscreen` still draws it, and no
-  caller uses that branch (it and its tests are still there, to be removed in
-  a follow-up).
+  `buildPibStateLookup`), `buildPibMapProps` and the card legend;
+  `PerfilPorteToggles`, `DemografiaMapa`, `toggleTerritorialUf`,
+  `PIB_MAP_HINT`, `PIB_MAP_IMAGE_SOURCE`.
+- **Still there for the aridez panel only:** its state map card
+  (`AridezMapCard`) still draws `ProtoStateMap` through the non-`renderStage`
+  branch of `ProtoMapFullscreen`, with `ProtoBinLegend`, `describeStatesOffMap`
+  (`features/panels/statesOffMap.ts`) and `selectOnlyTerritorialUf`
+  (`territorialPlace.ts`). They go when that card moves to `PanelMap`.
 
 ## Responsive Layout
 
@@ -436,10 +443,13 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 ## IDH Panel Demo (`/demo/idh`)
 
 - The reference is the navigable prototype ("Painéis Data Nordeste", `idh.html`),
-  reproduced in layout and behaviour: dark cover (back link, breadcrumb,
-  "Publicado em", macrotheme badge, lead), sticky filter bar, left rail of
-  views above 900 px (top tab bar below), cards with footer, ⓘ and ⋯ menu,
-  "Saiba mais sobre o IDH" with "Ler mais" and glossary. It replaced the
+  reproduced in layout and behaviour: cover (back link, breadcrumb,
+  "Publicado em", macrotheme badge, lead), horizontal view tabs above the
+  filters at every width (the left rail is gone since the November redesign,
+  PR #410), sticky filter bar with the panel identity ("IDH"), cards with
+  footer, ⓘ and ⋯ menu, "Saiba mais sobre o IDH" with "Ler mais" and
+  glossary. The cover of every prototype panel is light only
+  (`ProtoCover`, PRs #410–#412). It replaced the
   Power BI-faithful version of `129cef4` (gauges, no ranking).
 - The prototype building blocks (card, sheet, ⓘ, ⋯ menu, cover, filter bar
   shell, stat cards, the map fullscreen frame, "Saiba mais", sticky chain)
@@ -475,19 +485,19 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   IDH card are thin callers of that generic core. The ranking keeps its own
   toggle (`onSelectUf`) and `IDH_MAP_BUCKETS`. Fullscreen is a second
   `PanelMap` (`renderStage`) in the card `overlay`; the downloaded image comes
-  from the engine with the active basemap's credit (`panelMapImageSource`). Removed:
+  from the engine with the active basemap's credit (`panelMapImageSource`).
+  Its footer is `idhCardFooter(updatedAt)`, like the other IDH cards. Removed:
   `IdhMapLegend`, `buildIdhMapProps` (`idhMapProps.ts`) and `buildIdhLegend`
-  (the legend now comes from `PanelMap`). `ProtoStateMap` is unused by the
-  cards now: only `ProtoMapFullscreen`'s non-`renderStage` branch draws it,
-  and no caller uses that branch.
+  (the legend now comes from `PanelMap`).
 - Prototype rules that came from its demo data were not ported (state data
   only for 2021, "sem dado por estado", the undo toast): the `des_idh` views
   have the yearly series per state. The empty-state notice of the sex and
   colour views shows only when the database really has no group data.
 - Card states (`resolveIdhCardStates` in `idhCardState.ts`): while a filter
   navigation is pending, only the cards whose data depends on the changed
-  filter keep their previous data dimmed (`stale`); a UF change leaves the map
-  and ranking alone, a year change leaves the yearly series alone. The
+  filter show the skeleton (the IDH has no `stale`; the other panels dim the
+  previous data instead); a UF change leaves the map and ranking alone, a
+  year change leaves the yearly series alone. The
   selection (map/ranking highlight, chart year, selects) follows the requested
   filters at once, and the next filter starts from them. Skeletons only when
   there is no previous data: retrying or navigating away from a failed query
@@ -529,6 +539,11 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   and the real `dem_demografia.final_demografia` data. Cover, sticky filter
   bar, the `.dg` grid (big number, municipalities, map, sex, age pyramid) and
   `.dg2` (census series, colour or race), "Saiba mais" without glossary.
+  Since the November redesign (PR #411) it also has the "Veja mais" bar
+  (`ProtoVejaMais`, text from `buildDemografiaAnalise`), the panel identity in
+  the filter bar, and the census years come from the database
+  (`loadDemografiaYearRange`, `NO_DEMOGRAFIA_YEARS` when the query fails; no
+  "· 0" is shown, see `withYear`/`NO_YEAR`).
 - Deliberate deviations from the prototype:
   - The map is the shared MapLibre `PanelMap` (indicator "demografia", the
     `.qgz` classes as delivered, including the inverted "Médio" range in the
@@ -579,11 +594,11 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   gestures) and
   `panelMapTexts` (`PANEL_MAP_HINT`, `panelMapImageSource`).
 - Removed with the map swap: `PerfilPorteToggles`, `DemografiaMapa`
-  (`useDemografiaHighlight`, profile copy), `toggleTerritorialUf` and
-  `selectOnlyTerritorialUf` (`territorialPlace.ts`), `PIB_MAP_HINT` and
-  `PIB_MAP_IMAGE_SOURCE`. `ChoroplethCanvas`, `ChoroplethMap` and
-  `public/maps/*.json` stay: the Power BI demos still use them.
-  `ProtoStateMap` is not used by any panel card (see "Panel Maps (MapLibre)").
+  (`useDemografiaHighlight`, profile copy), `toggleTerritorialUf`
+  (`territorialPlace.ts`), `PIB_MAP_HINT` and `PIB_MAP_IMAGE_SOURCE`.
+  `ChoroplethCanvas`, `ChoroplethMap` and `public/maps/*.json` stay: the Power
+  BI demos still use them. `ProtoStateMap` is left only for the aridez card
+  (see "Panel Maps (MapLibre)").
 
 ## PIB Panel Demo (`/demo/pib`)
 
@@ -593,7 +608,10 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   `#f2761c`, per capita `#1e88c7`) and the real `eco_pib.vw_pib_municipal_pbi`
   data. Cover, sticky filter bar, two big numbers, the yearly line with one
   axis per series, the municipal map and the two sector cards, "Saiba mais" and
-  related content.
+  related content. Since the November redesign (PR #412) the filter bar
+  carries the panel identity (`PIB_ICON`, `PIB_SHORT_TITLE`) and fills its row,
+  and `loading.tsx` renders `PibDashboard` with `loading` (every card in its
+  skeleton) inside the same `PibPageFrame` as the page.
 - Shared pieces extracted for this panel, so nothing was copied from the
   profile: `ProtoTerritorialFilters` (Ano, Área, Estado, Município; was
   `PerfilFilterBar`), `features/panels/territorialPlace.ts` (was
@@ -603,8 +621,14 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   per municipality; see "Panel Maps (MapLibre)"), not from the database.
   `loadPibPanel` no longer sums `pib_total` by state (`PibPanelData.estados`
   was removed): no card read it, and every map zoom is a navigation, so it
-  cost one database query per gesture. Sector data (VAB and activities) stops at 2021
-  (`PIB_VAB_LAST_YEAR`); 2022 and 2023 show the notice with "Ver 2021".
+  cost one database query per gesture. Sector data (VAB and activities) ends
+  before the PIB: the last year with VAB comes from the database
+  (`loadVabLastYear`, `MAX(ano)` with `vab_servicos`, in
+  `PibPanelData.vabLastYear`). A year without VAB nor activities
+  (`lacksPibSectorData`) shows the notice with "Ver <último ano>" and
+  "Escolher outro ano", which scrolls to the Ano select and rings it (on a
+  phone it opens the filter sheet; `usePibYearField`); the sector ⓘ texts
+  cite the same year.
 - Deliberate deviations from the prototype:
   - The map is the shared MapLibre `PanelMap` (indicator "pib", municipal
     level, `.qgz` classes as delivered; `PibMapCard`), not the prototype's
@@ -620,12 +644,12 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   - Money uses the existing formatter ("R$ 45,00 Mi"); the prototype drops
     decimals in millions. The change pill reads "em relação a 2022" (shared
     `formatYearChange`), not "vs. 2022".
-  - No "Escolher outro ano" button in the year notice and no "Atualizado em"
-    in the card footers: the database does not say when the PIB was loaded
-    (`PIB_CARD_FOOTER`, marked `INTENTIONAL:`).
+  - No "Atualizado em" in the card footers: the database does not say when
+    the PIB was loaded (`PIB_CARD_FOOTER`, marked `INTENTIONAL:`).
   - Minas Gerais and Espírito Santo (Área da Sudene, Semiárido) are drawn
     like any other state because the map is municipal; the old "no shape in
-    the nine-state map" hint (`describeStatesOffMap`) is gone.
+    the nine-state map" hint (`describeStatesOffMap`) is gone from the PIB
+    (it stays in `statesOffMap.ts` for the aridez state map).
   - "Saiba mais" keeps the Power BI definitions (PIB, per capita, VAB,
     participação) as the glossary; the prototype has only the paragraphs.
 - Image download exists for the line (SVG) and the map (from the
@@ -700,8 +724,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   (`#c-cls .chartbox{flex:1}` in the prototype): the SVG is absolutely
   positioned in a growing box and `useElementWidth` also reports the height.
 - Shared pieces extracted for this panel: `ProtoFullscreenButton` and
-  `ProtoBinLegend` (`ProtoPanel/ProtoMapControls.tsx`, used by IDH, profile and
-  PIB too), `describeStatesOffMap` (`features/panels/statesOffMap.ts`),
+  `ProtoBinLegend` (`ProtoPanel/ProtoMapControls.tsx`; the IDH, profile and
+  PIB map cards use the button through `PanelMapCardActions`), `describeStatesOffMap` (`features/panels/statesOffMap.ts`),
   `buildZeroAxis` (`features/panels/zeroAxis.ts`, was `pib/pibAxis.ts`),
   `describeSelectedTerritory` (`territorialOptions.ts`) and the jsdom fakes
   `stubPanelBrowserApis` (`ProtoPanel/protoBrowserFakes.ts`, was in
