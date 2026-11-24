@@ -47,14 +47,14 @@ const usePibMapProps = (
  * total. Aproximar ou clicar no mapa troca Estado e Município no filtro do
  * painel, pelo mesmo caminho da barra de filtros.
  *
- * @example <PibMapCard data={panel} selection={filters} onFiltersChange={request} state="ok" onRetry={retry} />
+ * @example <PibMapCard selection={filters} onFiltersChange={request} state="ok" onRetry={retry} />
  */
 export const PibMapCard = ({
   selection,
   onFiltersChange,
   state,
   onRetry,
-}: Omit<PibCardProps, "place"> & {
+}: Pick<PibCardProps, "state" | "onRetry"> & {
   selection: TerritorialFilters;
   onFiltersChange: (filters: TerritorialFilters) => void;
 }) => {

@@ -70,7 +70,8 @@ const cardBody = (title: RegExp) =>
   screen.getByRole("heading", { name: title }).closest("article")?.children[1];
 
 // O ranking é o que escolhe estado por clique: o mapa filtra pelo zoom.
-const mapState = (name: string) => screen.getByTitle(new RegExp(`^${name}:`));
+const rankingState = (name: string) =>
+  screen.getByTitle(new RegExp(`^${name}:`));
 
 describe("IdhDashboard", () => {
   beforeEach(() => {
@@ -116,23 +117,23 @@ describe("IdhDashboard", () => {
   it("shows the skeleton only on the cards whose data the pending state changes", () => {
     const { rerender } = render(dashboard(GERAL));
 
-    fireEvent.click(mapState("Pernambuco"));
+    fireEvent.click(rankingState("Pernambuco"));
     navigation.current.isPending = true;
     rerender(dashboard(GERAL));
 
     expect(cardBody(/^Evolução anual/)).toHaveAttribute("aria-busy", "true");
     expect(cardBody(/^Mapa do IDH/)).toHaveAttribute("aria-busy", "false");
     expect(cardBody(/^Ranking do IDH/)).toHaveAttribute("aria-busy", "false");
-    expect(mapState("Pernambuco")).toHaveAttribute("aria-pressed", "true");
+    expect(rankingState("Pernambuco")).toHaveAttribute("aria-pressed", "true");
   });
 
   it("undoes the pending state on a second click before the server answers", () => {
     const { rerender } = render(dashboard(GERAL));
 
-    fireEvent.click(mapState("Pernambuco"));
+    fireEvent.click(rankingState("Pernambuco"));
     navigation.current.isPending = true;
     rerender(dashboard(GERAL));
-    fireEvent.click(mapState("Pernambuco"));
+    fireEvent.click(rankingState("Pernambuco"));
 
     expect(navigation.current.lastRequest).toEqual(GERAL);
   });
@@ -140,7 +141,7 @@ describe("IdhDashboard", () => {
   it("starts the next filter from the pending one, not the loaded one", () => {
     const { rerender } = render(dashboard(GERAL));
 
-    fireEvent.click(mapState("Pernambuco"));
+    fireEvent.click(rankingState("Pernambuco"));
     navigation.current.isPending = true;
     rerender(dashboard(GERAL));
     fireEvent.change(screen.getAllByLabelText("Ano")[0], {

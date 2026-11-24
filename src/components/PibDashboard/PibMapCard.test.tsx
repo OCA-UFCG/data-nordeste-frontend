@@ -9,7 +9,6 @@ import {
 } from "@/components/ProtoPanel/ProtoCardMenu";
 import type { MapRecorte } from "@/features/panelMap/mapRecorte";
 import { territorialToRecorte } from "@/features/panelMap/panelMapAdapters";
-import { emptyPibPanel } from "@/features/panels/pib/pibPanel";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 import { formatPibReais } from "@/features/panels/pib/pibFormat";
 
@@ -53,7 +52,6 @@ const renderCard = (
   render(
     <ProtoCardMenuContext.Provider value={MENU}>
       <PibMapCard
-        data={emptyPibPanel(SELECTION)}
         selection={SELECTION}
         onFiltersChange={onFiltersChange}
         state="ok"

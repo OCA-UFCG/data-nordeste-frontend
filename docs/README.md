@@ -172,7 +172,7 @@ outside the repository and rendered through frontend route/component logic.
   is why `deploy-gamma.yml` and `deploy-prod.yml` build
   `linux/amd64,linux/arm64` while `deploy-beta.yml` does not. Dropping
   `linux/arm64` breaks the deploy with `no matching manifest for
-  linux/arm64/v8`. Consequence: `package-lock.json` must keep its
+linux/arm64/v8`. Consequence: `package-lock.json` must keep its
   `*-linux-arm64-*` entries, or the arm64 build fails resolving native
   binaries.
 - Do not document secrets or concrete environment values here. Use
@@ -369,8 +369,12 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
 - **Card pieces** (`src/components/PanelMap/`): `PanelMapCardActions` (the
   shared `ProtoFullscreenButton`, ⓘ and the menu with the basemap credit),
   `usePanelMapCard`, `PanelMapSkeleton` (the loading card keeps the map box
-  height and the legend row; the IDH map card turns into it on every year
-  change, which remounts the map) and `panelMapTexts`.
+  height and the legend row) and `panelMapTexts`. A skeleton unmounts the map
+  (and MapLibre with its WebGL context, geodata and camera). The PIB and the
+  profile dim a pending map (`stale`, still mounted); the IDH has no `stale`,
+  so its map lists no filter dependency (`map: []` in `idhCardState.ts`): the
+  map draws geodata for the requested filters and needs no server data. Only
+  the first load, a failed query and its retry show the skeleton.
 - **Removed by this swap** (see each panel section): `IdhMapLegend`,
   `buildIdhMapProps`, `buildIdhLegend`; `pibStates.ts` (`PIB_STATE_BINS`,
   `buildPibStateLookup`), `buildPibMapProps` and the card legend;
@@ -497,7 +501,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   navigation is pending, only the cards whose data depends on the changed
   filter show the skeleton (the IDH has no `stale`; the other panels dim the
   previous data instead); a UF change leaves the map and ranking alone, a
-  year change leaves the yearly series alone. The
+  year change leaves the yearly series and the map alone (the map follows the
+  requested year at once and never remounts). The
   selection (map/ranking highlight, chart year, selects) follows the requested
   filters at once, and the next filter starts from them. Skeletons only when
   there is no previous data: retrying or navigating away from a failed query

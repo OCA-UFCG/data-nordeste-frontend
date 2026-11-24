@@ -66,7 +66,6 @@ export const PibGrids = ({
     />
     <div className={BOTTOM_GRID}>
       <PibMapCard
-        data={card.data}
         selection={selection}
         onFiltersChange={onFiltersChange}
         state={states.map}
@@ -119,7 +118,6 @@ export const PibEmptyLayout = ({
       </ProtoCardNotice>
     </article>
     <PibMapCard
-      data={card.data}
       selection={selection}
       onFiltersChange={onFiltersChange}
       state={states.map}

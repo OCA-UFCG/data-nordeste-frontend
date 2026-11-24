@@ -29,7 +29,7 @@ import {
   recorteToIdh,
 } from "@/features/panelMap/panelMapAdapters";
 import { formatIdhCard } from "@/features/panels/idh/idhFormat";
-import type { IdhFilters, IdhPanelData } from "@/features/panels/idh/idhPanel";
+import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "Mapa do IDH por estado";
@@ -68,17 +68,15 @@ const useIdhMapProps = (
  * caminho da barra de filtros. O diálogo da tela cheia fica no `overlay`: no
  * corpo, o esqueleto do carregando o desmontaria a cada filtro aplicado.
  *
- * @example <IdhMapCard data={panel} selection={filters} updatedAt="10/2026" state="ok" onRetry={retry} onFiltersChange={changeFilters} />
+ * @example <IdhMapCard selection={filters} updatedAt="10/2026" state="ok" onRetry={retry} onFiltersChange={changeFilters} />
  */
 export const IdhMapCard = ({
-  data,
   selection,
   updatedAt,
   state,
   onRetry,
   onFiltersChange,
 }: {
-  data: IdhPanelData;
   selection: IdhFilters;
   updatedAt?: string;
   state: ProtoCardState;
@@ -88,10 +86,10 @@ export const IdhMapCard = ({
   const card = usePanelMapCard(IDH_CARD_SOURCE);
   const [fullscreen, setFullscreen] = useState(false);
   const mapProps = useIdhMapProps(selection, onFiltersChange);
-  const subtitle = withYear(
-    "Faixas de desenvolvimento humano",
-    data.filters.ano,
-  );
+
+  // O ano pedido, como o mapa: o card não espera o servidor (`map: []` em
+  // `idhCardState.ts`).
+  const subtitle = withYear("Faixas de desenvolvimento humano", selection.ano);
 
   return (
     <ProtoCard
