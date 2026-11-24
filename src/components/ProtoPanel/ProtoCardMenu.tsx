@@ -3,7 +3,7 @@
 import { createContext, useContext, useRef } from "react";
 import { CardMenu } from "@/components/ProtoPanel/menu/CardMenu";
 import type { CardShare } from "@/components/ProtoPanel/menu/CardShareScreen";
-import { type ChartImageSource, svgImageSource } from "@/lib/chartImage";
+import { svgImageSource } from "@/lib/chartImage";
 
 // O que é igual em todos os cards do painel: o link com os filtros, o catálogo
 // do macrotema e a fonte que vai na imagem baixada. A fonte é do painel (IDH,
@@ -34,8 +34,7 @@ export const useSvgChart = () => {
 };
 
 /**
- * Menu ⋯ de um card do painel. Com `chart` (um `useSvgChart()` ou o motor do
- * mapa), oferece baixar a imagem;
+ * Menu ⋯ de um card do painel. Com `chart`, oferece baixar a imagem;
  * os cards em HTML (ranking, barras de sexo e cor) só compartilham e abrem o
  * catálogo. `catalog={false}`: o dado não tem página no catálogo (Gini, no
  * protótipo).
@@ -48,7 +47,7 @@ export const ProtoCardMenu = ({
   catalog = true,
 }: {
   title: string;
-  chart?: { getSource: () => ChartImageSource | null };
+  chart?: ReturnType<typeof useSvgChart>;
   catalog?: boolean;
 }) => {
   const context = useContext(ProtoCardMenuContext);

@@ -17,13 +17,17 @@ describe("resolvePibCardStates", () => {
     });
   });
 
-  it("leaves the map alone when a state is clicked", () => {
-    expect(resolve({ ...CURRENT, uf: ["PE"] })).toEqual({
+  it("leaves the map alone when only the municipality changes", () => {
+    expect(resolve({ ...CURRENT, mun: ["2611606"] })).toEqual({
       bigNumbers: "stale",
       evolution: "stale",
       map: "ok",
       sectors: "stale",
     });
+  });
+
+  it("dims the map when the state changes, since it zooms to it", () => {
+    expect(resolve({ ...CURRENT, uf: ["PE"] }).map).toBe("stale");
   });
 
   it("leaves the yearly series alone when the year changes", () => {

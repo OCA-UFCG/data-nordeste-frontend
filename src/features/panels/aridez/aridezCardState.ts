@@ -6,9 +6,8 @@ import {
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 
 // De quais filtros o dado de cada card depende (as consultas de
-// `loadAridezPanel`). Como no PIB, o mapa usa os municípios da área inteira
-// (`data.mapa`) e ignora Estado e Município: o zoom ou o clique não o esmaece
-// nem o desmonta. Só erro e nova tentativa o trocam pelo esqueleto.
+// `loadAridezPanel`). Como no PIB, o mapa soma a área inteira e ignora Estado
+// e Município: clicar num estado não o esmaece.
 const ARIDEZ_CARD_DEPENDENCIES = {
   bigNumbers: ["area", "uf", "mun", "ano"],
   map: ["area", "ano"],

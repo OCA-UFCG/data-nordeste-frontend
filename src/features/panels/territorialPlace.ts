@@ -31,6 +31,19 @@ export const describeTerritorialPlace = (
     .filter((part): part is string => part !== null)
     .join(" · ");
 
+/**
+ * Lugar de um mapa que segue só área e estados (sem os municípios, que ficam
+ * em destaque): "Semiárido · Pernambuco".
+ *
+ * @example describeTerritorialAreaPlace(selection) // "Semiárido · Pernambuco"
+ */
+export const describeTerritorialAreaPlace = (
+  selection: TerritorialSelection,
+): string =>
+  [areaLabel(selection.filters.area), describeSelectedUfs(selection)]
+    .filter((part): part is string => part !== null)
+    .join(" · ");
+
 const listOrAll = (names: string[]): string =>
   names.length ? names.join(", ") : "Todos";
 
@@ -50,6 +63,52 @@ export const describeTerritorialShareChips = (
   `Estado: ${listOrAll(selectedUfNames(selection))}`,
   `Município: ${listOrAll(selectedMunicipioNames(selection))}`,
 ];
+
+/**
+ * Clicar num estado no mapa: entra ou sai da lista de UFs, sem passar de
+ * `maxPlaces` (o limite que o select de Estado e `parseTerritorialFilters` já
+ * respeitam). O município some, porque pode não ser do novo conjunto.
+ *
+ * @example toggleTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB"] }, "PE", 9).uf // ["PB", "PE"]
+ */
+export const toggleTerritorialUf = (
+  filters: TerritorialFilters,
+  uf: string,
+  maxPlaces: number,
+): TerritorialFilters => {
+  const current = filters.uf ?? [];
+
+  if (current.includes(uf)) {
+    const next = current.filter((item) => item !== uf);
+
+    return { ...filters, uf: next.length ? next : undefined, mun: undefined };
+  }
+
+  // No limite, fica só o estado clicado, como no mapa do IDH: o
+  // clique nunca parece quebrado, e com `maxPlaces = 1` vira o filtro de valor
+  // único. Sem isso, o servidor cortava o excesso em silêncio (revisão da PR #400).
+  if (current.length >= maxPlaces) return selectOnlyTerritorialUf(filters, uf);
+
+  const next = [...current, uf];
+
+  return { ...filters, uf: next, mun: undefined };
+};
+
+/**
+ * Clicar num estado no mapa (IDH e Aridez): o filtro fica só com ele. Clicar de
+ * novo no único escolhido limpa o filtro. O município some,
+ * porque pode não ser do estado novo.
+ *
+ * @example selectOnlyTerritorialUf({ ano: 2022, area: "nordeste", uf: ["PB", "PE"] }, "PE").uf // ["PE"]
+ */
+export const selectOnlyTerritorialUf = (
+  filters: TerritorialFilters,
+  uf: string,
+): TerritorialFilters => {
+  const alreadyOnly = filters.uf?.length === 1 && filters.uf[0] === uf;
+
+  return { ...filters, uf: alreadyOnly ? undefined : [uf], mun: undefined };
+};
 
 /**
  * Os filtros estão no padrão (Nordeste, último ano, sem estado nem município)?
