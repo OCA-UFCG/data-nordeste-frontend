@@ -51,9 +51,9 @@ describe("usePanelMapFilters", () => {
 });
 
 describe("panelMapImageSource", () => {
-  it("appends the Esri basemap credit to the card source", () => {
+  it("appends the OpenStreetMap basemap credit to the card source", () => {
     expect(panelMapImageSource("Fonte: IBGE")).toBe(
-      "Fonte: IBGE · Basemap: Esri",
+      "Fonte: IBGE · Basemap: © OpenStreetMap contributors",
     );
   });
 });

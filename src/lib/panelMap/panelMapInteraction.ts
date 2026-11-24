@@ -32,8 +32,8 @@ type FeatureId = FeatureIdentifier["id"];
 // moveend) e erra quando um fitTo interrompe outro.
 const FIT_EVENT_DATA = { panelMapFit: true };
 
-// Teto do enquadramento: um município pequeno não enche a tela inteira, e o
-// raster do Oceano só tem dado até o 10 (ver `basemaps.ts`).
+// Teto do enquadramento: um município pequeno não enche a tela inteira e
+// ficaria ampliado demais.
 const FIT_MAX_ZOOM = 10;
 
 // IMPORTANT: só gesto do usuário vira filtro. Arrastar, roda do mouse, toque,

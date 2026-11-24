@@ -138,7 +138,7 @@ describe("PibMapCard", () => {
     );
   });
 
-  it("credits the Esri basemap in the downloaded image source", async () => {
+  it("credits the OpenStreetMap basemap in the downloaded image source", async () => {
     renderCard();
     fireEvent.click(
       screen.getByRole("button", {
@@ -150,7 +150,9 @@ describe("PibMapCard", () => {
     );
 
     expect(
-      await screen.findByText(`${PIB_CARD_SOURCE} · Basemap: Esri`),
+      await screen.findByText(
+        `${PIB_CARD_SOURCE} · Basemap: © OpenStreetMap contributors`,
+      ),
     ).toBeInTheDocument();
   });
 });

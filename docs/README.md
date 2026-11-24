@@ -332,9 +332,8 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   two fingers on touch, prompt in Portuguese) so it does not hijack the page
   scroll; the fullscreen `PanelMap` keeps normal gestures (`cooperative`
   prop). Double-click zoom is off, because it interrupted the fit of the
-  click. `fitTo` stops at zoom 10, and the Ocean basemap source has
-  `maxzoom: 10` (MapLibre overzooms it instead of fetching the "Map data not
-  yet available" tiles).
+  click. `fitTo` stops at zoom 10, so a small municipality is not zoomed in
+  too far.
 - **Veil:** grey (`VEIL_COLOR`) only from the state level: states outside the
   chosen ones and, at municipality level, the municipalities of those states
   that are not chosen (`veilFilters`, a layer filter). At area level there is
@@ -355,12 +354,17 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   replaced, not duplicated, when run again) and from there to the PDF for the
   data owner. Final PDFs go to
   `Documentacao-OCA/data-nordeste/frontend/mapas-paineis-problemas-dados-<data>.pdf`.
-- **Basemaps:** Esri World Imagery ("Satélite") and Esri World Ocean Base
-  ("Oceano"), both with CORS open. The downloaded image credits the basemap
-  active in the card (`usePanelMapCard` + `panelMapImageSource`: "Esri" for
-  the Ocean, "Esri, Maxar, Earthstar Geographics" for the satellite); the
-  fullscreen footer shows the default (Ocean) credit. The aridez raster has a decade selector (1990, 2000,
-  2010, 2020).
+- **Basemaps:** Esri World Imagery ("Satélite") and the standard
+  OpenStreetMap raster tiles ("Oceano": white land, blue ocean;
+  `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, tiles up to zoom 19), both
+  with CORS open. The downloaded image credits the basemap active in the card
+  (`usePanelMapCard` + `panelMapImageSource`: "© OpenStreetMap contributors"
+  for the Ocean, "Esri, Maxar, Earthstar Geographics" for the satellite); the
+  fullscreen footer shows the default (Ocean) credit. The OpenStreetMap tile
+  server is a shared volunteer service under the
+  [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/):
+  fair use only, and heavy traffic would need another tile provider. The
+  aridez raster has a decade selector (1990, 2000, 2010, 2020).
 - **Removed by this swap** (see each panel section): `IdhMapLegend`,
   `buildIdhMapProps`, `buildIdhLegend`; `pibStates.ts` (`PIB_STATE_BINS`,
   `describeStatesOffMap`), `buildPibMapProps` and the card

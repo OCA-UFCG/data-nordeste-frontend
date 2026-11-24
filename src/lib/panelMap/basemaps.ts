@@ -6,12 +6,14 @@ export type Basemap = {
   attribution: string;
 
   // Último nível com ladrilhos de verdade; acima dele o MapLibre amplia esse
-  // nível (overzoom). Sem isto, o Oceano mostra "Map data not yet available".
+  // nível (overzoom). Sem isto, o MapLibre mostra "Map data not yet available".
   maxzoom?: number;
 };
 
-// Ambos os serviços respondem com `Access-Control-Allow-Origin: *` — sem isso o
-// canvas fica "tainted" e o PNG do mapa (toDataURL) falha.
+// Os dois serviços (ESRI e tile.openstreetmap.org) respondem com
+// `Access-Control-Allow-Origin: *` — sem isso o canvas fica "tainted" e o PNG do
+// mapa (toDataURL) falha. O Oceano é o raster padrão do OpenStreetMap (terra
+// branca, oceano azul); o uso segue a política de ladrilhos da OSMF.
 export const BASEMAPS: Record<BasemapKind, Basemap> = {
   satelite: {
     label: "Satélite",
@@ -21,10 +23,9 @@ export const BASEMAPS: Record<BasemapKind, Basemap> = {
   },
   oceano: {
     label: "Oceano",
-    tiles:
-      "https://services.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Esri",
-    maxzoom: 10,
+    tiles: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: "© OpenStreetMap contributors",
+    maxzoom: 19,
   },
 };
 

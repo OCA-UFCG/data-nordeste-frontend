@@ -146,7 +146,7 @@ describe("IdhOverview", () => {
     );
   });
 
-  it("credits the Esri basemap in the downloaded image source", async () => {
+  it("credits the OpenStreetMap basemap in the downloaded image source", async () => {
     render(overview(allIdhCards("ok")));
     fireEvent.click(
       screen.getByRole("button", {
@@ -158,7 +158,9 @@ describe("IdhOverview", () => {
     );
 
     expect(
-      await screen.findByText(`${IDH_CARD_SOURCE} · Basemap: Esri`),
+      await screen.findByText(
+        `${IDH_CARD_SOURCE} · Basemap: © OpenStreetMap contributors`,
+      ),
     ).toBeInTheDocument();
   });
 

@@ -19,7 +19,8 @@ raster ou recorte por zoom. `maplibre-gl` já está no `package.json`, sem uso.
 1. Um componente de mapa compartilhado (MapLibre) no lugar do card de mapa de
    cada um dos três painéis; cada painel mostra o próprio indicador.
 2. Basemap selecionável: **Satélite** (ESRI World Imagery) ou **Oceano** (branco
-   com oceano azul — ESRI World Ocean Base, o mesmo dos `.qgz`).
+   com oceano azul — tiles raster padrão do OpenStreetMap, decidido pelo
+   usuário em 24/11/2026).
 3. Camada vetorial do indicador do painel (PIB, IDH ou Demografia), colorida pelas
    classes do `.qgz`, no ano do filtro.
 4. Camada raster **Índice de aridez**, liga/desliga, com seletor de década
@@ -172,8 +173,8 @@ Funções puras (parse do `.qgs`, montagem do manifest, checagens) testadas com
   `PanelMapTooltip.tsx`.
 - `maplibreAdapter.ts`: a única peça que importa `maplibre-gl` (interface fina
   do projeto, como `src/lib` faz com SDKs).
-- Basemaps: ESRI World Imagery e ESRI World Ocean Base como fontes raster XYZ, com
-  atribuição.
+- Basemaps: ESRI World Imagery e OpenStreetMap (tiles padrão) como fontes raster
+  XYZ, com atribuição.
 
 ### 5. Comportamento do recorte
 
@@ -274,8 +275,8 @@ geometria, anos faltando, divergência entre classes e rótulos).
   pública por link); o `drive_manifest.json` é escrito à mão com eles. Sem API do
   Drive.
 - **Baixar imagem** (minha decisão): fica, só em PNG: `preserveDrawingBuffer` no
-  MapLibre e `map.getCanvas().toDataURL()`, com a atribuição ESRI desenhada no
-  rodapé da imagem. Se os tiles ESRI não permitirem CORS, o item fica desabilitado
+  MapLibre e `map.getCanvas().toDataURL()`, com a atribuição do basemap ativo
+  desenhada no rodapé da imagem. Se os tiles não permitirem CORS, o item fica desabilitado
   com explicação (como o Gini).
 - **Ranking do tooltip** (minha decisão): posição entre os municípios da área de
   interesse selecionada (IDH: entre os 9 estados), no ano do filtro — estável

@@ -174,7 +174,7 @@ describe("PerfilPorteMapCard", () => {
     expect(screen.getByText("João Pessoa (PB)")).toBeInTheDocument();
   });
 
-  it("credits the Esri basemap in the downloaded image source", async () => {
+  it("credits the OpenStreetMap basemap in the downloaded image source", async () => {
     renderCard();
     fireEvent.click(
       screen.getByRole("button", { name: "Mais opções: Porte dos municípios" }),
@@ -184,7 +184,9 @@ describe("PerfilPorteMapCard", () => {
     );
 
     expect(
-      await screen.findByText(`${PERFIL_CARD_SOURCE} · Basemap: Esri`),
+      await screen.findByText(
+        `${PERFIL_CARD_SOURCE} · Basemap: © OpenStreetMap contributors`,
+      ),
     ).toBeInTheDocument();
   });
 });

@@ -7,10 +7,12 @@ import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
 const SOURCE = "Fonte: IBGE · Data Nordeste";
 
 describe("usePanelMapCard", () => {
-  it("credita o Esri com o basemap padrão (Oceano)", () => {
+  it("credita o OpenStreetMap com o basemap padrão (Oceano)", () => {
     const { result } = renderHook(() => usePanelMapCard(SOURCE));
 
-    expect(result.current.imageSource).toBe(`${SOURCE} · Basemap: Esri`);
+    expect(result.current.imageSource).toBe(
+      `${SOURCE} · Basemap: © OpenStreetMap contributors`,
+    );
   });
 
   it("com o satélite, a imagem credita Esri, Maxar e Earthstar", () => {
@@ -30,7 +32,9 @@ describe("usePanelMapCard", () => {
     act(() => result.current.mapBinding.onBasemapChange("satelite"));
     act(() => result.current.mapBinding.onEngine(null));
 
-    expect(result.current.imageSource).toBe(`${SOURCE} · Basemap: Esri`);
+    expect(result.current.imageSource).toBe(
+      `${SOURCE} · Basemap: © OpenStreetMap contributors`,
+    );
   });
 
   it("guarda o motor do mapa do card e pede gestos cooperativos", () => {

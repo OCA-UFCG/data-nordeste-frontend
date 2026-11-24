@@ -80,8 +80,7 @@ describe("trackMoves", () => {
     });
   });
 
-  // Acima do teto o raster do Oceano não tem dado e um município pequeno
-  // ficaria ampliado demais.
+  // Um município pequeno ficaria ampliado demais.
   it("o fitTo não passa do zoom 10", () => {
     const { map, tracker } = trackedMoves();
 

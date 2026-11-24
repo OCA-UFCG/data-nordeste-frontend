@@ -7,7 +7,8 @@ export const PANEL_MAP_HINT = "Aproxime o mapa ou clique para filtrar o painel";
 
 /**
  * Fonte da imagem baixada do mapa: a fonte do dado do painel e o crédito do
- * basemap que aparece nela (o satélite credita também Maxar e Earthstar). Sem
+ * basemap que aparece nela (o Oceano credita o OpenStreetMap; o satélite, Esri,
+ * Maxar e Earthstar). Sem
  * `basemap`, o crédito do padrão (rodapé da tela cheia).
  *
  * @example panelMapImageSource("Fonte: IBGE · Data Nordeste", "satelite") // "Fonte: IBGE · Data Nordeste · Basemap: Esri, Maxar, Earthstar Geographics"

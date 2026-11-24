@@ -45,10 +45,15 @@ describe("panelMapOptions", () => {
     });
   });
 
-  it("o Oceano amplia o nível 10 em vez de pedir ladrilhos que não existem", () => {
+  it("o Oceano usa os ladrilhos do OpenStreetMap, que vão até o nível 19", () => {
     const options = panelMapOptions(container, "oceano", true);
+    const oceano = rasterSource(options, basemapLayerId("oceano"));
 
-    expect(rasterSource(options, basemapLayerId("oceano")).maxzoom).toBe(10);
+    expect(oceano.tiles).toEqual([
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    ]);
+    expect(oceano.attribution).toBe("© OpenStreetMap contributors");
+    expect(oceano.maxzoom).toBe(19);
     expect(
       rasterSource(options, basemapLayerId("satelite")).maxzoom,
     ).toBeUndefined();
