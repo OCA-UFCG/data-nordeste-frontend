@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { MUNICIPALITY_ZOOM, STATE_ZOOM } from "@/features/panelMap/mapRecorte";
+import {
+  MUNICIPAL_LINES_ZOOM,
+  MUNICIPALITY_ZOOM,
+  STATE_LINES_ZOOM,
+  STATE_ZOOM,
+} from "@/features/panelMap/mapRecorte";
 import { PANEL_MAP_LAYER, panelMapStyle } from "@/lib/panelMap/panelMapStyle";
 
 // minzoom de cada camada acima dos basemaps (undefined = qualquer zoom).
@@ -24,17 +29,17 @@ const ALWAYS_VISIBLE = [
 ];
 
 describe("limites conforme o zoom", () => {
-  it("com municípios: estados a partir do nível estado, municípios do nível município", () => {
+  it("com municípios: estados e municípios um nível antes do filtro", () => {
     const zooms = minZooms(true);
 
-    expect(zooms[PANEL_MAP_LAYER.stateOutline]).toBe(STATE_ZOOM);
-    expect(zooms[PANEL_MAP_LAYER.featureOutline]).toBe(MUNICIPALITY_ZOOM);
+    expect(zooms[PANEL_MAP_LAYER.stateOutline]).toBe(STATE_LINES_ZOOM);
+    expect(zooms[PANEL_MAP_LAYER.featureOutline]).toBe(MUNICIPAL_LINES_ZOOM);
   });
 
   it("com feições de estado (IDH, Estados): o contorno delas aparece em qualquer zoom", () => {
     const zooms = minZooms(false);
 
-    expect(zooms[PANEL_MAP_LAYER.stateOutline]).toBe(STATE_ZOOM);
+    expect(zooms[PANEL_MAP_LAYER.stateOutline]).toBe(STATE_LINES_ZOOM);
     expect(zooms[PANEL_MAP_LAYER.featureOutline]).toBeUndefined();
   });
 
@@ -46,7 +51,8 @@ describe("limites conforme o zoom", () => {
     });
   });
 
-  it("os limiares são os do recorte pelo zoom", () => {
+  it("os limites aparecem um nível antes dos limiares do filtro", () => {
     expect([STATE_ZOOM, MUNICIPALITY_ZOOM]).toEqual([6.5, 8.5]);
+    expect([STATE_LINES_ZOOM, MUNICIPAL_LINES_ZOOM]).toEqual([5.5, 7.5]);
   });
 });

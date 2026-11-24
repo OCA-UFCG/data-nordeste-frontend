@@ -19,7 +19,10 @@ import {
   VEIL_COLOR,
   VEIL_OPACITY,
 } from "@/features/panelMap/mapLayers";
-import { MUNICIPALITY_ZOOM, STATE_ZOOM } from "@/features/panelMap/mapRecorte";
+import {
+  MUNICIPAL_LINES_ZOOM,
+  STATE_LINES_ZOOM,
+} from "@/features/panelMap/mapRecorte";
 
 export const PANEL_MAP_SOURCE = {
   features: "features",
@@ -138,9 +141,10 @@ function classMutedLayer(): LayerSpecification {
   };
 }
 
-// Limites conforme o zoom, nos mesmos limiares do recorte (mapRecorte): a
-// área de interesse sempre; os estados a partir do nível estado; os
-// municípios a partir do nível município. O preenchimento das classes, o
+// Limites conforme o zoom, um nível antes dos limiares do recorte
+// (mapRecorte): a área de interesse sempre; os estados a partir de
+// STATE_LINES_ZOOM; os municípios a partir de MUNICIPAL_LINES_ZOOM. Assim a
+// divisa já aparece antes de o zoom filtrar por ela. O preenchimento das classes, o
 // véu e a seleção aparecem em qualquer zoom. INTENTIONAL: com feições de
 // estado (IDH, vista Estados), o contorno delas aparece em qualquer zoom;
 // sem ele a malha rosa da vista Estados vira uma mancha só (decisão do
@@ -160,14 +164,14 @@ function featureOutlineLayer(municipal: boolean): LayerSpecification {
     UNPAINTED_LINE,
   );
 
-  return municipal ? withMinZoom(layer, MUNICIPALITY_ZOOM) : layer;
+  return municipal ? withMinZoom(layer, MUNICIPAL_LINES_ZOOM) : layer;
 }
 
 function stateOutlineLayer(): LayerSpecification {
   const { states } = PANEL_MAP_SOURCE;
   const layer = lineLayer(PANEL_MAP_LAYER.stateOutline, states, UNPAINTED_LINE);
 
-  return withMinZoom(layer, STATE_ZOOM);
+  return withMinZoom(layer, STATE_LINES_ZOOM);
 }
 
 // WHY o hover não tem minzoom: não é limite, é o sinal de qual feição o

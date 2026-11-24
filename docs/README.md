@@ -310,15 +310,18 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   there is no feature, and the recorte stays as it is, except when zooming out
   to the area level (below the anchor minus the tolerance): that clears the
   recorte without a centre feature, since the empty recorte always round-trips.
-- **Boundaries by zoom** (`panelMapStyle.ts`, layer `minzoom` from the same
-  `STATE_ZOOM` / `MUNICIPALITY_ZOOM`): the map opens on the area of interest
-  with only its outline; state limits appear from the state level and
-  municipal limits from the municipality level. The class fill, veil,
+- **Boundaries by zoom** (`panelMapStyle.ts`, layer `minzoom` from
+  `STATE_LINES_ZOOM` = `STATE_ZOOM` - 1 and `MUNICIPAL_LINES_ZOOM` =
+  `MUNICIPALITY_ZOOM` - 1): the map opens on the area of interest with only
+  its outline; state limits appear one zoom level before the state filter
+  (5.5) and municipal limits one level before the municipality filter (7.5),
+  so the limits show before the zoom filters by them (the filter thresholds
+  themselves are unchanged). The class fill, veil,
   selection outline and hover outline show at any zoom (the hover is not a
   boundary: it marks the feature the tooltip names). With state features
   (IDH, Estados view) their own outline has no `minzoom`: without it the
   uniform pink Estados mesh reads as one blob at the area zoom (the separate
-  state-outline layer still starts at `STATE_ZOOM`). In the Estados view the
+  state-outline layer still starts at `STATE_LINES_ZOOM`). In the Estados view the
   zoom also resolves from the drawn recorte (`recorteForLevel`), so a
   município chosen in the bar does not pin the level at municipality. The engine's
   `municipal` flag picks the variant when the style is built.
