@@ -4,11 +4,15 @@ import {
   NO_DATA_COLOR,
   classColorExpression,
   classForValue,
+  featurePaint,
   indicatorFillColor,
   TRANSPARENT_FILL,
   yearField,
 } from "@/features/panelMap/qgisPaint";
-import type { QgisClass } from "@/features/panelMap/geodataTypes";
+import type {
+  GeodataStyles,
+  QgisClass,
+} from "@/features/panelMap/geodataTypes";
 
 // Classes de styles.json como vieram do qgz (PIB: 7 classes).
 const PIB_CLASSES: QgisClass[] = [
@@ -175,5 +179,33 @@ describe("indicatorFillColor", () => {
 
   it("fica transparente com o raster como camada principal", () => {
     expect(indicatorFillColor(classes, 2023, true)).toEqual(TRANSPARENT_FILL);
+  });
+});
+
+describe("featurePaint", () => {
+  const classes: QgisClass[] = [
+    { lower: 0, upper: 10, label: "Baixo", color: "#fff" },
+  ];
+  const pibOutline = { color: "#111111", widthPx: 0.5 };
+  const stateOutline = { color: "#666666", widthPx: 0.57 };
+  const pib = { attribute: "pib_2023", classes, outline: pibOutline };
+  const styles: GeodataStyles = {
+    indicators: { pib, demografia: pib, idh: pib },
+    stateOutline,
+    aridez: [],
+  };
+
+  it("pinta as classes do ano com o contorno do qgz do indicador", () => {
+    expect(featurePaint(styles, "pib", 2023, false)).toEqual({
+      color: classColorExpression(classes, 2023),
+      outline: pibOutline,
+    });
+  });
+
+  it("a aridez fica transparente com o contorno dos estados", () => {
+    expect(featurePaint(styles, "aridez", 2021, true)).toEqual({
+      color: TRANSPARENT_FILL,
+      outline: stateOutline,
+    });
   });
 });

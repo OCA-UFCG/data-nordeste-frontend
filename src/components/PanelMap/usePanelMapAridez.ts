@@ -3,15 +3,12 @@
 import { useEffect } from "react";
 
 import { GEODATA_BASE_URL } from "@/components/PanelMap/useGeodata";
-import { aridezRasterYear } from "@/features/panelMap/aridezRaster";
+import {
+  aridezRasterYear,
+  type PanelMapAridez,
+} from "@/features/panelMap/aridezRaster";
 import type { GeodataManifest } from "@/features/panelMap/geodataTypes";
 import type { AridezOverlay, PanelMapEngine } from "@/lib/panelMapEngine";
-
-/**
- * Raster do índice de aridez no mapa: `"off"` não mostra; `"base"` mostra o
- * da década do ano do painel, sempre ligado, como camada principal.
- */
-export type PanelMapAridez = "off" | "base";
 
 /** Raster da década. Ex.: `aridezOverlay(manifest, 2020).url` → `"/api/geodata/raster/aridez_2020.png"`. */
 export function aridezOverlay(

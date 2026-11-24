@@ -3,6 +3,7 @@
 import type { FeatureCollection } from "geojson";
 import { useEffect, useState } from "react";
 
+import { featureFileFor } from "@/features/panelMap/geodataFiles";
 import type {
   GeodataManifest,
   GeodataStyles,
@@ -53,7 +54,7 @@ export async function loadGeodata(
     fetchGeodataJson<GeodataManifest>(fetchGeodata, "manifest.json"),
     fetchGeodataJson<FeatureCollection>(
       fetchGeodata,
-      `vector/${indicator}.geojson`,
+      featureFileFor(indicator),
     ),
     fetchGeodataJson<FeatureCollection>(fetchGeodata, "vector/estados.geojson"),
     fetchGeodataJson<FeatureCollection>(fetchGeodata, "vector/areas.geojson"),

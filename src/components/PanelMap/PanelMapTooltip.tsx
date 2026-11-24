@@ -7,6 +7,8 @@ import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
 import { featureProps, featuresInArea } from "@/features/panelMap/mapSelection";
 import {
   describeMapFeature,
+  featureValueReader,
+  type FeatureValueReader,
   type MapTooltipText,
   rankWithinArea,
 } from "@/features/panelMap/mapTooltip";
@@ -19,6 +21,9 @@ export type PanelMapTooltipArgs = {
   indicator: PanelIndicator;
   area: TerritorialArea;
   ano: number;
+
+  // Valores por `code` vindos do painel (aridez); sem eles, o `v<ano>` do GeoJSON.
+  values?: ReadonlyMap<string, number>;
   formatValue: (value: number) => string;
 };
 
@@ -27,20 +32,25 @@ export type PanelMapTooltipState = MapTooltipText & { x: number; y: number };
 // 12 px abaixo e à direita do ponteiro.
 const TOOLTIP_OFFSET_PX = 12;
 
-// PERF: o ranking percorre ~1.800 municípios; só muda com feições, área e ano.
-function useAreaRanks(args: PanelMapTooltipArgs): Map<string, number> {
-  const { features, indicator, area, ano } = args;
+// PERF: o ranking percorre ~1.800 municípios; só muda com feições, área e
+// valores (o leitor muda com o ano ou os `values`).
+function useAreaRanks(
+  args: PanelMapTooltipArgs,
+  readValue: FeatureValueReader,
+): Map<string, number> {
+  const { features, indicator, area } = args;
 
   return useMemo(() => {
     const props = featureProps(features);
 
-    return rankWithinArea(featuresInArea(props, indicator, area), ano);
-  }, [features, indicator, area, ano]);
+    return rankWithinArea(featuresInArea(props, indicator, area), readValue);
+  }, [features, indicator, area, readValue]);
 }
 
 /**
  * Texto e posição do tooltip da feição sob o ponteiro, ou `null` fora delas.
- * O ranking é entre as feições da área de interesse no ano (IDH: os 9 estados).
+ * O ranking é entre as feições da área de interesse no ano (IDH: os 9 estados);
+ * com `values`, os números são os do painel, por `code`.
  *
  * @example const tooltip = usePanelMapTooltip({ engine, features, indicator: "pib", area, ano, formatValue });
  */
@@ -48,14 +58,18 @@ export function usePanelMapTooltip(
   args: PanelMapTooltipArgs,
 ): PanelMapTooltipState | null {
   const [hover, setHover] = useState<PanelMapHover | null>(null);
-  const ranks = useAreaRanks(args);
-  const { engine, ano, formatValue } = args;
+  const { engine, ano, values, formatValue } = args;
+  const readValue = useMemo(
+    () => featureValueReader(ano, values),
+    [ano, values],
+  );
+  const ranks = useAreaRanks(args, readValue);
 
   useEffect(() => engine?.onHover(setHover), [engine]);
   if (!hover) return null;
   const text = describeMapFeature(
     hover.props,
-    ano,
+    readValue,
     ranks,
     ranks.size,
     formatValue,

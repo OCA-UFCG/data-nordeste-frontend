@@ -1,4 +1,11 @@
-export type PanelIndicator = "pib" | "demografia" | "idh";
+/** Indicadores com classes graduadas no styles.json e anos no manifest. */
+export type ChoroplethIndicator = "pib" | "demografia" | "idh";
+
+/**
+ * Indicador do mapa. A aridez não tem classes por feição: o raster da década
+ * é a camada principal e as feições são a malha municipal (`municipios`).
+ */
+export type PanelIndicator = ChoroplethIndicator | "aridez";
 
 /** Classe graduada do qgz, como veio do styles.json (limites podem estar invertidos). */
 export type QgisClass = {
@@ -16,15 +23,22 @@ export type IndicatorStyle = {
   outline: QgisOutline;
 };
 
+/** Classe da paleta do raster da aridez (`indice_aridez.qgz`). */
+export type AridezPaletteEntry = {
+  value: number;
+  color: string;
+  label: string;
+};
+
 export type GeodataStyles = {
-  indicators: Record<PanelIndicator, IndicatorStyle>;
+  indicators: Record<ChoroplethIndicator, IndicatorStyle>;
   stateOutline: QgisOutline;
-  aridez: { value: number; color: string; label: string }[];
+  aridez: AridezPaletteEntry[];
 };
 
 export type GeodataManifest = {
   generatedAt: string;
-  years: Record<PanelIndicator, number[]>;
+  years: Record<ChoroplethIndicator, number[]>;
   aridez: { years: number[]; bounds: [[number, number], [number, number]] };
 };
 

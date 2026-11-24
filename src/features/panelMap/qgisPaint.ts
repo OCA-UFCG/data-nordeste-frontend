@@ -1,6 +1,11 @@
 import type { ExpressionSpecification } from "maplibre-gl";
 
-import type { QgisClass } from "@/features/panelMap/geodataTypes";
+import type {
+  GeodataStyles,
+  PanelIndicator,
+  QgisClass,
+  QgisOutline,
+} from "@/features/panelMap/geodataTypes";
 
 export const NO_DATA_COLOR = "#d9d9d9";
 
@@ -107,4 +112,32 @@ export function indicatorFillColor(
   rasterBase: boolean,
 ): ExpressionSpecification {
   return rasterBase ? TRANSPARENT_FILL : classColorExpression(classes, ano);
+}
+
+export type FeaturePaint = {
+  color: ExpressionSpecification;
+  outline: QgisOutline;
+};
+
+/**
+ * Preenchimento e contorno das feições do indicador. A aridez não tem `.qgz`
+ * de feição: fica transparente sobre o raster, com o contorno dos estados
+ * (mesma cor e largura dos municipais nos outros `.qgz`).
+ * Ex.: `featurePaint(styles, "aridez", 2021, true).color` → `TRANSPARENT_FILL`.
+ */
+export function featurePaint(
+  styles: GeodataStyles,
+  indicator: PanelIndicator,
+  ano: number,
+  rasterBase: boolean,
+): FeaturePaint {
+  if (indicator === "aridez") {
+    return { color: TRANSPARENT_FILL, outline: styles.stateOutline };
+  }
+  const style = styles.indicators[indicator];
+
+  return {
+    color: indicatorFillColor(style.classes, ano, rasterBase),
+    outline: style.outline,
+  };
 }

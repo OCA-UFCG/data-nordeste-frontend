@@ -142,6 +142,23 @@ const PIB_FIXTURE = collection([
   square(-34.9, -7.2, 0.1, JOAO_PESSOA),
 ]);
 
+// Malha municipal sem valores (vector/municipios.geojson): mesmas feições, sem `v<ano>`.
+function withoutValues({
+  code,
+  name,
+  uf,
+  nordeste,
+  semiarido,
+}: MapFeatureProps) {
+  return { code, name, uf, nordeste, semiarido };
+}
+
+const MUNICIPIOS_FIXTURE = collection([
+  square(-35, -8.1, 0.1, withoutValues(RECIFE)),
+  square(-40.5, -9.4, 0.3, withoutValues(PETROLINA)),
+  square(-34.9, -7.2, 0.1, withoutValues(JOAO_PESSOA)),
+]);
+
 const IDH_FIXTURE = collection([
   square(-41, -9.5, 6, PERNAMBUCO),
   square(-38.8, -8.3, 4, PARAIBA),
@@ -163,6 +180,7 @@ const GEODATA_FIXTURES: Record<string, object> = {
   "/api/geodata/vector/pib.geojson": PIB_FIXTURE,
   "/api/geodata/vector/demografia.geojson": PIB_FIXTURE,
   "/api/geodata/vector/idh.geojson": IDH_FIXTURE,
+  "/api/geodata/vector/municipios.geojson": MUNICIPIOS_FIXTURE,
   "/api/geodata/vector/estados.geojson": STATES_FIXTURE,
   "/api/geodata/vector/areas.geojson": AREAS_FIXTURE,
 };

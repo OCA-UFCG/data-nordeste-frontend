@@ -11,6 +11,9 @@ export type MapTooltipText = {
   rank: string | null;
 };
 
+/** Lê o número de uma feição, ou `null` sem dado. */
+export type FeatureValueReader = (feature: MapFeatureProps) => number | null;
+
 /** Valor da feição no ano, ou `null` quando ausente ou não numérico. */
 export function valueOf(feature: MapFeatureProps, ano: number): number | null {
   const value = feature[yearField(ano) as `v${number}`];
@@ -19,15 +22,29 @@ export function valueOf(feature: MapFeatureProps, ano: number): number | null {
 }
 
 /**
- * Ranking só entre as feições com número no ano (a área de interesse).
+ * De onde vem o número da feição: dos `values` do painel por `code` quando
+ * vierem (a aridez, cuja malha não tem valores), senão do `v<ano>` do GeoJSON.
+ * Ex.: `featureValueReader(2023)(recife)` → `recife.v2023`.
+ */
+export function featureValueReader(
+  ano: number,
+  values?: ReadonlyMap<string, number>,
+): FeatureValueReader {
+  if (values) return (feature) => values.get(feature.code) ?? null;
+
+  return (feature) => valueOf(feature, ano);
+}
+
+/**
+ * Ranking só entre as feições com número (a área de interesse).
  * Ex.: valores 5, null, 9 → `Map { "<9>" => 1, "<5>" => 2 }`.
  */
 export function rankWithinArea(
   features: MapFeatureProps[],
-  ano: number,
+  readValue: FeatureValueReader,
 ): Map<string, number> {
   const regions = features.flatMap((feature) => {
-    const value = valueOf(feature, ano);
+    const value = readValue(feature);
 
     return value === null ? [] : [{ code: feature.code, value }];
   });
@@ -46,13 +63,13 @@ function titleOf({ name, uf }: MapFeatureProps): string {
  */
 export function describeMapFeature(
   feature: MapFeatureProps,
-  ano: number,
+  readValue: FeatureValueReader,
   ranks: Map<string, number>,
   total: number,
   formatValue: (value: number) => string,
 ): MapTooltipText {
   const title = titleOf(feature);
-  const value = valueOf(feature, ano);
+  const value = readValue(feature);
   const position = ranks.get(feature.code);
 
   if (value === null) return { title, value: NO_DATA_LABEL, rank: null };

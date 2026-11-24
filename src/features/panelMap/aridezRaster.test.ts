@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { aridezRasterYear } from "@/features/panelMap/aridezRaster";
+import {
+  aridezModeFor,
+  aridezRasterYear,
+} from "@/features/panelMap/aridezRaster";
 
 const DECADES = [1990, 2000, 2010, 2020];
 
@@ -29,5 +32,21 @@ describe("aridezRasterYear", () => {
   it("antes da primeira década não há raster", () => {
     expect(aridezRasterYear(DECADES, 1989)).toBeNull();
     expect(aridezRasterYear([], 2020)).toBeNull();
+  });
+});
+
+describe("aridezModeFor", () => {
+  it("o mapa da aridez nasce com o raster", () => {
+    expect(aridezModeFor("aridez")).toBe("base");
+  });
+
+  it("os outros mapas nascem sem", () => {
+    expect(aridezModeFor("pib")).toBe("off");
+    expect(aridezModeFor("idh")).toBe("off");
+  });
+
+  it("o modo dito pelo painel vale", () => {
+    expect(aridezModeFor("aridez", "off")).toBe("off");
+    expect(aridezModeFor("demografia", "base")).toBe("base");
   });
 });

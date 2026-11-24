@@ -1,4 +1,5 @@
 import type {
+  AridezPaletteEntry,
   MapFeatureProps,
   QgisClass,
 } from "@/features/panelMap/geodataTypes";
@@ -6,6 +7,9 @@ import { valueOf } from "@/features/panelMap/mapTooltip";
 import { classForValue, NO_DATA_COLOR } from "@/features/panelMap/qgisPaint";
 
 export type ClassCount = { label: string; color: string; count: number };
+
+/** Pílula da legenda; sem `count`, só o rótulo. */
+export type LegendChip = { label: string; color: string; count?: number };
 
 export const NO_DATA_LABEL = "Sem dado";
 
@@ -41,4 +45,19 @@ export function countByClass(
     ...counts,
     { label: NO_DATA_LABEL, color: NO_DATA_COLOR, count: noData },
   ];
+}
+
+/**
+ * Legenda da aridez: as classes da paleta na ordem do styles.json, com a
+ * contagem que o painel mandou por valor da classe (classe ausente → 0). Sem
+ * contagens, as pílulas saem sem número.
+ * Ex.: `paletteChips(palette, new Map([[2, 10]]))` → `[{ label: "Árido", color, count: 10 }, …]`.
+ */
+export function paletteChips(
+  palette: AridezPaletteEntry[],
+  counts?: ReadonlyMap<number, number>,
+): LegendChip[] {
+  return palette.map(({ value, label, color }) =>
+    counts ? { label, color, count: counts.get(value) ?? 0 } : { label, color },
+  );
 }

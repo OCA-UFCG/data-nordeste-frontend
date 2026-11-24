@@ -10,7 +10,6 @@ import {
 } from "react";
 
 import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
-import type { PanelMapAridez } from "@/components/PanelMap/usePanelMapAridez";
 import type {
   MapFeatureProps,
   PanelIndicator,
@@ -27,7 +26,8 @@ import {
   sameRecorte,
 } from "@/features/panelMap/mapRecorte";
 import { recorteForClick } from "@/features/panelMap/mapSelection";
-import { indicatorFillColor } from "@/features/panelMap/qgisPaint";
+import { featurePaint } from "@/features/panelMap/qgisPaint";
+import type { PanelMapAridez } from "@/features/panelMap/aridezRaster";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 import type { PanelMapEngine } from "@/lib/panelMapEngine";
 
@@ -72,12 +72,12 @@ function useSourcesAndPaint(args: PanelMapLayersArgs, sources: FitSources) {
 
   useEffect(() => engine?.setSources(sources), [engine, sources]);
   useEffect(() => {
-    const style = geodata.styles.indicators[indicator];
+    const { styles } = geodata;
+    const paint = featurePaint(styles, indicator, ano, aridez === "base");
 
     engine?.setIndicatorPaint({
-      color: indicatorFillColor(style.classes, ano, aridez === "base"),
-      outline: style.outline,
-      stateOutline: geodata.styles.stateOutline,
+      ...paint,
+      stateOutline: styles.stateOutline,
       area,
     });
   }, [engine, geodata, indicator, ano, area, aridez]);

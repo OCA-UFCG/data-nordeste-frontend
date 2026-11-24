@@ -1,8 +1,11 @@
-import { screen } from "@testing-library/react";
+import { act, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  JOAO_PESSOA,
   MANIFEST_FIXTURE,
+  PETROLINA,
+  RECIFE,
   STYLES_FIXTURE,
 } from "@/components/PanelMap/panelMapFixtures";
 import { renderPanelMap } from "@/components/PanelMap/renderPanelMap";
@@ -73,5 +76,106 @@ describe("PanelMap aridez como camada principal", () => {
     expect(engine.setIndicatorPaint.mock.lastCall?.[0].color).toEqual(
       TRANSPARENT_FILL,
     );
+  });
+});
+
+// % da área suscetível à desertificação por município, como o painel manda.
+const ASD = new Map([
+  [RECIFE.code, 10],
+  [PETROLINA.code, 95],
+]);
+
+const aridezMap = {
+  indicator: "aridez",
+  ano: 2021,
+  values: ASD,
+  formatValue: (value: number) => `${value}%`,
+  label: "Mapa do índice de aridez",
+} as const;
+
+const legendTexts = () =>
+  within(screen.getByRole("list", { name: "Legenda do mapa" }))
+    .getAllByRole("listitem")
+    .map((item) => item.textContent);
+
+describe("PanelMap do painel de aridez", () => {
+  it("usa a malha municipal e o raster da década, sem preenchimento", async () => {
+    const { engine } = await renderPanelMap(aridezMap);
+
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/geodata/vector/municipios.geojson",
+    );
+    expect(engine.setAridez).toHaveBeenLastCalledWith(rasterOf(2020));
+    expect(engine.setIndicatorPaint).toHaveBeenLastCalledWith({
+      color: TRANSPARENT_FILL,
+      outline: STYLES_FIXTURE.stateOutline,
+      stateOutline: STYLES_FIXTURE.stateOutline,
+      area: "nordeste",
+    });
+  });
+
+  it("o tooltip mostra o valor do painel e o ranking por ele", async () => {
+    const { engine } = await renderPanelMap(aridezMap);
+
+    act(() => engine.emitHover({ props: RECIFE, x: 0, y: 0 }));
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("10%");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("2º de 2 no ranking");
+  });
+
+  it("município sem valor do painel fica sem dado e fora do ranking", async () => {
+    const { engine } = await renderPanelMap(aridezMap);
+
+    act(() => engine.emitHover({ props: JOAO_PESSOA, x: 0, y: 0 }));
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("sem dado");
+    expect(screen.getByRole("tooltip")).not.toHaveTextContent("ranking");
+  });
+
+  it("ranqueia só entre os municípios da área", async () => {
+    const { engine } = await renderPanelMap({
+      ...aridezMap,
+      area: "semiarido",
+    });
+
+    act(() => engine.emitHover({ props: PETROLINA, x: 0, y: 0 }));
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 1 no ranking");
+  });
+
+  it("clique num município escolhe o município", async () => {
+    const { engine, props } = await renderPanelMap(aridezMap);
+
+    act(() => engine.emitClick(RECIFE));
+
+    expect(props.onRecorteChange).toHaveBeenCalledWith({
+      uf: ["PE"],
+      mun: ["2611606"],
+    });
+  });
+
+  it("município escolhido ganha véu nos vizinhos e contorno de seleção", async () => {
+    const { engine, rerender } = await renderPanelMap(aridezMap);
+
+    rerender({ recorte: { uf: ["PE"], mun: [RECIFE.code] } });
+
+    expect(engine.setVeil.mock.lastCall?.[0].features).not.toBeNull();
+    expect(engine.setSelection).toHaveBeenLastCalledWith([
+      "in",
+      ["get", "code"],
+      ["literal", [RECIFE.code]],
+    ]);
+  });
+
+  it("a legenda é a paleta da aridez com as contagens do painel", async () => {
+    await renderPanelMap({ ...aridezMap, classCounts: new Map([[2, 1200]]) });
+
+    expect(legendTexts()).toEqual(["Árido (1.200)", "Semiárido (0)"]);
+  });
+
+  it("sem contagens, a legenda mostra só as classes", async () => {
+    await renderPanelMap(aridezMap);
+
+    expect(legendTexts()).toEqual(["Árido", "Semiárido"]);
   });
 });

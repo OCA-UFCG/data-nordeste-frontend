@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { countByClass } from "@/features/panelMap/classCounts";
+import { countByClass, paletteChips } from "@/features/panelMap/classCounts";
 import type {
   MapFeatureProps,
   QgisClass,
@@ -79,6 +79,27 @@ describe("countByClass", () => {
   it("sem feições, todas as classes ficam com 0 e sem Sem dado", () => {
     expect(countByClass([], CLASSES, 2023).map((c) => c.count)).toEqual([
       0, 0, 0,
+    ]);
+  });
+});
+
+describe("paletteChips", () => {
+  const palette = [
+    { value: 2, color: "#d7191b", label: "Árido" },
+    { value: 3, color: "#fe7f00", label: "Semiárido" },
+  ];
+
+  it("sem contagens, só rótulo e cor, na ordem da paleta", () => {
+    expect(paletteChips(palette)).toEqual([
+      { label: "Árido", color: "#d7191b" },
+      { label: "Semiárido", color: "#fe7f00" },
+    ]);
+  });
+
+  it("com contagens, cada classe leva a sua; a que falta fica 0", () => {
+    expect(paletteChips(palette, new Map([[3, 120]]))).toEqual([
+      { label: "Árido", color: "#d7191b", count: 0 },
+      { label: "Semiárido", color: "#fe7f00", count: 120 },
     ]);
   });
 });

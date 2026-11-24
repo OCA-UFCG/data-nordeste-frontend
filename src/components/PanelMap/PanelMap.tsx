@@ -13,13 +13,14 @@ import {
   useGeodata,
 } from "@/components/PanelMap/useGeodata";
 import { useMapRecorte } from "@/components/PanelMap/useMapRecorte";
-import {
-  type PanelMapAridez,
-  usePanelMapAridez,
-} from "@/components/PanelMap/usePanelMapAridez";
+import { usePanelMapAridez } from "@/components/PanelMap/usePanelMapAridez";
 import { usePanelMapControls } from "@/components/PanelMap/usePanelMapControls";
 import { usePanelMapEngine } from "@/components/PanelMap/usePanelMapEngine";
 import { usePanelMapLayers } from "@/components/PanelMap/usePanelMapLayers";
+import {
+  aridezModeFor,
+  type PanelMapAridez,
+} from "@/features/panelMap/aridezRaster";
 import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
 import type { MapLevel, MapRecorte } from "@/features/panelMap/mapRecorte";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
@@ -44,9 +45,18 @@ export type PanelMapProps = {
   formatValue: (value: number) => string;
   label: string;
 
-  // Raster do índice de aridez: "off" (padrão) não mostra; "base" mostra o da
-  // década do `ano`, sempre ligado, sob os contornos. Não há controle no mapa.
+  // Raster do índice de aridez: "off" não mostra; "base" mostra o da década do
+  // `ano`, sempre ligado, sob os contornos. Não há controle no mapa. Padrão:
+  // "base" no indicador "aridez", "off" nos outros.
   aridez?: PanelMapAridez;
+
+  // Números do tooltip e do ranking por `code` da feição, vindos do painel
+  // (aridez: a malha não tem valores). Sem eles, o `v<ano>` do GeoJSON;
+  // feição fora do mapa = "sem dado".
+  values?: ReadonlyMap<string, number>;
+
+  // Legenda da aridez: quantas feições por valor de classe da paleta.
+  classCounts?: ReadonlyMap<number, number>;
   onEngine?: (engine: PanelMapEngine | null) => void;
 
   // O usuário trocou o basemap (o card ajusta o crédito da imagem baixada).
@@ -91,7 +101,7 @@ function usePanelMapRecorte(
   geodata: ReadyGeodata,
   engine: PanelMapEngine | null,
 ) {
-  const aridez = props.aridez ?? "off";
+  const aridez = aridezModeFor(props.indicator, props.aridez);
   const layers = { ...props, engine, geodata, aridez };
   const onZoomRecorte = usePanelMapLayers(layers);
 
@@ -157,17 +167,21 @@ const PanelMapStage = ({
         indicator={props.indicator}
         area={props.area}
         ano={props.ano}
+        classCounts={props.classCounts}
       />
     </div>
   );
 };
 
 /**
- * Mapa MapLibre compartilhado dos painéis (PIB, Demografia, IDH): carrega os
- * geodados, pinta o indicador com as classes do `.qgz` e transforma o zoom do
- * usuário no recorte territorial do painel. Sem geodados no ambiente, mostra
- * um aviso no lugar do mapa e o card continua de pé.
+ * Mapa MapLibre compartilhado dos painéis (PIB, Demografia, IDH, aridez):
+ * carrega os geodados, pinta o indicador com as classes do `.qgz` e transforma
+ * o zoom do usuário no recorte territorial do painel. Na aridez, o raster da
+ * década é a camada principal e as feições são só contornos, com os números
+ * do painel (`values`, `classCounts`). Sem geodados no ambiente, mostra um
+ * aviso no lugar do mapa e o card continua de pé.
  *
+ * @example <PanelMap indicator="aridez" ano={2021} area="semiarido" recorte={recorte} deepest="municipio" onRecorteChange={apply} values={asdPorMunicipio} classCounts={predominantes} formatValue={formatPercent} label="Mapa do índice de aridez" />
  * @example <PanelMap indicator="pib" ano={2023} area="nordeste" recorte={recorte} deepest="municipio" onRecorteChange={apply} formatValue={formatPibReais} label="Mapa do PIB por município" />
  */
 export const PanelMap = (props: PanelMapProps) => {
