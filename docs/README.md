@@ -297,7 +297,11 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   below zoom 6.5, state from 6.5 (`STATE_ZOOM`), municipality from 8.5
   (`MUNICIPALITY_ZOOM`); the IDH stops at state (`deepest`). Going down uses
   those absolute thresholds and applies the Estado/Município filter under the
-  map centre; with no municipality there, it stays at the state.
+  map centre. Both codes come from the one indicator feature under the centre
+  (municipal: its `uf` and `code`; IDH: its `code`), and that layer is
+  filtered to the area of interest, so the map never emits a code the server
+  would drop (`keepKnown`). With the centre outside the area or over the sea
+  there is no feature, and the recorte stays as it is.
 - **Going up uses the anchor zoom.** The recorte is only cleared one level when
   the zoom falls more than 0.5 (`ZOOM_OUT_TOLERANCE`) below the anchor: the
   zoom of the last programmatic fit, or the zoom at which the user chose the
@@ -437,8 +441,12 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   only, with the classes from the `.qgz` as delivered. Zooming into or
   clicking a state sets the UF filter through `useRecorteFilters` with
   `idhToRecorte`/`recorteToIdh` and `dashboard.actions.changeFilters` (the
-  same request as the filter bar, keeping the open view); the round trip is
-  exact, as the map needs. `usePanelMapFilters` (territorial panels) and the
+  same request as the filter bar, keeping the open view). The map needs the
+  round trip to be exact, and it is only because the map emits codes of
+  features of the current area: the state comes from the IDH feature under the
+  centre (the indicator layer is filtered to the area), never from the
+  27-state mesh. A code the server drops (`loadIdhPanel` keeps only known UFs)
+  comes back different and the map refits to the whole area. `usePanelMapFilters` (territorial panels) and the
   IDH card are thin callers of that generic core. The ranking keeps its own
   toggle (`onSelectUf`) and `IDH_MAP_BUCKETS`. Fullscreen is a second
   `PanelMap` (`renderStage`) in the card `overlay`; the downloaded image comes

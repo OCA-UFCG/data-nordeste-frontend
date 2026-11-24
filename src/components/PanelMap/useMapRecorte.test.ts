@@ -59,6 +59,20 @@ describe("useMapRecorte", () => {
     expect(onRecorteChange).not.toHaveBeenCalled();
   });
 
+  // O motor só manda códigos da feição do indicador (já filtrada pela área):
+  // centro fora da área ou no mar chega sem UF, e o recorte não muda.
+  it("um centro sem feição do indicador não emite recorte", () => {
+    const { engine, onRecorteChange } = renderMapRecorte(
+      { uf: ["PE"], mun: [] },
+      "municipio",
+    );
+
+    engine.emitMoveEnd({ zoom: 9, fittedZoom: 7 });
+    engine.emitMoveEnd({ zoom: 7, fittedZoom: 7 });
+
+    expect(onRecorteChange).not.toHaveBeenCalled();
+  });
+
   it("desce até o município quando o painel permite", () => {
     const { engine, onRecorteChange } = renderMapRecorte(
       EMPTY_RECORTE,

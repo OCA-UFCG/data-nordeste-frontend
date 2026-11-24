@@ -40,28 +40,34 @@ function isUserMove(event: object): boolean {
   return "originalEvent" in event;
 }
 
-function codeAt(
+function indicatorFeatureAt(
   map: MaplibreMap,
   point: PointLike,
-  layerId: string,
-): string | undefined {
-  const [feature] = map.queryRenderedFeatures(point, { layers: [layerId] });
-  const code = feature?.properties?.code;
+): MapFeatureProps | undefined {
+  const [feature] = map.queryRenderedFeatures(point, {
+    layers: [PANEL_MAP_LAYER.indicatorFill],
+  });
 
-  return code === undefined ? undefined : String(code);
+  return feature?.properties as MapFeatureProps | undefined;
 }
 
-/** UF (e, com feições municipais, o município) sob o centro do mapa. */
+/**
+ * UF (e, com feições municipais, o município) sob o centro do mapa.
+ *
+ * IMPORTANT: os dois códigos vêm da MESMA feição do indicador, cuja camada já
+ * está filtrada pela área do painel; assim o código emitido sempre existe nas
+ * opções do servidor. Fora da área ou no mar não há feição e o recorte fica
+ * como está. Antes a UF vinha de uma camada com os 27 estados: zoom sobre MG
+ * (ou na divisa PE/PB) emitia um código que o servidor descarta (`keepKnown`)
+ * e o mapa voltava para a área inteira.
+ */
 function centerCodes(map: MaplibreMap, municipal: boolean) {
-  const center = map.project(map.getCenter());
-  const centerUf = codeAt(map, center, PANEL_MAP_LAYER.statesQuery);
+  const props = indicatorFeatureAt(map, map.project(map.getCenter()));
 
-  if (!municipal) return { centerUf };
+  if (!props) return {};
+  if (!municipal) return { centerUf: String(props.code) };
 
-  return {
-    centerUf,
-    centerMun: codeAt(map, center, PANEL_MAP_LAYER.indicatorFill),
-  };
+  return { centerUf: String(props.uf), centerMun: String(props.code) };
 }
 
 function describeMoveEnd(

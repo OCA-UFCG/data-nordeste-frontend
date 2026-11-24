@@ -28,7 +28,6 @@ export const PANEL_MAP_SOURCE = {
 export const PANEL_MAP_LAYER = {
   aridez: "aridez",
   indicatorFill: "indicator-fill",
-  statesQuery: "states-query",
   veilStates: "veil-states",
   veilFeatures: "veil-features",
   featureOutline: "feature-outline",
@@ -109,17 +108,6 @@ function indicatorFillLayer(): LayerSpecification {
   };
 }
 
-// INTENTIONAL: invisível mas visível ao queryRenderedFeatures (visibility
-// "none" sairia da consulta) — é por ela que se acha a UF do centro.
-function statesQueryLayer(): LayerSpecification {
-  return {
-    id: PANEL_MAP_LAYER.statesQuery,
-    type: "fill",
-    source: PANEL_MAP_SOURCE.states,
-    paint: { "fill-opacity": 0 },
-  };
-}
-
 function veilLayer(id: string, source: string): LayerSpecification {
   return {
     id,
@@ -166,7 +154,6 @@ function overlayLayers(): LayerSpecification[] {
 
   return [
     indicatorFillLayer(),
-    statesQueryLayer(),
     veilLayer(layer.veilStates, states),
     veilLayer(layer.veilFeatures, features),
     lineLayer(layer.featureOutline, features, UNPAINTED_LINE),
