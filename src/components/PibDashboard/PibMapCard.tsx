@@ -20,12 +20,11 @@ import { formatPibReais } from "@/features/panels/pib/pibFormat";
 import { areaLabel } from "@/features/panels/territorialOptions";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 
-// Ao lado da coluna dos setores, quem manda na altura é ela: o quadro do mapa
-// a acompanha (`flex-1`, com um mínimo) e não estica os cards de setor (PR
-// #413). Abaixo de 1000 px a grade vira uma coluna só e a altura volta a ser
-// fixa. O MapLibre observa o contêiner, então o mapa se redesenha sozinho.
-const MAP_BOX_CLASS =
-  "min-h-[360px] flex-1 rounded-[8px] max-[1000px]:h-[400px] max-[1000px]:flex-none";
+// INTENTIONAL: altura fixa, e não a da coluna dos setores como na PR #413. O
+// `PanelMap` só enquadra no `fitTo` (troca de recorte); um resize mantém
+// centro e zoom. A coluna muda de altura com o ano (aviso sem VAB) e o
+// município, com o mapa montado: ele ficaria cortado ou folgado sem reenquadrar.
+const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 
 const usePibMapProps = (
   selection: TerritorialFilters,

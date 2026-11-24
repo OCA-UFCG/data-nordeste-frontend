@@ -762,12 +762,12 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   - Zooming or clicking the map sets Estado and Município in the filter
     (`usePanelMapFilters`, the bar's own `request`); several states are
     possible through the Estado filter.
-  - The map follows the height of the sector column beside it (PR #413): its
-    box is `flex-1` with a 360 px minimum, so the column decides the row
-    height and the sector cards are not stretched; MapLibre observes its
-    container and redraws. Below 1000 px (one column) it is 400 px tall. In
-    the empty layout (no PIB for the place and year) it sits alone at the
-    minimum.
+  - The map keeps a fixed height (480 px, 400 px below 1000 px), unlike #413,
+    whose map followed the sector column. `PanelMap` frames only on `fitTo`
+    (a recorte change); a container resize keeps centre and zoom. The column
+    height changes with the year (the no-VAB notice) and the municipality
+    while the map stays mounted, so a following map would end up cropped or
+    loose without a refit.
   - The VAB axis unit follows the data (`pibBarUnit`: trilhões, bilhões,
     milhões, mil) instead of the fixed "R$ bilhões", so a small municipality
     gets a readable axis.

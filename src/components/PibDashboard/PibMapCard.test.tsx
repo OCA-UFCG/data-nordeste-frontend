@@ -163,16 +163,15 @@ describe("PibMapCard", () => {
     ).toBeInTheDocument();
   });
 
-  // A coluna dos setores manda na altura da linha (PR #413): o quadro do mapa
-  // a acompanha com um mínimo, sem altura fixa acima de 1000 px.
-  it("fills the height the grid gives it, with a minimum and no fixed height", () => {
+  // O PanelMap só enquadra no fitTo: a altura não pode seguir a coluna dos
+  // setores, que muda com o ano e o município com o mapa montado.
+  it("keeps a fixed map height instead of following the sector column", () => {
     renderCard();
 
     const frame = lastProps().className ?? "";
 
-    expect(frame).toContain("flex-1");
-    expect(frame).toContain("min-h-[360px]");
-    expect(frame).not.toMatch(/(^| )h-\[/);
+    expect(frame).toMatch(/(^| )h-\[480px\]/);
+    expect(frame).not.toContain("flex-1");
   });
 
   it("explains how the map filters and the PIB terms in the info balloon", async () => {
