@@ -365,7 +365,9 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   server is a shared volunteer service under the
   [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/):
   fair use only, and heavy traffic would need another tile provider. The
-  aridez raster has a decade selector (1990, 2000, 2010, 2020).
+  aridez raster is the main layer of the aridez panel only (`indicator="aridez"`,
+  `aridez` defaults to `"base"`), always on, with the decade of the year filter
+  (1991 shows 1990, 2001 shows 2000, ...); no checkbox or selector.
 - **Card pieces** (`src/components/PanelMap/`): `PanelMapCardActions` (the
   shared `ProtoFullscreenButton`, ⓘ and the menu with the basemap credit),
   `usePanelMapCard`, `PanelMapSkeleton` (the loading card keeps the map box
@@ -380,11 +382,13 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   `buildPibStateLookup`), `buildPibMapProps` and the card legend;
   `PerfilPorteToggles`, `DemografiaMapa`, `toggleTerritorialUf`,
   `PIB_MAP_HINT`, `PIB_MAP_IMAGE_SOURCE`.
-- **Still there for the aridez panel only:** its state map card
-  (`AridezMapCard`) still draws `ProtoStateMap` through the non-`renderStage`
-  branch of `ProtoMapFullscreen`, with `ProtoBinLegend`, `describeStatesOffMap`
-  (`features/panels/statesOffMap.ts`) and `selectOnlyTerritorialUf`
-  (`territorialPlace.ts`). They go when that card moves to `PanelMap`.
+- **Removed by the aridez swap** (see "Aridity Index Panel Demo"):
+  `ProtoStateMap`, the non-`renderStage` branch of `ProtoMapFullscreen` (zoom
+  buttons, drag, wheel, `MAP_SELECT_HINT`; `renderStage` is now required),
+  `ProtoBinLegend`, `describeStatesOffMap` (`statesOffMap.ts`), `stateShapes.ts`,
+  `mapViewBox.ts`, `selectOnlyTerritorialUf`, `aridezStates.ts`
+  (`ARIDEZ_STATE_BINS`, `buildAridezStateLookup`), `buildAridezMapProps`, the
+  `estados` query of the aridez panel and the 20-px zoom icons of `ProtoIcon`.
 
 ## Responsive Layout
 
@@ -602,8 +606,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   (`useDemografiaHighlight`, profile copy), `toggleTerritorialUf`
   (`territorialPlace.ts`), `PIB_MAP_HINT` and `PIB_MAP_IMAGE_SOURCE`.
   `ChoroplethCanvas`, `ChoroplethMap` and `public/maps/*.json` stay: the Power
-  BI demos still use them. `ProtoStateMap` is left only for the aridez card
-  (see "Panel Maps (MapLibre)").
+  BI demos still use them.
 
 ## PIB Panel Demo (`/demo/pib`)
 
@@ -653,8 +656,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     the PIB was loaded (`PIB_CARD_FOOTER`, marked `INTENTIONAL:`).
   - Minas Gerais and Espírito Santo (Área da Sudene, Semiárido) are drawn
     like any other state because the map is municipal; the old "no shape in
-    the nine-state map" hint (`describeStatesOffMap`) is gone from the PIB
-    (it stays in `statesOffMap.ts` for the aridez state map).
+    the nine-state map" hint (`describeStatesOffMap`) is gone, and so is the
+    helper.
   - "Saiba mais" keeps the Power BI definitions (PIB, per capita, VAB,
     participação) as the glossary; the prototype has only the paragraphs.
 - Image download exists for the line (SVG) and the map (from the
@@ -692,7 +695,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   prototype's `aridez.html` (artifact "Painéis Data Nordeste · Protótipo
   navegável", November 2026), rebuilt with the shared `ProtoPanel/` pieces in
   the "aridez" tone (Meio Ambiente green `#758f21`). Cover, sticky filter bar,
-  "Veja mais", two big numbers (ASD in km² and in %), the state map, the
+  "Veja mais", two big numbers (ASD in km² and in %), the municipal map, the
   columns by class and the per-municipality 100% bars, "Saiba mais" and
   related content from the Contentful "panels" entry `aridez`.
 - Data: `meio_aridez.vw_aridez` (`cd_mun`, `ano_consolidacao`, `dn_uni`,
@@ -725,13 +728,41 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     is the prototype's dark `ProtoTooltip`, driven by one delegated
     `pointermove` on the list, not a handler per segment.
   - No "Atualizado em" in the card footers (`ARIDEZ_CARD_FOOTER`, as in PIB).
+- Map card (`AridezMapCard`, "Índice de aridez por município"): the shared
+  MapLibre `PanelMap` with `indicator="aridez"` and `deepest="municipio"`, as in
+  the PIB. Filters go through `usePanelMapFilters(selection, request)`, the same
+  `request` as the filter bar (zoom and click set Estado and Município; the
+  old click-a-state `onSelectUf` is gone). The main layer is the aridez raster
+  of the decade of `selection.ano`; state and municipal outlines (the
+  `vector/municipios.geojson` mesh, no values) go on top. Subtitle "Classe de
+  aridez · área · ano" uses `selection.ano`.
+  - Hover shows the municipality and its % of ASD (`formatSharePercent`, the
+    same number as the municipalities card) with its rank in the area, from the
+    `values` prop. The legend below the map is the raster palette
+    (`styles.json`) with, per class, the number of municipalities where it is
+    the predominant class (largest area among `dn_uni` 2..5; a tie goes to the
+    drier class), from `classCounts`. Both come from pure functions in
+    `features/panels/aridez/aridezMap.ts` (`aridezMapValues`,
+    `aridezClassCounts`), memoized on `data.mapa`.
+  - `AridezPanelData.mapa` replaces the old `estados`: every municipality of
+    the Área and Ano, ignoring Estado and Município (same query as
+    `porMunicipio`, reused when no state or municipality is chosen). Reading
+    `porMunicipio` would shrink the ranking and the legend counts at each zoom
+    and leave the map without values in the "no data" layout. So the map's
+    dependencies are `["area","ano"]` (`aridezCardState.ts`): zoom never dims it,
+    year or area changes dim it (`stale`, still mounted), and only a failed query
+    and its retry show the skeleton (`PanelMapSkeleton`).
+  - Needs `vector/municipios.geojson` and `raster/aridez_<ano>.png` in the
+    geodata folder (`/opt/datane/geodata`); without them the map shows the
+    "geodados indisponíveis" notice. The raster palette (`styles.json`) and the
+    `ARIDEZ_CLASSES` colours of the other cards differ slightly; the values
+    2 to 5 match.
 - The class columns card stretches to the municipal list beside it
   (`#c-cls .chartbox{flex:1}` in the prototype): the SVG is absolutely
   positioned in a growing box and `useElementWidth` also reports the height.
-- Shared pieces extracted for this panel: `ProtoFullscreenButton` and
-  `ProtoBinLegend` (`ProtoPanel/ProtoMapControls.tsx`; the IDH, profile and
-  PIB map cards use the button through `PanelMapCardActions`), `describeStatesOffMap` (`features/panels/statesOffMap.ts`),
-  `buildZeroAxis` (`features/panels/zeroAxis.ts`, was `pib/pibAxis.ts`),
+- Shared pieces extracted for this panel: `ProtoFullscreenButton`
+  (`ProtoPanel/ProtoMapControls.tsx`; the map cards use it through
+  `PanelMapCardActions`), `buildZeroAxis` (`features/panels/zeroAxis.ts`, was `pib/pibAxis.ts`),
   `describeSelectedTerritory` (`territorialOptions.ts`) and the jsdom fakes
   `stubPanelBrowserApis` (`ProtoPanel/protoBrowserFakes.ts`, was in
   `idhTestFixtures.ts`).
