@@ -14,14 +14,18 @@ import { withYear } from "@/features/panels/territorialFilters";
 const TITLE = "População por município";
 const TOP_COUNT = 15;
 
-// A barra mais longa ocupa 46% da célula; o resto fica para o número.
+// 4.5rem reservados ao número: a barra mais longa não o empurra para fora.
 const barWidth = (value: number, max: number): string =>
-  max > 0 ? `${(value / max) * 46}%` : "0%";
+  max > 0 ? `calc((100% - 4.5rem) * ${value / max})` : "0px";
 
+// `contents`: as células entram na grade da lista, e a coluna dos nomes fica
+// com a largura do nome mais longo, numa linha só.
 const MunicipioRow = ({ item, max }: { item: MunicipioPoint; max: number }) => (
-  <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 text-[12px] max-[1000px]:grid-cols-[minmax(0,.9fr)_minmax(0,1fr)]">
-    <span className="text-right leading-[1.2]">{item.label}</span>
-    <div className="flex items-center gap-1.5">
+  <div className="contents text-[12px]">
+    <span className="truncate text-right leading-[1.2]" title={item.label}>
+      {item.label}
+    </span>
+    <div className="flex min-w-0 items-center gap-1.5">
       <i
         className="h-[14px] flex-none rounded-[2px] bg-[#e484aa]"
         style={{ width: barWidth(item.value, max) }}
@@ -33,12 +37,13 @@ const MunicipioRow = ({ item, max }: { item: MunicipioPoint; max: number }) => (
   </div>
 );
 
-// Rola dentro do card; no celular a lista cresce e a página rola.
+// Linhas de até 2.25rem: 15 preenchem o card, poucas ficam no topo. No celular
+// a lista cresce e a página rola.
 const MunicipiosList = ({ items }: { items: MunicipioPoint[] }) => {
   const max = items[0]?.value ?? 0;
 
   return (
-    <div className="mun-list flex min-h-0 flex-[1_1_0] flex-col gap-1.5 overflow-auto pr-1.5 [scrollbar-width:thin] max-[1000px]:flex-none max-[1000px]:overflow-visible">
+    <div className="mun-list grid min-h-0 flex-[1_1_0] auto-rows-[minmax(min-content,2.25rem)] grid-cols-[minmax(0,max-content)_minmax(7rem,1fr)] items-center gap-x-2 gap-y-1.5 overflow-auto pr-1.5 [scrollbar-width:thin] max-[1000px]:flex-none max-[1000px]:auto-rows-min max-[1000px]:overflow-visible">
       {items.map((item) => (
         <MunicipioRow key={item.code} item={item} max={max} />
       ))}

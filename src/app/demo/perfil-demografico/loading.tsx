@@ -32,7 +32,7 @@ const FilterBones = () => (
 
 const PanelBones = () => (
   <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-20 pt-8 pb-10 max-[1100px]:px-8 max-[1100px]:pt-6 max-[700px]:px-4 max-[700px]:pt-5 max-[700px]:pb-8">
-    <div className="grid grid-cols-[302px_minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)_auto] gap-4 [grid-template-areas:'bn_map'_'mun_map'_'sex_age'] max-[1000px]:flex max-[1000px]:flex-col">
+    <div className="grid grid-cols-[360px_minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)_auto] gap-4 [grid-template-areas:'bn_map'_'mun_map'_'sex_age'] max-[1000px]:flex max-[1000px]:flex-col">
       <div className={`${CARD} [grid-area:bn] h-[132px]`}>
         <ProtoSkeleton className="h-full" />
       </div>
