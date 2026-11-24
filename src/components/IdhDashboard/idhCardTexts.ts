@@ -3,7 +3,7 @@ import {
   type YearRange,
 } from "@/features/panels/territorialFilters";
 
-// Textos dos cards do painel de IDH: o ⓘ de cada card e o rodapé com a fonte.
+// Textos dos cards do painel de IDH: o ⓘ de cada card.
 // Textos que dizem respeito ao IDH ficam aqui, não nos componentes do painel.
 
 // Textos do ⓘ de cada card, do protótipo. Diferem dele num ponto: no banco há

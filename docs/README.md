@@ -417,8 +417,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   on the states map, which filters on click. Neither the cards nor the
   fullscreen show the source: the panel already has a "Fonte dos dados"
   section, so `*_CARD_SOURCE` only goes into the downloaded image. IDH cards
-  keep only "Atualizado em" (`ProtoCard` `updatedAt`). The porte legend only shows in the "Municípios" view, in
-  the card and in the fullscreen.
+  keep only "Atualizado em" (`ProtoCard` `updatedAt`). The porte legend only
+  shows in the "Municípios" view, in the card and in the fullscreen.
 - The municipalities map is a canvas with no text for screen readers, so it
   carries an `sr-only` table built by `buildPerfilPorteTable`, replacing the
   table `ChoroplethMap` used to provide.
@@ -457,8 +457,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     decimals in millions. The change pill reads "em relação a 2022" (shared
     `formatYearChange`), not "vs. 2022".
   - No "Escolher outro ano" button in the year notice and no "Atualizado em"
-    in the card footers: the database does not say when the PIB was loaded
-    (`PIB_CARD_FOOTER`, marked `INTENTIONAL:`).
+    on the cards: the database does not say when the PIB was loaded.
   - Minas Gerais and Espírito Santo (Área da Sudene, Semiárido) have data but
     no shape in the nine-state map; a hint under the legend says so
     (`describeStatesOffMap`).
@@ -529,7 +528,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     for the whole area), with `content-visibility: auto`. The segment tooltip
     is the prototype's dark `ProtoTooltip`, driven by one delegated
     `pointermove` on the list, not a handler per segment.
-  - No "Atualizado em" in the card footers (`ARIDEZ_CARD_FOOTER`, as in PIB).
+  - No "Atualizado em" on the cards (no load date in the database, as in PIB).
 - The class columns card stretches to the municipal list beside it
   (`#c-cls .chartbox{flex:1}` in the prototype): the SVG is absolutely
   positioned in a growing box and `useElementWidth` also reports the height.

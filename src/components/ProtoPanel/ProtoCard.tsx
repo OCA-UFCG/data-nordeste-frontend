@@ -134,7 +134,7 @@ export type ProtoCardProps = {
   onRetry: () => void;
   bodyClassName?: string;
 
-  // INTENTIONAL: sem fonte no card; ela fica na seção "Fonte dos dados" do painel.
+  // INTENTIONAL: sem fonte no card; ela fica em "Fonte dos dados".
   updatedAt?: string;
 
   // Esqueleto com a altura do corpo pronto, no lugar do genérico do `kind`.
@@ -182,9 +182,9 @@ const CardUpdatedAt = ({ updatedAt }: { updatedAt: string }) => (
 /**
  * Card de gráfico do painel ("Caixa do gráfico" do protótipo): cabeçalho com
  * ações, corpo com os estados (esmaecido com o dado anterior, carregando e
- * erro) e a data de atualização (quando `updatedAt` é dado). `overlay` é renderizado
- * depois do rodapé, fora do corpo, e sobrevive aos estados (ex.: diálogo em
- * tela cheia).
+ * erro) e a data de atualização (quando `updatedAt` é dado). `overlay` é
+ * renderizado depois do rodapé, fora do corpo, e sobrevive aos estados (ex.:
+ * diálogo em tela cheia).
  *
  * @example <ProtoCard title="Mapa do IDH por estado" subtitle="…" actions={…} state="ok" kind="map" onRetry={retry} updatedAt="10/2026" overlay={<ProtoMapFullscreen … />}>…</ProtoCard>
  */
