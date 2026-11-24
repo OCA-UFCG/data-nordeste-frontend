@@ -21,7 +21,7 @@ describe("PIB_MAP_INFO", () => {
     const [usage] = PIB_MAP_INFO;
 
     expect(usage.term).toBeUndefined();
-    expect(usage.rest).toContain("clique em um estado ou município");
+    expect(usage.rest).toContain("o primeiro clique escolhe o estado");
     expect(usage.rest).toContain(
       "clicar de novo no município escolhido volta ao estado",
     );

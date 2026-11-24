@@ -174,8 +174,11 @@ describe("PanelMap do painel de aridez", () => {
     expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 1");
   });
 
-  it("clique num município escolhe o município", async () => {
-    const { engine, props } = await renderPanelMap(aridezMap);
+  it("clique num município do estado escolhido escolhe o município", async () => {
+    const { engine, props } = await renderPanelMap({
+      ...aridezMap,
+      recorte: { uf: ["PE"], mun: [] },
+    });
 
     act(() => engine.emitClick(RECIFE));
 

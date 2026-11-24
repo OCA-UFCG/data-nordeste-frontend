@@ -271,8 +271,16 @@ describe("PanelMap recorte pelo zoom (regras 3 e 4)", () => {
     expect(engine.fitTo).toHaveBeenCalledWith(PE_BBOX);
   });
 
-  it("clique num município escolhe o município", async () => {
+  it("clique num município na área escolhe o estado dele", async () => {
     const { engine, props } = await renderPanelMap();
+
+    act(() => engine.emitClick(RECIFE));
+
+    expect(props.onRecorteChange).toHaveBeenCalledWith(PE);
+  });
+
+  it("clique num município do estado escolhido escolhe o município", async () => {
+    const { engine, props } = await renderPanelMap({ recorte: PE });
 
     act(() => engine.emitClick(RECIFE));
 

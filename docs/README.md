@@ -366,19 +366,19 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   content from fitting twice. Every map click (`onMapClick`, the feature
   under the cursor or `null`) goes through `recorteForClick`, and the result is
   emitted and fitted through the prop change only when it differs from the
-  current recorte. Rules, by the
-  current recorte: **area** — a feature is selected (municipality; the state in
-  the IDH, the profile "Estados" view or a card that stops at state), a click
-  on empty map does nothing; **state** — a municipality inside the selected
-  state(s) is selected (with several states, one of them is narrowed to), while
-  clicking the state itself (state-level maps or cards that stop at state), a
-  feature of another state under the veil, or empty map (ocean, outside the
-  area) goes back to `EMPTY_RECORTE`; **municipality** — clicking the
-  selected municipality (or one of several selected) goes back to its state,
-  clicking another municipality selects it (no going up), and clicking empty
-  map changes nothing. So clicking outside the highlight goes up one level
-  only at state level, never at municipality level. Drags are not
-  clicks (MapLibre's `click` excludes them).
+  current recorte. Rules, by the current recorte: **area** — the clicked
+  feature's state is selected, never the municipality directly (clicks go
+  down one level at a time: area → state → municipality; user decision,
+  24/11/2026), a click on empty map does nothing; **state** — a municipality
+  inside the selected state(s) is selected (with several states, one of them
+  is narrowed to), while clicking the state itself (state-level maps or cards
+  that stop at state), a feature of another state under the veil, or empty
+  map (ocean, outside the area) goes back to `EMPTY_RECORTE`;
+  **municipality** — clicking the selected municipality (or one of several
+  selected) goes back to its state, clicking another municipality selects it
+  (no going up), and clicking empty map changes nothing. So clicking outside
+  the highlight goes up one level only at state level, never at municipality
+  level. Drags are not clicks (MapLibre's `click` excludes them).
 - **Gestures and zoom cap** (`src/lib/panelMap/panelMapOptions.ts`): the
   map inside the card uses MapLibre's cooperative gestures (Ctrl/⌘ + wheel,
   two fingers on touch, prompt in Portuguese) so it does not hijack the page
@@ -751,8 +751,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     state-only SVG. Title "PIB total por município" (`PIB_MAP_TITLE`, content
     team review, PR #413). Its ⓘ (`PIB_MAP_INFO`, rendered by
     `PibInfoParagraphs` with the terms in bold) opens with how the map filters
-    (zoom or click, second click goes up a level, legend hover highlights a
-    class), then the content team's PIB and per capita definitions verbatim.
+    (zoom or click, first click picks the state and the next a municipality,
+    clicking it again goes up a level, legend hover highlights a class), then the content team's PIB and per capita definitions verbatim.
     #413 also built a municipal map on the old canvas stack
     (`ProtoMunicipalMap`, `pibMunicipios`, a `GROUP BY cd_mun` query in
     `loadPibPanel`); the merge kept the MapLibre card and dropped those.
