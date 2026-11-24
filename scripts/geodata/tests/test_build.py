@@ -45,6 +45,26 @@ class SelectSqlTest(unittest.TestCase):
         sql = build.municipal_select("demografia", {"pop_2000": "v2000"}, text_columns={"pop_2000"})
         self.assertIn(build.numeric_expression("pop_2000", is_text=True) + " AS v2000", sql)
 
+    def test_municipios_select_has_identity_and_area_flags_only(self):
+        sql = build.municipios_select("sudene_mun")
+        self.assertIn("CAST(cd_mun_1 AS TEXT) AS code", sql)
+        self.assertIn("nm_mun_1 AS name", sql)
+        self.assertIn("sigla_uf_1 AS uf", sql)
+        for area, column in build.AREA_FLAGS.items():
+            self.assertIn(f"({column} = 'Sim') AS {area}", sql)
+        self.assertIn("geometry FROM sudene_mun", sql)
+        self.assertNotIn(" AS v", sql)
+
+    def test_municipios_select_runs_on_sqlite(self):
+        with sqlite3.connect(":memory:") as db:
+            db.execute(
+                "CREATE TABLE sudene_mun (cd_mun_1 INTEGER, nm_mun_1 TEXT, sigla_uf_1 TEXT, "
+                "ne TEXT, semi_21_1 TEXT, caat_24 TEXT, aas_21_1 TEXT, geometry BLOB)"
+            )
+            db.execute("INSERT INTO sudene_mun VALUES (2611606, 'Recife', 'PE', 'Sim', 'Não', 'Não', 'Sim', NULL)")
+            row = db.execute(build.municipios_select("sudene_mun")).fetchone()
+        self.assertEqual(row, ("2611606", "Recife", "PE", 1, 0, 0, 1, None))
+
     def test_semiarido_is_union_of_marked_municipalities(self):
         sql = build.semiarido_select("sudene_mun")
         self.assertIn("ST_Union(geometry)", sql)

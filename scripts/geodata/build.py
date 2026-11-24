@@ -1,6 +1,7 @@
 """Gera os arquivos do mapa dos painéis (`<out>/`) a partir da pasta bruta do Drive.
 
-Saídas: `vector/*.geojson`, `raster/aridez_<ano>.png`, `styles.json`,
+Saídas: `vector/*.geojson` (inclui `municipios.geojson`, a malha sem indicador),
+`raster/aridez_<ano>.png`, `styles.json`,
 `manifest.json` e `data-issues.json`. IMPORTANT: nada aqui corrige dado do Drive;
 só renomeia propriedades, converte texto numérico para desenhar (o que não
 converter vira `null`, "sem dado") e reporta problemas em `data-issues.json`.
@@ -46,6 +47,8 @@ AREA_POLYGONS = {
     "sudene": "shapefile_geral/area_sudene/limite_sudene.shp",
 }
 SEMIARIDO_SOURCE_SHP = "shapefile_geral/area_sudene/sudene_mun.shp"
+# Malha municipal sem indicador (painel de aridez): a mesma base do Semiárido.
+MUNICIPIOS_SHP = SEMIARIDO_SOURCE_SHP
 # O Semiárido não tem polígono no Drive; listá-lo faz a lacuna aparecer no relatório.
 EXPECTED_SHAPEFILES = [
     *(spec["shp"] for spec in INDICATORS.values()),
@@ -117,6 +120,14 @@ def municipal_select(layer: str, years: dict[str, str], text_columns: set[str] =
         "geometry",
     ]
     return f"SELECT {', '.join(columns)} FROM {layer}"
+
+
+def municipios_select(layer: str) -> str:
+    """SELECT da malha municipal sem valores: `code`, `name`, `uf` e as flags de área.
+
+    Ex.: `municipios_select("sudene_mun")`. Mesmas colunas do `municipal_select`, sem anos.
+    """
+    return municipal_select(layer, {})
 
 
 def state_indicator_select(layer: str, years: dict[str, str], text_columns: set[str] = frozenset()) -> str:
@@ -213,6 +224,12 @@ def build_indicator_vector(raw: Path, out: Path, key: str, field_types: dict[str
 def build_states_vector(raw: Path, out: Path) -> None:
     shp = raw / STATES_SHP
     write_feature_collection(out / "vector" / "estados.geojson", ogr_features(shp, states_select(layer_name(shp))))
+
+
+def build_municipios_vector(raw: Path, out: Path) -> None:
+    shp = raw / MUNICIPIOS_SHP
+    features = ogr_features(shp, municipios_select(layer_name(shp)))
+    write_feature_collection(out / "vector" / "municipios.geojson", features)
 
 
 def build_areas_vector(raw: Path, out: Path) -> None:
@@ -382,6 +399,7 @@ def build(raw: Path, out: Path, now: datetime | None = None) -> list[dict]:
         build_indicator_vector(raw, out, key, field_types[key])
         issues += indicator_issues(raw, key, field_types[key])
     build_states_vector(raw, out)
+    build_municipios_vector(raw, out)
     build_areas_vector(raw, out)
     palette, bounds, aridez_issues = build_aridez(raw, out)
     generated_at = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")
