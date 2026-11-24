@@ -114,7 +114,9 @@ export const buildDemografiaAnalise = (
       { title: "Distribuição por cor ou raça", text: corRaca.join(" ") },
       {
         title: "Quantidade de municípios por porte",
-        items: portes.map(porteLine),
+
+        // Sem linhas "0 municípios" (ex.: um município filtrado).
+        items: portes.filter(({ codes }) => codes.length).map(porteLine),
       },
     ],
     footnote: `Texto gerado conforme os filtros: ${placeFull} · ${data.filters.ano}.`,

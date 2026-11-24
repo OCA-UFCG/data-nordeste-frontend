@@ -21,7 +21,7 @@ export const ARIDEZ_CARD_INFO = {
     "Para cada município, a divisão da sua área entre as classes do índice de aridez, em %. Passe o mouse sobre um trecho da barra para ver a área em km².",
 } as const;
 
-export const ARIDEZ_SAIBA_MAIS_TITLE = "Saiba mais sobre o Índice de Aridez";
+export const ARIDEZ_SAIBA_MAIS_TITLE = "Saiba mais";
 
 export const ARIDEZ_SAIBA_MAIS_SUMMARY =
   "O Índice de Aridez (IA) é um indicador utilizado para avaliar o grau de disponibilidade hídrica de uma região, considerando a relação entre a quantidade de chuva e a perda de água para a atmosfera por evaporação e transpiração. Esse índice permite compreender as condições climáticas de um território e sua maior ou menor suscetibilidade à escassez de água.";

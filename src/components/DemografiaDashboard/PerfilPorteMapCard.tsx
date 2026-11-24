@@ -20,10 +20,31 @@ import {
   withYear,
 } from "@/features/panels/territorialFilters";
 
-const TITLE = "Porte dos municípios";
-const INFO =
-  "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Aproxime ou clique no mapa para filtrar o painel por estado e por município; clicar de novo no município escolhido volta ao estado, e clicar fora do estado escolhido volta à área. Na vista Estados, só por estado.";
-const ESTADOS_LABEL = "Mapa dos estados";
+const TITLE = "Porte populacional";
+const INFO = (
+  <>
+    <p>
+      Os <b>municípios</b> são classificados <b>por porte</b> populacional:
+    </p>
+    <ul className="mt-1 list-disc pl-5">
+      <li>Pequeno porte, até 50 mil habitantes;</li>
+      <li>Médio porte, entre 50 mil e 100 mil habitantes;</li>
+      <li>Grande porte, acima de 100 mil habitantes.</li>
+    </ul>
+    <p className="mt-2">
+      <b>Obs.:</b> Alguns municípios foram criados a partir do desmembramento de
+      outros, o que explica a ausência de dados individualizados para esses
+      municípios em censos demográficos anteriores à sua criação. Essas
+      alterações territoriais devem ser consideradas na análise e na comparação
+      dos dados populacionais ao longo do tempo.
+    </p>
+    <p>
+      Na vista Estados, clique em um estado para usá-lo como filtro do painel.
+    </p>
+  </>
+);
+const MUNICIPIOS_LABEL = "Mapa dos municípios por porte";
+const ESTADOS_LABEL = "Mapa dos estados do Nordeste";
 
 // Altura fixa (`max-height` de 560 px do `.map-box` do protótipo): sem ela o
 // card cresceria com a proporção da malha.
@@ -116,10 +137,9 @@ export const usePorteMapView = () => {
 export type PorteMapView = ReturnType<typeof usePorteMapView>;
 
 /**
- * Card "Porte dos municípios": cada município na cor da faixa de população
- * (pequeno, médio e grande), ou só os estados na vista Estados. Aproximar ou
- * clicar no mapa troca Estado e Município (na vista Estados, só Estado) no
- * filtro do painel, pelo mesmo caminho da barra de filtros.
+ * Card "Porte populacional": mapa dos municípios por faixa de população ou
+ * mapa dos estados, que filtra o painel ao ser clicado. A legenda por porte
+ * destaca os municípios de cada faixa.
  *
  * @example <PerfilPorteMapCard data={panel} place="Nordeste" state="ok" onRetry={retry} selection={filters} onFiltersChange={request} mapView={porteView} />
  */
