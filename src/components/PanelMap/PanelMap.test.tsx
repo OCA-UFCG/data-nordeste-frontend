@@ -81,7 +81,15 @@ describe("PanelMap controles", () => {
     expect(factory.options).toMatchObject({
       basemap: "oceano",
       municipal: true,
+      cooperative: false,
     });
+  });
+
+  // No card, Ctrl/⌘ + roda e dois dedos; a tela cheia fica com o padrão.
+  it("pede gestos cooperativos ao motor quando o card pede", async () => {
+    const { factory } = await renderPanelMap({ cooperative: true });
+
+    expect(factory.options?.cooperative).toBe(true);
   });
 
   it("clicar em Satélite troca o basemap do motor", async () => {

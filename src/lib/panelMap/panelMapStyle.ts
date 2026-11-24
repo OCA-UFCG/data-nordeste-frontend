@@ -65,6 +65,7 @@ function basemapSource(kind: BasemapKind): RasterSourceSpecification {
     tiles: [basemap.tiles],
     tileSize: 256,
     attribution: basemap.attribution,
+    ...(basemap.maxzoom === undefined ? {} : { maxzoom: basemap.maxzoom }),
   };
 }
 

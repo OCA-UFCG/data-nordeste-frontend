@@ -19,21 +19,23 @@ export const DEFAULT_BASEMAP: BasemapKind = "oceano";
 
 export type PanelMapEngineMount = {
   municipal: boolean;
+  cooperative: boolean;
   createEngine?: typeof createPanelMapEngine;
   onEngine?: (engine: PanelMapEngine | null) => void;
 };
 
-// `municipal` e a fábrica são lidos só aqui, na montagem: valem pela vida do
-// componente. `onEngine` é lido pelo ref na hora, para pegar o mais recente.
+// `municipal`, `cooperative` e a fábrica são lidos só aqui, na montagem: valem
+// pela vida do componente. `onEngine` é lido pelo ref na hora, para pegar o mais recente.
 function mountEngine(
   container: HTMLElement,
   mountRef: MutableRefObject<PanelMapEngineMount>,
   setEngine: Dispatch<SetStateAction<PanelMapEngine | null>>,
 ): () => void {
-  const { municipal, createEngine = createPanelMapEngine } = mountRef.current;
-  const teardown = createEngine(container, {
+  const { municipal, cooperative, createEngine } = mountRef.current;
+  const teardown = (createEngine ?? createPanelMapEngine)(container, {
     basemap: DEFAULT_BASEMAP,
     municipal,
+    cooperative,
     onReady: (ready) => {
       setEngine(ready);
       mountRef.current.onEngine?.(ready);
@@ -51,7 +53,7 @@ function mountEngine(
  * ao sair. `onEngine` recebe o motor pronto (e `null` ao desmontar), para o
  * card baixar a imagem do mapa.
  *
- * @example const { containerRef, engine } = usePanelMapEngine({ municipal: true }); <div ref={containerRef} />
+ * @example const { containerRef, engine } = usePanelMapEngine({ municipal: true, cooperative: true }); <div ref={containerRef} />
  */
 export function usePanelMapEngine(mount: PanelMapEngineMount) {
   const containerRef = useRef<HTMLDivElement>(null);

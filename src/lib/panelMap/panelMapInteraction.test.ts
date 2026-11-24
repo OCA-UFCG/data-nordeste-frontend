@@ -80,6 +80,23 @@ describe("trackMoves", () => {
     });
   });
 
+  // Acima do teto o raster do Oceano não tem dado e um município pequeno
+  // ficaria ampliado demais.
+  it("o fitTo não passa do zoom 10", () => {
+    const { map, tracker } = trackedMoves();
+
+    tracker.fitTo([
+      [-35, -8.1],
+      [-34.9, -8],
+    ]);
+
+    expect(map.fitBounds).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ maxZoom: 10 }),
+      expect.anything(),
+    );
+  });
+
   it("um resize é programático, mas não é fit e mantém o fittedZoom", () => {
     const { map, moves } = trackedMoves();
 

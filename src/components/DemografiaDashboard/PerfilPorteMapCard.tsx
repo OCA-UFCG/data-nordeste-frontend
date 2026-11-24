@@ -121,7 +121,7 @@ export const PerfilPorteMapCard = ({
       }
     >
       <div className={MAP_BOX_CLASS}>
-        <PanelMap {...mapProps} onEngine={setEngine} />
+        <PanelMap {...mapProps} cooperative onEngine={setEngine} />
       </div>
       <div className="sr-only">{table}</div>
     </ProtoCard>

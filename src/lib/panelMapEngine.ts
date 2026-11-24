@@ -1,9 +1,5 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import type {
-  FilterSpecification,
-  Map as MaplibreMap,
-  MapOptions,
-} from "maplibre-gl";
+import type { FilterSpecification, Map as MaplibreMap } from "maplibre-gl";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
 import type { Bounds, FitSources } from "@/features/panelMap/mapLayers";
@@ -26,7 +22,7 @@ import {
   showBasemap,
   type VeilFilters,
 } from "@/lib/panelMap/panelMapPaint";
-import { panelMapStyle } from "@/lib/panelMap/panelMapStyle";
+import { panelMapOptions } from "@/lib/panelMap/panelMapOptions";
 
 export { BASEMAPS, type BasemapKind } from "@/lib/panelMap/basemaps";
 export type { AridezOverlay } from "@/lib/panelMap/panelMapAridez";
@@ -63,46 +59,23 @@ export type PanelMapEngineOptions = {
 
   // Feições do indicador são municípios (PIB, Demografia) ou estados (IDH).
   municipal: boolean;
+
+  // Gestos cooperativos (Ctrl/⌘ + roda, dois dedos): no card, sim; na tela
+  // cheia, não. O moveend do gesto liberado continua trazendo `originalEvent`
+  // (o handler manager do MapLibre o repassa), então segue virando filtro.
+  cooperative: boolean;
   onReady: (engine: PanelMapEngine) => void;
 };
-
-// Vista antes do primeiro fitTo: o Nordeste inteiro.
-const NORDESTE_BOUNDS: Bounds = [
-  [-48.8, -18.4],
-  [-34.8, -1.0],
-];
-
-// Sem rotação nem inclinação. Sem box zoom (shift+arrastar): o moveend dele
-// não traz `originalEvent` e seria lido como movimento programático.
-const LOCKED_GESTURES = {
-  dragRotate: false,
-  pitchWithRotate: false,
-  touchPitch: false,
-  boxZoom: false,
-} satisfies Partial<MapOptions>;
-
-function panelMapOptions(
-  container: HTMLElement,
-  basemap: BasemapKind,
-): MapOptions {
-  return {
-    container,
-    style: panelMapStyle(basemap),
-    bounds: NORDESTE_BOUNDS,
-
-    // IMPORTANT: sem isto o toDataURL do "Baixar imagem" sai em branco.
-    preserveDrawingBuffer: true,
-    attributionControl: { compact: true },
-    ...LOCKED_GESTURES,
-  };
-}
 
 function createMap(
   maplibre: MaplibreModule,
   container: HTMLElement,
-  basemap: BasemapKind,
+  options: PanelMapEngineOptions,
 ): MaplibreMap {
-  const map = new maplibre.Map(panelMapOptions(container, basemap));
+  const { basemap, cooperative } = options;
+  const map = new maplibre.Map(
+    panelMapOptions(container, basemap, cooperative),
+  );
 
   map.touchZoomRotate.disableRotation();
   map.addControl(new maplibre.NavigationControl({ showCompass: false }));
@@ -169,7 +142,7 @@ function mountMap(
   destroy: () => void,
 ): void {
   if (mount.destroyed) return;
-  const map = createMap(maplibre, container, options.basemap);
+  const map = createMap(maplibre, container, options);
 
   mount.map = map;
   map.once("load", () => {
@@ -185,7 +158,7 @@ function mountMap(
  * módulo pode ser importado na renderização do servidor. Devolve a função que
  * desmonta o mapa, mesmo antes do `onReady` (efeito do React desmontado cedo).
  *
- * @example useEffect(() => createPanelMapEngine(div, { basemap: "oceano", municipal: true, onReady: setEngine }), [])
+ * @example useEffect(() => createPanelMapEngine(div, { basemap: "oceano", municipal: true, cooperative: true, onReady: setEngine }), [])
  */
 export function createPanelMapEngine(
   container: HTMLElement,

@@ -93,7 +93,7 @@ export const PibMapCard = ({
       }
     >
       <div className={MAP_BOX_CLASS}>
-        <PanelMap {...mapProps} onEngine={setEngine} />
+        <PanelMap {...mapProps} cooperative onEngine={setEngine} />
       </div>
     </ProtoCard>
   );

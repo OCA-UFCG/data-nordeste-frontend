@@ -32,8 +32,12 @@ type FeatureId = FeatureIdentifier["id"];
 // moveend) e erra quando um fitTo interrompe outro.
 const FIT_EVENT_DATA = { panelMapFit: true };
 
+// Teto do enquadramento: um município pequeno não enche a tela inteira, e o
+// raster do Oceano só tem dado até o 10 (ver `basemaps.ts`).
+const FIT_MAX_ZOOM = 10;
+
 // IMPORTANT: só gesto do usuário vira filtro. Arrastar, roda do mouse, toque,
-// teclado, duplo clique e os botões +/− mandam `originalEvent` no moveend; o
+// teclado e os botões +/− mandam `originalEvent` no moveend; o
 // fitTo e o resize do container (ResizeObserver → map.resize) não. Sem isto,
 // redimensionar a janela viraria um recorte que ninguém escolheu.
 function isUserMove(event: object): boolean {
@@ -101,7 +105,11 @@ export function trackMoves(map: MaplibreMap, municipal: boolean) {
 
   return {
     fitTo: (bbox: Bounds) => {
-      map.fitBounds(bbox, { padding: 24, duration: 600 }, FIT_EVENT_DATA);
+      map.fitBounds(
+        bbox,
+        { padding: 24, duration: 600, maxZoom: FIT_MAX_ZOOM },
+        FIT_EVENT_DATA,
+      );
     },
     onMoveEnd: (callback: (move: PanelMapMoveEnd) => void) => {
       listener = callback;

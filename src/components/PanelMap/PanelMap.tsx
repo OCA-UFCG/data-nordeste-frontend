@@ -38,6 +38,10 @@ export type PanelMapProps = {
   formatValue: (value: number) => string;
   label: string;
   onEngine?: (engine: PanelMapEngine | null) => void;
+
+  // Gestos cooperativos (Ctrl/⌘ + roda, dois dedos): o mapa no card não
+  // sequestra a rolagem da página. A tela cheia deixa desligado.
+  cooperative?: boolean;
   className?: string;
   createEngine?: typeof createPanelMapEngine;
 };
@@ -78,6 +82,7 @@ function usePanelMapRecorte(
 function usePanelMapStage(props: PanelMapProps, geodata: ReadyGeodata) {
   const { containerRef, engine } = usePanelMapEngine({
     municipal: props.indicator !== "idh",
+    cooperative: props.cooperative ?? false,
     createEngine: props.createEngine,
     onEngine: props.onEngine,
   });
