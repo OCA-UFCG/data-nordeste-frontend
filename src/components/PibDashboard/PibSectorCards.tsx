@@ -2,8 +2,11 @@
 
 import type { ReactNode } from "react";
 import { PibBars } from "@/components/PibDashboard/PibBars";
+import { PibInfoParagraphs } from "@/components/PibDashboard/PibInfoParagraphs";
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
 import {
+  PIB_ATIVIDADE_INFO,
+  PIB_ATIVIDADE_UNIT,
   PIB_CARD_INFO,
   PIB_VAB_TERM,
 } from "@/components/PibDashboard/pibTexts";
@@ -180,8 +183,8 @@ export const PibAtividadeCard = (props: PibSectorCardProps) => {
     <SectorCard
       {...props}
       title={ATIVIDADE_TITLE}
-      unit="% do PIB"
-      info={PIB_CARD_INFO.atividade(props.data.vabLastYear)}
+      unit={PIB_ATIVIDADE_UNIT}
+      info={<PibInfoParagraphs paragraphs={PIB_ATIVIDADE_INFO} />}
     >
       {bars.rows.length ? (
         <>
@@ -192,10 +195,6 @@ export const PibAtividadeCard = (props: PibSectorCardProps) => {
             formatValue={(value) => formatPercent(value)}
             formatTick={(value) => `${value}%`}
           />
-          <Hint>
-            Participação de cada atividade no PIB de {props.place} em{" "}
-            {props.data.filters.ano}.
-          </Hint>
         </>
       ) : (
         <Hint>Sem atividades com participação informada neste território.</Hint>

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ComponentProps } from "react";
 import type { EChart } from "@/components/EChart/EChart";
@@ -115,5 +115,18 @@ describe("PibMapCard", () => {
     );
 
     expect(borders).toEqual({ "2504009": undefined, "2611606": 3 });
+  });
+
+  it("explains the PIB terms in bold paragraphs in the info balloon", async () => {
+    renderCard();
+
+    fireEvent.click(screen.getByRole("button", { name: "Sobre este gráfico" }));
+    const term = await screen.findByText("Produto Interno Bruto (PIB)");
+
+    expect(term.tagName).toBe("B");
+    expect(screen.getByText("PIB per capita").tagName).toBe("B");
+    expect(
+      term.closest("p")?.parentElement?.querySelectorAll("p"),
+    ).toHaveLength(3);
   });
 });

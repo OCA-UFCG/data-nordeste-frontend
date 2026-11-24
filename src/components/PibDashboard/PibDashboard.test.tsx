@@ -126,6 +126,8 @@ describe("PibDashboard", () => {
     expect(screen.getByText(/VAB total: R\$ 500,00 Mi$/)).toBeInTheDocument();
     expect(screen.getByText(/· R\$ milhões \(Mi\)$/)).toBeInTheDocument();
     expect(screen.queryByText(/no eixo/)).not.toBeInTheDocument();
+    expect(screen.getByText(/· Percentual do PIB \(%\)$/)).toBeInTheDocument();
+    expect(screen.queryByText(/Participação de cada atividade/)).toBeNull();
   });
 
   it("shows the notice for a year without sector data, whatever the year", () => {

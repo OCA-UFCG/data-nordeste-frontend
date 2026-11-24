@@ -8,10 +8,6 @@ export const PIB_LEAD =
 // Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
-// O ano vem do banco; sem ele (carregando ou erro), a frase sai.
-const sectorCoverage = (vabLastYear: number | null) =>
-  vabLastYear === null ? "" : ` Os dados setoriais vão até ${vabLastYear}.`;
-
 // Título do card da linha, também no rótulo do SVG e na imagem baixada.
 export const PIB_LINE_TITLE =
   "Dinâmica temporal do PIB total e do PIB per capita";
@@ -22,13 +18,41 @@ export const PIB_MAP_TITLE = "PIB total por município";
 // Trecho do ⓘ do VAB que o card destaca em negrito.
 export const PIB_VAB_TERM = "Valor Adicionado Bruto (VAB)";
 
+// ⓘ da equipe de conteúdo: um item por parágrafo, com o termo definido (em
+// negrito no card) separado do resto.
+export type PibInfoParagraph = { term?: string; rest: string };
+
+export const PIB_MAP_INFO: readonly PibInfoParagraph[] = [
+  {
+    term: "Produto Interno Bruto (PIB)",
+    rest: " é a soma de todos os bens e serviços finais produzidos em um país, estado ou município durante um determinado período.",
+  },
+  {
+    term: "PIB per capita",
+    rest: " indica a produção econômica média por habitante. É obtido dividindo-se o PIB total pela população do município. Em 2023, foi usada a população do Censo Demográfico de 2022, segundo nota do Instituto Brasileiro de Geografia e Estatística (IBGE).",
+  },
+  {
+    rest: "Obs.: Os valores do PIB são apresentados a preços correntes de cada ano. A evolução nominal incorpora tanto variações na produção quanto nos preços.",
+  },
+];
+
+export const PIB_ATIVIDADE_INFO: readonly PibInfoParagraph[] = [
+  {
+    term: "Participação da atividade com maior Valor Adicionado Bruto (VAB) no Produto Interno Bruto (PIB)",
+    rest: " representa o percentual do PIB que é gerado pela atividade econômica de maior VAB no local selecionado. Esse indicador mostra o quanto a principal atividade econômica contribui para a geração de riqueza local.",
+  },
+  {
+    rest: "Obs.: Enquanto nenhum município estiver selecionado, o gráfico apresenta um ranking das atividades com maior VAB. Ao selecionar um município, o gráfico passa a mostrar a participação da atividade de maior VAB no PIB do município selecionado.",
+  },
+];
+
+// Unidade do subtítulo do card de atividade.
+export const PIB_ATIVIDADE_UNIT = "Percentual do PIB (%)";
+
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
   line: "PIB total no eixo da esquerda e PIB per capita no eixo da direita, cada um na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
-  map: "Cada município recebe a cor da faixa do seu PIB total no ano. Com estados no filtro, o mapa mostra só os municípios deles; os municípios escolhidos ficam em destaque.",
   vab: `${PIB_VAB_TERM} por setor representa o quanto cada setor da economia contribui para a geração de riqueza, ou seja, para o Produto Interno Bruto (PIB).`,
-  atividade: (vabLastYear: number | null) =>
-    `As três atividades com maior participação no PIB do território selecionado, em % do PIB.${sectorCoverage(vabLastYear)}`,
 } as const;
 
 export const PIB_SAIBA_MAIS_TITLE = "Saiba mais sobre o PIB";

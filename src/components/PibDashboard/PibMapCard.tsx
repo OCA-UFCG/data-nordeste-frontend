@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
 import {
-  PIB_CARD_INFO,
+  PIB_MAP_INFO,
   PIB_MAP_TITLE,
 } from "@/components/PibDashboard/pibTexts";
+import { PibInfoParagraphs } from "@/components/PibDashboard/PibInfoParagraphs";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
 import { ProtoCard, ProtoSkeleton } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
@@ -106,7 +107,10 @@ export const PibMapCard = ({
             disabled={status.state === "loading" || status.state === "error"}
             onClick={() => setFullscreen(true)}
           />
-          <ProtoCardInfo title={PIB_MAP_TITLE} text={PIB_CARD_INFO.map} />
+          <ProtoCardInfo
+            title={PIB_MAP_TITLE}
+            text={<PibInfoParagraphs paragraphs={PIB_MAP_INFO} />}
+          />
           <ProtoCardMenu title={PIB_MAP_TITLE} />
         </>
       }
