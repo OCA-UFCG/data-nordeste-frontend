@@ -225,6 +225,10 @@ outside the repository and rendered through frontend route/component logic.
 
 ## Native Panel Maps
 
+LEGACY: since the MapLibre swap (next section) only the Power BI demos
+(`/demo/*-powerbi`) still use `ChoroplethMap`/`ChoroplethCanvas` and
+`public/maps/*.json`; the IDH, PIB and profile panels use `PanelMap`.
+
 - `ChoroplethMap` reads GeoJSON meshes from `public/maps/`, built from IBGE
   shapefiles by the scripts in `scripts/`. Each feature's `properties.name`
   holds the code the panel data uses as `region.code`.
@@ -241,6 +245,107 @@ outside the repository and rendered through frontend route/component logic.
   as PE is drawn centred with blank space above and below.
 - The map uses the canvas renderer; the other charts stay on SVG. Panning
   ~1,800 SVG paths was sluggish.
+
+## Panel Maps (MapLibre)
+
+The map card of `/demo/pib`, `/demo/idh` and `/demo/perfil-demografico` is the
+shared `PanelMap` (`src/components/PanelMap/`, domain rules in
+`src/features/panelMap/`; `maplibre-gl` only behind `src/lib/panelMapEngine`).
+Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
+
+- **Source of the data:** Drive folder "Mapas_painéis" (id
+  `1zXWbyU02PrbuZj9JQQRjf9bwZf-GoKg6`, public by link). The data team owns the
+  files; `scripts/geodata/drive_manifest.json` keeps their IDs, so replacing a
+  file in Drive keeps the ID. Geodata is never committed to this repository.
+- **Pipeline** (`scripts/geodata/`, Python 3 stdlib plus the GDAL CLIs
+  `ogr2ogr`, `gdal_translate` and `gdaldem`; no geopandas):
+
+  ```bash
+  RAW=/tmp/geodata-raw; OUT=/tmp/geodata        # any empty dirs
+  python3 -I scripts/geodata/geodata.py download "$RAW"
+  python3 -I scripts/geodata/geodata.py build "$RAW" "$OUT"
+  # optional: compare the maps with the database (tunnel + DATA_DB_URL, read-only)
+  DATA_DB_URL=... ../Automatic-Reporting/.venv/bin/python -I scripts/geodata/compare_db.py "$OUT"
+  python3 -I scripts/geodata/geodata.py issues-pdf "$OUT/data-issues.json" relatorio.pdf
+  ```
+
+  `build` writes `vector/*.geojson` (`pib`, `demografia`, `idh`, `estados`,
+  `areas`), `raster/aridez_<ano>.png`, `styles.json` (classes and outlines read
+  from the `.qgz`), `manifest.json` and `data-issues.json`. Downloaded files are
+  untrusted data: never run anything from `$RAW`. `issues-pdf` needs
+  `google-chrome` on the PATH. Tests:
+  `python3 -m unittest discover -s scripts/geodata/tests -v`.
+
+- **Where it runs: gamma only, for now.** The VM keeps the directory at
+  `/opt/datane/geodata`; `.github/workflows/deploy-gamma.yml` mounts it with
+  `-v /opt/datane/geodata:/geodata:ro -e GEODATA_DIR=/geodata`. Beta and
+  production do not mount it. To publish new data:
+
+  ```bash
+  sudo mkdir -p /opt/datane/geodata            # once, on the VM
+  rsync -av --delete "$OUT/" <gamma-host>:/opt/datane/geodata/
+  ls /opt/datane/geodata/vector                # the five GeoJSON files
+  ```
+
+  The route reads the files on each request (no restart; browsers cache them
+  for 24 h). Locally, set `GEODATA_DIR` in `.env` to `$OUT`.
+
+- **Serving:** `/api/geodata/[...path]` (`src/app/api/geodata/`) reads from
+  `GEODATA_DIR`, accepts only `.json`, `.geojson` and `.png` inside that
+  directory and answers 503 with the missing variable when it is empty.
+- **Zoom levels** (`src/features/panelMap/mapRecorte.ts`): area of interest
+  below zoom 6.5, state from 6.5 (`STATE_ZOOM`), municipality from 8.5
+  (`MUNICIPALITY_ZOOM`); the IDH stops at state (`deepest`). Going down uses
+  those absolute thresholds and applies the Estado/Município filter under the
+  map centre; with no municipality there, it stays at the state.
+- **Going up uses the anchor zoom.** The recorte is only cleared one level when
+  the zoom falls more than 0.5 (`ZOOM_OUT_TOLERANCE`) below the anchor: the
+  zoom of the last programmatic fit, or the zoom at which the user chose the
+  current recorte (`useMapRecorte.ts`). Without it, a user who zoomed into a
+  state would only clear it by going below the old fit of the whole area, and a
+  choice made in the filter bar would be undone by the first nudge. Only a fit
+  moves the anchor; a container resize also is programmatic but would bring the
+  old fit zoom and erase it.
+- **The map filters the panel through the bar's own `request(...)`**, so the
+  other cards reload and dim (`stale`) exactly as with the bar. It only emits
+  at the end of a user gesture and only if the recorte changed; programmatic
+  moves (fit to the filters, resize) never emit, which avoids a
+  filter → fit → zoom → different filter loop. Click emits the recorte of the
+  clicked feature directly (municipality; the state in the IDH or in a card
+  that stops at state) and only fits the map when that is already the recorte.
+- **Veil:** grey (`VEIL_COLOR`) only from the state level: states outside the
+  chosen ones and, at municipality level, the municipalities of those states
+  that are not chosen (`veilFilters`, a layer filter). At area level there is
+  no veil.
+- **Tooltip ranking:** position among the features of the area of interest in
+  the year (`featuresInArea` + `rankWithinArea`, built on `rankRegions` from
+  `features/panels/choropleth.ts`); in the IDH, among the 9 states. Features
+  without a number in the year show "sem dado" and are not ranked.
+- **The map does not correct data.** Values, classes and geometries are drawn
+  as delivered: the "Médio" population range with inverted limits, the
+  negative PIB lower limit and the rest show in the legend as they are. Only
+  two things are allowed: renaming properties and turning numeric text into a
+  number to paint (`pop_2000`; what does not convert becomes `null`, "sem
+  dado"). The Semiárido has no polygon in the Drive, so `areas.geojson` builds
+  it from the municipalities flagged `semi_21_1`. Everything wrong goes to
+  `data-issues.json` (build checks, plus `compare_db.py` for differences above
+  0.5% between `v<ano>` and the database, shown as "Shape × banco: …" and
+  replaced, not duplicated, when run again) and from there to the PDF for the
+  data owner. Final PDFs go to
+  `Documentacao-OCA/data-nordeste/frontend/mapas-paineis-problemas-dados-<data>.pdf`.
+- **Basemaps:** Esri World Imagery ("Satélite") and Esri World Ocean Base
+  ("Oceano"), both with CORS open; the Esri credit is in the image source
+  (`panelMapImageSource`). The aridez raster has a decade selector (1990, 2000,
+  2010, 2020).
+- **Removed by this swap** (see each panel section): `IdhMapLegend`,
+  `buildIdhMapProps`, `buildIdhLegend`; `pibStates.ts` (`PIB_STATE_BINS`,
+  `describeStatesOffMap`), `buildPibMapProps` and the card
+  legend; `PerfilPorteToggles`, `DemografiaMapa`, `toggleTerritorialUf`,
+  `selectOnlyTerritorialUf`, `PIB_MAP_HINT`, `PIB_MAP_IMAGE_SOURCE`.
+- **`ProtoStateMap` is no longer used by any panel card.** Only the
+  non-`renderStage` branch of `ProtoMapFullscreen` still draws it, and no
+  caller uses that branch (it and its tests are still there, to be removed in
+  a follow-up).
 
 ## Responsive Layout
 
@@ -309,7 +414,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   "Saiba mais sobre o IDH" with "Ler mais" and glossary. It replaced the
   Power BI-faithful version of `129cef4` (gauges, no ranking).
 - The prototype building blocks (card, sheet, ⓘ, ⋯ menu, cover, filter bar
-  shell, stat cards, state map and its fullscreen, "Saiba mais", sticky chain)
+  shell, stat cards, the map fullscreen frame, "Saiba mais", sticky chain)
   live in `src/components/ProtoPanel/` and are shared with the demographic
   profile; IDH-only pieces stay in `src/components/IdhDashboard/`. The
   prototype CSS was ported to Tailwind with its exact values (`protoStyles.ts`
@@ -339,8 +444,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   `PanelMap` (`renderStage`) in the card `overlay`; the downloaded image comes
   from the engine with "Basemap: Esri" (`panelMapImageSource`). Removed:
   `IdhMapLegend`, `buildIdhMapProps` (`idhMapProps.ts`) and `buildIdhLegend`
-  (the legend now comes from `PanelMap`). `ProtoStateMap` stays because
-  `ProtoMapFullscreen` still draws it without `renderStage`.
+  (the legend now comes from `PanelMap`). `ProtoStateMap` is unused by the
+  cards now: only `ProtoMapFullscreen`'s non-`renderStage` branch draws it,
+  and no caller uses that branch.
 - Prototype rules that came from its demo data were not ported (state data
   only for 2021, "sem dado por estado", the undo toast): the `des_idh` views
   have the yearly series per state. The empty-state notice of the sex and
@@ -429,9 +535,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Removed with the map swap: `PerfilPorteToggles`, `DemografiaMapa`
   (`useDemografiaHighlight`, profile copy), `toggleTerritorialUf` and
   `selectOnlyTerritorialUf` (`territorialPlace.ts`), `PIB_MAP_HINT` and
-  `PIB_MAP_IMAGE_SOURCE`. `ChoroplethCanvas`, `ChoroplethMap`,
-  `public/maps/*.json` and `ProtoStateMap` stay: the Power BI demos still use
-  them.
+  `PIB_MAP_IMAGE_SOURCE`. `ChoroplethCanvas`, `ChoroplethMap` and
+  `public/maps/*.json` stay: the Power BI demos still use them.
+  `ProtoStateMap` is not used by any panel card (see "Panel Maps (MapLibre)").
 
 ## PIB Panel Demo (`/demo/pib`)
 
@@ -440,24 +546,27 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   `ProtoPanel/` pieces in the "pib" tone (orange accent `#e5640f`, total
   `#f2761c`, per capita `#1e88c7`) and the real `eco_pib.vw_pib_municipal_pbi`
   data. Cover, sticky filter bar, two big numbers, the yearly line with one
-  axis per series, the state map and the two sector cards, "Saiba mais" and
+  axis per series, the municipal map and the two sector cards, "Saiba mais" and
   related content.
 - Shared pieces extracted for this panel, so nothing was copied from the
   profile: `ProtoTerritorialFilters` (Ano, Área, Estado, Município; was
   `PerfilFilterBar`), `features/panels/territorialPlace.ts` (was
   `demografia/perfilPlace.ts`), `ProtoSeriesLegend` (the line legend of the
   IDH) and the `pair` variant of `ProtoStatCards`.
-- Data: the map query sums `pib_total` by state for the whole area and year,
-  ignoring the Estado and Município filters (the chosen state only gets the
-  outline). Sector data (VAB and activities) stops at 2021
+- Data: the map itself comes from the geodata files (`pib.geojson`, `v<ano>`
+  per municipality; see "Panel Maps (MapLibre)"), not from the database.
+  `loadPibPanel` still sums `pib_total` by state into `PibPanelData.estados`,
+  but no card reads it any more (candidate for removal). Sector data (VAB and activities) stops at 2021
   (`PIB_VAB_LAST_YEAR`); 2022 and 2023 show the notice with "Ver 2021".
 - Deliberate deviations from the prototype:
-  - The map is by state only, as in the prototype. The previous demo's
-    municipal map, its table and the "highlight an activity on the map" list
-    are gone; the activity card shows the three largest, as the prototype does.
+  - The map is the shared MapLibre `PanelMap` (indicator "pib", municipal
+    level, `.qgz` classes as delivered; `PibMapCard`), not the prototype's
+    state-only SVG. The previous demo's table and the "highlight an activity
+    on the map" list are gone; the activity card shows the three largest, as
+    the prototype does.
   - Zooming or clicking the map sets Estado and Município in the filter
-    (`usePanelMapFilters`); several states are possible through the Estado
-    filter.
+    (`usePanelMapFilters`, the bar's own `request`); several states are
+    possible through the Estado filter.
   - The VAB axis unit follows the data (`pibBarUnit`: trilhões, bilhões,
     milhões, mil) instead of the fixed "R$ bilhões", so a small municipality
     gets a readable axis.
@@ -467,12 +576,13 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   - No "Escolher outro ano" button in the year notice and no "Atualizado em"
     in the card footers: the database does not say when the PIB was loaded
     (`PIB_CARD_FOOTER`, marked `INTENTIONAL:`).
-  - Minas Gerais and Espírito Santo (Área da Sudene, Semiárido) have data but
-    no shape in the nine-state map; a hint under the legend says so
-    (`describeStatesOffMap`).
+  - Minas Gerais and Espírito Santo (Área da Sudene, Semiárido) are drawn
+    like any other state because the map is municipal; the old "no shape in
+    the nine-state map" hint (`describeStatesOffMap`) is gone.
   - "Saiba mais" keeps the Power BI definitions (PIB, per capita, VAB,
     participação) as the glossary; the prototype has only the paragraphs.
-- Image download exists for the line and the map (SVG); the sector bars are
+- Image download exists for the line (SVG) and the map (from the
+  MapLibre engine, with "Basemap: Esri" in the source); the sector bars are
   HTML.
 - Removed with this rebuild: `PibSectorCharts`, `AtividadeList`,
   `AtividadeHighlightChip`, `PibSaibaMais`, `TrendChart`, `HorizontalBarChart`
@@ -487,8 +597,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Card states as in the IDH (`resolvePibCardStates` in `pibCardState.ts`,
   built on the shared `resolveDependentCardStates` and `usePendingFilters`):
   while a filter loads, only the cards whose query depends on the changed
-  filter keep their data dimmed (`stale`); clicking a state leaves the map
-  alone, a year change leaves the yearly series alone. The selection (map
+  filter keep their data dimmed (`stale`); the map depends only on Área and
+  Ano (`PIB_CARD_DEPENDENCIES` in `pibCardState.ts`), so zooming it does not dim it, and a year
+  change leaves the yearly series alone. The selection (map
   outline, chart year, filter bar) follows the requested filters at once.
   Skeletons only after a failed query ("Tentar de novo" and loading beats
   error). The map fullscreen goes in `ProtoCard`'s `overlay` slot.

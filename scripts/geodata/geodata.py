@@ -2,6 +2,7 @@
 
 Uso: python3 -I scripts/geodata/geodata.py download <raw_dir>
      python3 -I scripts/geodata/geodata.py build <raw_dir> <out_dir>
+     python3 -I scripts/geodata/geodata.py issues-pdf <data-issues.json> <saida.pdf>
 """
 
 import argparse
@@ -14,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import build
 import drive
+import issues_pdf
 
 MANIFEST_PATH = Path(__file__).resolve().parent / "drive_manifest.json"
 
@@ -31,6 +33,13 @@ def run_build(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_issues_pdf(args: argparse.Namespace) -> int:
+    issues = json.loads(Path(args.issues_json).read_text(encoding="utf-8"))
+    issues_pdf.issues_to_pdf(issues, Path(args.pdf))
+    print(f"{len(issues)} problemas em {args.pdf}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Pipeline de geodados dos painéis.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -41,6 +50,10 @@ def build_parser() -> argparse.ArgumentParser:
     build_cmd.add_argument("raw_dir", help="diretório com os arquivos baixados do Drive")
     build_cmd.add_argument("out_dir", help="diretório de saída (GEODATA_DIR)")
     build_cmd.set_defaults(run=run_build)
+    pdf_cmd = subparsers.add_parser("issues-pdf", help="gera o PDF dos problemas nos dados")
+    pdf_cmd.add_argument("issues_json", help="data-issues.json gerado pelo build")
+    pdf_cmd.add_argument("pdf", help="arquivo PDF de saída")
+    pdf_cmd.set_defaults(run=run_issues_pdf)
     return parser
 
 
