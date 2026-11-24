@@ -315,14 +315,27 @@ describe("PanelMap recorte pelo zoom (regras 3 e 4)", () => {
     expect(props.onRecorteChange).not.toHaveBeenCalled();
   });
 
-  it("clique em outro município com município escolhido volta ao estado", async () => {
+  it("clique em outro município com município escolhido o escolhe", async () => {
     const { engine, props } = await renderPanelMap({
       recorte: { uf: ["PE"], mun: ["2611606"] },
     });
 
     act(() => engine.emitClick(JOAO_PESSOA));
 
-    expect(props.onRecorteChange).toHaveBeenCalledWith(PE);
+    expect(props.onRecorteChange).toHaveBeenCalledWith({
+      uf: ["PB"],
+      mun: ["2507507"],
+    });
+  });
+
+  it("clique no vazio com município escolhido não emite nada", async () => {
+    const { engine, props } = await renderPanelMap({
+      recorte: { uf: ["PE"], mun: ["2611606"] },
+    });
+
+    act(() => engine.emitClick(null));
+
+    expect(props.onRecorteChange).not.toHaveBeenCalled();
   });
 
   it("clique no município já escolhido volta ao estado", async () => {

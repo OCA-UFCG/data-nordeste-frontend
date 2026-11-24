@@ -348,9 +348,11 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   state(s) is selected (with several states, one of them is narrowed to), while
   clicking the state itself (state-level maps or cards that stop at state), a
   feature of another state under the veil, or empty map (ocean, outside the
-  area) goes back to `EMPTY_RECORTE`; **municipality** — any click (the
-  municipality itself, another one, outside) goes back to its state. So
-  clicking outside the highlighted cut always goes up one level. Drags are not
+  area) goes back to `EMPTY_RECORTE`; **municipality** — clicking the
+  selected municipality (or one of several selected) goes back to its state,
+  clicking another municipality selects it (no going up), and clicking empty
+  map changes nothing. So clicking outside the highlight goes up one level
+  only at state level, never at municipality level. Drags are not
   clicks (MapLibre's `click` excludes them).
 - **Gestures and zoom cap** (`src/lib/panelMap/panelMapOptions.ts`): the
   map inside the card uses MapLibre's cooperative gestures (Ctrl/⌘ + wheel,

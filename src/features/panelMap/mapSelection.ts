@@ -26,11 +26,18 @@ function pickedRecorte(
   return { uf: [feature.uf], mun: [feature.code] };
 }
 
-// Um nível acima do recorte: município → estado, estado → área de interesse.
-function oneLevelUp(current: MapRecorte): MapRecorte {
-  if (current.mun.length > 0) return { uf: current.uf, mun: [] };
+// Com município escolhido: clicar num dos escolhidos volta ao estado dele, em
+// outro município o escolhe, e no vazio nada muda (não sobe de nível).
+function recorteFromMunicipio(
+  clicked: MapFeatureProps | null,
+  level: FeatureLevel,
+  deepest: MapLevel,
+  current: MapRecorte,
+): MapRecorte {
+  if (!clicked) return current;
+  if (current.mun.includes(clicked.code)) return { uf: [clicked.uf], mun: [] };
 
-  return EMPTY_RECORTE;
+  return pickedRecorte(clicked, level, deepest);
 }
 
 // Estado ao qual a feição pertence (com feições de estado, ela mesma).
@@ -48,10 +55,12 @@ function ufOfFeature(feature: MapFeatureProps, level: FeatureLevel): string {
  * - estado: uma feição dentro do(s) estado(s) escolhido(s) vira o recorte
  *   (município, ou só aquele estado se eram vários); clicar no próprio estado
  *   (já era o recorte), em outro estado ou no vazio volta à área.
- * - município: qualquer clique volta ao estado, inclusive no próprio município.
+ * - município: clicar no município escolhido (ou em um dos escolhidos) volta ao
+ *   estado dele; clicar em outro município o escolhe; clicar no vazio não
+ *   muda nada (clicar fora não sobe de nível).
  * Ex.: clique em Recife (`deepest: "municipio"`) com `EMPTY_RECORTE` →
- * `{ uf: ["PE"], mun: ["2611606"] }`; qualquer clique depois → `{ uf: ["PE"], mun: [] }`;
- * outro clique fora de PE → `EMPTY_RECORTE`.
+ * `{ uf: ["PE"], mun: ["2611606"] }`; novo clique em Recife → `{ uf: ["PE"], mun: [] }`;
+ * clique em Petrolina → `{ uf: ["PE"], mun: ["2611101"] }`; no vazio, nada muda.
  */
 export function recorteForClick(
   clicked: MapFeatureProps | null,
@@ -59,17 +68,19 @@ export function recorteForClick(
   deepest: MapLevel,
   current: MapRecorte,
 ): MapRecorte {
-  if (current.mun.length > 0) return oneLevelUp(current);
+  if (current.mun.length > 0) {
+    return recorteFromMunicipio(clicked, level, deepest, current);
+  }
   if (current.uf.length === 0) {
     return clicked ? pickedRecorte(clicked, level, deepest) : current;
   }
   if (!clicked || !current.uf.includes(ufOfFeature(clicked, level))) {
-    return oneLevelUp(current);
+    return EMPTY_RECORTE;
   }
 
   const picked = pickedRecorte(clicked, level, deepest);
 
-  return sameRecorte(picked, current) ? oneLevelUp(current) : picked;
+  return sameRecorte(picked, current) ? EMPTY_RECORTE : picked;
 }
 
 /**

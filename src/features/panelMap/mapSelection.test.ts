@@ -139,33 +139,36 @@ describe("recorteForClick", () => {
     });
   });
 
-  it("município: clique em outro município volta ao estado", () => {
+  it("município: clique em outro município o escolhe, sem subir", () => {
     const current = { uf: ["PE"], mun: ["2611606"] };
 
     expect(
       recorteForClick(PETROLINA, "municipio", "municipio", current),
-    ).toEqual({ uf: ["PE"], mun: [] });
+    ).toEqual({ uf: ["PE"], mun: ["2611101"] });
   });
 
-  it("município: clique fora do estado ou no vazio volta ao estado", () => {
+  it("município: clique em município de outro estado o escolhe", () => {
     const current = { uf: ["PE"], mun: ["2611606"] };
-    const toState = { uf: ["PE"], mun: [] };
 
     expect(
       recorteForClick(JOAO_PESSOA, "municipio", "municipio", current),
-    ).toEqual(toState);
-    expect(recorteForClick(null, "municipio", "municipio", current)).toEqual(
-      toState,
+    ).toEqual({ uf: ["PB"], mun: ["2507507"] });
+  });
+
+  it("município: clique no vazio não muda nada", () => {
+    const current = { uf: ["PE"], mun: ["2611606"] };
+
+    expect(recorteForClick(null, "municipio", "municipio", current)).toBe(
+      current,
     );
   });
 
-  it("município: vários selecionados também voltam ao estado", () => {
+  it("município: clicar num de vários selecionados volta ao estado dele", () => {
     const current = { uf: ["PE"], mun: ["2611606", "2611101"] };
 
-    expect(recorteForClick(RECIFE, "municipio", "municipio", current)).toEqual({
-      uf: ["PE"],
-      mun: [],
-    });
+    expect(
+      recorteForClick(PETROLINA, "municipio", "municipio", current),
+    ).toEqual({ uf: ["PE"], mun: [] });
   });
 
   it("feições de estado: área, clique no vazio não muda nada", () => {

@@ -22,7 +22,7 @@ const sectorCoverage = (vabLastYear: number | null) =>
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
   line: "PIB total (eixo da esquerda, em R$) e PIB per capita (eixo da direita, em R$ mil). Clique em um ponto para mudar o ano.",
-  map: "Cada município recebe a cor da faixa do seu PIB total. Aproxime o mapa ou clique em um estado ou município para usá-lo como filtro do painel; clicar fora do destaque volta um nível.",
+  map: "Cada município recebe a cor da faixa do seu PIB total. Aproxime o mapa ou clique em um estado ou município para usá-lo como filtro do painel; clicar de novo no município escolhido volta ao estado, e clicar fora do estado escolhido volta à visão do Nordeste.",
   vab: (vabLastYear: number | null) =>
     `Valor adicionado bruto de cada grande setor da economia.${sectorCoverage(vabLastYear)}`,
   atividade: (vabLastYear: number | null) =>
