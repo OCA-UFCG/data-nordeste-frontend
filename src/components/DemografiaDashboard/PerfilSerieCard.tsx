@@ -21,12 +21,12 @@ import {
 } from "@/features/panels/demografia/perfilCharts";
 import { formatPessoas } from "@/features/panels/format";
 
-const TITLE = "Série temporal da população";
+const TITLE = "Dinâmica populacional";
 
 const CENSOS = new Intl.ListFormat("pt-BR", { type: "conjunction" });
 
 // Os censos citados são os da série que veio do banco.
-const infoText = (serie: PerfilCardProps["data"]["serie"]) => {
+const censosText = (serie: PerfilCardProps["data"]["serie"]) => {
   if (!serie.length) {
     return "População residente do território nos Censos Demográficos (sem dados disponíveis).";
   }
@@ -34,8 +34,23 @@ const infoText = (serie: PerfilCardProps["data"]["serie"]) => {
   return `População residente do território nos Censos Demográficos de ${CENSOS.format(serie.map((point) => point.label))}.`;
 };
 
+const infoText = (serie: PerfilCardProps["data"]["serie"]) => (
+  <>
+    <p>{censosText(serie)}</p>
+    <p>
+      Alguns municípios foram criados a partir do desmembramento de outros, o
+      que explica a ausência de dados individualizados para esses municípios em
+      censos demográficos anteriores à sua criação. Essas alterações
+      territoriais devem ser consideradas na análise e na comparação dos dados
+      populacionais ao longo do tempo.
+    </p>
+  </>
+);
+
 // SVG leva cor literal: a imagem baixada não enxerga as variáveis CSS do painel.
-const INK = "#a8264f";
+const BAR = "#e484aa";
+const BAR_HOVER = "#d6537f";
+const BASELINE = "#bdbabc";
 
 const SerieGrid = ({ geometry }: { geometry: SerieGeometry }) => (
   <>
@@ -64,7 +79,7 @@ const SerieGrid = ({ geometry }: { geometry: SerieGeometry }) => (
 
 type SerieHover = { index: number } & TooltipAt;
 
-const SeriePoints = ({
+const SerieBars = ({
   geometry,
   hovered,
   onHover,
@@ -74,35 +89,22 @@ const SeriePoints = ({
   onHover: (hover: SerieHover | null) => void;
 }) => (
   <>
-    {geometry.points.map((point, index) => (
-      <g key={point.ano}>
-        <text
-          x={point.x}
-          y={point.y - 14}
-          textAnchor="middle"
-          fontSize={13}
-          fontWeight={600}
-          fill="#292829"
-        >
-          {point.label}
-        </text>
-        <text
-          x={point.x}
-          y={geometry.yearLabelY}
-          textAnchor="middle"
-          fontSize={13}
-          fontWeight={500}
-          fill="#595557"
-        >
-          {point.ano}
-        </text>
-        <circle
-          cx={point.x}
-          cy={point.y}
-          r={6}
-          fill="#ffffff"
-          stroke={INK}
-          strokeWidth={hovered === index ? 4 : 2.4}
+    <line
+      x1={geometry.grid.x1}
+      x2={geometry.grid.x2}
+      y1={geometry.base}
+      y2={geometry.base}
+      stroke={BASELINE}
+      strokeWidth={1.5}
+    />
+    {geometry.bars.map((bar, index) => (
+      <g key={bar.ano}>
+        <rect
+          x={bar.barX}
+          y={bar.barY}
+          width={bar.barWidth}
+          height={bar.barHeight}
+          fill={hovered === index ? BAR_HOVER : BAR}
           onPointerEnter={(event) =>
             onHover({ index, x: event.clientX, y: event.clientY })
           }
@@ -111,6 +113,26 @@ const SeriePoints = ({
           }
           onPointerLeave={() => onHover(null)}
         />
+        <text
+          x={bar.x}
+          y={bar.barY - 7}
+          textAnchor="middle"
+          fontSize={13}
+          fontWeight={600}
+          fill="#292829"
+        >
+          {bar.label}
+        </text>
+        <text
+          x={bar.x}
+          y={geometry.yearLabelY}
+          textAnchor="middle"
+          fontSize={13}
+          fontWeight={500}
+          fill="#595557"
+        >
+          {bar.ano}
+        </text>
       </g>
     ))}
   </>
@@ -140,15 +162,7 @@ const SerieSvg = ({
     className="absolute inset-x-0 top-0 block w-full overflow-visible [font-variant-numeric:tabular-nums]"
   >
     <SerieGrid geometry={geometry} />
-    <path
-      d={geometry.path}
-      fill="none"
-      stroke={INK}
-      strokeWidth={2.6}
-      strokeLinejoin="round"
-      strokeLinecap="round"
-    />
-    <SeriePoints geometry={geometry} hovered={hovered} onHover={onHover} />
+    <SerieBars geometry={geometry} hovered={hovered} onHover={onHover} />
   </svg>
 );
 
@@ -169,12 +183,12 @@ const SerieChart = ({
     width && points.length
       ? buildSerieGeometry({ width, height, points })
       : null;
-  const hovered = geometry && hover ? geometry.points[hover.index] : null;
+  const hovered = geometry && hover ? geometry.bars[hover.index] : null;
 
   // Ao lado de "cor ou raça" (acima de 1000 px) o card é mais alto que o
   // gráfico: a caixa estica (`flex-1`) e o SVG ocupa a altura que sobrar. O SVG
-  // fica fora do fluxo (`absolute`) para não segurar a caixa alta quando a
-  // linha encolhe; o piso é a altura do protótipo.
+  // fica fora do fluxo (`absolute`) para não segurar a caixa alta quando o
+  // gráfico encolhe; o piso é a altura do protótipo.
   return (
     <div
       ref={ref}
@@ -196,7 +210,7 @@ const SerieChart = ({
           title={String(hovered.ano)}
           rows={[
             {
-              color: INK,
+              color: BAR,
               label: "População",
               value: `${formatPessoas(hovered.valor)} habitantes`,
             },
@@ -208,8 +222,8 @@ const SerieChart = ({
 };
 
 /**
- * Card "Série temporal da população": a população do território nos censos,
- * em linha. Passar o mouse num ponto mostra o ano e o total.
+ * Card "Dinâmica populacional": a população do território nos censos,
+ * em colunas. Passar o mouse numa coluna mostra o ano e o total.
  *
  * @example <PerfilSerieCard data={panel} place="Nordeste" state="ok" onRetry={retry} />
  */

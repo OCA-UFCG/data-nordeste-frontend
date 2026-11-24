@@ -8,7 +8,7 @@ export const PERFIL_LEAD =
 // Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const PERFIL_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
-export const PERFIL_SAIBA_MAIS_TITLE = "Saiba mais sobre o perfil demográfico";
+export const PERFIL_SAIBA_MAIS_TITLE = "Saiba mais";
 
 export const PERFIL_SAIBA_MAIS_SUMMARY =
   "O perfil demográfico corresponde ao conjunto de características que ajudam a compreender a composição e a estrutura da população em um determinado território. Essas informações estão organizadas por faixa etária, sexo e cor ou raça, sendo esta última baseada na autodeclaração da população registrada nos Censos Demográficos do Instituto Brasileiro de Geografia e Estatística (IBGE). O conjunto desses elementos contribui para a construção de retratos populacionais que evidenciam a diversidade existente entre municípios, estados e regiões.";

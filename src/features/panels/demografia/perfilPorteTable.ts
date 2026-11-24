@@ -19,7 +19,7 @@ export const buildPerfilPorteTable = (
   data: Pick<DemografiaPanelData, "mapa" | "filters">,
 ): MunicipalMapTable =>
   buildMunicipalMapTable(data.mapa, {
-    caption: `Porte dos municípios em ${data.filters.ano}`,
+    caption: `Porte populacional em ${data.filters.ano}`,
     valueLabel: "População",
     bucketLabel: "Porte",
     buckets: DEMOGRAFIA_PORTES,

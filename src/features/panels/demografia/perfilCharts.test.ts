@@ -5,7 +5,7 @@ import {
   pyramidBandLabel,
   describePyramidBand,
   formatCompactPeople,
-  niceAxis,
+  zeroBasedAxis,
   pyramidRows,
   sexColumns,
 } from "@/features/panels/demografia/perfilCharts";
@@ -35,38 +35,6 @@ describe("formatCompactPeople", () => {
 
   it("keeps values under one thousand as plain integers", () => {
     expect(formatCompactPeople(999)).toBe("999");
-  });
-});
-
-describe("niceAxis", () => {
-  it("reproduces the Northeast axis 40..60 Mi in steps of 5 Mi", () => {
-    const axis = niceAxis(NE_SERIE.map((point) => point.valor));
-
-    expect(axis.min).toBe(40_000_000);
-    expect(axis.max).toBe(60_000_000);
-    expect(axis.ticks).toEqual([40e6, 45e6, 50e6, 55e6, 60e6]);
-  });
-
-  it("uses round thousands for a small municipality", () => {
-    const axis = niceAxis([18_000, 21_000, 23_500]);
-
-    expect(axis.min).toBe(15_000);
-    expect(axis.max).toBe(25_000);
-    expect(axis.ticks).toEqual([15_000, 17_500, 20_000, 22_500, 25_000]);
-  });
-
-  it("covers the data with headroom and returns ascending ticks", () => {
-    const values = [3_000, 9_200];
-    const axis = niceAxis(values, 5);
-
-    expect(axis.min).toBeLessThanOrEqual(3_000);
-    expect(axis.max).toBeGreaterThanOrEqual(9_200);
-    expect(axis.ticks).toHaveLength(6);
-    expect([...axis.ticks].sort((a, b) => a - b)).toEqual(axis.ticks);
-  });
-
-  it("rejects an empty list with the expected shape in the message", () => {
-    expect(() => niceAxis([])).toThrow(/at least one value/);
   });
 });
 
@@ -116,36 +84,44 @@ describe("buildSerieGeometry", () => {
     expect(geometry.height).toBe(250);
   });
 
-  it("labels the Northeast gridlines from top to bottom", () => {
+  it("labels the Northeast gridlines from top to bottom, down to zero", () => {
     const geometry = buildSerieGeometry({ width: 800, points: NE_SERIE });
 
     expect(geometry.gridLines.map((line) => line.label)).toEqual([
       "60 Mi",
-      "55 Mi",
-      "50 Mi",
-      "45 Mi",
       "40 Mi",
+      "20 Mi",
+      "0",
     ]);
   });
 
-  it("places 2010 by its share of the time between the census years", () => {
-    const geometry = buildSerieGeometry({ width: 800, points: NE_SERIE });
-    const [first, middle, last] = geometry.points;
+  it("draws one column per census, evenly spaced and rising with the value", () => {
+    const { bars } = buildSerieGeometry({ width: 800, points: NE_SERIE });
 
-    expect(middle.x).toBeGreaterThan(first.x);
-    expect(middle.x).toBeLessThan(last.x);
-
-    // (2010 - 2000) / (2022 - 2000) of the 658px span after the 26px inset.
-    expect(middle.x).toBeCloseTo(80 + (10 / 22) * 658, 2);
+    expect(bars).toHaveLength(3);
+    expect(bars[1].x - bars[0].x).toBeCloseTo(bars[2].x - bars[1].x, 5);
+    expect(bars[2].barHeight).toBeGreaterThan(bars[0].barHeight);
   });
 
-  it("emits a path through every point", () => {
+  it("sits every column on the baseline and caps the width at 40px", () => {
     const geometry = buildSerieGeometry({ width: 800, points: NE_SERIE });
 
-    const [first] = geometry.points;
+    for (const bar of geometry.bars) {
+      expect(bar.barY + bar.barHeight).toBeCloseTo(geometry.base, 5);
+      expect(bar.barWidth).toBe(40);
+    }
+  });
 
-    expect(geometry.path.startsWith(`M${first.x.toFixed(1)} `)).toBe(true);
-    expect(geometry.path.match(/[ML]/g)).toHaveLength(3);
+  it("keeps a value at the axis floor visible with at least 2px", () => {
+    const { bars } = buildSerieGeometry({
+      width: 800,
+      points: [
+        { ano: 2000, valor: 40_000_000 },
+        { ano: 2010, valor: 60_000_000 },
+      ],
+    });
+
+    expect(bars[0].barHeight).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -264,15 +240,6 @@ describe("describePyramidBand", () => {
   });
 });
 
-describe("niceAxis near zero", () => {
-  it("never extends a non-negative axis below zero", () => {
-    const axis = niceAxis([120, 130]);
-
-    expect(axis.min).toBeGreaterThanOrEqual(0);
-    expect(axis.ticks).toHaveLength(5);
-  });
-});
-
 describe("buildSerieGeometry labels", () => {
   // Regressão (revisão da PR #400): com 0 casas, os cinco ticks e os três
   // censos de Sergipe saíam todos "2 Mi".
@@ -291,12 +258,27 @@ describe("buildSerieGeometry labels", () => {
     expect(new Set(labels).size).toBe(labels.length);
   });
 
-  it("labels the census points with one more digit than the axis", () => {
+  it("labels the census columns with one more digit than the axis", () => {
     const labels = buildSerieGeometry({
       width: 800,
       points: sergipe,
-    }).points.map((point) => point.label);
+    }).bars.map((bar) => bar.label);
 
     expect(labels).toEqual(["1,78 Mi", "2,07 Mi", "2,21 Mi"]);
+  });
+});
+
+describe("zeroBasedAxis", () => {
+  it("starts at zero and stops at the first round tick above the data", () => {
+    expect(zeroBasedAxis([47_741_711, 53_081_950, 54_658_515]).ticks).toEqual([
+      0, 20e6, 40e6, 60e6,
+    ]);
+    expect(zeroBasedAxis([1_420_000, 1_540_000, 1_490_000]).ticks).toEqual([
+      0, 0.5e6, 1e6, 1.5e6, 2e6,
+    ]);
+  });
+
+  it("keeps a non-empty axis when every value is zero", () => {
+    expect(zeroBasedAxis([0, 0]).max).toBeGreaterThan(0);
   });
 });

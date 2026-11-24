@@ -34,9 +34,6 @@ export type ProtoStatCell = {
   label: string;
   value: string | null;
   caption?: string;
-
-  // Com título, o card ganha o menu ⋮ (compartilhar e catálogo).
-  menuTitle?: string;
   pill?: ProtoStatPill | null;
 };
 
@@ -59,12 +56,10 @@ const DEFAULT_ICON_CLASS =
 const CellTop = ({
   icon,
   label,
-  menuTitle,
   iconClassName,
 }: {
   icon: ProtoIconName;
   label: string;
-  menuTitle?: string;
   iconClassName: string;
 }) => (
   <div className="flex min-h-[34px] items-center gap-2.5">
@@ -80,11 +75,9 @@ const CellTop = ({
     <div className="min-w-0 text-[13px] leading-[17px] font-medium">
       {label}
     </div>
-    {menuTitle ? (
-      <div className="-mt-1.5 -mr-2 ml-auto flex-none self-start">
-        <ProtoCardMenu title={menuTitle} />
-      </div>
-    ) : null}
+    <div className="-mt-1.5 -mr-2 ml-auto flex-none self-start">
+      <ProtoCardMenu title={label} />
+    </div>
   </div>
 );
 
@@ -155,7 +148,6 @@ const CellError = ({
     <CellTop
       icon={cell.icon}
       label={cell.label}
-      menuTitle={cell.menuTitle}
       iconClassName={iconClassName}
     />
     <div className="mt-auto pt-2.5 text-sm leading-5 font-medium">
@@ -226,7 +218,6 @@ const Cell = ({
       <CellTop
         icon={cell.icon}
         label={cell.label}
-        menuTitle={cell.menuTitle}
         iconClassName={iconClassName}
       />
       <CellValue cell={cell} hero={hero} />

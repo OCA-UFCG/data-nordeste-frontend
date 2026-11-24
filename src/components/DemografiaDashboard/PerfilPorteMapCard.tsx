@@ -31,9 +31,29 @@ import { buildPerfilPorteTable } from "@/features/panels/demografia/perfilPorteT
 import { formatPessoas } from "@/features/panels/format";
 import { withYear } from "@/features/panels/territorialFilters";
 
-const TITLE = "Porte dos municípios";
-const INFO =
-  "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Na vista Estados, clique em um estado para usá-lo como filtro do painel.";
+const TITLE = "Porte populacional";
+const INFO = (
+  <>
+    <p>
+      Os <b>municípios</b> são classificados <b>por porte</b> populacional:
+    </p>
+    <ul className="mt-1 list-disc pl-5">
+      <li>Pequeno porte, até 50 mil habitantes;</li>
+      <li>Médio porte, entre 50 mil e 100 mil habitantes;</li>
+      <li>Grande porte, acima de 100 mil habitantes.</li>
+    </ul>
+    <p className="mt-2">
+      <b>Obs.:</b> Alguns municípios foram criados a partir do desmembramento de
+      outros, o que explica a ausência de dados individualizados para esses
+      municípios em censos demográficos anteriores à sua criação. Essas
+      alterações territoriais devem ser consideradas na análise e na comparação
+      dos dados populacionais ao longo do tempo.
+    </p>
+    <p>
+      Na vista Estados, clique em um estado para usá-lo como filtro do painel.
+    </p>
+  </>
+);
 const MUNICIPIOS_LABEL = "Mapa dos municípios por porte";
 const ESTADOS_LABEL = "Mapa dos estados do Nordeste";
 
@@ -234,7 +254,7 @@ export const usePorteMapView = () => {
 export type PorteMapView = ReturnType<typeof usePorteMapView>;
 
 /**
- * Card "Porte dos municípios": mapa dos municípios por faixa de população ou
+ * Card "Porte populacional": mapa dos municípios por faixa de população ou
  * mapa dos estados, que filtra o painel ao ser clicado. A legenda por porte
  * destaca os municípios de cada faixa.
  *
