@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
+import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
 import {
   PANEL_MAP_HINT,
   panelMapImageSource,
@@ -70,6 +71,7 @@ export const PibMapCard = ({
       title={PIB_MAP_TITLE}
       subtitle={subtitle}
       kind="map"
+      skeleton={<PanelMapSkeleton boxClassName={MAP_BOX_CLASS} />}
       bodyClassName="flex flex-col"
       overlay={
         <ProtoMapFullscreen

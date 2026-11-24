@@ -9,6 +9,7 @@ import {
 import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
+import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
 import {
   PANEL_MAP_HINT,
   panelMapImageSource,
@@ -97,6 +98,7 @@ export const IdhMapCard = ({
       title={TITLE}
       subtitle={subtitle}
       kind="map"
+      skeleton={<PanelMapSkeleton boxClassName={MAP_BOX_CLASS} />}
       state={state}
       onRetry={onRetry}
       footer={idhCardFooter(updatedAt)}

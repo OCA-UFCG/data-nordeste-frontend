@@ -6,29 +6,8 @@ import {
   ProtoCardMenu,
   ProtoCardMenuContext,
 } from "@/components/ProtoPanel/ProtoCardMenu";
-import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
-import { ICON_BUTTON } from "@/components/ProtoPanel/protoStyles";
+import { ProtoFullscreenButton } from "@/components/ProtoPanel/ProtoMapControls";
 import type { PanelMapEngine } from "@/lib/panelMapEngine";
-
-const FullscreenButton = ({
-  disabled,
-  onClick,
-}: {
-  disabled: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    type="button"
-    aria-haspopup="dialog"
-    aria-label="Abrir mapa em tela cheia"
-    title="Tela cheia"
-    disabled={disabled}
-    onClick={onClick}
-    className={ICON_BUTTON}
-  >
-    <ProtoIcon name="fullscreen" size={18} stroke={1.7} />
-  </button>
-);
 
 // A imagem do mapa leva o crédito do basemap ativo; os outros cards do painel
 // seguem com a fonte do contexto.
@@ -73,7 +52,7 @@ export const PanelMapCardActions = ({
   onOpenFullscreen: () => void;
 }) => (
   <>
-    <FullscreenButton disabled={disabled} onClick={onOpenFullscreen} />
+    <ProtoFullscreenButton disabled={disabled} onClick={onOpenFullscreen} />
     <ProtoCardInfo title={title} text={info} />
     <MapCardMenu engine={engine} title={title} imageSource={imageSource} />
   </>
