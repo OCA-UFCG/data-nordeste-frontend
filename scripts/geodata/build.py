@@ -1,6 +1,7 @@
 """Gera os arquivos do mapa dos painéis (`<out>/`) a partir da pasta bruta do Drive.
 
-Saídas: `vector/*.geojson` (inclui `municipios.geojson`, a malha sem indicador),
+Saídas: `vector/*.geojson` (inclui `municipios.geojson`, a malha sem indicador, e
+`estados_<area>.geojson`, os estados recortados por área),
 `raster/aridez_<ano>_<area>.png` (recortado pela área), `styles.json`,
 `manifest.json` e `data-issues.json`. IMPORTANT: nada aqui corrige dado do Drive;
 só renomeia propriedades, converte texto numérico para desenhar (o que não
@@ -49,6 +50,9 @@ AREA_POLYGONS = {
 SEMIARIDO_SOURCE_SHP = "shapefile_geral/area_sudene/sudene_mun.shp"
 # Malha municipal sem indicador (painel de aridez): a mesma base do Semiárido.
 MUNICIPIOS_SHP = SEMIARIDO_SOURCE_SHP
+# Estados recortados pela área (hover e seleção do mapa): a união dos municípios
+# da mesma malha, para coincidir com as feições municipais desenhadas.
+AREA_STATES_SHP = SEMIARIDO_SOURCE_SHP
 # O Semiárido não tem polígono no Drive; listá-lo faz a lacuna aparecer no relatório.
 EXPECTED_SHAPEFILES = [
     *(spec["shp"] for spec in INDICATORS.values()),
@@ -155,6 +159,24 @@ def semiarido_select(layer: str) -> str:
     return f"SELECT 'semiarido' AS area, ST_Union(geometry) AS geometry FROM {layer} WHERE semi_21_1 = 'Sim'"
 
 
+def area_states_select(layer: str, area: str) -> str:
+    """Um polígono por UF: a união dos municípios marcados na área (flag do `AREA_FLAGS`).
+
+    Ex.: `area_states_select("sudene_mun", "sudene")` → MG só com os municípios da Sudene.
+    WHY `MIN(uf)` e sem alias `uf`: na malha, `uf` é o nome do estado (mesmo texto
+    do `estados.geojson`); um alias com esse nome deixaria o GROUP BY ambíguo.
+    """
+    return (
+        f"SELECT sigla_uf_1 AS code, MIN(uf) AS name, ST_Union(geometry) AS geometry "
+        f"FROM {layer} WHERE {AREA_FLAGS[area]} = 'Sim' GROUP BY sigla_uf_1"
+    )
+
+
+def area_states_file(area: str) -> str:
+    """Ex.: `area_states_file("sudene")` → `"estados_sudene.geojson"`."""
+    return f"estados_{area}.geojson"
+
+
 # ---------------------------------------------------------------- vetores
 
 
@@ -236,6 +258,14 @@ def build_municipios_vector(raw: Path, out: Path) -> None:
     shp = raw / MUNICIPIOS_SHP
     features = ogr_features(shp, municipios_select(layer_name(shp)))
     write_feature_collection(out / "vector" / "municipios.geojson", features)
+
+
+def build_area_states_vectors(raw: Path, out: Path) -> None:
+    """`vector/estados_<area>.geojson` de cada área: só a parte de cada estado dentro dela."""
+    shp = raw / AREA_STATES_SHP
+    for area in AREA_FLAGS:
+        features = ogr_features(shp, area_states_select(layer_name(shp), area))
+        write_feature_collection(out / "vector" / area_states_file(area), features)
 
 
 def area_features(raw: Path, simplify: bool = True) -> list[dict]:
@@ -466,6 +496,7 @@ def build(raw: Path, out: Path, now: datetime | None = None) -> list[dict]:
         issues += indicator_issues(raw, key, field_types[key])
     build_states_vector(raw, out)
     build_municipios_vector(raw, out)
+    build_area_states_vectors(raw, out)
     build_areas_vector(raw, out)
     palette, bounds, aridez_issues = build_aridez(raw, out)
     generated_at = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")

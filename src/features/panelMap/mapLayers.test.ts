@@ -64,6 +64,7 @@ describe("veilFilters", () => {
   it("has no veil at area level", () => {
     expect(veilFilters(EMPTY_RECORTE)).toEqual({
       states: null,
+      selectedStates: null,
       features: null,
     });
   });
@@ -71,6 +72,7 @@ describe("veilFilters", () => {
   it("veils the states outside the selection at state level", () => {
     expect(veilFilters({ uf: ["PE"], mun: [] })).toEqual({
       states: ["!", ["in", ["get", "code"], ["literal", ["PE"]]]],
+      selectedStates: ["in", ["get", "code"], ["literal", ["PE"]]],
       features: null,
     });
   });
@@ -85,6 +87,7 @@ describe("veilFilters", () => {
   it("veils the other municipalities of the state at municipality level", () => {
     expect(veilFilters({ uf: ["PE"], mun: ["2611606"] })).toEqual({
       states: ["!", ["in", ["get", "code"], ["literal", ["PE"]]]],
+      selectedStates: ["in", ["get", "code"], ["literal", ["PE"]]],
       features: [
         "all",
         ["in", ["get", "uf"], ["literal", ["PE"]]],
@@ -192,6 +195,32 @@ describe("fitTargetFor", () => {
     expect(fitTargetFor(EMPTY_RECORTE, "semiarido", sources)).toEqual([
       [1, 1],
       [3, 3],
+    ]);
+  });
+
+  it("fits only the part of the state inside the area when it has it", () => {
+    const areaStates = collection([square(1, 1, 2, 2, { code: "PE" })]);
+    const target = fitTargetFor({ uf: ["PE"], mun: [] }, "semiarido", {
+      ...sources,
+      areaStates,
+    });
+
+    expect(target).toEqual([
+      [1, 1],
+      [2, 2],
+    ]);
+  });
+
+  it("falls back to the full state when the area has none of it", () => {
+    const areaStates = collection([square(1, 1, 2, 2, { code: "PE" })]);
+    const target = fitTargetFor({ uf: ["BA"], mun: [] }, "semiarido", {
+      ...sources,
+      areaStates,
+    });
+
+    expect(target).toEqual([
+      [20, 20],
+      [30, 30],
     ]);
   });
 

@@ -270,7 +270,8 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   ```
 
   `build` writes `vector/*.geojson` (`pib`, `demografia`, `idh`, `estados`,
-  `areas`), `raster/aridez_<ano>_<area>.png`, `styles.json` (classes and outlines read
+  `municipios`, `areas`, and `estados_<area>` for `nordeste`, `semiarido`,
+  `caatinga`, `sudene`), `raster/aridez_<ano>_<area>.png`, `styles.json` (classes and outlines read
   from the `.qgz`), `manifest.json` and `data-issues.json`. Each aridez PNG is
   clipped to one area (`nordeste`, `semiarido`, `caatinga`, `sudene`; 16 files):
   `gdal_translate -r nearest` repeats each 0.1° pixel on a 0.01° grid (same
@@ -280,7 +281,13 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   area polygons in a temp file: the simplified `areas.geojson` has degenerate
   rings that gdalwarp rejects ("Cutline polygon is invalid"). Without the
   finer grid the edge would follow the 0.1° source pixels, since gdalwarp
-  masks the cutline on the source grid. Downloaded files are
+  masks the cutline on the source grid. `estados_<area>.geojson` is the part
+  of each state inside the area: one feature per UF (`code` = sigla, `name` =
+  the `uf` column of `sudene_mun.shp`, same text as `estados.geojson`), the
+  `ST_Union` of the `sudene_mun.shp` municipalities flagged `Sim` for the area
+  (same flags as the municipal vectors), simplified like the other vectors so
+  it matches the municipal mesh (`area_states_select`). Real counts: 9 UFs in
+  nordeste and caatinga, 11 in semiarido and sudene. Downloaded files are
   untrusted data: never run anything from `$RAW`. `issues-pdf` needs
   `google-chrome` on the PATH. Tests:
   `python3 -m unittest discover -s scripts/geodata/tests -v`.
@@ -409,7 +416,23 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
 - **Veil:** grey (`VEIL_COLOR`) only from the state level: states outside the
   chosen ones and, at municipality level, the municipalities of those states
   that are not chosen (`veilFilters`, a layer filter). At area level there is
-  no veil.
+  no veil. The chosen states also get a veil (`selectedStates`, layer
+  `veil-selected-states` on the full `states` source) placed **below** the
+  indicator fill and the aridez raster: the part of the state inside the area
+  is painted on top, so only the part outside the area of interest (e.g. most
+  of MG in the Sudene area) is grey, like the rest outside the recorte. User
+  decision, 24/11/2026. Since the fill is 85% opaque, the in-area part shows a
+  faint grey tint under the class colours.
+- **State cut by the area** (user decision, 24/11/2026): the state hover
+  outline and the thick state selection outline only cover the part of the
+  state inside the area of interest. They use the `area-states` source, fed
+  with `vector/estados_<area>.geojson` of the current area (`useAreaStates`,
+  `areaStatesFileFor`; refetched when the area changes, `engine.setAreaStates`).
+  While it loads, or if the file is missing (a GEODATA_DIR built before it),
+  the full `estados.geojson` is used and `panel_map_area_states_failed` is
+  logged. The state boundary lines (`state-outline`) and the veil keep the
+  full `estados.geojson`. Fitting a chosen state frames its part inside the
+  area (`fitTargetFor` with `areaStates`, falling back to the full state).
 - **Legend highlight** (as the old profile "porte" chips did): pointer over a
   legend chip (mouse only: `previewOnMouse` in `src/components/Panel/pointer.ts`,
   shared with the bar charts), keyboard focus or a tap highlights that class.
@@ -445,11 +468,12 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   before. The IDH (state features) always hovers its own feature. The engine
   (`setHoverLevel`, `src/lib/panelMap/panelMapHover.ts`) still listens on the
   area-filtered indicator layer and, at state level, lights the hovered
-  municipality's state on the `states` source (`state-hover` layer, same
+  municipality's state on the `area-states` source (`state-hover` layer, same
   outline as the feature hover, any zoom, above the state outline). So only
-  states with municipalities in the area light up, and the part of a state
-  outside the area (e.g. MG in the Semiárido) shows no tooltip although the
-  outline covers the whole state. Switching the level clears the current
+  states with municipalities in the area light up, and the outline covers
+  only the part of the state inside the area (`estados_<area>.geojson`; e.g.
+  MG in the Sudene area is the cut, not the whole state); the part outside
+  shows no tooltip. Switching the level clears the current
   hover (a click on a state switches it with the pointer still on the map).
   The state tooltip is "Nome (UF)" (name from `estados.geojson`), "<label>:
   <value>" and "Nº de M" among the states with a number in the area

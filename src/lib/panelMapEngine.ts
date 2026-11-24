@@ -1,4 +1,5 @@
 import "maplibre-gl/dist/maplibre-gl.css";
+import type { FeatureCollection } from "geojson";
 import type { FilterSpecification, Map as MaplibreMap } from "maplibre-gl";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
@@ -22,6 +23,7 @@ import {
   applyVeil,
   type IndicatorPaint,
   paintIndicator,
+  setAreaStatesData,
   setSourceData,
   showBasemap,
   type VeilFilters,
@@ -50,6 +52,10 @@ type MaplibreModule = typeof import("maplibre-gl");
 export interface PanelMapEngine {
   setBasemap(kind: BasemapKind): void;
   setSources(sources: FitSources): void;
+
+  // Estados recortados pela área de interesse (`estados_<area>.geojson`): o
+  // hover por estado e o contorno da seleção de estado usam só essa parte.
+  setAreaStates(states: FeatureCollection): void;
   setIndicatorPaint(paint: IndicatorPaint): void;
   setVeil(veil: VeilFilters): void;
   setSelection(filter: FilterSpecification | null): void;
@@ -105,6 +111,7 @@ type PanelMapPaintControls = Pick<
   PanelMapEngine,
   | "setBasemap"
   | "setSources"
+  | "setAreaStates"
   | "setIndicatorPaint"
   | "setVeil"
   | "setSelection"
@@ -116,6 +123,7 @@ function paintControls(map: MaplibreMap): PanelMapPaintControls {
   return {
     setBasemap: (kind) => showBasemap(map, kind),
     setSources: (sources) => setSourceData(map, sources),
+    setAreaStates: (states) => setAreaStatesData(map, states),
     setIndicatorPaint: (paint) => paintIndicator(map, paint),
     setVeil: (veil) => applyVeil(map, veil),
     setSelection: (filter) => applySelection(map, filter),

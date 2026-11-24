@@ -1,5 +1,6 @@
 "use client";
 
+import type { FeatureCollection } from "geojson";
 import { useEffect, useMemo, useState } from "react";
 
 import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
@@ -18,6 +19,7 @@ import {
   veilFilters,
 } from "@/features/panelMap/mapLayers";
 import {
+  levelOfRecorte,
   type MapLevel,
   type MapRecorte,
   sameRecorte,
@@ -31,6 +33,10 @@ import type { PanelMapEngine } from "@/lib/panelMapEngine";
 export type PanelMapLayersArgs = {
   engine: PanelMapEngine | null;
   geodata: ReadyGeodata;
+
+  // `estados_<area>.geojson` da área atual (ou o `estados.geojson` inteiro
+  // enquanto ele carrega): hover, seleção e enquadramento de estado.
+  areaStates: FeatureCollection;
   indicator: PanelIndicator;
   ano: number;
   area: TerritorialArea;
@@ -75,10 +81,11 @@ function usePaint(args: PanelMapLayersArgs) {
 }
 
 function useSourcesAndPaint(args: PanelMapLayersArgs, sources: FitSources) {
-  const { engine, geodata, area } = args;
+  const { engine, geodata, area, areaStates } = args;
   const paint = usePaint(args);
 
   useEffect(() => engine?.setSources(sources), [engine, sources]);
+  useEffect(() => engine?.setAreaStates(areaStates), [engine, areaStates]);
   useEffect(() => {
     const { stateOutline } = geodata.styles;
 
@@ -99,6 +106,18 @@ function fitRecorte(
   if (target) engine.fitTo(target);
 }
 
+// Os estados da área só entram no enquadramento de estado (a parte do estado
+// dentro da área). WHY: assim a chegada do arquivo da área (assíncrona) só
+// reenquadra quando o enquadramento depende dele.
+function fitStatesFor(
+  args: PanelMapLayersArgs,
+  recorte: MapRecorte,
+): FeatureCollection | undefined {
+  const drawn = recorteForLevel(recorte, args.level);
+
+  return levelOfRecorte(drawn) === "estado" ? args.areaStates : undefined;
+}
+
 // IMPORTANT: todo recorte novo é enquadrado (zoom, arraste, clique, barra,
 // limpar, montagem, área nova), com o mesmo teto de zoom do `fitTo`. Não há
 // exceção para o recorte que o próprio mapa emitiu: o filtro aplicado pelo zoom
@@ -112,15 +131,17 @@ function useRecorteFraming(
   recorte: MapRecorte,
 ) {
   const { engine, area, level } = args;
+  const areaStates = fitStatesFor(args, recorte);
 
   useEffect(() => {
     if (!engine) return;
     const drawn = recorteForLevel(recorte, level);
+    const fitSources = { ...sources, areaStates };
 
     engine.setVeil(veilFilters(drawn));
     engine.setSelection(selectionFilter(drawn, level));
-    fitRecorte(engine, recorte, { area, level }, sources);
-  }, [engine, recorte, area, level, sources]);
+    fitRecorte(engine, recorte, { area, level }, fitSources);
+  }, [engine, recorte, area, level, sources, areaStates]);
 }
 
 // Clique emite o recorte direto e o enquadramento vem da mudança de props.

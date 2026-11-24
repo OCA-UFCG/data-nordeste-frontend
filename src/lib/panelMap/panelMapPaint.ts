@@ -1,3 +1,4 @@
+import type { FeatureCollection } from "geojson";
 import type {
   ExpressionSpecification,
   FilterSpecification,
@@ -62,6 +63,17 @@ export function setSourceData(map: MaplibreMap, sources: FitSources): void {
   geojsonSource(map, PANEL_MAP_SOURCE.areas).setData(sources.areas);
 }
 
+/**
+ * Troca os estados recortados pela área de interesse (`estados_<area>.geojson`),
+ * a fonte do hover e da seleção de estado.
+ */
+export function setAreaStatesData(
+  map: MaplibreMap,
+  states: FeatureCollection,
+): void {
+  geojsonSource(map, PANEL_MAP_SOURCE.areaStates).setData(states);
+}
+
 function paintLine(map: MaplibreMap, layerId: string, outline: QgisOutline) {
   map.setPaintProperty(layerId, "line-color", outline.color);
   map.setPaintProperty(layerId, "line-width", outline.widthPx);
@@ -103,15 +115,21 @@ function filterOrHide(
   if (filter) map.setFilter(layerId, filter);
 }
 
-/** Véu cinza sobre o que está fora do recorte (estados e feições). */
+/**
+ * Véu cinza sobre o que está fora do recorte: os outros estados e municípios
+ * por cima do preenchimento; o(s) estado(s) escolhido(s) por baixo dele, para
+ * só a parte fora da área de interesse ficar cinza.
+ */
 export function applyVeil(map: MaplibreMap, veil: VeilFilters): void {
+  filterOrHide(map, PANEL_MAP_LAYER.veilSelectedStates, veil.selectedStates);
   filterOrHide(map, PANEL_MAP_LAYER.veilStates, veil.states);
   filterOrHide(map, PANEL_MAP_LAYER.veilFeatures, veil.features);
 }
 
 /**
  * Contorno grosso da seleção. O filtro casa por `code`, que pode ser de
- * município ou de UF; aplicado às duas fontes, cada uma só casa os seus.
+ * município ou de UF; aplicado às duas fontes, cada uma só casa os seus. O de
+ * estado vem dos estados recortados: contorna só a parte dentro da área.
  */
 export function applySelection(
   map: MaplibreMap,

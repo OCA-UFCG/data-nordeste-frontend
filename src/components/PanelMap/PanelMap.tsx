@@ -4,6 +4,7 @@ import { type ReactNode, useEffect } from "react";
 
 import { BasemapSwitch } from "@/components/PanelMap/BasemapSwitch";
 import { PanelMapLegend } from "@/components/PanelMap/PanelMapLegend";
+import { useAreaStates } from "@/components/PanelMap/useAreaStates";
 import {
   PanelMapTooltip,
   usePanelMapTooltip,
@@ -133,7 +134,10 @@ function usePanelMapRecorte(
   level: FeatureLevel,
 ) {
   const aridez = aridezModeFor(props.indicator, props.aridez);
-  const layers = { ...props, engine, geodata, aridez, level };
+
+  // Hover e seleção de estado só na parte dele dentro da área de interesse.
+  const areaStates = useAreaStates(props.area, geodata.states);
+  const layers = { ...props, engine, geodata, areaStates, aridez, level };
   usePanelMapLayers(layers);
 
   usePanelMapAridez(engine, geodata.manifest, aridez, props.ano, props.area);

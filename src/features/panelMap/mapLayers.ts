@@ -19,10 +19,18 @@ export type FitSources = {
   features: FeatureCollection;
   states: FeatureCollection;
   areas: FeatureCollection;
+
+  // `estados_<area>.geojson`: só a parte de cada estado dentro da área. Com
+  // ele, o estado escolhido é enquadrado pela parte que o mapa pinta.
+  areaStates?: FeatureCollection;
 };
 
 type VeilFilters = {
   states: FilterSpecification | null;
+
+  // Os estados escolhidos, inteiros, num véu sob o preenchimento: a parte
+  // deles fora da área fica cinza e a de dentro segue pintada por cima.
+  selectedStates: FilterSpecification | null;
   features: FilterSpecification | null;
 };
 
@@ -39,20 +47,29 @@ export function areaFilter(area: TerritorialArea): FilterSpecification {
   return ["==", ["get", area], 1];
 }
 
+const NO_VEIL: VeilFilters = {
+  states: null,
+  selectedStates: null,
+  features: null,
+};
+
 /**
  * Filtros do véu cinza. WHY: o véu só existe a partir do nível estado — no
  * nível área toda a região está em foco, então nada é cobrido.
  * Ex.: `veilFilters({ uf: ["PE"], mun: [] }).states` → estados com `code` fora de PE.
  */
 export function veilFilters(recorte: MapRecorte): VeilFilters {
-  if (recorte.uf.length === 0) return { states: null, features: null };
+  if (recorte.uf.length === 0) return NO_VEIL;
 
-  const states: FilterSpecification = ["!", propertyIn("code", recorte.uf)];
+  const selectedStates = propertyIn("code", recorte.uf);
+  const states: FilterSpecification = ["!", selectedStates];
 
-  if (recorte.mun.length === 0) return { states, features: null };
+  if (recorte.mun.length === 0)
+    return { states, selectedStates, features: null };
 
   return {
     states,
+    selectedStates,
     features: [
       "all",
       propertyIn("uf", recorte.uf),
@@ -110,8 +127,19 @@ function featuresWhere(
   );
 }
 
+// A parte dos estados dentro da área, senão (sem arquivo, ou nenhum dos
+// estados nela) os estados inteiros.
+function statesBbox(uf: string[], sources: FitSources): Bounds | null {
+  const inArea = sources.areaStates
+    ? bboxOf(featuresWhere(sources.areaStates, "code", uf))
+    : null;
+
+  return inArea ?? bboxOf(featuresWhere(sources.states, "code", uf));
+}
+
 /**
- * Enquadramento do recorte: municípios, senão estados, senão a área.
+ * Enquadramento do recorte: municípios, senão estados (a parte dentro da
+ * área, com `areaStates`), senão a área.
  * Ex.: `{ uf: ["PE","PB"], mun: [] }` → caixa que cobre os dois estados.
  */
 export function fitTargetFor(
@@ -122,9 +150,7 @@ export function fitTargetFor(
   if (recorte.mun.length > 0) {
     return bboxOf(featuresWhere(sources.features, "code", recorte.mun));
   }
-  if (recorte.uf.length > 0) {
-    return bboxOf(featuresWhere(sources.states, "code", recorte.uf));
-  }
+  if (recorte.uf.length > 0) return statesBbox(recorte.uf, sources);
 
   return bboxOf(featuresWhere(sources.areas, "area", [area]));
 }

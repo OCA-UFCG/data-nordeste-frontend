@@ -26,9 +26,10 @@ export type GeodataState =
   | { status: "error"; message: string }
   | ReadyGeodata;
 
-type GeodataFetch = (url: string) => Promise<Response>;
+export type GeodataFetch = (url: string) => Promise<Response>;
 
-async function fetchGeodataJson<Body>(
+/** Um JSON do GEODATA_DIR pela rota; resposta não ok vira erro com a URL. */
+export async function fetchGeodataJson<Body>(
   fetchGeodata: GeodataFetch,
   path: string,
 ): Promise<Body> {
@@ -76,7 +77,7 @@ function geodataFailure(indicator: PanelIndicator, error: unknown) {
 // WHY o fetch global é lido na chamada e chamado como função solta: um
 // `deps.fetch(url)` perde o `this` e o navegador lança "Illegal invocation"; e
 // ler na chamada deixa o teste trocar o fetch com `vi.stubGlobal`.
-const globalFetch: GeodataFetch = (url) => fetch(url);
+export const globalFetch: GeodataFetch = (url) => fetch(url);
 
 /**
  * Geodados do mapa de um indicador (estilos, manifest e GeoJSONs). Qualquer

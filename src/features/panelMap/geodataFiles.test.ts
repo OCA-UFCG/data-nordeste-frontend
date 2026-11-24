@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { featureFileFor } from "@/features/panelMap/geodataFiles";
+import {
+  areaStatesFileFor,
+  featureFileFor,
+} from "@/features/panelMap/geodataFiles";
 
 describe("featureFileFor", () => {
   it.each(["pib", "demografia", "idh"] as const)(
@@ -13,4 +16,13 @@ describe("featureFileFor", () => {
   it("a aridez lê a malha municipal sem valores", () => {
     expect(featureFileFor("aridez")).toBe("vector/municipios.geojson");
   });
+});
+
+describe("areaStatesFileFor", () => {
+  it.each(["nordeste", "semiarido", "caatinga", "sudene"] as const)(
+    "%s lê os estados recortados pela própria área",
+    (area) => {
+      expect(areaStatesFileFor(area)).toBe(`vector/estados_${area}.geojson`);
+    },
+  );
 });

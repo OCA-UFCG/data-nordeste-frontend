@@ -72,6 +72,50 @@ class SelectSqlTest(unittest.TestCase):
         self.assertIn("'semiarido' AS area", sql)
 
 
+class ConcatUnion:
+    """`ST_Union` de mentira para o SQLite do stdlib: junta as geometrias (texto) com `+`."""
+
+    def __init__(self):
+        self.parts = []
+
+    def step(self, geometry):
+        self.parts.append(geometry)
+
+    def finalize(self):
+        return "+".join(sorted(self.parts))
+
+
+class AreaStatesSelectTest(unittest.TestCase):
+    ROWS = [
+        ("MG", "Minas Gerais", "Não", "Sim", "MG1"),
+        ("MG", "Minas Gerais", "Não", "Não", "MG2"),
+        ("MG", "Minas Gerais", "Não", "Sim", "MG3"),
+        ("PE", "Pernambuco", "Sim", "Sim", "PE1"),
+        ("ES", "Espírito Santo", "Não", "Não", "ES1"),
+    ]
+
+    def run_select(self, area: str) -> list:
+        with sqlite3.connect(":memory:") as db:
+            db.create_aggregate("ST_Union", 1, ConcatUnion)
+            db.execute("CREATE TABLE sudene_mun (sigla_uf_1 TEXT, uf TEXT, ne TEXT, semi_21_1 TEXT, geometry TEXT)")
+            db.executemany("INSERT INTO sudene_mun VALUES (?, ?, ?, ?, ?)", self.ROWS)
+            return db.execute(build.area_states_select("sudene_mun", area) + " ORDER BY code").fetchall()
+
+    def test_one_state_per_uf_with_only_the_municipalities_in_the_area(self):
+        self.assertEqual(
+            self.run_select("semiarido"),
+            [("MG", "Minas Gerais", "MG1+MG3"), ("PE", "Pernambuco", "PE1")],
+        )
+
+    def test_uses_the_area_flag_of_the_municipal_vectors(self):
+        self.assertEqual(self.run_select("nordeste"), [("PE", "Pernambuco", "PE1")])
+        for area, column in build.AREA_FLAGS.items():
+            self.assertIn(f"{column} = 'Sim'", build.area_states_select("sudene_mun", area))
+
+    def test_file_name_per_area(self):
+        self.assertEqual(build.area_states_file("sudene"), "estados_sudene.geojson")
+
+
 class PolygonPartsTest(unittest.TestCase):
     def test_keeps_only_polygon_parts_of_collection(self):
         # Simplificar + arredondar a 5 casas colapsa anéis minúsculos em ponto/linha.

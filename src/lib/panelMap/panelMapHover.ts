@@ -35,8 +35,9 @@ type HoveredFeature = {
   properties: unknown;
 };
 
-// O estado do município sob o ponteiro: o id na fonte dos estados é a sigla
-// (promoteId `code`), a mesma do `uf` do município.
+// O estado do município sob o ponteiro: o id na fonte dos estados recortados
+// pela área é a sigla (promoteId `code`), a mesma do `uf` do município. WHY a
+// fonte recortada: o contorno do hover cobre só a parte do estado na área.
 function stateHover(props: MapFeatureProps): {
   target: HoverTarget;
   props: MapFeatureProps;
@@ -44,7 +45,7 @@ function stateHover(props: MapFeatureProps): {
   const { uf } = props;
 
   return {
-    target: { source: PANEL_MAP_SOURCE.states, id: uf },
+    target: { source: PANEL_MAP_SOURCE.areaStates, id: uf },
     props: { code: uf, name: uf, uf },
   };
 }
@@ -103,7 +104,8 @@ class FeatureHoverTracker {
  * clique e o callback com o nível, as propriedades e a posição (null ao sair).
  * O ponteiro sempre passa pelas feições do indicador (já filtradas pela área
  * de interesse); no nível "estado" o contorno e o callback são do estado do
- * município, então só acendem estados com municípios na área.
+ * município, então só acendem estados com municípios na área, e só a parte
+ * deles dentro da área (`estados_<area>.geojson`).
  * `setHoverLevel` troca o nível e apaga o hover atual (o ponteiro pode estar
  * parado sobre o mapa quando o clique muda o recorte).
  */

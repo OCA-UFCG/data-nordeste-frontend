@@ -21,9 +21,13 @@ import {
 } from "@/features/panelMap/mapLayers";
 import { MUNICIPAL_LINES_ZOOM } from "@/features/panelMap/mapRecorte";
 
+// `states` é o `estados.geojson` inteiro (contorno estadual, véu); `areaStates`
+// é o `estados_<area>.geojson`, só a parte de cada estado dentro da área de
+// interesse (hover e contorno da seleção de estado).
 export const PANEL_MAP_SOURCE = {
   features: "features",
   states: "states",
+  areaStates: "area-states",
   areas: "areas",
   aridez: "aridez",
 } as const;
@@ -31,6 +35,7 @@ export const PANEL_MAP_SOURCE = {
 // A ordem do array em panelMapStyle é a ordem de desenho (de baixo para cima).
 // A aridez entra sob demanda logo abaixo de indicatorFill (ver panelMapAridez).
 export const PANEL_MAP_LAYER = {
+  veilSelectedStates: "veil-selected-states",
   aridez: "aridez",
   indicatorFill: "indicator-fill",
   classMuted: "class-muted",
@@ -173,8 +178,9 @@ function stateOutlineLayer(): LayerSpecification {
 
 // WHY o hover não tem minzoom: não é limite, é o sinal de qual feição o
 // tooltip está nomeando, em qualquer zoom (decisão do controlador). Há um por
-// fonte: o das feições e o dos estados (hover por estado só com a área de
-// interesse, `hoverLevelFor`); o dos estados fica acima do contorno estadual.
+// fonte: o das feições e o dos estados recortados pela área (hover por estado
+// só com a área de interesse, `hoverLevelFor`; só a parte do estado dentro da
+// área acende); o dos estados fica acima do contorno estadual.
 function hoverLayer(id: string, source: string): LayerSpecification {
   const hovered: ExpressionSpecification = [
     "boolean",
@@ -199,12 +205,16 @@ function areaOutlineLayer(): LayerSpecification {
   };
 }
 
-// Camadas acima dos basemaps, de baixo para cima.
+// Camadas acima dos basemaps, de baixo para cima. WHY o véu do estado
+// escolhido fica sob o preenchimento (e sob o raster da aridez, que entra logo
+// abaixo do preenchimento): cobre o estado inteiro, mas a parte dele na área é
+// pintada por cima; só a de fora fica cinza, como o resto fora do recorte.
 function overlayLayers(municipal: boolean): LayerSpecification[] {
-  const { features, states } = PANEL_MAP_SOURCE;
+  const { features, states, areaStates } = PANEL_MAP_SOURCE;
   const layer = PANEL_MAP_LAYER;
 
   return [
+    veilLayer(layer.veilSelectedStates, states),
     indicatorFillLayer(),
     classMutedLayer(),
     veilLayer(layer.veilStates, states),
@@ -212,10 +222,10 @@ function overlayLayers(municipal: boolean): LayerSpecification[] {
     featureOutlineLayer(municipal),
     hoverLayer(layer.featureHover, features),
     stateOutlineLayer(),
-    hoverLayer(layer.stateHover, states),
+    hoverLayer(layer.stateHover, areaStates),
     areaOutlineLayer(),
     lineLayer(layer.selectionFeatures, features, SELECTION_OUTLINE, "none"),
-    lineLayer(layer.selectionStates, states, SELECTION_OUTLINE, "none"),
+    lineLayer(layer.selectionStates, areaStates, SELECTION_OUTLINE, "none"),
   ];
 }
 
@@ -229,6 +239,7 @@ function panelMapSources(): StyleSpecification["sources"] {
     ...Object.fromEntries(basemaps),
     [PANEL_MAP_SOURCE.features]: featureSource(),
     [PANEL_MAP_SOURCE.states]: featureSource(),
+    [PANEL_MAP_SOURCE.areaStates]: featureSource(),
     [PANEL_MAP_SOURCE.areas]: featureSource(),
   };
 }

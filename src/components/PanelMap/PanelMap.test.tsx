@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ENGINE_UNAVAILABLE, PanelMap } from "@/components/PanelMap/PanelMap";
 import { PanelMapEngineFactoryFake } from "@/components/PanelMap/panelMapEngineFake";
 import {
+  AREA_STATES_FIXTURES,
   GeodataFetchFake,
   JOAO_PESSOA,
   PERNAMBUCO,
@@ -161,6 +162,7 @@ describe("PanelMap pintura e enquadramento", () => {
     expect(engine.fitTo).toHaveBeenCalledWith(NORDESTE_BBOX);
     expect(engine.setVeil).toHaveBeenLastCalledWith({
       states: null,
+      selectedStates: null,
       features: null,
     });
   });
@@ -471,6 +473,69 @@ describe("PanelMap hover por estado (só a área de interesse)", () => {
 
     expect(screen.getByRole("tooltip")).toHaveTextContent("Recife (PE)");
     expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 3");
+  });
+});
+
+describe("PanelMap estado recortado pela área de interesse", () => {
+  it("entrega ao motor os estados da área e troca quando a área muda", async () => {
+    const { engine, rerender } = await renderPanelMap();
+
+    expect(engine.setAreaStates).toHaveBeenLastCalledWith(
+      AREA_STATES_FIXTURES.nordeste,
+    );
+    rerender({ area: "semiarido" });
+
+    await waitFor(() =>
+      expect(engine.setAreaStates).toHaveBeenLastCalledWith(
+        AREA_STATES_FIXTURES.semiarido,
+      ),
+    );
+  });
+
+  it("com estado escolhido, enquadra só a parte dele dentro da área", async () => {
+    const { engine } = await renderPanelMap({ area: "semiarido", recorte: PE });
+
+    expect(engine.fitTo).toHaveBeenLastCalledWith([
+      [-40.5, -9.4],
+      [-39.5, -8.4],
+    ]);
+  });
+
+  it("na área inteira, a chegada dos estados da área não reenquadra", async () => {
+    const { engine } = await renderPanelMap({ area: "semiarido" });
+
+    expect(engine.fitTo).toHaveBeenCalledTimes(1);
+  });
+
+  it("o estado escolhido ganha o véu sob o preenchimento (parte fora da área)", async () => {
+    const { engine } = await renderPanelMap({ recorte: PE });
+
+    expect(engine.setVeil.mock.lastCall?.[0].selectedStates).toEqual([
+      "in",
+      ["get", "code"],
+      ["literal", ["PE"]],
+    ]);
+  });
+
+  it("sem o arquivo da área, usa os estados inteiros e registra a falha", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const missing = ["/api/geodata/vector/estados_semiarido.geojson"];
+    vi.stubGlobal("fetch", new GeodataFetchFake(false, missing).fetch);
+    const factory = new PanelMapEngineFactoryFake();
+
+    render(<PanelMap {...panelMapProps(factory, { area: "semiarido" })} />);
+
+    await waitFor(() => expect(error).toHaveBeenCalled());
+    expect(String(error.mock.lastCall?.[0])).toContain(
+      "panel_map_area_states_failed",
+    );
+    expect(factory.engine.setAreaStates.mock.lastCall?.[0].features).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          properties: expect.objectContaining({ uf: "PE" }),
+        }),
+      ]),
+    );
   });
 });
 

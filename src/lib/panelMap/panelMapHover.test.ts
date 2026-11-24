@@ -87,14 +87,15 @@ describe("trackHover", () => {
     expect(map.canvas.style.cursor).toBe("pointer");
   });
 
-  it("no nível estado acende o estado do município, na fonte dos estados", () => {
+  // Na fonte dos estados recortados: só a parte do estado na área acende.
+  it("no nível estado acende o estado do município, na fonte dos estados da área", () => {
     const { map, hovers, tracker } = trackedHover();
 
     tracker.setHoverLevel("estado");
     map.pointAt(RECIFE);
 
     expect(map.lastState()).toEqual([
-      { source: PANEL_MAP_SOURCE.states, id: "PE" },
+      { source: PANEL_MAP_SOURCE.areaStates, id: "PE" },
       { hover: true },
     ]);
     expect(hovers.at(-1)).toMatchObject({
@@ -112,7 +113,7 @@ describe("trackHover", () => {
     tracker.setHoverLevel("feicao");
 
     expect(map.lastState()).toEqual([
-      { source: PANEL_MAP_SOURCE.states, id: "PE" },
+      { source: PANEL_MAP_SOURCE.areaStates, id: "PE" },
       { hover: false },
     ]);
     expect(hovers.at(-1)).toBeNull();
