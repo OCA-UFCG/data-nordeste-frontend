@@ -7,7 +7,7 @@ import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
 const SOURCE = "Fonte: IBGE · Data Nordeste";
 
 describe("usePanelMapCard", () => {
-  it("credita o OpenStreetMap com o basemap padrão (Oceano)", () => {
+  it("credita o OpenStreetMap com o basemap padrão (Padrão)", () => {
     const { result } = renderHook(() => usePanelMapCard(SOURCE));
 
     expect(result.current.imageSource).toBe(
@@ -25,8 +25,8 @@ describe("usePanelMapCard", () => {
     );
   });
 
-  // O corpo do card vira esqueleto/erro e o mapa remonta no Oceano.
-  it("volta ao crédito do Oceano quando o mapa do card desmonta", () => {
+  // O corpo do card vira esqueleto/erro e o mapa remonta no Padrão.
+  it("volta ao crédito do Padrão quando o mapa do card desmonta", () => {
     const { result } = renderHook(() => usePanelMapCard(SOURCE));
 
     act(() => result.current.mapBinding.onBasemapChange("satelite"));

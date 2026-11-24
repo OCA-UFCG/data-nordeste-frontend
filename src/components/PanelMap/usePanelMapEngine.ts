@@ -15,7 +15,7 @@ import {
   type PanelMapEngine,
 } from "@/lib/panelMapEngine";
 
-export const DEFAULT_BASEMAP: BasemapKind = "oceano";
+export const DEFAULT_BASEMAP: BasemapKind = "padrao";
 
 export type PanelMapEngineMount = {
   municipal: boolean;

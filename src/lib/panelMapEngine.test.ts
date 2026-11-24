@@ -46,7 +46,7 @@ function engineOptions(
   onReady: PanelMapEngineOptions["onReady"],
 ): PanelMapEngineOptions {
   return {
-    basemap: "oceano",
+    basemap: "padrao",
     municipal: true,
     cooperative: true,
     onReady,

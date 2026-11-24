@@ -36,10 +36,10 @@ afterEach(() => {
 });
 
 describe("PanelMap controles", () => {
-  it("começa no basemap Oceano", async () => {
+  it("começa no basemap Padrão", async () => {
     const { factory } = await renderPanelMap();
 
-    expect(screen.getByRole("button", { name: "Oceano" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Padrão" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -48,7 +48,7 @@ describe("PanelMap controles", () => {
       "false",
     );
     expect(factory.options).toMatchObject({
-      basemap: "oceano",
+      basemap: "padrao",
       municipal: true,
       cooperative: false,
     });

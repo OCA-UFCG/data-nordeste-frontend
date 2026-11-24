@@ -3,7 +3,7 @@
 import { FOCUS_RING } from "@/components/ProtoPanel/protoStyles";
 import { BASEMAPS, type BasemapKind } from "@/lib/panelMapEngine";
 
-const BASEMAP_ORDER: BasemapKind[] = ["satelite", "oceano"];
+const BASEMAP_ORDER: BasemapKind[] = ["satelite", "padrao"];
 
 type BasemapSwitchProps = {
   value: BasemapKind;
@@ -26,7 +26,7 @@ const BasemapButton = ({
 );
 
 /**
- * Botões Satélite | Oceano sobre o mapa; o ativo fica com `aria-pressed`.
+ * Botões Satélite | Padrão sobre o mapa; o ativo fica com `aria-pressed`.
  * Fica à esquerda do +/− do MapLibre, que ocupa o canto superior direito.
  *
  * @example <BasemapSwitch value={basemap} onChange={setBasemap} />

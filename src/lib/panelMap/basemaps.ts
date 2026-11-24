@@ -1,4 +1,4 @@
-export type BasemapKind = "satelite" | "oceano";
+export type BasemapKind = "satelite" | "padrao";
 
 export type Basemap = {
   label: string;
@@ -12,7 +12,7 @@ export type Basemap = {
 
 // Os dois serviços (ESRI e tile.openstreetmap.org) respondem com
 // `Access-Control-Allow-Origin: *` — sem isso o canvas fica "tainted" e o PNG do
-// mapa (toDataURL) falha. O Oceano é o raster padrão do OpenStreetMap (terra
+// mapa (toDataURL) falha. O Padrão é o raster padrão do OpenStreetMap (terra
 // branca, oceano azul); o uso segue a política de ladrilhos da OSMF.
 export const BASEMAPS: Record<BasemapKind, Basemap> = {
   satelite: {
@@ -21,8 +21,8 @@ export const BASEMAPS: Record<BasemapKind, Basemap> = {
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     attribution: "Esri, Maxar, Earthstar Geographics",
   },
-  oceano: {
-    label: "Oceano",
+  padrao: {
+    label: "Padrão",
     tiles: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     attribution: "© OpenStreetMap contributors",
     maxzoom: 19,
@@ -31,7 +31,7 @@ export const BASEMAPS: Record<BasemapKind, Basemap> = {
 
 export const BASEMAP_KINDS = Object.keys(BASEMAPS) as BasemapKind[];
 
-/** Id da camada raster de um basemap: `basemapLayerId("oceano")` → `"basemap-oceano"`. */
+/** Id da camada raster de um basemap: `basemapLayerId("padrao")` → `"basemap-padrao"`. */
 export function basemapLayerId(kind: BasemapKind): string {
   return `basemap-${kind}`;
 }

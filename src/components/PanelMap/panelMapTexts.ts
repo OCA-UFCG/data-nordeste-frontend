@@ -7,7 +7,7 @@ export const PANEL_MAP_HINT = "Aproxime o mapa ou clique para filtrar o painel";
 
 /**
  * Fonte da imagem baixada do mapa: a fonte do dado do painel e o crédito do
- * basemap que aparece nela (o Oceano credita o OpenStreetMap; o satélite, Esri,
+ * basemap que aparece nela (o Padrão credita o OpenStreetMap; o satélite, Esri,
  * Maxar e Earthstar). Sem
  * `basemap`, o crédito do padrão (rodapé da tela cheia).
  *

@@ -356,7 +356,7 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   data owner. Final PDFs go to
   `Documentacao-OCA/data-nordeste/frontend/mapas-paineis-problemas-dados-<data>.pdf`.
 - **Basemaps:** Esri World Imagery ("Satélite") and the standard
-  OpenStreetMap raster tiles ("Oceano": white land, blue ocean;
+  OpenStreetMap raster tiles ("Padrão": white land, blue ocean;
   `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, tiles up to zoom 19), both
   with CORS open. The downloaded image credits the basemap active in the card
   (`usePanelMapCard` + `panelMapImageSource`: "© OpenStreetMap contributors"

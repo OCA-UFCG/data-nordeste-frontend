@@ -21,16 +21,16 @@ describe("panelMapOptions", () => {
   const container = document.createElement("div");
 
   it("liga os gestos cooperativos só quando pedido (card × tela cheia)", () => {
-    expect(panelMapOptions(container, "oceano", true).cooperativeGestures).toBe(
+    expect(panelMapOptions(container, "padrao", true).cooperativeGestures).toBe(
       true,
     );
     expect(
-      panelMapOptions(container, "oceano", false).cooperativeGestures,
+      panelMapOptions(container, "padrao", false).cooperativeGestures,
     ).toBe(false);
   });
 
   it("traduz o aviso dos gestos cooperativos", () => {
-    const { locale } = panelMapOptions(container, "oceano", true);
+    const { locale } = panelMapOptions(container, "padrao", true);
 
     expect(locale["CooperativeGesturesHandler.WindowsHelpText"]).toContain(
       "Ctrl",
@@ -39,21 +39,21 @@ describe("panelMapOptions", () => {
 
   // O duplo clique interromperia o enquadramento do clique numa feição.
   it("desliga o zoom por duplo clique e o box zoom", () => {
-    expect(panelMapOptions(container, "oceano", false)).toMatchObject({
+    expect(panelMapOptions(container, "padrao", false)).toMatchObject({
       doubleClickZoom: false,
       boxZoom: false,
     });
   });
 
-  it("o Oceano usa os ladrilhos do OpenStreetMap, que vão até o nível 19", () => {
-    const options = panelMapOptions(container, "oceano", true);
-    const oceano = rasterSource(options, basemapLayerId("oceano"));
+  it("o Padrão usa os ladrilhos do OpenStreetMap, que vão até o nível 19", () => {
+    const options = panelMapOptions(container, "padrao", true);
+    const padrao = rasterSource(options, basemapLayerId("padrao"));
 
-    expect(oceano.tiles).toEqual([
+    expect(padrao.tiles).toEqual([
       "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     ]);
-    expect(oceano.attribution).toBe("© OpenStreetMap contributors");
-    expect(oceano.maxzoom).toBe(19);
+    expect(padrao.attribution).toBe("© OpenStreetMap contributors");
+    expect(padrao.maxzoom).toBe(19);
     expect(
       rasterSource(options, basemapLayerId("satelite")).maxzoom,
     ).toBeUndefined();

@@ -173,7 +173,7 @@ function mountMap(
  * desmonta o mapa, mesmo antes do `onReady` (efeito do React desmontado cedo).
  * Se o MapLibre não carrega ou não cria o mapa, chama `onError` no lugar.
  *
- * @example useEffect(() => createPanelMapEngine(div, { basemap: "oceano", municipal: true, cooperative: true, onReady: setEngine, onError: showNotice }), [])
+ * @example useEffect(() => createPanelMapEngine(div, { basemap: "padrao", municipal: true, cooperative: true, onReady: setEngine, onError: showNotice }), [])
  */
 export function createPanelMapEngine(
   container: HTMLElement,

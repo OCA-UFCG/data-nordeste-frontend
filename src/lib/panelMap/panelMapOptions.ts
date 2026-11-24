@@ -37,7 +37,7 @@ const COOPERATIVE_GESTURES_LOCALE = {
  * cooperativos (Ctrl/⌘ + roda, dois dedos no toque) para o mapa dentro do
  * card não sequestrar a rolagem da página; a tela cheia usa os gestos normais.
  *
- * @example new maplibre.Map(panelMapOptions(div, "oceano", true))
+ * @example new maplibre.Map(panelMapOptions(div, "padrao", true))
  */
 export function panelMapOptions(
   container: HTMLElement,

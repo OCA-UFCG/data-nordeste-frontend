@@ -185,7 +185,7 @@ function panelMapSources(): StyleSpecification["sources"] {
  * as fontes GeoJSON vazias e todas as camadas na ordem de desenho. As cores do
  * indicador e os filtros chegam depois, pelo motor.
  *
- * @example new maplibre.Map({ container, style: panelMapStyle("oceano") })
+ * @example new maplibre.Map({ container, style: panelMapStyle("padrao") })
  */
 export function panelMapStyle(basemap: BasemapKind): StyleSpecification {
   return {
