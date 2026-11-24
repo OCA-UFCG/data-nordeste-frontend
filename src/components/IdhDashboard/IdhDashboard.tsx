@@ -85,6 +85,7 @@ const IdhGeneralView = ({ data, dashboard }: ViewProps) => (
     onRetry={dashboard.retry}
     onSelectUf={dashboard.actions.selectUf}
     onSelectYear={dashboard.actions.selectYear}
+    onFiltersChange={dashboard.actions.changeFilters}
   />
 );
 

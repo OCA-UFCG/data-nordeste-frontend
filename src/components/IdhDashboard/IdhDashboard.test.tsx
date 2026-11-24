@@ -1,11 +1,23 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
 import {
   idhPanelFixture,
   stubIdhBrowserApis,
 } from "@/components/IdhDashboard/idhTestFixtures";
+import type { PanelMapProps } from "@/components/PanelMap/PanelMap";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
+
+// O mapa é MapLibre (canvas); o dublê só guarda as props de cada montagem.
+const panelMapRenders = vi.hoisted(() => [] as PanelMapProps[]);
+
+vi.mock("@/components/PanelMap/PanelMap", () => ({
+  PanelMap: (props: PanelMapProps) => {
+    panelMapRenders.push(props);
+
+    return <div data-testid="panel-map" />;
+  },
+}));
 
 // Navegação do painel controlada pelo teste: guarda os filtros pedidos e deixa
 // o teste decidir quando a resposta do servidor está pendente.
@@ -54,13 +66,12 @@ const tab = (name: string) =>
 const cardBody = (title: RegExp) =>
   screen.getByRole("heading", { name: title }).closest("article")?.children[1];
 
-const mapState = (name: string) =>
-  within(
-    screen.getByRole("group", { name: /Mapa do IDH por estado/ }),
-  ).getByRole("button", { name: new RegExp(`^${name}`) });
+// O ranking é o que escolhe estado por clique: o mapa filtra pelo zoom.
+const mapState = (name: string) => screen.getByTitle(new RegExp(`^${name}:`));
 
 describe("IdhDashboard", () => {
   beforeEach(() => {
+    panelMapRenders.length = 0;
     stubIdhBrowserApis();
     navigation.current = new PanelNavigationFake();
   });
@@ -120,6 +131,18 @@ describe("IdhDashboard", () => {
     fireEvent.change(screen.getAllByLabelText("Ano")[0], {
       target: { value: "2020" },
     });
+
+    expect(navigation.current.lastRequest).toEqual({
+      ano: 2020,
+      uf: "PE",
+      visao: "geral",
+    });
+  });
+
+  it("requests the zoomed state through the filter bar path, keeping the open view", () => {
+    render(dashboard({ ...GERAL, ano: 2020 }));
+
+    act(() => panelMapRenders.at(-1)?.onRecorteChange({ uf: ["PE"], mun: [] }));
 
     expect(navigation.current.lastRequest).toEqual({
       ano: 2020,

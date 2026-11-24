@@ -374,7 +374,7 @@ const FullscreenContent = ({
  * uso. Com `renderStage`, o palco é do painel (ex.: mapa de municípios) e o
  * cabeçalho, a legenda e o rodapé continuam os mesmos.
  *
- * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" legend={<IdhMapLegend mapa={mapa} />} source={IDH_CARD_SOURCE} hint={MAP_SELECT_HINT} fillFor={fill} describe={describe} isSelectable={isSelectable} label="Mapa" selectedUf="PE" onSelect={toggleUf} />
+ * @example <ProtoMapFullscreen open={open} onOpenChange={setOpen} title="Mapa" subtitle="…" source={IDH_CARD_SOURCE} hint={MAP_SELECT_HINT} renderStage={() => <PanelMap {...mapProps} />} />
  */
 export const ProtoMapFullscreen = (props: ProtoMapFullscreenProps) => (
   <Dialog open={props.open} onOpenChange={props.onOpenChange}>

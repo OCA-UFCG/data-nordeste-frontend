@@ -322,12 +322,25 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   (`#017f35`), not the prototype `#018f39`, which fails 4.5:1 under white
   text. The cover lead is capped at 1136 px (the prototype's 120ch in its own
   Inter build).
-- Charts are hand-drawn SVG like the prototype, not ECharts: the line
+- The line chart is hand-drawn SVG like the prototype, not ECharts
   (`idhLineChart.ts` holds the geometry; the 0.4–0.8 axis widens only if a
-  real value leaves it) and the map (`idhStateShapes.ts`, the prototype's nine
-  state outlines in a 600 × 754 box). Colours and font are SVG attributes so
-  "Baixar imagem" (PNG or SVG) serialises them; the ranking and group bars are
-  HTML and only share and open the catalogue.
+  real value leaves it). Colours and font are SVG attributes so "Baixar
+  imagem" (PNG or SVG) serialises them; the ranking and group bars are HTML
+  and only share and open the catalogue.
+- The overview map (`IdhMapCard`) is the shared MapLibre `PanelMap`
+  (indicator "idh", area "nordeste", `deepest="estado"`, `formatIdh`), states
+  only, with the classes from the `.qgz` as delivered. Zooming into or
+  clicking a state sets the UF filter through `useRecorteFilters` with
+  `idhToRecorte`/`recorteToIdh` and `dashboard.actions.changeFilters` (the
+  same request as the filter bar, keeping the open view); the round trip is
+  exact, as the map needs. `usePanelMapFilters` (territorial panels) and the
+  IDH card are thin callers of that generic core. The ranking keeps its own
+  toggle (`onSelectUf`) and `IDH_MAP_BUCKETS`. Fullscreen is a second
+  `PanelMap` (`renderStage`) in the card `overlay`; the downloaded image comes
+  from the engine with "Basemap: Esri" (`panelMapImageSource`). Removed:
+  `IdhMapLegend`, `buildIdhMapProps` (`idhMapProps.ts`) and `buildIdhLegend`
+  (the legend now comes from `PanelMap`). `ProtoStateMap` stays because
+  `ProtoMapFullscreen` still draws it without `renderStage`.
 - Prototype rules that came from its demo data were not ported (state data
   only for 2021, "sem dado por estado", the undo toast): the `des_idh` views
   have the yearly series per state. The empty-state notice of the sex and
@@ -417,8 +430,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   (`useDemografiaHighlight`, profile copy), `toggleTerritorialUf` and
   `selectOnlyTerritorialUf` (`territorialPlace.ts`), `PIB_MAP_HINT` and
   `PIB_MAP_IMAGE_SOURCE`. `ChoroplethCanvas`, `ChoroplethMap`,
-  `public/maps/*.json` and `ProtoStateMap` stay: the Power BI demos and the
-  IDH still use them.
+  `public/maps/*.json` and `ProtoStateMap` stay: the Power BI demos still use
+  them.
 
 ## PIB Panel Demo (`/demo/pib`)
 

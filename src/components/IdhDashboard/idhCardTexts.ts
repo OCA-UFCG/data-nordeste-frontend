@@ -15,6 +15,9 @@ export const IDH_CARD_INFO = {
     "Compara os dois grupos no local e no ano escolhidos. O tamanho da barra segue a escala indicada abaixo dela.",
 } as const;
 
+// Rótulo do mapa para leitores de tela (o título do card é `MAP_TITLE`).
+export const IDH_MAP_LABEL = "Mapa do IDH por estado do Nordeste";
+
 // WARNING: o protótipo traz "Atualizado em 11/2026" fixo. O banco não informa
 // quando a PNAD foi carregada; troque por essa data quando houver uma fonte.
 export const IDH_DATA_UPDATED_AT = "11/2026";
