@@ -15,10 +15,10 @@ import { describeDefaultPlaceLabel } from "@/features/panels/territorialPlace";
 type AridezLayoutProps = Omit<AridezCardProps, "state"> & {
   states: AridezCardStates;
 
-  // Filtros pedidos (iguais a `data.filters` fora da navegação): os estados
-  // destacados no mapa já mostram o pedido.
+  // Filtros pedidos (iguais a `data.filters` fora da navegação): o mapa mostra
+  // o pedido e o devolve, trocado pelo zoom ou pelo clique, a `onFiltersChange`.
   selection: TerritorialFilters;
-  onSelectUf: (uf: string) => void;
+  onFiltersChange: (filters: TerritorialFilters) => void;
   onReset: () => void;
 };
 
@@ -28,24 +28,24 @@ const BOTTOM_GRID =
 const MapCard = ({
   selection,
   states,
-  onSelectUf,
+  onFiltersChange,
   data,
   onRetry,
 }: Omit<AridezLayoutProps, "onReset" | "place">) => (
   <AridezMapCard
     data={data}
-    selectedUfs={selection.uf ?? []}
+    selection={selection}
+    onFiltersChange={onFiltersChange}
     state={states.map}
     onRetry={onRetry}
-    onSelectUf={onSelectUf}
   />
 );
 
 /**
  * Grade do painel de aridez (`.arid-stack` do protótipo): números de destaque,
- * o mapa por estado e, lado a lado, as classes e os municípios.
+ * o mapa de municípios e, lado a lado, as classes e os municípios.
  *
- * @example <AridezGrids data={panel} selection={filters} place="Nordeste" states={states} onRetry={retry} onSelectUf={selectUf} />
+ * @example <AridezGrids data={panel} selection={filters} place="Nordeste" states={states} onRetry={retry} onFiltersChange={request} />
  */
 export const AridezGrids = ({
   states,
@@ -69,7 +69,7 @@ export const AridezGrids = ({
  * Sem área classificada no território e ano escolhidos: o aviso com o atalho
  * para o padrão do painel e o mapa sozinho, como no PIB.
  *
- * @example <AridezEmptyLayout data={panel} selection={filters} place="Recife (PE)" states={states} onRetry={retry} onSelectUf={selectUf} onReset={reset} />
+ * @example <AridezEmptyLayout data={panel} selection={filters} place="Recife (PE)" states={states} onRetry={retry} onFiltersChange={request} onReset={reset} />
  */
 export const AridezEmptyLayout = ({ onReset, ...props }: AridezLayoutProps) => (
   <div className="flex flex-col gap-4">

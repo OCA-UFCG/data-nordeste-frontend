@@ -6,13 +6,14 @@ import {
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 
 // De quais filtros o dado de cada card depende (as consultas de
-// `loadPibPanel`). O ano escolhido na série e os municípios destacados no
-// mapa vêm do filtro pedido (seleção otimista), então não contam: trocar de
-// município não esmaece o mapa.
+// `loadPibPanel`). O ano escolhido na série e os estados destacados no mapa
+// vêm do filtro pedido (seleção otimista), então não contam. O mapa desenha
+// os geodados da área inteira e ignora Estado e Município: o zoom ou o clique
+// num estado não o esmaece.
 const PIB_CARD_DEPENDENCIES = {
   bigNumbers: ["area", "uf", "mun", "ano"],
   evolution: ["area", "uf", "mun"],
-  map: ["area", "uf", "ano"],
+  map: ["area", "ano"],
   sectors: ["area", "uf", "mun", "ano"],
 } as const satisfies Record<string, readonly (keyof TerritorialFilters)[]>;
 
@@ -25,7 +26,7 @@ export type PibCardStates = Record<PibCardKey, PanelCardState>;
  * cujo dado muda fica esmaecido; nenhum vira esqueleto, salvo depois de uma
  * consulta falhada.
  *
- * @example resolvePibCardStates({ failed: false, retrying: false, pending: { ...filters, mun: ["2611606"] } }, filters).map // "ok"
+ * @example resolvePibCardStates({ failed: false, retrying: false, pending: { ...filters, uf: ["PE"] } }, filters).map // "ok"
  */
 export const resolvePibCardStates = (
   status: PanelLoadRequest<TerritorialFilters>,

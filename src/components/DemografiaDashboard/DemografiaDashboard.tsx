@@ -38,7 +38,6 @@ import {
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
-  toggleTerritorialUf,
 } from "@/features/panels/territorialPlace";
 import { resolvePerfilCardStates } from "@/features/panels/demografia/perfilCardState";
 import { findPerfilPopulacao } from "@/features/panels/demografia/perfilPopulacao";
@@ -123,8 +122,7 @@ export const DemografiaDashboard = ({
       data.filters,
     ),
     onRetry: retry,
-    onSelectUf: (uf: string) =>
-      request(toggleTerritorialUf(selection, uf, DEMOGRAFIA_MAX_PLACES)),
+    onFiltersChange: request,
     onReset: reset,
   };
   const showEmpty = !failed && findPerfilPopulacao(data) === null;

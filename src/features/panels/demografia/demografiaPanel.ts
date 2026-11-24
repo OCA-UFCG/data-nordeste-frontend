@@ -36,8 +36,8 @@ const PORTE_LIMITES = { pequeno: 50_000, medio: 100_000 } as const;
 const upTo = (limite: number) => limite + 1;
 const mil = (limite: number) => `${limite / 1000} mil`;
 
-// Cores das faixas; o mapa de estados do perfil reusa as duas primeiras.
-export const DEMOGRAFIA_PORTE_COLORS = {
+// Cores das faixas de porte.
+const DEMOGRAFIA_PORTE_COLORS = {
   pequeno: "#f6d3e0",
   medio: "#e98dae",
   grande: "#c93c6b",

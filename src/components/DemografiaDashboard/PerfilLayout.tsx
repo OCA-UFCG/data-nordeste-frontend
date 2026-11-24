@@ -20,11 +20,11 @@ import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 type PerfilGridsProps = Omit<PerfilCardProps, "state"> & {
   states: PerfilCardStates;
 
-  // Filtros pedidos (iguais a `data.filters` fora da navegação): os estados
-  // destacados no mapa já mostram o pedido.
+  // Filtros pedidos (iguais a `data.filters` fora da navegação): o recorte do
+  // mapa já mostra o pedido, e o zoom o devolve pelo `onFiltersChange`.
   selection: TerritorialFilters;
+  onFiltersChange: (filters: TerritorialFilters) => void;
   mapView: PorteMapView;
-  onSelectUf: (uf: string) => void;
 };
 
 // `resetLabel`: o atalho para o padrão ("Ver Nordeste · 2022"), com o ano do banco.
@@ -59,13 +59,13 @@ const BOTTOM_GRID =
  * Grade do perfil demográfico (`.dg` e `.dg2` do protótipo): os seis cards
  * nas áreas da grade. Cada card recebe o `PerfilCardProps` com o seu estado.
  *
- * @example <PerfilGrids data={panel} place="Nordeste" states={states} selection={filters} mapView={porteView} onRetry={retry} onSelectUf={select} />
+ * @example <PerfilGrids data={panel} place="Nordeste" states={states} selection={filters} onFiltersChange={request} mapView={porteView} onRetry={retry} />
  */
 export const PerfilGrids = ({
   states,
   selection,
+  onFiltersChange,
   mapView,
-  onSelectUf,
   ...card
 }: PerfilGridsProps) => (
   <div>
@@ -87,9 +87,9 @@ export const PerfilGrids = ({
         <PerfilPorteMapCard
           {...card}
           state={states.map}
-          selectedUfs={selection.uf ?? []}
+          selection={selection}
+          onFiltersChange={onFiltersChange}
           mapView={mapView}
-          onSelectUf={onSelectUf}
         />
       </Slot>
       <Slot className="[grid-area:mun] max-[1000px]:order-5">
@@ -112,8 +112,8 @@ export const PerfilGrids = ({
 export const PerfilEmptyLayout = ({
   states,
   selection,
+  onFiltersChange,
   mapView,
-  onSelectUf,
   onReset,
   resetLabel,
   ...card
@@ -132,9 +132,9 @@ export const PerfilEmptyLayout = ({
       <PerfilPorteMapCard
         {...card}
         state={states.map}
-        selectedUfs={selection.uf ?? []}
+        selection={selection}
+        onFiltersChange={onFiltersChange}
         mapView={mapView}
-        onSelectUf={onSelectUf}
       />
     </Slot>
   </div>

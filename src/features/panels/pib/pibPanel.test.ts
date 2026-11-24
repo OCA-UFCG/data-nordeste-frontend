@@ -57,22 +57,6 @@ class PibDatabaseFake {
       ];
     }
     if (sql.includes("municipio_uf FROM")) return municipiosIn(params);
-    if (sql.includes("GROUP BY cd_mun")) {
-      return [
-        {
-          cd_mun: "2507507",
-          nome_municipio: "João Pessoa",
-          sigla_uf: "PB",
-          pib: "25560000000",
-        },
-        {
-          cd_mun: "2611606",
-          nome_municipio: "Recife",
-          sigla_uf: "PE",
-          pib: "66351305000",
-        },
-      ];
-    }
     if (sql.includes("GROUP BY ano")) {
       return [{ ano: 2017, pib: "953430000000", per_capita: "16652.57" }];
     }
@@ -163,24 +147,16 @@ describe("loadPibPanel", () => {
     expect(serie.params).toEqual(["PE", "2611606"]);
   });
 
-  it("maps the PIB by municipality for the area, year and states, not the municipalities", async () => {
+  // O mapa desenha os geodados; cada zoom é uma navegação, então uma soma
+  // por estado custaria uma consulta a mais por gesto sem ninguém usar.
+  it("does not query a per-state sum for the map", async () => {
     const db = new PibDatabaseFake();
-    const panel = await loadPibPanel(db.query, {
-      ano: 2017,
-      area: "semiarido",
-      uf: ["PE"],
-      mun: ["2611606"],
-    });
-    const mapa = db.callFor("GROUP BY cd_mun");
 
-    expect(mapa.sql).toContain("SUM(pib_total)");
-    expect(mapa.sql).toContain("semiarido = 'Sim'");
-    expect(mapa.sql).not.toContain("cd_mun =");
-    expect(mapa.params).toEqual([2017, "PE"]);
-    expect(panel.mapa).toEqual([
-      { code: "2507507", name: "João Pessoa", uf: "PB", value: 25560000000 },
-      { code: "2611606", name: "Recife", uf: "PE", value: 66351305000 },
-    ]);
+    await loadPibPanel(db.query, { ano: 2017, area: "nordeste", uf: ["PE"] });
+
+    expect(db.calls.some(({ sql }) => sql.includes("GROUP BY sigla_uf"))).toBe(
+      false,
+    );
   });
 
   it("drops a state or municipality outside the selection", async () => {
@@ -241,7 +217,6 @@ describe("emptyPibPanel", () => {
       ufs: [],
       municipios: [],
       serie: [],
-      mapa: [],
       vab: null,
       atividades: [],
       vabLastYear: null,
