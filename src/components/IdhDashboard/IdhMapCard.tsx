@@ -13,6 +13,7 @@ import {
   PANEL_MAP_HINT,
   panelMapImageSource,
 } from "@/components/PanelMap/panelMapTexts";
+import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
 import {
   type RecorteAdapter,
   useRecorteFilters,
@@ -27,12 +28,14 @@ import {
   recorteToIdh,
 } from "@/features/panelMap/panelMapAdapters";
 import { showsIdhData } from "@/features/panels/idh/idhCardState";
-import { formatIdh } from "@/features/panels/idh/idhFormat";
+import { formatIdhCard } from "@/features/panels/idh/idhFormat";
 import type { IdhFilters, IdhPanelData } from "@/features/panels/idh/idhPanel";
-import type { PanelMapEngine } from "@/lib/panelMapEngine";
 
 const TITLE = "Mapa do IDH por estado";
-const IMAGE_SOURCE = panelMapImageSource(IDH_CARD_SOURCE);
+
+// Rodapé da tela cheia; a imagem baixada do card credita o basemap ativo
+// (`usePanelMapCard`).
+const FULLSCREEN_SOURCE = panelMapImageSource(IDH_CARD_SOURCE);
 
 // Altura fixa: o mapa preenche o card ao lado do ranking sem depender da
 // proporção da malha.
@@ -53,7 +56,9 @@ const useIdhMapProps = (
   area: "nordeste",
   indicator: "idh",
   deepest: "estado",
-  formatValue: formatIdh,
+
+  // Duas casas, como o IDH nos shapes do Drive (a terceira seria inventada).
+  formatValue: formatIdhCard,
   label: IDH_MAP_LABEL,
 });
 
@@ -78,7 +83,7 @@ export const IdhMapCard = ({
   onRetry: () => void;
   onFiltersChange: (filters: IdhFilters) => void;
 }) => {
-  const [engine, setEngine] = useState<PanelMapEngine | null>(null);
+  const card = usePanelMapCard(IDH_CARD_SOURCE);
   const [fullscreen, setFullscreen] = useState(false);
   const mapProps = useIdhMapProps(selection, onFiltersChange);
   const subtitle = `Faixas de desenvolvimento humano · ${data.filters.ano}`;
@@ -96,8 +101,8 @@ export const IdhMapCard = ({
         <PanelMapCardActions
           title={TITLE}
           info={IDH_CARD_INFO.map}
-          imageSource={IMAGE_SOURCE}
-          engine={engine}
+          imageSource={card.imageSource}
+          engine={card.engine}
           disabled={!showsIdhData(state)}
           onOpenFullscreen={() => setFullscreen(true)}
         />
@@ -108,14 +113,14 @@ export const IdhMapCard = ({
           onOpenChange={setFullscreen}
           title={TITLE}
           subtitle={subtitle}
-          source={IMAGE_SOURCE}
+          source={FULLSCREEN_SOURCE}
           hint={PANEL_MAP_HINT}
           renderStage={() => <PanelMap {...mapProps} />}
         />
       }
     >
       <div className={MAP_BOX_CLASS}>
-        <PanelMap {...mapProps} cooperative onEngine={setEngine} />
+        <PanelMap {...mapProps} {...card.mapBinding} />
       </div>
     </ProtoCard>
   );

@@ -30,8 +30,8 @@ const FullscreenButton = ({
   </button>
 );
 
-// A imagem do mapa leva o crédito do Esri; os outros cards do painel seguem
-// com a fonte do contexto.
+// A imagem do mapa leva o crédito do basemap ativo; os outros cards do painel
+// seguem com a fonte do contexto.
 const MapCardMenu = ({
   engine,
   title,
@@ -53,9 +53,9 @@ const MapCardMenu = ({
 
 /**
  * Ações do cabeçalho do card com mapa MapLibre: tela cheia, ⓘ e o menu, cuja
- * imagem baixada vem do motor do mapa com o crédito do Esri.
+ * imagem baixada vem do motor do mapa com o crédito do basemap ativo.
  *
- * @example <PanelMapCardActions title="Mapa" info="…" imageSource={panelMapImageSource(SOURCE)} engine={engine} disabled={false} onOpenFullscreen={open} />
+ * @example <PanelMapCardActions title="Mapa" info="…" imageSource={card.imageSource} engine={card.engine} disabled={false} onOpenFullscreen={open} />
  */
 export const PanelMapCardActions = ({
   title,

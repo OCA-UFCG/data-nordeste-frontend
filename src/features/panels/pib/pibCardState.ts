@@ -7,8 +7,9 @@ import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 
 // De quais filtros o dado de cada card depende (as consultas de
 // `loadPibPanel`). O ano escolhido na série e os estados destacados no mapa
-// vêm do filtro pedido (seleção otimista), então não contam. O mapa soma a
-// área inteira e ignora Estado e Município: clicar num estado não o esmaece.
+// vêm do filtro pedido (seleção otimista), então não contam. O mapa desenha
+// os geodados da área inteira e ignora Estado e Município: o zoom ou o clique
+// num estado não o esmaece.
 const PIB_CARD_DEPENDENCIES = {
   bigNumbers: ["area", "uf", "mun", "ano"],
   evolution: ["area", "uf", "mun"],

@@ -26,14 +26,21 @@ export function aridezOverlay(
 /**
  * Estado dos controles sobre o mapa (basemap e aridez) e o espelho dele no
  * motor. Começa no Oceano, com a aridez desligada na década mais recente.
+ * `onBasemapChange` avisa o card da troca (o crédito da imagem baixada segue
+ * o basemap).
  *
  * @example const controls = usePanelMapControls(engine, manifest); <BasemapSwitch value={controls.basemap} onChange={controls.setBasemap} />
  */
 export function usePanelMapControls(
   engine: PanelMapEngine | null,
   manifest: GeodataManifest,
+  onBasemapChange?: (kind: BasemapKind) => void,
 ) {
-  const [basemap, setBasemap] = useState<BasemapKind>(DEFAULT_BASEMAP);
+  const [basemap, setBasemapState] = useState<BasemapKind>(DEFAULT_BASEMAP);
+  const setBasemap = (kind: BasemapKind) => {
+    setBasemapState(kind);
+    onBasemapChange?.(kind);
+  };
   const [aridez, setAridez] = useState<AridezChoice>({
     on: false,
     year: Math.max(...manifest.aridez.years),

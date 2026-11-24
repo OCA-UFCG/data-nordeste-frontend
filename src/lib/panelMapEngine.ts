@@ -65,6 +65,10 @@ export type PanelMapEngineOptions = {
   // (o handler manager do MapLibre o repassa), então segue virando filtro.
   cooperative: boolean;
   onReady: (engine: PanelMapEngine) => void;
+
+  // O import do MapLibre ou o `new Map` falhou (ex.: navegador sem WebGL); o
+  // mapa nunca fica pronto. Falha de ladrilho não chega aqui.
+  onError: (error: unknown) => void;
 };
 
 function createMap(
@@ -122,17 +126,22 @@ function engineFor(
   };
 }
 
-function logEngineFailure(error: unknown): void {
+// O import do MapLibre é assíncrono: o efeito do React pode desmontar antes.
+type EngineMount = { map: MaplibreMap | null; destroyed: boolean };
+
+function reportEngineFailure(
+  error: unknown,
+  options: PanelMapEngineOptions,
+  mount: EngineMount,
+): void {
   console.error(
     JSON.stringify({
       event: "panel_map_engine_failed",
       message: error instanceof Error ? error.message : String(error),
     }),
   );
+  if (!mount.destroyed) options.onError(error);
 }
-
-// O import do MapLibre é assíncrono: o efeito do React pode desmontar antes.
-type EngineMount = { map: MaplibreMap | null; destroyed: boolean };
 
 function mountMap(
   maplibre: MaplibreModule,
@@ -157,8 +166,9 @@ function mountMap(
  * camadas existem). O MapLibre é importado aqui dentro, só no navegador — o
  * módulo pode ser importado na renderização do servidor. Devolve a função que
  * desmonta o mapa, mesmo antes do `onReady` (efeito do React desmontado cedo).
+ * Se o MapLibre não carrega ou não cria o mapa, chama `onError` no lugar.
  *
- * @example useEffect(() => createPanelMapEngine(div, { basemap: "oceano", municipal: true, cooperative: true, onReady: setEngine }), [])
+ * @example useEffect(() => createPanelMapEngine(div, { basemap: "oceano", municipal: true, cooperative: true, onReady: setEngine, onError: showNotice }), [])
  */
 export function createPanelMapEngine(
   container: HTMLElement,
@@ -172,7 +182,7 @@ export function createPanelMapEngine(
 
   import("maplibre-gl")
     .then((maplibre) => mountMap(maplibre, container, options, mount, destroy))
-    .catch(logEngineFailure);
+    .catch((error) => reportEngineFailure(error, options, mount));
 
   return destroy;
 }

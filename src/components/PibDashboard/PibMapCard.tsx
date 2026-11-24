@@ -7,6 +7,7 @@ import {
   PANEL_MAP_HINT,
   panelMapImageSource,
 } from "@/components/PanelMap/panelMapTexts";
+import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
 import { usePanelMapFilters } from "@/components/PanelMap/usePanelMapFilters";
 import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
 import {
@@ -20,9 +21,10 @@ import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
 import { formatPibReais } from "@/features/panels/pib/pibFormat";
 import { areaLabel } from "@/features/panels/territorialOptions";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
-import type { PanelMapEngine } from "@/lib/panelMapEngine";
 
-const IMAGE_SOURCE = panelMapImageSource(PIB_CARD_SOURCE);
+// Rodapé da tela cheia; a imagem baixada do card credita o basemap ativo
+// (`usePanelMapCard`).
+const FULLSCREEN_SOURCE = panelMapImageSource(PIB_CARD_SOURCE);
 
 // Altura fixa: o mapa preenche o card ao lado da coluna dos setores sem
 // depender da proporção da malha.
@@ -56,7 +58,7 @@ export const PibMapCard = ({
   selection: TerritorialFilters;
   onFiltersChange: (filters: TerritorialFilters) => void;
 }) => {
-  const [engine, setEngine] = useState<PanelMapEngine | null>(null);
+  const card = usePanelMapCard(PIB_CARD_SOURCE);
   const [fullscreen, setFullscreen] = useState(false);
   const mapProps = usePibMapProps(selection, onFiltersChange);
   const subtitle = `PIB total · ${areaLabel(selection.area)} · ${selection.ano}`;
@@ -76,7 +78,7 @@ export const PibMapCard = ({
           onOpenChange={setFullscreen}
           title={PIB_MAP_TITLE}
           subtitle={subtitle}
-          source={IMAGE_SOURCE}
+          source={FULLSCREEN_SOURCE}
           hint={PANEL_MAP_HINT}
           renderStage={() => <PanelMap {...mapProps} />}
         />
@@ -85,15 +87,15 @@ export const PibMapCard = ({
         <PanelMapCardActions
           title={PIB_MAP_TITLE}
           info={PIB_CARD_INFO.map}
-          imageSource={IMAGE_SOURCE}
-          engine={engine}
+          imageSource={card.imageSource}
+          engine={card.engine}
           disabled={state === "loading" || state === "error"}
           onOpenFullscreen={() => setFullscreen(true)}
         />
       }
     >
       <div className={MAP_BOX_CLASS}>
-        <PanelMap {...mapProps} cooperative onEngine={setEngine} />
+        <PanelMap {...mapProps} {...card.mapBinding} />
       </div>
     </ProtoCard>
   );

@@ -290,9 +290,15 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   The route reads the files on each request (no restart; browsers cache them
   for 24 h). Locally, set `GEODATA_DIR` in `.env` to `$OUT`.
 
+- **Engine failure:** when MapLibre cannot be imported or cannot create the
+  map (no WebGL), the engine calls `onError` and `PanelMap` shows a "Mapa
+  indisponível" notice (`ENGINE_UNAVAILABLE`) instead of a blank box.
 - **Serving:** `/api/geodata/[...path]` (`src/app/api/geodata/`) reads from
   `GEODATA_DIR`, accepts only `.json`, `.geojson` and `.png` inside that
   directory and answers 503 with the missing variable when it is empty.
+  `data-issues.json` sits in the same directory but is never served
+  (`resolveGeodataFile` denies it by name): it is the data team's report, not
+  map data.
 - **Zoom levels** (`src/features/panelMap/mapRecorte.ts`): area of interest
   below zoom 6.5, state from 6.5 (`STATE_ZOOM`), municipality from 8.5
   (`MUNICIPALITY_ZOOM`); the IDH stops at state (`deepest`). Going down uses
@@ -316,7 +322,9 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   moves (fit to the filters, resize) never emit, which avoids a
   filter → fit → zoom → different filter loop. Click emits the recorte of the
   clicked feature directly (municipality; the state in the IDH or in a card
-  that stops at state) and only fits the map when that is already the recorte.
+  that stops at state). When that recorte is new, the map fits it through the
+  prop change (a click is not marked as a zoom emission); when it already is
+  the recorte, nothing changes, so the click fits it directly.
 - **Gestures and zoom cap** (`src/lib/panelMap/panelMapOptions.ts`): the
   map inside the card uses MapLibre's cooperative gestures (Ctrl/⌘ + wheel,
   two fingers on touch, prompt in Portuguese) so it does not hijack the page
@@ -346,8 +354,10 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   data owner. Final PDFs go to
   `Documentacao-OCA/data-nordeste/frontend/mapas-paineis-problemas-dados-<data>.pdf`.
 - **Basemaps:** Esri World Imagery ("Satélite") and Esri World Ocean Base
-  ("Oceano"), both with CORS open; the Esri credit is in the image source
-  (`panelMapImageSource`). The aridez raster has a decade selector (1990, 2000,
+  ("Oceano"), both with CORS open. The downloaded image credits the basemap
+  active in the card (`usePanelMapCard` + `panelMapImageSource`: "Esri" for
+  the Ocean, "Esri, Maxar, Earthstar Geographics" for the satellite); the
+  fullscreen footer shows the default (Ocean) credit. The aridez raster has a decade selector (1990, 2000,
   2010, 2020).
 - **Removed by this swap** (see each panel section): `IdhMapLegend`,
   `buildIdhMapProps`, `buildIdhLegend`; `pibStates.ts` (`PIB_STATE_BINS`,
@@ -445,7 +455,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   imagem" (PNG or SVG) serialises them; the ranking and group bars are HTML
   and only share and open the catalogue.
 - The overview map (`IdhMapCard`) is the shared MapLibre `PanelMap`
-  (indicator "idh", area "nordeste", `deepest="estado"`, `formatIdh`), states
+  (indicator "idh", area "nordeste", `deepest="estado"`, `formatIdhCard`: two
+  decimals, the precision of the Drive shapes), states
   only, with the classes from the `.qgz` as delivered. Zooming into or
   clicking a state sets the UF filter through `useRecorteFilters` with
   `idhToRecorte`/`recorteToIdh` and `dashboard.actions.changeFilters` (the
@@ -458,7 +469,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   IDH card are thin callers of that generic core. The ranking keeps its own
   toggle (`onSelectUf`) and `IDH_MAP_BUCKETS`. Fullscreen is a second
   `PanelMap` (`renderStage`) in the card `overlay`; the downloaded image comes
-  from the engine with "Basemap: Esri" (`panelMapImageSource`). Removed:
+  from the engine with the active basemap's credit (`panelMapImageSource`). Removed:
   `IdhMapLegend`, `buildIdhMapProps` (`idhMapProps.ts`) and `buildIdhLegend`
   (the legend now comes from `PanelMap`). `ProtoStateMap` is unused by the
   cards now: only `ProtoMapFullscreen`'s non-`renderStage` branch draws it,
@@ -525,7 +536,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   Ano up to 140 px); the IDH bar keeps its fixed 204 px.
 - Image download exists for the series and the colour or race chart (SVG) and,
   for the map, comes from the MapLibre engine (`toImageSource`) with
-  "Basemap: Esri" credited in the source (`panelMapImageSource`).
+  the active basemap credited in the source (`panelMapImageSource`).
 - Removed with this rebuild: `DemografiaCharts`, `DemografiaSaibaMais`,
   `PorteLegend`, `PyramidChart`, `ValueBars` and `buildPyramidOption`.
 - Card state: `resolvePanelCardState` (`src/features/panels/panelCardState.ts`)
@@ -539,6 +550,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   the prototype's `norm()` does. The server drops the ones outside the new
   area (`keepKnown` in `src/features/panels/territorialOptions.ts`), which
   keeps the multi-state selection. PIB clears both instead.
+- Card states (`resolvePerfilCardStates` in `perfilCardState.ts`): the map
+  depends only on Área and Ano (`PERFIL_CARD_DEPENDENCIES`), as in the PIB, so
+  the Estado/Município its own zoom sets does not dim it.
 - The fullscreen map is a second `PanelMap` (`renderStage`) wired to the same
   filters; its state (`usePorteMapView`, only `fullscreen` now) lives in the
   dashboard so it survives the swap to the empty layout.
@@ -546,7 +560,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   `sr-only` table built by `buildPerfilPorteTable`.
 - Shared by the PIB and the profile map cards (`src/components/PanelMap/`):
   `usePanelMapFilters` (selection to recorte and back), `PanelMapCardActions`
-  (fullscreen button, ⓘ and the menu with the Esri credit) and
+  (fullscreen button, ⓘ and the menu with the basemap credit),
+  `usePanelMapCard` (the card's engine, active basemap and cooperative
+  gestures) and
   `panelMapTexts` (`PANEL_MAP_HINT`, `panelMapImageSource`).
 - Removed with the map swap: `PerfilPorteToggles`, `DemografiaMapa`
   (`useDemografiaHighlight`, profile copy), `toggleTerritorialUf` and
@@ -571,8 +587,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   IDH) and the `pair` variant of `ProtoStatCards`.
 - Data: the map itself comes from the geodata files (`pib.geojson`, `v<ano>`
   per municipality; see "Panel Maps (MapLibre)"), not from the database.
-  `loadPibPanel` still sums `pib_total` by state into `PibPanelData.estados`,
-  but no card reads it any more (candidate for removal). Sector data (VAB and activities) stops at 2021
+  `loadPibPanel` no longer sums `pib_total` by state (`PibPanelData.estados`
+  was removed): no card read it, and every map zoom is a navigation, so it
+  cost one database query per gesture. Sector data (VAB and activities) stops at 2021
   (`PIB_VAB_LAST_YEAR`); 2022 and 2023 show the notice with "Ver 2021".
 - Deliberate deviations from the prototype:
   - The map is the shared MapLibre `PanelMap` (indicator "pib", municipal
@@ -598,7 +615,7 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   - "Saiba mais" keeps the Power BI definitions (PIB, per capita, VAB,
     participação) as the glossary; the prototype has only the paragraphs.
 - Image download exists for the line (SVG) and the map (from the
-  MapLibre engine, with "Basemap: Esri" in the source); the sector bars are
+  MapLibre engine, with the active basemap's credit in the source); the sector bars are
   HTML.
 - Removed with this rebuild: `PibSectorCharts`, `AtividadeList`,
   `AtividadeHighlightChip`, `PibSaibaMais`, `TrendChart`, `HorizontalBarChart`

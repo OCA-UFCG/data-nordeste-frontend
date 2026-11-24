@@ -10,6 +10,7 @@ import {
   PANEL_MAP_HINT,
   panelMapImageSource,
 } from "@/components/PanelMap/panelMapTexts";
+import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
 import { usePanelMapFilters } from "@/components/PanelMap/usePanelMapFilters";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoMapFullscreen } from "@/components/ProtoPanel/ProtoMapFullscreen";
@@ -17,12 +18,14 @@ import type { DemografiaPanelData } from "@/features/panels/demografia/demografi
 import { buildPerfilPorteTable } from "@/features/panels/demografia/perfilPorteTable";
 import { formatPessoas } from "@/features/panels/format";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
-import type { PanelMapEngine } from "@/lib/panelMapEngine";
 
 const TITLE = "Porte dos municípios";
 const INFO =
   "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Aproxime o mapa para filtrar o painel por estado e por município.";
-const IMAGE_SOURCE = panelMapImageSource(PERFIL_CARD_SOURCE);
+
+// Rodapé da tela cheia; a imagem baixada do card credita o basemap ativo
+// (`usePanelMapCard`).
+const FULLSCREEN_SOURCE = panelMapImageSource(PERFIL_CARD_SOURCE);
 
 // Altura fixa (`max-height` de 560 px do `.map-box` do protótipo): sem ela o
 // card cresceria com a proporção da malha.
@@ -83,7 +86,7 @@ export const PerfilPorteMapCard = ({
   mapView: PorteMapView;
 }) => {
   const { data, place, state } = props;
-  const [engine, setEngine] = useState<PanelMapEngine | null>(null);
+  const card = usePanelMapCard(PERFIL_CARD_SOURCE);
   const mapProps = usePorteMapProps(selection, onFiltersChange);
   const table = usePorteTable(data);
   const subtitle = `${place} · ${data.filters.ano}`;
@@ -102,8 +105,8 @@ export const PerfilPorteMapCard = ({
         <PanelMapCardActions
           title={TITLE}
           info={INFO}
-          imageSource={IMAGE_SOURCE}
-          engine={engine}
+          imageSource={card.imageSource}
+          engine={card.engine}
           disabled={state !== "ok"}
           onOpenFullscreen={() => mapView.setFullscreen(true)}
         />
@@ -114,14 +117,14 @@ export const PerfilPorteMapCard = ({
           onOpenChange={mapView.setFullscreen}
           title={TITLE}
           subtitle={subtitle}
-          source={IMAGE_SOURCE}
+          source={FULLSCREEN_SOURCE}
           hint={PANEL_MAP_HINT}
           renderStage={() => <PanelMap {...mapProps} />}
         />
       }
     >
       <div className={MAP_BOX_CLASS}>
-        <PanelMap {...mapProps} cooperative onEngine={setEngine} />
+        <PanelMap {...mapProps} {...card.mapBinding} />
       </div>
       <div className="sr-only">{table}</div>
     </ProtoCard>

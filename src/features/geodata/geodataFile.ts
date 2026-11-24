@@ -9,6 +9,14 @@ const CONTENT_TYPE_BY_EXTENSION: Record<string, string> = {
   ".png": "image/png",
 };
 
+// O build escreve o relatório de problemas na mesma pasta (vira o PDF da
+// equipe de dados); não é dado do mapa e não sai pela rota.
+const PRIVATE_FILE_NAMES = new Set(["data-issues.json"]);
+
+function isPrivateFile(absolutePath: string): boolean {
+  return PRIVATE_FILE_NAMES.has(path.basename(absolutePath).toLowerCase());
+}
+
 function isSafeSegment(segment: string): boolean {
   if (segment === "" || segment === "." || segment === "..") return false;
 
@@ -21,7 +29,8 @@ function isInside(root: string, candidate: string): boolean {
 
 /**
  * Maps URL segments to a file under `root`, or `null` when the path could leave
- * the directory or points at a type the map does not need.
+ * the directory, points at a type the map does not need or names a private
+ * file (`data-issues.json`).
  * Example: `resolveGeodataFile("/g", ["vector", "pib.geojson"])`.
  */
 export function resolveGeodataFile(
@@ -36,6 +45,7 @@ export function resolveGeodataFile(
   // WARNING: segment checks above already block traversal; this prefix check is
   // the last line of defence for the filesystem boundary. Do not drop it.
   if (!isInside(absoluteRoot, absolutePath)) return null;
+  if (isPrivateFile(absolutePath)) return null;
 
   const contentType =
     CONTENT_TYPE_BY_EXTENSION[path.extname(absolutePath).toLowerCase()];

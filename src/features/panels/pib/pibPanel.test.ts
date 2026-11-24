@@ -53,12 +53,6 @@ class PibDatabaseFake {
       ];
     }
     if (sql.includes("municipio_uf FROM")) return municipiosIn(params);
-    if (sql.includes("GROUP BY sigla_uf, estado_uf")) {
-      return [
-        { sigla_uf: "PB", estado_uf: "Paraíba", pib: "62397000000" },
-        { sigla_uf: "PE", estado_uf: "Pernambuco", pib: "181610000000" },
-      ];
-    }
     if (sql.includes("GROUP BY ano")) {
       return [{ ano: 2017, pib: "953430000000", per_capita: "16652.57" }];
     }
@@ -127,22 +121,16 @@ describe("loadPibPanel", () => {
     expect(serie.params).toEqual(["PE", "2611606"]);
   });
 
-  it("sums the map by state for the whole area, ignoring the place filters", async () => {
+  // O mapa desenha os geodados; cada zoom é uma navegação, então uma soma
+  // por estado custaria uma consulta a mais por gesto sem ninguém usar.
+  it("does not query a per-state sum for the map", async () => {
     const db = new PibDatabaseFake();
-    const panel = await loadPibPanel(db.query, {
-      ano: 2017,
-      area: "semiarido",
-      uf: ["PE"],
-      mun: ["2611606"],
-    });
-    const estados = db.callFor("GROUP BY sigla_uf, estado_uf");
 
-    expect(estados.sql).toContain("semiarido = 'Sim'");
-    expect(estados.params).toEqual([2017]);
-    expect(panel.estados).toEqual([
-      { code: "PB", name: "Paraíba", value: 62397000000 },
-      { code: "PE", name: "Pernambuco", value: 181610000000 },
-    ]);
+    await loadPibPanel(db.query, { ano: 2017, area: "nordeste", uf: ["PE"] });
+
+    expect(db.calls.some(({ sql }) => sql.includes("GROUP BY sigla_uf"))).toBe(
+      false,
+    );
   });
 
   it("drops a state or municipality outside the selection", async () => {
@@ -203,7 +191,6 @@ describe("emptyPibPanel", () => {
       ufs: [],
       municipios: [],
       serie: [],
-      estados: [],
       vab: null,
       atividades: [],
     });

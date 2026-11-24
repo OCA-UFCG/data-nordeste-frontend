@@ -33,6 +33,9 @@ describe("resolveGeodataFile", () => {
     ["segment with a slash", ["vector/../a.json"]],
     ["segment with a backslash", ["vector\\a.json"]],
     ["segment with a NUL byte", ["a.json\0.png"]],
+    ["the data issues report", ["data-issues.json"]],
+    ["the data issues report in other case", ["Data-Issues.JSON"]],
+    ["the data issues report in a subfolder", ["vector", "data-issues.json"]],
   ])("rejects %s", (_label, segments) => {
     expect(resolveGeodataFile("/g", segments)).toBeNull();
   });

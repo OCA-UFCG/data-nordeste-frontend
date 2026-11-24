@@ -86,7 +86,8 @@ export class PanelMapEngineFake implements PanelMapEngine {
 
 /**
  * `createPanelMapEngine` de mentira: entrega o motor fake no `onReady` na hora
- * e devolve um `teardown` espiável.
+ * e devolve um `teardown` espiável. Com `failure`, chama `onError` no lugar
+ * (MapLibre que não carrega, navegador sem WebGL).
  *
  * @example render(<PanelMap {...props} createEngine={factory.create} />)
  */
@@ -95,10 +96,13 @@ export class PanelMapEngineFactoryFake {
   readonly teardown = vi.fn<() => void>();
   options: PanelMapEngineOptions | null = null;
 
+  constructor(private readonly failure: Error | null = null) {}
+
   readonly create = vi.fn(
     (_container: HTMLElement, options: PanelMapEngineOptions) => {
       this.options = options;
-      options.onReady(this.engine);
+      if (this.failure) options.onError(this.failure);
+      else options.onReady(this.engine);
 
       return this.teardown;
     },

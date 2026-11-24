@@ -24,12 +24,18 @@ export type PanelMapEngineMount = {
   onEngine?: (engine: PanelMapEngine | null) => void;
 };
 
+// `failed`: o MapLibre não carregou ou não criou o mapa (ex.: sem WebGL).
+type EngineState = { engine: PanelMapEngine | null; failed: boolean };
+
+const NO_ENGINE: EngineState = { engine: null, failed: false };
+
 // `municipal`, `cooperative` e a fábrica são lidos só aqui, na montagem: valem
-// pela vida do componente. `onEngine` é lido pelo ref na hora, para pegar o mais recente.
+// pela vida do componente. `onEngine` é lido pelo ref na hora, para pegar o
+// mais recente.
 function mountEngine(
   container: HTMLElement,
   mountRef: MutableRefObject<PanelMapEngineMount>,
-  setEngine: Dispatch<SetStateAction<PanelMapEngine | null>>,
+  setState: Dispatch<SetStateAction<EngineState>>,
 ): () => void {
   const { municipal, cooperative, createEngine } = mountRef.current;
   const teardown = (createEngine ?? createPanelMapEngine)(container, {
@@ -37,9 +43,10 @@ function mountEngine(
     municipal,
     cooperative,
     onReady: (ready) => {
-      setEngine(ready);
+      setState({ engine: ready, failed: false });
       mountRef.current.onEngine?.(ready);
     },
+    onError: () => setState({ engine: null, failed: true }),
   });
 
   return () => {
@@ -51,13 +58,13 @@ function mountEngine(
 /**
  * Monta o motor do mapa no `containerRef` uma vez por componente e o desmonta
  * ao sair. `onEngine` recebe o motor pronto (e `null` ao desmontar), para o
- * card baixar a imagem do mapa.
+ * card baixar a imagem do mapa; `failed` diz que o mapa não pôde ser criado.
  *
- * @example const { containerRef, engine } = usePanelMapEngine({ municipal: true, cooperative: true }); <div ref={containerRef} />
+ * @example const { containerRef, engine, failed } = usePanelMapEngine({ municipal: true, cooperative: true }); <div ref={containerRef} />
  */
 export function usePanelMapEngine(mount: PanelMapEngineMount) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [engine, setEngine] = useState<PanelMapEngine | null>(null);
+  const [state, setState] = useState<EngineState>(NO_ENGINE);
   const mountRef = useRef(mount);
 
   useEffect(() => {
@@ -68,8 +75,8 @@ export function usePanelMapEngine(mount: PanelMapEngineMount) {
   useEffect(() => {
     const container = containerRef.current;
 
-    return container ? mountEngine(container, mountRef, setEngine) : undefined;
+    return container ? mountEngine(container, mountRef, setState) : undefined;
   }, []);
 
-  return { containerRef, engine };
+  return { containerRef, ...state };
 }

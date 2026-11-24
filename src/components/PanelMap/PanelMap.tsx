@@ -21,12 +21,15 @@ import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
 import type { MapLevel, MapRecorte } from "@/features/panelMap/mapRecorte";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 import type {
+  BasemapKind,
   createPanelMapEngine,
   PanelMapEngine,
 } from "@/lib/panelMapEngine";
 
 export const GEODATA_UNAVAILABLE =
   "Mapa indisponível: os geodados não foram encontrados neste ambiente.";
+export const ENGINE_UNAVAILABLE =
+  "Mapa indisponível: este navegador não conseguiu desenhar o mapa.";
 
 export type PanelMapProps = {
   indicator: PanelIndicator;
@@ -38,6 +41,9 @@ export type PanelMapProps = {
   formatValue: (value: number) => string;
   label: string;
   onEngine?: (engine: PanelMapEngine | null) => void;
+
+  // O usuário trocou o basemap (o card ajusta o crédito da imagem baixada).
+  onBasemapChange?: (kind: BasemapKind) => void;
 
   // Gestos cooperativos (Ctrl/⌘ + roda, dois dedos): o mapa no card não
   // sequestra a rolagem da página. A tela cheia deixa desligado.
@@ -80,19 +86,23 @@ function usePanelMapRecorte(
 
 // Motor, controles, camadas e tooltip, já com os geodados em mãos.
 function usePanelMapStage(props: PanelMapProps, geodata: ReadyGeodata) {
-  const { containerRef, engine } = usePanelMapEngine({
+  const { containerRef, engine, failed } = usePanelMapEngine({
     municipal: props.indicator !== "idh",
     cooperative: props.cooperative ?? false,
     createEngine: props.createEngine,
     onEngine: props.onEngine,
   });
-  const controls = usePanelMapControls(engine, geodata.manifest);
+  const controls = usePanelMapControls(
+    engine,
+    geodata.manifest,
+    props.onBasemapChange,
+  );
   const features = geodata.features;
   const tooltip = usePanelMapTooltip({ ...props, engine, features });
 
   usePanelMapRecorte(props, geodata, engine, controls.aridez.on);
 
-  return { containerRef, controls, tooltip };
+  return { containerRef, controls, tooltip, failed };
 }
 
 type PanelMapOverlaysProps = {
@@ -127,7 +137,16 @@ const PanelMapStage = ({
   geodata,
   ...props
 }: PanelMapProps & { geodata: ReadyGeodata }) => {
-  const { containerRef, controls, tooltip } = usePanelMapStage(props, geodata);
+  const stage = usePanelMapStage(props, geodata);
+  const { containerRef, controls, tooltip } = stage;
+
+  if (stage.failed) {
+    return (
+      <PanelMapNotice className={props.className}>
+        {ENGINE_UNAVAILABLE}
+      </PanelMapNotice>
+    );
+  }
 
   return (
     <div

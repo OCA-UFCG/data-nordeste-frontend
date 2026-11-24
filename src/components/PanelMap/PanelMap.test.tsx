@@ -2,7 +2,11 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
+import {
+  ENGINE_UNAVAILABLE,
+  PanelMap,
+  type PanelMapProps,
+} from "@/components/PanelMap/PanelMap";
 import { PanelMapEngineFactoryFake } from "@/components/PanelMap/panelMapEngineFake";
 import {
   GeodataFetchFake,
@@ -102,6 +106,15 @@ describe("PanelMap controles", () => {
       "aria-pressed",
       "true",
     );
+  });
+
+  it("avisa o card do basemap escolhido (crédito da imagem)", async () => {
+    const onBasemapChange = vi.fn();
+    await renderPanelMap({ onBasemapChange });
+
+    await userEvent.click(screen.getByRole("button", { name: "Satélite" }));
+
+    expect(onBasemapChange).toHaveBeenLastCalledWith("satelite");
   });
 
   it("ligar a aridez mostra o raster da última década", async () => {
@@ -349,6 +362,16 @@ describe("PanelMap ciclo de vida", () => {
 
     expect(await screen.findByText(UNAVAILABLE)).toBeInTheDocument();
     expect(factory.create).not.toHaveBeenCalled();
+  });
+
+  it("avisa quando o motor não consegue criar o mapa (sem WebGL)", async () => {
+    vi.stubGlobal("fetch", new GeodataFetchFake().fetch);
+    const factory = new PanelMapEngineFactoryFake(new Error("no WebGL"));
+
+    render(<PanelMap {...panelMapProps(factory, {})} />);
+
+    expect(await screen.findByText(ENGINE_UNAVAILABLE)).toBeInTheDocument();
+    expect(screen.queryByRole("region")).toBeNull();
   });
 
   it("entrega o motor ao card e o desmonta ao sair", async () => {

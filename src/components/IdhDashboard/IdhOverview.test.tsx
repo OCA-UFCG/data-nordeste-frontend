@@ -14,7 +14,7 @@ import {
 } from "@/components/ProtoPanel/ProtoCardMenu";
 import type { MapRecorte } from "@/features/panelMap/mapRecorte";
 import { idhToRecorte } from "@/features/panelMap/panelMapAdapters";
-import { formatIdh } from "@/features/panels/idh/idhFormat";
+import { formatIdhCard } from "@/features/panels/idh/idhFormat";
 import type { IdhCardStates } from "@/features/panels/idh/idhCardState";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 
@@ -76,8 +76,11 @@ describe("IdhOverview", () => {
       area: "nordeste",
       deepest: "estado",
       label: "Mapa do IDH por estado do Nordeste",
-      formatValue: formatIdh,
+      formatValue: formatIdhCard,
     });
+
+    // Duas casas, a precisão do IDH nos shapes do Drive.
+    expect(lastProps().formatValue(0.7123)).toBe("0,71");
     expect(lastProps().recorte).toEqual({ uf: ["CE"], mun: [] });
   });
 

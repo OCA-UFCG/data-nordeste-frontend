@@ -36,12 +36,8 @@ export const listPibYearsWithoutVab = (): number[] =>
 
 export type PibYearPoint = { ano: number; pib: number; perCapita: number };
 
-// PIB total de um estado dentro da área de interesse, no ano do filtro.
-export type PibStateRegion = { code: string; name: string; value: number };
-
 export type PibPanelData = TerritorialSelection & {
   serie: PibYearPoint[];
-  estados: PibStateRegion[];
   vab: ChartPoint[] | null;
   atividades: ChartPoint[];
 };
@@ -57,7 +53,6 @@ export const emptyPibPanel = (filters: TerritorialFilters): PibPanelData => ({
   ufs: [],
   municipios: [],
   serie: [],
-  estados: [],
   vab: null,
   atividades: [],
 });
@@ -86,32 +81,6 @@ const loadSerie = async (query: SqlQuery, filters: TerritorialFilters) => {
     ano: row.ano,
     pib: toNumber(row.pib),
     perCapita: toNumber(row.per_capita),
-  }));
-};
-
-// O mapa mostra todos os estados da área, com ou sem estado no filtro: o
-// estado escolhido só ganha o contorno. Por isso a consulta ignora UF e
-// município e soma os municípios de cada estado.
-const loadEstados = async (query: SqlQuery, filters: TerritorialFilters) => {
-  const where = buildTerritorialWhere(
-    { ano: filters.ano, area: filters.area },
-    { byYear: true, byMunicipality: false },
-  );
-  const rows = await query<{
-    sigla_uf: string;
-    estado_uf: string;
-    pib: NumericCell;
-  }>(
-    `SELECT sigla_uf, estado_uf, SUM(pib_total) AS pib
-     FROM ${PIB_VIEW} WHERE ${where.sql}
-     GROUP BY sigla_uf, estado_uf ORDER BY estado_uf`,
-    where.params,
-  );
-
-  return rows.map((row) => ({
-    code: row.sigla_uf.trim(),
-    name: row.estado_uf,
-    value: toNumber(row.pib),
   }));
 };
 
@@ -173,12 +142,11 @@ export const loadPibPanel = async (
     requested,
   );
   const { filters } = selection;
-  const [serie, estados, vab, atividades] = await Promise.all([
+  const [serie, vab, atividades] = await Promise.all([
     loadSerie(query, filters),
-    loadEstados(query, filters),
     loadVab(query, filters),
     loadAtividades(query, filters),
   ]);
 
-  return { ...selection, serie, estados, vab, atividades };
+  return { ...selection, serie, vab, atividades };
 };
