@@ -7,6 +7,7 @@ import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
 import { featureProps, featuresInArea } from "@/features/panelMap/mapSelection";
 import {
   describeMapFeature,
+  describeMapFeatureName,
   featureValueReader,
   type FeatureValueReader,
   type MapTooltipText,
@@ -25,6 +26,9 @@ export type PanelMapTooltipArgs = {
   // Valores por `code` vindos do painel (aridez); sem eles, o `v<ano>` do GeoJSON.
   values?: ReadonlyMap<string, number>;
   formatValue: (value: number) => string;
+
+  // Feições sem valores (malha dos estados): o tooltip mostra só o nome.
+  nameOnly?: boolean;
 };
 
 export type PanelMapTooltipState = MapTooltipText & { x: number; y: number };
@@ -67,13 +71,15 @@ export function usePanelMapTooltip(
 
   useEffect(() => engine?.onHover(setHover), [engine]);
   if (!hover) return null;
-  const text = describeMapFeature(
-    hover.props,
-    readValue,
-    ranks,
-    ranks.size,
-    formatValue,
-  );
+  const text = args.nameOnly
+    ? describeMapFeatureName(hover.props)
+    : describeMapFeature(
+        hover.props,
+        readValue,
+        ranks,
+        ranks.size,
+        formatValue,
+      );
 
   return { ...text, x: hover.x, y: hover.y };
 }
@@ -98,7 +104,9 @@ export const PanelMapTooltip = ({ tooltip }: PanelMapTooltipProps) => {
       style={{ left, top }}
     >
       <p className="font-semibold">{tooltip.title}</p>
-      <p className="mt-1 tabular-nums">{tooltip.value}</p>
+      {tooltip.value === null ? null : (
+        <p className="mt-1 tabular-nums">{tooltip.value}</p>
+      )}
       {tooltip.rank ? (
         <p className="mt-0.5 text-grey-300">{tooltip.rank} no ranking</p>
       ) : null}

@@ -5,9 +5,10 @@ import { formatNumber } from "@/features/panels/format";
 
 export const NO_DATA_LABEL = "sem dado";
 
+// `value` null: a feição não tem número para mostrar (só o nome).
 export type MapTooltipText = {
   title: string;
-  value: string;
+  value: string | null;
   rank: string | null;
 };
 
@@ -82,4 +83,15 @@ export function describeMapFeature(
     value: formatValue(value),
     rank: `${formatNumber(position)}º de ${formatNumber(total)}`,
   };
+}
+
+/**
+ * Tooltip só com o nome, para feições sem valores (a malha dos estados da
+ * vista Estados do perfil).
+ * Ex.: `describeMapFeatureName(pernambuco)` → `{ title: "Pernambuco (PE)", value: null, rank: null }`.
+ */
+export function describeMapFeatureName(
+  feature: MapFeatureProps,
+): MapTooltipText {
+  return { title: titleOf(feature), value: null, rank: null };
 }

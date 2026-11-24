@@ -1,7 +1,7 @@
 import type { ExpressionSpecification, FilterSpecification } from "maplibre-gl";
 import type { Feature, FeatureCollection, Position } from "geojson";
 
-import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
+import type { FeatureLevel } from "@/features/panelMap/featureLevel";
 import type { MapRecorte } from "@/features/panelMap/mapRecorte";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 
@@ -62,15 +62,15 @@ export function veilFilters(recorte: MapRecorte): VeilFilters {
 }
 
 /**
- * Contorno grosso da seleção: municípios em `mun`, senão estados em `uf`. No
- * IDH as feições já são estados, então `mun` não se aplica.
+ * Contorno grosso da seleção: municípios em `mun`, senão estados em `uf`. Com
+ * feições de estado (IDH, vista Estados), `mun` não se aplica.
  */
 export function selectionFilter(
   recorte: MapRecorte,
-  indicator: PanelIndicator,
+  level: FeatureLevel,
 ): FilterSpecification | null {
   const codes =
-    indicator !== "idh" && recorte.mun.length > 0 ? recorte.mun : recorte.uf;
+    level === "municipio" && recorte.mun.length > 0 ? recorte.mun : recorte.uf;
 
   return codes.length > 0 ? propertyIn("code", codes) : null;
 }

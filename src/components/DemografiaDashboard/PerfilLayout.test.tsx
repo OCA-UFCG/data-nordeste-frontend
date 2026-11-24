@@ -18,15 +18,20 @@ import { defaultTerritorialFilters } from "@/features/panels/territorialFilters"
 import { describeDefaultPlaceLabel } from "@/features/panels/territorialPlace";
 
 // O mapa de porte é MapLibre (canvas); o teste só precisa do layout e do
-// estado da tela cheia, que o dublê mostra e troca.
+// estado da vista e da tela cheia, que o dublê mostra e troca.
 vi.mock(
   "@/components/DemografiaDashboard/PerfilPorteMapCard",
   async (importOriginal) => ({
     ...(await importOriginal<object>()),
     PerfilPorteMapCard: ({ mapView }: { mapView: PorteMapView }) => (
-      <button type="button" onClick={() => mapView.setFullscreen(true)}>
-        {`tela cheia ${mapView.fullscreen ? "aberta" : "fechada"}`}
-      </button>
+      <>
+        <button type="button" onClick={() => mapView.setFullscreen(true)}>
+          {`tela cheia ${mapView.fullscreen ? "aberta" : "fechada"}`}
+        </button>
+        <button type="button" onClick={() => mapView.setView("estados")}>
+          {`vista ${mapView.view}`}
+        </button>
+      </>
     ),
   }),
 );
@@ -117,5 +122,14 @@ describe("PerfilGrids and PerfilEmptyLayout", () => {
     expect(
       screen.getByRole("button", { name: "tela cheia aberta" }),
     ).toBeTruthy();
+  });
+
+  it("keeps the Estados view when switching to the empty layout", () => {
+    const { rerender } = render(<LayoutHarness empty={false} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "vista municipios" }));
+    rerender(<LayoutHarness empty />);
+
+    expect(screen.getByRole("button", { name: "vista estados" })).toBeTruthy();
   });
 });

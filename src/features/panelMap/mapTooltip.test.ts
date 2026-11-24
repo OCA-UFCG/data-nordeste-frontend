@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   describeMapFeature,
+  describeMapFeatureName,
   featureValueReader,
   rankWithinArea,
 } from "@/features/panelMap/mapTooltip";
@@ -112,6 +113,18 @@ describe("describeMapFeature", () => {
     expect(describeMapFeature(state, byYear, new Map(), 9, format).title).toBe(
       "Pernambuco (PE)",
     );
+  });
+});
+
+describe("describeMapFeatureName", () => {
+  it("shows only the name with the UF, with no value nor rank", () => {
+    const state = feature("PE", null, { name: "Pernambuco" });
+
+    expect(describeMapFeatureName(state)).toEqual({
+      title: "Pernambuco (PE)",
+      value: null,
+      rank: null,
+    });
   });
 });
 

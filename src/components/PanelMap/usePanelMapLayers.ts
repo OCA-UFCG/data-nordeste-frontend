@@ -15,6 +15,12 @@ import type {
   PanelIndicator,
 } from "@/features/panelMap/geodataTypes";
 import {
+  type FeatureLevel,
+  type MapFeatureMode,
+  recorteForLevel,
+  stateMeshPaint,
+} from "@/features/panelMap/featureLevel";
+import {
   fitTargetFor,
   type FitSources,
   selectionFilter,
@@ -40,8 +46,11 @@ export type PanelMapLayersArgs = {
   recorte: MapRecorte;
   deepest: MapLevel;
   aridez: PanelMapAridez;
+  mode: MapFeatureMode;
   onRecorteChange: (recorte: MapRecorte) => void;
 };
+
+const NO_UFS: string[] = [];
 
 /**
  * O mesmo recorte enquanto a seleção não muda. O pai costuma montar um objeto
@@ -67,29 +76,45 @@ function useFitSources(geodata: ReadyGeodata): FitSources {
   );
 }
 
-function useSourcesAndPaint(args: PanelMapLayersArgs, sources: FitSources) {
-  const { engine, geodata, indicator, ano, area, aridez } = args;
+// A malha dos estados pinta os escolhidos mais forte: só ela depende da UF.
+function usePaint(args: PanelMapLayersArgs, meshUfs: string[]) {
+  const { geodata, indicator, ano, aridez } = args;
+  const { stateMesh } = args.mode;
+
+  return useMemo(
+    () =>
+      stateMesh
+        ? stateMeshPaint(geodata.styles, meshUfs)
+        : featurePaint(geodata.styles, indicator, ano, aridez === "base"),
+    [geodata, indicator, ano, aridez, stateMesh, meshUfs],
+  );
+}
+
+function useSourcesAndPaint(
+  args: PanelMapLayersArgs,
+  sources: FitSources,
+  recorte: MapRecorte,
+) {
+  const { engine, geodata, area, mode } = args;
+  const paint = usePaint(args, mode.stateMesh ? recorte.uf : NO_UFS);
 
   useEffect(() => engine?.setSources(sources), [engine, sources]);
   useEffect(() => {
-    const { styles } = geodata;
-    const paint = featurePaint(styles, indicator, ano, aridez === "base");
+    const { stateOutline } = geodata.styles;
 
-    engine?.setIndicatorPaint({
-      ...paint,
-      stateOutline: styles.stateOutline,
-      area,
-    });
-  }, [engine, geodata, indicator, ano, area, aridez]);
+    engine?.setIndicatorPaint({ ...paint, stateOutline, area });
+  }, [engine, geodata, paint, area]);
 }
 
+// O recorte como o nível das feições o desenha (`recorteForLevel`).
 function fitRecorte(
   engine: PanelMapEngine,
   recorte: MapRecorte,
-  area: TerritorialArea,
+  { area, level }: { area: TerritorialArea; level: FeatureLevel },
   sources: FitSources,
 ): void {
-  const target = fitTargetFor(recorte, area, sources);
+  const drawn = recorteForLevel(recorte, level);
+  const target = fitTargetFor(drawn, area, sources);
 
   if (target) engine.fitTo(target);
 }
@@ -101,21 +126,23 @@ function fitRecorte(
 function useRecorteFraming(
   args: PanelMapLayersArgs,
   sources: FitSources,
+  recorte: MapRecorte,
   zoomEmittedRef: MutableRefObject<MapRecorte | null>,
 ) {
-  const { engine, indicator, area } = args;
-  const recorte = useStableRecorte(args.recorte);
+  const { engine, area } = args;
+  const { level } = args.mode;
 
   useEffect(() => {
     if (!engine) return;
     const emitted = zoomEmittedRef.current;
     const fromZoom = emitted !== null && sameRecorte(emitted, recorte);
+    const drawn = recorteForLevel(recorte, level);
 
     zoomEmittedRef.current = null;
-    engine.setVeil(veilFilters(recorte));
-    engine.setSelection(selectionFilter(recorte, indicator));
-    if (!fromZoom) fitRecorte(engine, recorte, area, sources);
-  }, [engine, recorte, area, indicator, sources, zoomEmittedRef]);
+    engine.setVeil(veilFilters(drawn));
+    engine.setSelection(selectionFilter(drawn, level));
+    if (!fromZoom) fitRecorte(engine, recorte, { area, level }, sources);
+  }, [engine, recorte, area, level, sources, zoomEmittedRef]);
 }
 
 // Clique emite o recorte direto e o enquadramento vem da mudança de props
@@ -127,12 +154,12 @@ function handleFeatureClick(
   sources: FitSources,
   zoomEmittedRef: MutableRefObject<MapRecorte | null>,
 ): void {
-  const { engine, indicator, deepest, recorte, area } = args;
-  const next = recorteForClick(feature, indicator, deepest);
+  const { engine, mode, deepest, recorte } = args;
+  const next = recorteForClick(feature, mode.level, deepest);
 
   zoomEmittedRef.current = null;
   if (!sameRecorte(next, recorte)) return args.onRecorteChange(next);
-  if (engine) fitRecorte(engine, next, area, sources);
+  if (engine) fitRecorte(engine, next, { ...args, level: mode.level }, sources);
 }
 
 // WHY deps com `args` inteiro: o recorte do pai muda de objeto a cada render,
@@ -158,11 +185,12 @@ function useFeatureClicks(
  */
 export function usePanelMapLayers(args: PanelMapLayersArgs) {
   const sources = useFitSources(args.geodata);
+  const recorte = useStableRecorte(args.recorte);
   const zoomEmittedRef = useRef<MapRecorte | null>(null);
   const { onRecorteChange } = args;
 
-  useSourcesAndPaint(args, sources);
-  useRecorteFraming(args, sources, zoomEmittedRef);
+  useSourcesAndPaint(args, sources, recorte);
+  useRecorteFraming(args, sources, recorte, zoomEmittedRef);
   useFeatureClicks(args, sources, zoomEmittedRef);
 
   return useCallback(

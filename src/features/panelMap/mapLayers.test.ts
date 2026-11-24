@@ -96,31 +96,27 @@ describe("veilFilters", () => {
 
 describe("selectionFilter", () => {
   it("is null without selection", () => {
-    expect(selectionFilter(EMPTY_RECORTE, "pib")).toBeNull();
+    expect(selectionFilter(EMPTY_RECORTE, "municipio")).toBeNull();
   });
 
   it("outlines the selected municipalities first", () => {
-    expect(selectionFilter({ uf: ["PE"], mun: ["2611606"] }, "pib")).toEqual([
-      "in",
-      ["get", "code"],
-      ["literal", ["2611606"]],
-    ]);
+    expect(
+      selectionFilter({ uf: ["PE"], mun: ["2611606"] }, "municipio"),
+    ).toEqual(["in", ["get", "code"], ["literal", ["2611606"]]]);
   });
 
   it("outlines the selected states when there is no municipality", () => {
-    expect(selectionFilter({ uf: ["PE", "PB"], mun: [] }, "idh")).toEqual([
+    expect(selectionFilter({ uf: ["PE", "PB"], mun: [] }, "estado")).toEqual([
       "in",
       ["get", "code"],
       ["literal", ["PE", "PB"]],
     ]);
   });
 
-  it("ignores municipalities for IDH, whose features are states", () => {
-    expect(selectionFilter({ uf: ["PE"], mun: ["2611606"] }, "idh")).toEqual([
-      "in",
-      ["get", "code"],
-      ["literal", ["PE"]],
-    ]);
+  it("ignores municipalities when the features are states (IDH, Estados)", () => {
+    expect(selectionFilter({ uf: ["PE"], mun: ["2611606"] }, "estado")).toEqual(
+      ["in", ["get", "code"], ["literal", ["PE"]]],
+    );
   });
 });
 

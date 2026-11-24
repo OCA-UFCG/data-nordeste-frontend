@@ -32,22 +32,22 @@ const PERNAMBUCO: MapFeatureProps = {
 };
 
 describe("recorteForClick", () => {
-  it("no IDH a feição é o estado", () => {
-    expect(recorteForClick(PERNAMBUCO, "idh", "estado")).toEqual({
+  it("com feições de estado (IDH, Estados) a feição é o estado", () => {
+    expect(recorteForClick(PERNAMBUCO, "estado", "estado")).toEqual({
       uf: ["PE"],
       mun: [],
     });
   });
 
   it("município clicado vira o filtro de município", () => {
-    expect(recorteForClick(RECIFE, "pib", "municipio")).toEqual({
+    expect(recorteForClick(RECIFE, "municipio", "municipio")).toEqual({
       uf: ["PE"],
       mun: ["2611606"],
     });
   });
 
   it("sem nível município, o clique escolhe o estado do município", () => {
-    expect(recorteForClick(RECIFE, "demografia", "estado")).toEqual({
+    expect(recorteForClick(RECIFE, "municipio", "estado")).toEqual({
       uf: ["PE"],
       mun: [],
     });

@@ -335,6 +335,19 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   prop). Double-click zoom is off, because it interrupted the fit of the
   click. `fitTo` stops at zoom 10, so a small municipality is not zoomed in
   too far.
+- **Feature level** (`featureLevel` prop, `src/features/panelMap/featureLevel.ts`):
+  what each feature is, a municipality or a state (`mapFeatureMode`). The IDH
+  is always "estado" (its GeoJSON already has the states, with values). For the
+  other indicators, `featureLevel="estado"` swaps the municipalities for the
+  state mesh (`estados.geojson`), flagged with the areas of their
+  municipalities (`statesWithAreaFlags`: a state is in the area when any of its
+  municipalities is), so the area filter and the centre of the zoom only see
+  states the server accepts. The mesh is pink `#f6d3e0`, the chosen states
+  `#e98dae` (`stateMeshPaint`), with no legend, and the tooltip shows only the
+  name. Engine (`municipal`), click and selection follow the level; with state
+  features a municipality chosen in the bar counts as its state
+  (`recorteForLevel`), otherwise the veil would cover the chosen state. The
+  level is read when the engine mounts: switch it with a `key`.
 - **Veil:** grey (`VEIL_COLOR`) only from the state level: states outside the
   chosen ones and, at municipality level, the municipalities of those states
   that are not chosen (`veilFilters`, a layer filter). At area level there is
@@ -573,11 +586,17 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Deliberate deviations from the prototype:
   - The map is the shared MapLibre `PanelMap` (indicator "demografia", the
     `.qgz` classes as delivered, including the inverted "Médio" range in the
-    legend), municipal level only. The "Estados" SVG view, the porte pills
-    (`PerfilPorteToggles`) and the highlight-by-porte state
-    (`useDemografiaHighlight`) are gone: zooming or clicking the map changes
-    Estado and Município in the panel filters through `usePanelMapFilters`
-    (the same `request` as the filter bar).
+    legend). The "Municípios | Estados" switch (green-800 pressed button
+    group above the map) stays: "Municípios" shows the porte classes with the
+    legend chips (`deepest: "municipio"`); "Estados" is the same `PanelMap`
+    with `featureLevel="estado"` and `deepest: "estado"` (state mesh in pink,
+    chosen states stronger, no legend, no `sr-only` table, tooltip with the
+    state name). The SVG state map, the old porte pills
+    (`PerfilPorteToggles`) and `useDemografiaHighlight` are gone (the legend
+    chips of `PanelMap` highlight the class). Zooming or clicking the map
+    changes Estado and Município (Estados view: only Estado) in the panel
+    filters through `usePanelMapFilters` (the same `request` as the filter
+    bar).
   - Estado and Município keep multiple selection (up to 100, as before),
     styled like the prototype selects; links with several places still work.
   - Axis and labels come from the data (`perfilCharts.ts`: `niceAxis`,
@@ -609,8 +628,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   depends only on Área and Ano (`PERFIL_CARD_DEPENDENCIES`), as in the PIB, so
   the Estado/Município its own zoom sets does not dim it.
 - The fullscreen map is a second `PanelMap` (`renderStage`) wired to the same
-  filters; its state (`usePorteMapView`, only `fullscreen` now) lives in the
-  dashboard so it survives the swap to the empty layout.
+  filters, in the chosen view; the view and the fullscreen state
+  (`usePorteMapView`: `view`, `fullscreen`) live in the dashboard so they
+  survive the swap to the empty layout.
 - The map is a canvas with no text for screen readers, so the card carries an
   `sr-only` table built by `buildPerfilPorteTable`.
 - Shared by the PIB and the profile map cards (`src/components/PanelMap/`):

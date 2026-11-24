@@ -25,7 +25,8 @@ import {
 
 const TITLE = "Porte dos municípios";
 const INFO =
-  "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Aproxime o mapa para filtrar o painel por estado e por município.";
+  "Classifica os municípios do território por faixa de população (pequeno, médio e grande). Aproxime ou clique no mapa para filtrar o painel por estado e por município; na vista Estados, só por estado.";
+const ESTADOS_LABEL = "Mapa dos estados";
 
 // Rodapé da tela cheia; a imagem baixada do card credita o basemap ativo
 // (`usePanelMapCard`).
@@ -36,16 +37,57 @@ const FULLSCREEN_SOURCE = panelMapImageSource(PERFIL_CARD_SOURCE);
 const MAP_BOX_CLASS =
   "h-[560px] rounded-[8px] max-[1000px]:h-[480px] max-[700px]:h-[360px]";
 
+type MapView = "municipios" | "estados";
+
+const VIEWS: { key: MapView; label: string }[] = [
+  { key: "municipios", label: "Municípios" },
+  { key: "estados", label: "Estados" },
+];
+
+// Municípios: as classes de porte, com a legenda. Estados: só a malha dos
+// estados, sem legenda, e zoom e clique filtram só a UF (mesmo `request`).
+const VIEW_PROPS: Record<MapView, Pick<PanelMapProps, "deepest" | "label">> = {
+  municipios: { deepest: "municipio", label: TITLE },
+  estados: { deepest: "estado", label: ESTADOS_LABEL },
+};
+
 const usePorteMapProps = (
+  view: MapView,
   selection: TerritorialFilters,
   onFiltersChange: (filters: TerritorialFilters) => void,
 ): PanelMapProps => ({
   ...usePanelMapFilters(selection, onFiltersChange),
+  ...VIEW_PROPS[view],
   indicator: "demografia",
-  deepest: "municipio",
+  featureLevel: view === "estados" ? "estado" : "municipio",
   formatValue: formatPessoas,
-  label: TITLE,
 });
+
+const ViewToggle = ({
+  value,
+  onChange,
+}: {
+  value: MapView;
+  onChange: (view: MapView) => void;
+}) => (
+  <div
+    role="group"
+    aria-label="Mostrar no mapa"
+    className="mb-3 inline-flex flex-none self-start overflow-hidden rounded-[6px] border border-grey-300"
+  >
+    {VIEWS.map((view) => (
+      <button
+        key={view.key}
+        type="button"
+        aria-pressed={view.key === value}
+        onClick={() => onChange(view.key)}
+        className="bg-white px-4 py-1.5 text-[13px] font-medium aria-pressed:bg-green-800 aria-pressed:text-white"
+      >
+        {view.label}
+      </button>
+    ))}
+  </div>
+);
 
 // O mapa é canvas e não tem texto para leitores de tela: a tabela escondida
 // ocupa o lugar dele (revisão da PR #401).
@@ -58,24 +100,26 @@ const usePorteTable = (data: DemografiaPanelData) =>
   );
 
 /**
- * Estado da tela cheia do mapa de porte. Fica no dashboard, não no card: a
+ * Vista e tela cheia do mapa de porte. Ficam no dashboard, não no card: a
  * troca entre a grade e o aviso de dados vazios monta o card de novo, e sem
- * isso a tela cheia fechava (revisão da PR #400).
+ * isso a tela cheia fechava e a vista voltava para Municípios (revisão da PR #400).
  *
  * @example const porteView = usePorteMapView(); <PerfilPorteMapCard {...card} mapView={porteView} />
  */
 export const usePorteMapView = () => {
+  const [view, setView] = useState<MapView>("municipios");
   const [fullscreen, setFullscreen] = useState(false);
 
-  return { fullscreen, setFullscreen };
+  return { view, setView, fullscreen, setFullscreen };
 };
 
 export type PorteMapView = ReturnType<typeof usePorteMapView>;
 
 /**
  * Card "Porte dos municípios": cada município na cor da faixa de população
- * (pequeno, médio e grande). Aproximar ou clicar no mapa troca Estado e
- * Município no filtro do painel, pelo mesmo caminho da barra de filtros.
+ * (pequeno, médio e grande), ou só os estados na vista Estados. Aproximar ou
+ * clicar no mapa troca Estado e Município (na vista Estados, só Estado) no
+ * filtro do painel, pelo mesmo caminho da barra de filtros.
  *
  * @example <PerfilPorteMapCard data={panel} place="Nordeste" state="ok" onRetry={retry} selection={filters} onFiltersChange={request} mapView={porteView} />
  */
@@ -90,8 +134,9 @@ export const PerfilPorteMapCard = ({
   mapView: PorteMapView;
 }) => {
   const { data, place, state } = props;
+  const { view } = mapView;
   const card = usePanelMapCard(PERFIL_CARD_SOURCE);
-  const mapProps = usePorteMapProps(selection, onFiltersChange);
+  const mapProps = usePorteMapProps(view, selection, onFiltersChange);
   const table = usePorteTable(data);
   const subtitle = withYear(place, data.filters.ano);
 
@@ -124,12 +169,21 @@ export const PerfilPorteMapCard = ({
           subtitle={subtitle}
           source={FULLSCREEN_SOURCE}
           hint={PANEL_MAP_HINT}
-          renderStage={(frame) => <PanelMap {...mapProps} className={frame} />}
+          renderStage={(frame) => (
+            <PanelMap key={view} {...mapProps} className={frame} />
+          )}
         />
       }
     >
-      <PanelMap {...mapProps} {...card.mapBinding} className={MAP_BOX_CLASS} />
-      <div className="sr-only">{table}</div>
+      <ViewToggle value={view} onChange={mapView.setView} />
+      {/* WHY `key`: o nível das feições é lido na montagem do motor. */}
+      <PanelMap
+        key={view}
+        {...mapProps}
+        {...card.mapBinding}
+        className={MAP_BOX_CLASS}
+      />
+      {view === "municipios" ? <div className="sr-only">{table}</div> : null}
     </ProtoCard>
   );
 };

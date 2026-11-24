@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useMemo } from "react";
 
 import { BasemapSwitch } from "@/components/PanelMap/BasemapSwitch";
 import { PanelMapLegend } from "@/components/PanelMap/PanelMapLegend";
@@ -21,6 +21,12 @@ import {
   aridezModeFor,
   type PanelMapAridez,
 } from "@/features/panelMap/aridezRaster";
+import {
+  type FeatureLevel,
+  type MapFeatureMode,
+  mapFeatureMode,
+  statesWithAreaFlags,
+} from "@/features/panelMap/featureLevel";
 import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
 import type { MapLevel, MapRecorte } from "@/features/panelMap/mapRecorte";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
@@ -44,6 +50,12 @@ export type PanelMapProps = {
   onRecorteChange: (recorte: MapRecorte) => void;
   formatValue: (value: number) => string;
   label: string;
+
+  // O que cada feição é. "estado" troca os municípios pela malha dos estados,
+  // sem classes nem legenda: rosa, os escolhidos mais fortes, e o tooltip só
+  // com o nome (vista Estados do perfil). Use com `deepest: "estado"`. O IDH
+  // é sempre "estado". Lido na montagem: para trocar, remonte (`key`).
+  featureLevel?: FeatureLevel;
 
   // Raster do índice de aridez: "off" não mostra; "base" mostra o da década do
   // `ano`, sempre ligado, sob os contornos. Não há controle no mapa. Padrão:
@@ -104,9 +116,10 @@ function usePanelMapRecorte(
   props: PanelMapProps,
   geodata: ReadyGeodata,
   engine: PanelMapEngine | null,
+  mode: MapFeatureMode,
 ) {
   const aridez = aridezModeFor(props.indicator, props.aridez);
-  const layers = { ...props, engine, geodata, aridez };
+  const layers = { ...props, engine, geodata, aridez, mode };
   const onZoomRecorte = usePanelMapLayers(layers);
 
   usePanelMapAridez(engine, geodata.manifest, aridez, props.ano);
@@ -114,28 +127,49 @@ function usePanelMapRecorte(
   useMapRecorte({ ...layers, onRecorteChange: onZoomRecorte });
 }
 
+// Na malha dos estados, as feições são os estados com as marcas de área que
+// os municípios do indicador dão a eles.
+function useModeGeodata(
+  loaded: ReadyGeodata,
+  stateMesh: boolean,
+): ReadyGeodata {
+  return useMemo(() => {
+    if (!stateMesh) return loaded;
+    const features = statesWithAreaFlags(loaded.states, loaded.features);
+
+    return { ...loaded, features };
+  }, [loaded, stateMesh]);
+}
+
 // Motor, controles, camadas e tooltip, já com os geodados em mãos.
-function usePanelMapStage(props: PanelMapProps, geodata: ReadyGeodata) {
+function usePanelMapStage(
+  props: PanelMapProps,
+  geodata: ReadyGeodata,
+  mode: MapFeatureMode,
+) {
   const { containerRef, engine, failed } = usePanelMapEngine({
-    municipal: props.indicator !== "idh",
+    municipal: mode.level === "municipio",
     cooperative: props.cooperative ?? false,
     createEngine: props.createEngine,
     onEngine: props.onEngine,
   });
   const controls = usePanelMapControls(engine, props.onBasemapChange);
-  const features = geodata.features;
-  const tooltip = usePanelMapTooltip({ ...props, engine, features });
+  const { features } = geodata;
+  const nameOnly = mode.stateMesh;
+  const tooltip = usePanelMapTooltip({ ...props, engine, features, nameOnly });
 
-  usePanelMapRecorte(props, geodata, engine);
+  usePanelMapRecorte(props, geodata, engine, mode);
 
   return { containerRef, engine, controls, tooltip, failed };
 }
 
 const PanelMapStage = ({
-  geodata,
+  geodata: loaded,
   ...props
 }: PanelMapProps & { geodata: ReadyGeodata }) => {
-  const stage = usePanelMapStage(props, geodata);
+  const mode = mapFeatureMode(props.indicator, props.featureLevel);
+  const geodata = useModeGeodata(loaded, mode.stateMesh);
+  const stage = usePanelMapStage(props, geodata, mode);
   const { containerRef, engine, controls, tooltip } = stage;
 
   if (stage.failed) {
@@ -165,16 +199,18 @@ const PanelMapStage = ({
         />
         <PanelMapTooltip tooltip={tooltip} />
       </div>
-      <PanelMapLegend
-        styles={geodata.styles}
-        features={geodata.features}
-        indicator={props.indicator}
-        area={props.area}
-        ano={props.ano}
-        classCounts={props.classCounts}
-        classOf={props.classOf}
-        engine={engine}
-      />
+      {mode.stateMesh ? null : (
+        <PanelMapLegend
+          styles={geodata.styles}
+          features={geodata.features}
+          indicator={props.indicator}
+          area={props.area}
+          ano={props.ano}
+          classCounts={props.classCounts}
+          classOf={props.classOf}
+          engine={engine}
+        />
+      )}
     </div>
   );
 };
