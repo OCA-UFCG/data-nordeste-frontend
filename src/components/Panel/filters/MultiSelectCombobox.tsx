@@ -158,7 +158,11 @@ const OptionList = ({
   single,
   onToggle,
 }: OptionListProps) => (
-  <div role="group" aria-label={label} className="max-h-72 overflow-y-auto">
+  <div
+    role="group"
+    aria-label={label}
+    className="max-h-72 min-h-0 overflow-y-auto"
+  >
     {options.length === 0 && (
       <p className="px-2 py-3 text-base text-grey-900">Nenhum resultado</p>
     )}
@@ -343,10 +347,16 @@ const ComboboxPanel = (props: ComboboxPanelProps) => {
     [options, search],
   );
 
+  // INTENTIONAL: sempre abre para baixo, colado no filtro. Com a barra perto
+  // do pé da tela o Radix virava a lista para cima, cobrindo o título do
+  // painel; agora ela encolhe até a altura que sobra (e rola por dentro),
+  // com um piso de 11rem para a busca e algumas opções continuarem usáveis.
   return (
     <PopoverContent
       align="start"
-      className="flex w-(--radix-popover-trigger-width) min-w-72 flex-col gap-2 bg-white p-2"
+      side="bottom"
+      avoidCollisions={false}
+      className="flex max-h-[max(11rem,var(--radix-popover-content-available-height))] w-(--radix-popover-trigger-width) min-w-72 flex-col gap-2 bg-white p-2"
     >
       <OptionSearch label={label} search={search} onSearch={props.onSearch} />
       <OptionList
