@@ -23,6 +23,7 @@ import {
 import {
   applyClassHighlight,
   applySelection,
+  applyStateMunicipalLines,
   applyVeil,
   type IndicatorPaint,
   paintIndicator,
@@ -62,6 +63,9 @@ export interface PanelMapEngine {
   setIndicatorPaint(paint: IndicatorPaint): void;
   setVeil(veil: VeilFilters): void;
   setSelection(filter: FilterSpecification | null): void;
+
+  // Limites dos municípios do estado escolhido em qualquer zoom; null esconde.
+  setStateMunicipalLines(filter: FilterSpecification | null): void;
 
   // Destaque da legenda: o filtro casa as feições da classe; as demais da
   // área ficam cinza sólido (CLASS_MUTED_COLOR). Null desliga.
@@ -118,6 +122,7 @@ type PanelMapPaintControls = Pick<
   | "setIndicatorPaint"
   | "setVeil"
   | "setSelection"
+  | "setStateMunicipalLines"
   | "setClassHighlight"
   | "setAridez"
 >;
@@ -130,6 +135,7 @@ function paintControls(map: MaplibreMap): PanelMapPaintControls {
     setIndicatorPaint: (paint) => paintIndicator(map, paint),
     setVeil: (veil) => applyVeil(map, veil),
     setSelection: (filter) => applySelection(map, filter),
+    setStateMunicipalLines: (filter) => applyStateMunicipalLines(map, filter),
     setClassHighlight: (filter) => applyClassHighlight(map, filter),
     setAridez: (overlay) => showAridez(map, overlay),
   };

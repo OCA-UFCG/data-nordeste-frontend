@@ -93,6 +93,7 @@ export function paintIndicator(map: MaplibreMap, paint: IndicatorPaint): void {
     map.setFilter(layerId, inArea),
   );
   paintLine(map, featureOutline, paint.outline);
+  paintLine(map, PANEL_MAP_LAYER.stateMunicipalOutline, paint.outline);
   paintLine(
     map,
     PANEL_MAP_LAYER.stateOutline,
@@ -137,6 +138,17 @@ export function applySelection(
 ): void {
   filterOrHide(map, PANEL_MAP_LAYER.selectionFeatures, filter);
   filterOrHide(map, PANEL_MAP_LAYER.selectionStates, filter);
+}
+
+/**
+ * Limites dos municípios do estado escolhido em qualquer zoom, com o traço da
+ * malha municipal do qgz. Null esconde (sem estado, a malha segue o minzoom).
+ */
+export function applyStateMunicipalLines(
+  map: MaplibreMap,
+  filter: FilterSpecification | null,
+): void {
+  filterOrHide(map, PANEL_MAP_LAYER.stateMunicipalOutline, filter);
 }
 
 /**

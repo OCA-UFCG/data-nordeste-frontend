@@ -183,6 +183,21 @@ describe("PanelMap pintura e enquadramento", () => {
     );
   });
 
+  // Pedido do usuário (25/11/2026): com o estado selecionado, a divisa dos
+  // municípios dele aparece já no zoom do enquadramento do estado.
+  it("com estado selecionado mostra os limites municipais dele", async () => {
+    const { engine, rerender } = await renderPanelMap();
+
+    expect(engine.setStateMunicipalLines).toHaveBeenLastCalledWith(null);
+    rerender({ recorte: PE });
+
+    expect(engine.setStateMunicipalLines).toHaveBeenLastCalledWith([
+      "all",
+      ["==", ["get", "nordeste"], 1],
+      ["in", ["get", "uf"], ["literal", ["PE"]]],
+    ]);
+  });
+
   it("recorte novo por props enquadra e aplica véu e seleção", async () => {
     const { engine, rerender } = await renderPanelMap();
 

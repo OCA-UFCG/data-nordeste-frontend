@@ -89,6 +89,28 @@ export function veilFilters(recorte: MapRecorte): VeilFilters {
 }
 
 /**
+ * Limites dos municípios do(s) estado(s) escolhido(s), na área de interesse.
+ * WHY: a malha municipal só aparece sozinha a partir de MUNICIPAL_LINES_ZOOM,
+ * acima do zoom em que o estado é enquadrado; com o estado selecionado, a
+ * divisa dos municípios dele aparece já (pedido do usuário, 25/11/2026). Null
+ * sem estado ou com feições de estado (IDH).
+ * Ex.: `stateMunicipalLinesFilter({ uf: ["PE"], mun: [] }, "nordeste", "municipio")`.
+ */
+export function stateMunicipalLinesFilter(
+  recorte: MapRecorte,
+  area: TerritorialArea,
+  level: FeatureLevel,
+): FilterSpecification | null {
+  if (level !== "municipio" || recorte.uf.length === 0) return null;
+
+  // WHY o cast: o areaFilter é uma expressão (`["==", ["get", …], 1]`), mas
+  // é tipado como FilterSpecification, que o "all" de expressões não aceita.
+  const inArea = areaFilter(area) as ExpressionSpecification;
+
+  return ["all", inArea, propertyIn("uf", recorte.uf)];
+}
+
+/**
  * Contorno grosso da seleção: municípios em `mun`, senão estados em `uf`. Com
  * feições de estado (IDH), `mun` não se aplica.
  */

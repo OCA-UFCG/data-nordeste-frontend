@@ -6,6 +6,7 @@ import {
   bboxOf,
   fitTargetFor,
   selectionFilter,
+  stateMunicipalLinesFilter,
   veilFilters,
 } from "@/features/panelMap/mapLayers";
 import { EMPTY_RECORTE } from "@/features/panelMap/mapRecorte";
@@ -94,6 +95,34 @@ describe("veilFilters", () => {
         ["!", ["in", ["get", "code"], ["literal", ["2611606"]]]],
       ],
     });
+  });
+});
+
+describe("stateMunicipalLinesFilter", () => {
+  it("is null without a selected state", () => {
+    expect(
+      stateMunicipalLinesFilter(EMPTY_RECORTE, "nordeste", "municipio"),
+    ).toBeNull();
+  });
+
+  it("matches the area municipalities of the selected states", () => {
+    expect(
+      stateMunicipalLinesFilter(
+        { uf: ["PE"], mun: [] },
+        "semiarido",
+        "municipio",
+      ),
+    ).toEqual([
+      "all",
+      ["==", ["get", "semiarido"], 1],
+      ["in", ["get", "uf"], ["literal", ["PE"]]],
+    ]);
+  });
+
+  it("is null when the features are states (IDH)", () => {
+    expect(
+      stateMunicipalLinesFilter({ uf: ["PE"], mun: [] }, "nordeste", "estado"),
+    ).toBeNull();
   });
 });
 

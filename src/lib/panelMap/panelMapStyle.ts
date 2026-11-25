@@ -44,6 +44,7 @@ export const PANEL_MAP_LAYER = {
   veilOutsideArea: "veil-outside-area",
   veilFeatures: "veil-features",
   featureOutline: "feature-outline",
+  stateMunicipalOutline: "state-municipal-outline",
   featureHover: "feature-hover",
   stateOutline: "state-outline",
   stateHover: "state-hover",
@@ -223,6 +224,10 @@ function overlayLayers(municipal: boolean): LayerSpecification[] {
     veilLayer(layer.veilOutsideArea, areaStatesOutside),
     veilLayer(layer.veilFeatures, features),
     featureOutlineLayer(municipal),
+
+    // Sem minzoom: os municípios do estado escolhido, ligada pelo
+    // setStateMunicipalLines (stateMunicipalLinesFilter).
+    lineLayer(layer.stateMunicipalOutline, features, UNPAINTED_LINE, "none"),
     hoverLayer(layer.featureHover, features),
     stateOutlineLayer(),
     hoverLayer(layer.stateHover, areaStates),

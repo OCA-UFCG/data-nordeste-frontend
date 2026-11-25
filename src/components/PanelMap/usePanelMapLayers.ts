@@ -17,6 +17,7 @@ import {
   fitTargetFor,
   type FitSources,
   selectionFilter,
+  stateMunicipalLinesFilter,
   veilFilters,
 } from "@/features/panelMap/mapLayers";
 import {
@@ -148,6 +149,9 @@ function useRecorteFraming(
 
     engine.setVeil(veilFilters(drawn));
     engine.setSelection(selectionFilter(drawn, level));
+    engine.setStateMunicipalLines(
+      stateMunicipalLinesFilter(drawn, area, level),
+    );
     if (areaStates === null) return;
     fitRecorte(engine, recorte, { area, level }, fitSources);
   }, [engine, recorte, area, level, sources, areaStates]);
