@@ -108,6 +108,40 @@ export const PlaceFilter = ({
     />
   );
 
+// Com `multiple`, mesmo combobox de escolha única do Estado; sem ele, select
+// nativo (sem "Todos": não existe painel sem área).
+const AreaFilter = ({
+  id,
+  area,
+  multiple,
+  onChange,
+}: {
+  id: string;
+  area: TerritorialArea;
+  multiple?: boolean;
+  onChange: (area: TerritorialArea) => void;
+}) =>
+  multiple ? (
+    <MultiSelectCombobox
+      id={id}
+      label="Área de interesse"
+      plural="áreas"
+      single
+      required
+      values={[area]}
+      options={[...TERRITORIAL_AREAS]}
+      onChange={([value]) => onChange(value as TerritorialArea)}
+    />
+  ) : (
+    <FilterSelect
+      id={id}
+      label="Área de interesse"
+      value={area}
+      options={[...TERRITORIAL_AREAS]}
+      onChange={(value) => onChange(value as TerritorialArea)}
+    />
+  );
+
 // Só os quatro selects, para quem monta o próprio layout (ex.: PanelFilters).
 export const TerritorialSelects = ({
   filters,
@@ -133,12 +167,11 @@ export const TerritorialSelects = ({
         }))}
         onChange={(value) => onChange({ ...filters, ano: Number(value) })}
       />
-      <FilterSelect
+      <AreaFilter
         id={`${id}-area`}
-        label="Área de interesse"
-        value={area}
-        options={[...TERRITORIAL_AREAS]}
-        onChange={(value) => onChange({ ano, area: value as TerritorialArea })}
+        area={area}
+        multiple={multiple}
+        onChange={(next) => onChange({ ano, area: next })}
       />
       {/* Escolha única (select nativo ou `single`) troca a UF e zera o município;
           na multisseleção os municípios ficam e o servidor descarta os que saíram
