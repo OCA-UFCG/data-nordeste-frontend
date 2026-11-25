@@ -7,7 +7,8 @@ import type { BasemapKind, PanelMapEngine } from "@/lib/panelMapEngine";
 
 /**
  * Estado do controle de basemap sobre o mapa e o espelho dele no motor.
- * Começa em `initialBasemap` (lido só na montagem; sem ele, o Padrão).
+ * Com `controlledBasemap`, quem manda é o card (o mesmo valor no mapa do card
+ * e no da tela cheia); sem ele, o mapa guarda o seu e começa no Padrão.
  * `onBasemapChange` avisa o card da troca (o crédito da imagem baixada segue
  * o basemap).
  *
@@ -16,9 +17,10 @@ import type { BasemapKind, PanelMapEngine } from "@/lib/panelMapEngine";
 export function usePanelMapControls(
   engine: PanelMapEngine | null,
   onBasemapChange?: (kind: BasemapKind) => void,
-  initialBasemap: BasemapKind = DEFAULT_BASEMAP,
+  controlledBasemap?: BasemapKind,
 ) {
-  const [basemap, setBasemapState] = useState<BasemapKind>(initialBasemap);
+  const [ownBasemap, setBasemapState] = useState<BasemapKind>(DEFAULT_BASEMAP);
+  const basemap = controlledBasemap ?? ownBasemap;
   const setBasemap = (kind: BasemapKind) => {
     setBasemapState(kind);
     onBasemapChange?.(kind);

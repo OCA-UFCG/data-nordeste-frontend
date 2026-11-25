@@ -21,7 +21,7 @@ export type PanelMapEngineMount = {
   municipal: boolean;
   cooperative: boolean;
 
-  // Basemap com que o motor nasce; sem ele, o Padrão.
+  // Basemap com que o motor nasce (sem piscar o Padrão); sem ele, o Padrão.
   basemap?: BasemapKind;
   createEngine?: typeof createPanelMapEngine;
   onEngine?: (engine: PanelMapEngine | null) => void;

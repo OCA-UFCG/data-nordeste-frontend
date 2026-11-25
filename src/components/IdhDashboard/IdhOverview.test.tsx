@@ -75,7 +75,7 @@ describe("IdhOverview", () => {
     );
 
     const fullscreen = panelMapRenders.filter((props) => !props.onEngine);
-    expect(fullscreen.at(-1)?.initialBasemap).toBe("satelite");
+    expect(fullscreen.at(-1)?.basemap).toBe("satelite");
   });
 
   it("renders the state-level IDH map for the Northeast, year and selected state", () => {

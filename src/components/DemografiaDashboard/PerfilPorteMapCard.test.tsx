@@ -142,7 +142,7 @@ describe("PerfilPorteMapCard", () => {
     );
 
     const fullscreen = panelMapRenders.filter((props) => !props.onEngine);
-    expect(fullscreen.at(-1)?.initialBasemap).toBe("satelite");
+    expect(fullscreen.at(-1)?.basemap).toBe("satelite");
   });
 
   it("renders the municipal demografia map for the requested area, year and selection", () => {

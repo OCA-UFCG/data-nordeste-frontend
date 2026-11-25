@@ -60,14 +60,27 @@ describe("PanelMap controles", () => {
 
   // A tela cheia nasce no basemap do card: o motor já é criado nele (sem
   // piscar o Padrão) e o botão ativo é o dele.
-  it("começa no basemap inicial pedido", async () => {
-    const { factory } = await renderPanelMap({ initialBasemap: "satelite" });
+  it("começa no basemap controlado pelo card", async () => {
+    const { factory } = await renderPanelMap({ basemap: "satelite" });
 
     expect(screen.getByRole("button", { name: "Satélite" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
     expect(factory.options?.basemap).toBe("satelite");
+  });
+
+  // O mapa do card segue a troca feita na tela cheia, sem remontar o motor.
+  it("segue o basemap controlado quando ele muda", async () => {
+    const { engine, rerender } = await renderPanelMap({ basemap: "padrao" });
+
+    act(() => rerender({ basemap: "satelite" }));
+
+    expect(screen.getByRole("button", { name: "Satélite" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(engine.setBasemap).toHaveBeenLastCalledWith("satelite");
   });
 
   // O maplibre-gl.css força `position: relative` no contêiner; sem tamanho

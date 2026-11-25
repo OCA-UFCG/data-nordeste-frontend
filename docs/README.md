@@ -533,10 +533,11 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   for the Padrão, "Esri, Maxar, Earthstar Geographics" for the satellite); on
   screen, card and fullscreen credit it in MapLibre's attribution control
   (the fullscreen footer has no source since PR #413). The fullscreen map is
-  a new `PanelMap` on each opening and starts on the basemap active in the
-  card (`usePanelMapCard().fullscreenBinding` → `initialBasemap`, read only at
-  mount, also given to the engine so the Padrão never flashes); a switch made
-  in fullscreen stays there. The OpenStreetMap tile
+  a new `PanelMap` on each opening. Card and fullscreen share one basemap,
+  held by `usePanelMapCard` and passed as the controlled `basemap` prop
+  (`mapBinding` and `fullscreenBinding`): fullscreen opens on the card's
+  basemap (the engine is created on it, so the Padrão never flashes) and a
+  switch made in fullscreen is still there when it closes. The OpenStreetMap tile
   server is a shared volunteer service under the
   [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/):
   fair use only, and heavy traffic would need another tile provider. The
