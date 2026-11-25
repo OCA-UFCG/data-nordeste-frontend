@@ -351,3 +351,13 @@ body {
     animation-duration: 0s;
   }
 }
+
+/* INTENTIONAL: o botão do VLibras fica fixo no meio da borda direita e caía em
+   cima do ✕ das folhas do celular (ProtoSheet). Com uma folha aberta o resto da
+   página já está sob o fundo escuro; o VLibras some junto e volta ao fechar
+   (André, 24/11/2026). O botão fica no `#vlibras-access-wrapper`, que o
+   plugin cria direto no body (shadow DOM), fora do `[vw]` do VLibras.tsx. */
+body:has([data-proto-sheet][data-state="open"])
+  :is([vw], #vlibras-access-wrapper) {
+  visibility: hidden;
+}

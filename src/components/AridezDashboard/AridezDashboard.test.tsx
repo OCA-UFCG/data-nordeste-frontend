@@ -64,10 +64,10 @@ describe("AridezDashboard", () => {
     expect(inBar).toHaveLength(1);
   });
 
-  it("renders the Veja mais bar and the municipal breakdown", () => {
+  it("renders the Veja análise button and the municipal breakdown", () => {
     render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);
 
-    expect(screen.getByRole("button", { name: /Veja mais/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Veja análise/ })).toBeTruthy();
     const list = screen.getByRole("list", { name: "Municípios" });
 
     expect(

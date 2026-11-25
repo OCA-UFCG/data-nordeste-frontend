@@ -234,6 +234,7 @@ export const ProtoFilterBar = ({
   return (
     <div
       ref={barRef}
+      data-proto-filter-bar=""
       {...(disabled && ({ inert: INERT_ON } as object))}
       style={{ top, ...protoToneStyle(tone) }}
       className={`${PROTO_TEXT} sticky z-40 w-full border-b border-grey-300 bg-white transition-shadow duration-150 ${stuck ? "shadow-[0_6px_16px_-10px_rgba(41,40,41,0.45)]" : ""}`}
