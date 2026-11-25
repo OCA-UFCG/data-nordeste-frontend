@@ -7,6 +7,7 @@ import {
   type ChartImageFrame,
   type ChartImageLayout,
 } from "@/features/panels/chartImage";
+import type { StatImageMarkup } from "@/features/panels/statImage";
 import { buildMapPosterSvg } from "@/features/panels/mapPoster";
 import type { MapPosterData } from "@/features/panels/mapPosterData";
 import { browserDownloadDeps, downloadFile } from "@/lib/download";
@@ -137,6 +138,18 @@ const renderPng = async (chartUrl: string, frame: ChartImageFrame) => {
 
 const svgDataUrl = (svg: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
+/**
+ * Fonte de imagem a partir de um SVG montado em texto, para cards que na tela
+ * são HTML (os indicadores, via buildStatImage).
+ *
+ * @example await downloadChartImage(svgMarkupSource(buildStatImage(cell)), options)
+ */
+export const svgMarkupSource = (markup: StatImageMarkup): ChartImageSource => ({
+  getWidth: () => markup.width,
+  getHeight: () => markup.height,
+  getDataURL: () => svgDataUrl(markup.svg),
+});
 
 // Cartaz do mapa: o SVG do modelo (cabeçalho, filtros, legenda, rodapé), que no
 // PNG é rasterizado a 2× num canvas branco. O SVG-como-imagem não carrega a
