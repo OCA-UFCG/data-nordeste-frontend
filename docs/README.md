@@ -513,6 +513,10 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   card passes `stateValues`: the aridez does, with the ASD share of the state
   (`aridezStateShares`: summed ASD area over summed classified area of its
   municipalities in the area, not the mean of the municipal %).
+  Between the name and the value a card can add lines with `tooltipDetails`
+  (`MapTooltipDetails`: by `code` for municipalities, by sigla for states;
+  `detailsOf` in `PanelMapTooltip.tsx`). Only the aridez sends them; without
+  the prop the tooltip is name, value and rank, as before.
 - **The map does not correct data.** Values, classes and geometries are drawn
   as delivered: the "Médio" population range with inverted limits, the
   negative PIB lower limit and the rest show in the legend as they are. Only
@@ -954,24 +958,32 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     is the prototype's dark `ProtoTooltip`, driven by one delegated
     `pointermove` on the list, not a handler per segment.
   - No "Atualizado em" on the cards (no load date in the database, as in PIB).
-- Map card (`AridezMapCard`, "Índice de aridez por município"): the shared
+- Map card (`AridezMapCard`, "Índice de aridez", same title on the phone and
+  on the downloaded poster; it was "Índice de aridez por município" until the
+  content team review, PR #430): the shared
   MapLibre `PanelMap` with `indicator="aridez"` and `deepest="municipio"`, as in
   the PIB. Filters go through `usePanelMapFilters(selection, request)`, the same
   `request` as the filter bar (zoom and click set Estado and Município; the
   old click-a-state `onSelectUf` is gone). The main layer is the aridez raster
   of the decade of `selection.ano`; state and municipal outlines (the
-  `vector/municipios.geojson` mesh, no values) go on top. Subtitle "Classe de
+  `vector/municipios.geojson` mesh, no values) go on top. Subtitle "Índice de
   aridez · área · ano" uses `selection.ano`.
-  - Hover shows the municipality and its % of ASD (`formatSharePercent`, the
-    same number as the municipalities card) with its rank in the area, from the
-    `values` prop; with only the area of interest it shows the state and its %
+  - Hover shows the municipality, one line per class with the share of its
+    classified area in that class ("Percentual de área semiárida: 90,00%", in
+    `ARIDEZ_CLASSES` order; a class without area, or one that rounds to
+    0,00%, is left out), then "Percentual de área suscetível à desertificação"
+    (its % of ASD, `formatSharePercent`, the same number as the municipalities
+    card) and its rank in the area, from the `values` prop. With only the area
+    of interest it shows the state, its class lines from the summed areas of
+    its municipalities in the area (not the mean of the municipal %) and its %
     of ASD (`stateValues`, `aridezStateShares`; `AridezMunicipio.uf` comes from
-    `sigla_uf`). The legend below the map is the raster palette
-    (`styles.json`) with, per class, the number of municipalities where it is
+    `sigla_uf`). The class lines are `aridezTooltipDetails`, passed as
+    `tooltipDetails` (content team review, PR #430). The legend below the
+    map is the raster palette (`styles.json`) with, per class, the number of municipalities where it is
     the predominant class (largest area among `dn_uni` 2..5; a tie goes to the
-    drier class), from `classCounts`. Both come from pure functions in
+    drier class), from `classCounts`. All three come from pure functions in
     `features/panels/aridez/aridezMap.ts` (`aridezMapValues`,
-    `aridezClassCounts`), memoized on `data.mapa`.
+    `aridezClassCounts`, `aridezTooltipDetails`), memoized on `data.mapa`.
   - `AridezPanelData.mapa` replaces the old `estados`: every municipality of
     the Área and Ano, ignoring Estado and Município (same query as
     `porMunicipio`, reused when no state or municipality is chosen). Reading
@@ -985,6 +997,23 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     "geodados indisponíveis" notice. The raster palette (`styles.json`) and the
     `ARIDEZ_CLASSES` colours of the other cards differ slightly; the values
     2 to 5 match.
+- Texts from the content team review (PR #430):
+  - The ⓘ of the map, class and municipalities cards (`AridezIndexInfo`) is
+    the card's own reading (`ARIDEZ_CARD_INFO`) followed by the index
+    definition, word for word (`ARIDEZ_INDEX_DEFINITION`: IA, the UNCCD
+    classes as a list, ASD, ETP and the "Obs."). The approved wording is kept
+    as delivered, including "à regiões" and "sem dados" (the map says "sem
+    dado"); it lists "Hiperárido", which the legend does not show (the panel
+    uses classes 2 to 5). The shared `ProtoCardInfo` popover got
+    `max-h-[60vh]` with scroll, since this text can be taller than the screen.
+    On desktop the popover opens on hover and closes when the pointer leaves
+    the ⓘ button, so reading it to the end needs a click (which pins it).
+  - Subtitles: "<lugar> · <ano> · área por classe de índice de aridez" (class
+    card) and "<lugar> · <ano> · percentual da área por classe de índice de
+    aridez" (municipalities card; the request wrote "Percentual", lowercase
+    here like the other segments after "·").
+  - The "Veja análise" footnote says "Texto gerado conforme os filtros
+    aplicados"; the demographic profile still says "conforme os filtros:".
 - The class columns card stretches to the municipal list beside it
   (`#c-cls .chartbox{flex:1}` in the prototype): the SVG is absolutely
   positioned in a growing box and `useElementWidth` also reports the height.

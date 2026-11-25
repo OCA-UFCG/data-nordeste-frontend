@@ -117,6 +117,7 @@ describe("describeState", () => {
 
     expect(describeState(bahia, totals, format)).toEqual({
       title: "Bahia (BA)",
+      details: [],
       value: "PIB: R$ 90",
       rank: "1º de 2",
     });
@@ -127,6 +128,7 @@ describe("describeState", () => {
 
     expect(describeState(paraiba, totals, format)).toEqual({
       title: "Paraíba (PB)",
+      details: [],
       value: "PIB: sem dado",
       rank: null,
     });

@@ -3,6 +3,7 @@
 import { memo, useState, type PointerEvent } from "react";
 import type { AridezCardProps } from "@/components/AridezDashboard/aridezCardProps";
 import { AridezClassLegend } from "@/components/AridezDashboard/AridezClassLegend";
+import { AridezIndexInfo } from "@/components/AridezDashboard/AridezIndexInfo";
 import { ARIDEZ_CARD_INFO } from "@/components/AridezDashboard/aridezTexts";
 import { ARIDEZ_COLORS } from "@/components/AridezDashboard/aridezTheme";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
@@ -177,11 +178,14 @@ export const AridezMunicipiosCard = ({
       {...status}
       title={TITLE}
       mobileTitle={MOBILE_TITLE}
-      subtitle={`${place} · ${data.filters.ano} · % da área do município`}
+      subtitle={`${place} · ${data.filters.ano} · percentual da área por classe de índice de aridez`}
       kind="rank"
       actions={
         <>
-          <ProtoCardInfo title={TITLE} text={ARIDEZ_CARD_INFO.municipios} />
+          <ProtoCardInfo
+            title={TITLE}
+            text={<AridezIndexInfo lead={ARIDEZ_CARD_INFO.municipios} />}
+          />
           <ProtoCardMenu title={TITLE} />
         </>
       }

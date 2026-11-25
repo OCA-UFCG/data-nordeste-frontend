@@ -95,6 +95,6 @@ export const buildAridezAnalise = (
 
   return {
     blocks: [asdBlock(input), classBlock(input)],
-    footnote: `Texto gerado conforme os filtros: ${input.placeFull} · ${input.ano}.`,
+    footnote: `Texto gerado conforme os filtros aplicados: ${input.placeFull} · ${input.ano}.`,
   };
 };

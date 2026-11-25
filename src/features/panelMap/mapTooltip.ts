@@ -9,8 +9,19 @@ export const NO_DATA_LABEL = "sem dado";
 // mostrar (só o nome).
 export type MapTooltipText = {
   title: string;
+
+  // Linhas extras entre o título e o valor (aridez: % de cada classe); vazio
+  // quando o painel não manda nenhuma.
+  details: readonly string[];
   value: string | null;
   rank: string | null;
+};
+
+// Linhas extras do tooltip por feição: por `code` IBGE do município e por sigla
+// do estado (no hover por estado). Vêm prontas do painel.
+export type MapTooltipDetails = {
+  feature: ReadonlyMap<string, readonly string[]>;
+  state: ReadonlyMap<string, readonly string[]>;
 };
 
 /** Lê o número de uma feição, ou `null` sem dado. */
@@ -81,14 +92,22 @@ export function describeMapFeature(
   const position = ranks.get(feature.code);
 
   if (value === null) {
-    return { title, value: `${valueLabel}: ${NO_DATA_LABEL}`, rank: null };
+    return {
+      title,
+      details: [],
+      value: `${valueLabel}: ${NO_DATA_LABEL}`,
+      rank: null,
+    };
   }
   const line = `${valueLabel}: ${formatValue(value)}`;
 
-  if (position === undefined) return { title, value: line, rank: null };
+  if (position === undefined) {
+    return { title, details: [], value: line, rank: null };
+  }
 
   return {
     title,
+    details: [],
     value: line,
     rank: `${formatNumber(position)}º de ${formatNumber(total)}`,
   };

@@ -92,6 +92,7 @@ describe("describeMapFeature", () => {
 
     expect(result).toEqual({
       title: "Cidade a (PE)",
+      details: [],
       value: "PIB: R$ 50",
       rank: "12º de 1.794",
     });

@@ -3,6 +3,7 @@
 import { type Ref, useState } from "react";
 import type { AridezCardProps } from "@/components/AridezDashboard/aridezCardProps";
 import { AridezClassLegend } from "@/components/AridezDashboard/AridezClassLegend";
+import { AridezIndexInfo } from "@/components/AridezDashboard/AridezIndexInfo";
 import { ARIDEZ_CARD_INFO } from "@/components/AridezDashboard/aridezTexts";
 import { ARIDEZ_COLORS } from "@/components/AridezDashboard/aridezTheme";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
@@ -270,12 +271,15 @@ export const AridezClassCard = ({
     <ProtoCard
       {...status}
       title={TITLE}
-      subtitle={`${place} · ${data.filters.ano} · área por classe`}
+      subtitle={`${place} · ${data.filters.ano} · área por classe de índice de aridez`}
       kind="line"
       bodyClassName="flex flex-col"
       actions={
         <>
-          <ProtoCardInfo title={TITLE} text={ARIDEZ_CARD_INFO.classes} />
+          <ProtoCardInfo
+            title={TITLE}
+            text={<AridezIndexInfo lead={ARIDEZ_CARD_INFO.classes} />}
+          />
           <ProtoCardMenu title={TITLE} chart={chart} />
         </>
       }

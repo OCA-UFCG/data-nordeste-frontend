@@ -12,6 +12,7 @@ import {
   describeMapFeature,
   featureValueReader,
   type FeatureValueReader,
+  type MapTooltipDetails,
   type MapTooltipText,
   type MapValueFormat,
   rankWithinArea,
@@ -40,6 +41,9 @@ export type PanelMapTooltipArgs = {
   // Número de cada estado por sigla no hover por estado (aridez: % de ASD do
   // estado). Sem ele, a soma do `v<ano>` dos municípios do estado na área.
   stateValues?: ReadonlyMap<string, number>;
+
+  // Linhas extras por feição (aridez: % de cada classe), entre o nome e o valor.
+  tooltipDetails?: MapTooltipDetails;
   formatValue: (value: number) => string;
 
   // Nome do número no tooltip ("PIB: R$ 1 mi").
@@ -95,7 +99,20 @@ type HoverDescription = {
   format: MapValueFormat;
 };
 
-function describeHover(
+// Linhas extras da feição sob o ponteiro: por `code` no município, por sigla no
+// estado. Sem `tooltipDetails`, ou sem a chave, nenhuma linha.
+function detailsOf(
+  hover: PanelMapHover,
+  tooltipDetails: MapTooltipDetails | undefined,
+): readonly string[] {
+  if (!tooltipDetails) return [];
+  const byKey =
+    hover.level === "feicao" ? tooltipDetails.feature : tooltipDetails.state;
+
+  return byKey.get(hover.props.code) ?? [];
+}
+
+function describeHoverText(
   hover: PanelMapHover,
   { readValue, ranks, stateData, format }: HoverDescription,
 ): MapTooltipText {
@@ -113,6 +130,16 @@ function describeHover(
   return describeState(state, stateData.totals, format);
 }
 
+function describeHover(
+  hover: PanelMapHover,
+  description: HoverDescription,
+  tooltipDetails: MapTooltipDetails | undefined,
+): MapTooltipText {
+  const text = describeHoverText(hover, description);
+
+  return { ...text, details: detailsOf(hover, tooltipDetails) };
+}
+
 /**
  * Texto e posição do tooltip da feição sob o ponteiro, ou `null` fora delas.
  * O ranking é entre as feições da área de interesse no ano (IDH: os 9 estados);
@@ -126,7 +153,7 @@ export function usePanelMapTooltip(
   args: PanelMapTooltipArgs,
 ): PanelMapTooltipState | null {
   const [hover, setHover] = useState<PanelMapHover | null>(null);
-  const { engine, ano, values, formatValue, valueLabel } = args;
+  const { engine, ano, values, formatValue, valueLabel, tooltipDetails } = args;
   const readValue = useMemo(
     () => featureValueReader(ano, values),
     [ano, values],
@@ -137,7 +164,11 @@ export function usePanelMapTooltip(
   useEffect(() => engine?.onHover(setHover), [engine]);
   if (!hover) return null;
   const format = { valueLabel, formatValue };
-  const text = describeHover(hover, { readValue, ranks, stateData, format });
+  const text = describeHover(
+    hover,
+    { readValue, ranks, stateData, format },
+    tooltipDetails,
+  );
 
   return { ...text, x: hover.x, y: hover.y };
 }
@@ -146,7 +177,8 @@ type PanelMapTooltipProps = { tooltip: PanelMapTooltipState | null };
 
 /**
  * Cartão branco junto do ponteiro, dentro do mapa, no estilo dos tooltips dos
- * painéis: nome, "<indicador>: <valor>" e posição no ranking. `pointer-events-none`
+ * painéis: nome, as linhas extras do painel (`details`; na aridez, o % de cada
+ * classe), "<indicador>: <valor>" e posição no ranking. `pointer-events-none`
  * para não roubar o hover das feições.
  *
  * @example <PanelMapTooltip tooltip={tooltip} />
@@ -159,10 +191,17 @@ export const PanelMapTooltip = ({ tooltip }: PanelMapTooltipProps) => {
   return (
     <div
       role="tooltip"
-      className="pointer-events-none absolute z-20 max-w-60 rounded-[6px] border border-grey-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
+      className="pointer-events-none absolute z-20 max-w-72 rounded-[6px] border border-grey-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
       style={{ left, top }}
     >
       <p className="text-[13px] leading-5 text-grey-700">{tooltip.title}</p>
+      {/* INTENTIONAL: chave pelo índice. As linhas vêm prontas do painel e
+          podem repetir texto; a lista é fixa enquanto o hover não muda. */}
+      {tooltip.details.map((line, index) => (
+        <p key={index} className="text-[13px] leading-5 text-grey-700">
+          {line}
+        </p>
+      ))}
       {tooltip.value === null ? null : (
         <p className="text-base font-bold leading-6 text-grey-1100 tabular-nums">
           {tooltip.value}
