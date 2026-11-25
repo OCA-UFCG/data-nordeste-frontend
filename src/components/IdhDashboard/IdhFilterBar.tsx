@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { listYears, withYear } from "@/features/panels/territorialFilters";
 import {
+  IDH_DEFAULT_UF,
   idhPlaceName,
   type IdhFilters,
   type IdhPanelData,
@@ -24,6 +25,8 @@ const BRAND: ProtoFilterBarBrand = { icon: "idh", title: "IDH" };
 const BAR_FIELD_CLASS = "max-w-none min-w-0 max-[900px]:[&>div>svg]:right-2";
 const BAR_SELECT_CLASS = "max-[900px]:pr-7 max-[900px]:pl-2.5";
 
+// Sem a opção "Todos": o IDH não se tira pela média dos estados (ver
+// `IDH_DEFAULT_UF`).
 // `selection`: os filtros pedidos, que os selects mostram já antes de o
 // servidor responder (e de onde parte o próximo filtro).
 type FilterProps = {
@@ -49,13 +52,12 @@ const FilterFields = ({
         {(id) => (
           <select
             id={id}
-            value={selection.uf ?? ""}
+            value={selection.uf ?? IDH_DEFAULT_UF}
             onChange={(event) =>
-              onChange({ ...selection, uf: event.target.value || undefined })
+              onChange({ ...selection, uf: event.target.value })
             }
             className={selectClass}
           >
-            <option value="">Todos</option>
             {ufs.map((uf) => (
               <option key={uf.sigla} value={uf.sigla}>
                 {uf.nome}

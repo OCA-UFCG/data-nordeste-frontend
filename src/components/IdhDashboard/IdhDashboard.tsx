@@ -30,6 +30,7 @@ import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import {
   buildIdhSearch,
+  IDH_DEFAULT_UF,
   describeIdhPosterChips,
   describeIdhShareChips,
   idhPlaceName,
@@ -120,7 +121,7 @@ const IdhView = ({ data, dashboard, updatedAt }: ViewProps) =>
   );
 
 const isDefaultFilters = ({ filters, yearRange }: IdhPanelData) =>
-  filters.ano === yearRange.last && !filters.uf;
+  filters.ano === yearRange.last && filters.uf === IDH_DEFAULT_UF;
 
 const visaoLabel = (tab: IdhVisao) =>
   IDH_VISOES.find((item) => item.key === tab)?.label ?? "";
