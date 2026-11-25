@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { formatPanelUpdatedAt } from "@/features/panels/panelUpdatedAt";
 import { DemografiaDashboard } from "@/components/DemografiaDashboard/DemografiaDashboard";
 import {
   DEMOGRAFIA_MACROTHEME,
@@ -20,7 +21,6 @@ import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedP
 import { buildMetadata } from "@/config/seo";
 import { loadDemografiaPanelContent } from "@/features/panels/demografia/demografiaContent";
 import {
-  DEMOGRAFIA_MAX_PLACES,
   emptyDemografiaPanel,
   loadDemografiaPanel,
 } from "@/features/panels/demografia/demografiaPanel";
@@ -75,11 +75,7 @@ export default async function PerfilDemograficoDemoPage({
 }) {
   const range = await tryLoadDemografiaYearRange(queryDataDb);
   const years = range ?? NO_DEMOGRAFIA_YEARS;
-  const filters = parseTerritorialFilters(
-    await searchParams,
-    years,
-    DEMOGRAFIA_MAX_PLACES,
-  );
+  const filters = parseTerritorialFilters(await searchParams, years);
   const [panel, content] = await Promise.all([
     range ? loadPanel(filters) : null,
     loadDemografiaPanelContent(),
@@ -101,6 +97,8 @@ export default async function PerfilDemograficoDemoPage({
         years={years}
         failed={!panel}
         catalogHref={getCatalogHref(macroTheme)}
+        macroTheme={macroTheme}
+        updatedAt={formatPanelUpdatedAt(content?.panel.date)}
       />
       <ProtoSaibaMais
         tone="perfil"

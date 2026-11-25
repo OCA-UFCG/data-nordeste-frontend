@@ -24,8 +24,6 @@ export const DEMOGRAFIA_YEAR_RANGE: YearRange = {
   available: [2022, 2010, 2000],
 };
 
-export const DEMOGRAFIA_MAX_PLACES = 100;
-
 export type DemografiaPorte = ChoroplethBucket & { texto: string };
 
 // IMPORTANT: limites do `porte_mun` da view relatorios_auto.vw_perfil_populacional_municipal,
@@ -36,8 +34,8 @@ const PORTE_LIMITES = { pequeno: 50_000, medio: 100_000 } as const;
 const upTo = (limite: number) => limite + 1;
 const mil = (limite: number) => `${limite / 1000} mil`;
 
-// Cores das faixas; o mapa de estados do perfil reusa as duas primeiras.
-export const DEMOGRAFIA_PORTE_COLORS = {
+// Cores das faixas de porte.
+const DEMOGRAFIA_PORTE_COLORS = {
   pequeno: "#f6d3e0",
   medio: "#e98dae",
   grande: "#c93c6b",

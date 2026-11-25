@@ -1,18 +1,32 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AridezDashboard } from "@/components/AridezDashboard/AridezDashboard";
 import { aridezBigNumbers } from "@/components/AridezDashboard/AridezBigNumbers";
 import { ARIDEZ_CARD_SOURCE } from "@/components/AridezDashboard/aridezTexts";
+import type { PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import {
   emptyAridezPanel,
   type AridezPanelData,
 } from "@/features/panels/aridez/aridezPanel";
 
+const replace = vi.hoisted(() => vi.fn());
+
 vi.mock("next/navigation", () => ({
   usePathname: () => "/demo/aridez",
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace }),
   useSearchParams: () => new URLSearchParams(),
+}));
+
+// O mapa é MapLibre (canvas); o dublê só guarda as props da última montagem.
+const panelMapRenders = vi.hoisted(() => [] as PanelMapProps[]);
+
+vi.mock("@/components/PanelMap/PanelMap", () => ({
+  PanelMap: (props: PanelMapProps) => {
+    panelMapRenders.push(props);
+
+    return <div data-testid="panel-map" />;
+  },
 }));
 
 const AREAS = { arido: 0, semiarido: 650, subumido: 0, umido: 350 };
@@ -23,8 +37,10 @@ const PANEL: AridezPanelData = {
   municipios: [{ cdMun: "2611101", nome: "Petrolina (PE)" }],
   areas: AREAS,
   baseAreas: AREAS,
-  estados: [{ code: "PE", name: "Pernambuco", areas: AREAS, value: 65 }],
-  porMunicipio: [{ cdMun: "2611101", nome: "Petrolina (PE)", areas: AREAS }],
+  porMunicipio: [
+    { cdMun: "2611101", uf: "PE", nome: "Petrolina (PE)", areas: AREAS },
+  ],
+  mapa: [{ cdMun: "2611101", uf: "PE", nome: "Petrolina (PE)", areas: AREAS }],
 };
 
 describe("aridezBigNumbers", () => {
@@ -44,8 +60,63 @@ describe("aridezBigNumbers", () => {
 });
 
 describe("AridezDashboard", () => {
-  beforeEach(stubPanelBrowserApis);
+  beforeEach(() => {
+    stubPanelBrowserApis();
+    panelMapRenders.length = 0;
+    replace.mockReset();
+  });
   afterEach(() => vi.unstubAllGlobals());
+
+  it("draws the shared municipal map with the aridez raster, fed by the whole-area data", () => {
+    render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);
+
+    const [props] = panelMapRenders;
+
+    expect(screen.getAllByTestId("panel-map")).toHaveLength(1);
+    expect(props).toMatchObject({
+      indicator: "aridez",
+      deepest: "municipio",
+      ano: 2021,
+      area: "nordeste",
+    });
+    expect(props.values?.get("2611101")).toBe(65);
+    expect(props.classCounts?.get(3)).toBe(1);
+  });
+
+  it("sends the map zoom through the same request as the filter bar", () => {
+    render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);
+
+    act(() =>
+      panelMapRenders[panelMapRenders.length - 1].onRecorteChange({
+        uf: ["PE"],
+        mun: [],
+      }),
+    );
+
+    expect(replace).toHaveBeenCalledWith(
+      expect.stringContaining("uf=PE"),
+      expect.anything(),
+    );
+  });
+
+  it("keeps the same map mounted, with no skeleton, when the year changes", () => {
+    render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);
+    const mounted = screen.getByTestId("panel-map");
+
+    fireEvent.change(screen.getByLabelText("Ano"), {
+      target: { value: "2011" },
+    });
+
+    expect(replace).toHaveBeenCalledWith(
+      expect.stringContaining("ano=2011"),
+      expect.anything(),
+    );
+    expect(screen.getByTestId("panel-map")).toBe(mounted);
+
+    // O pedido chega ao mapa na hora (seleção otimista), sem esqueleto.
+    expect(panelMapRenders.some(({ ano }) => ano === 2011)).toBe(true);
+    expect(screen.queryByLabelText("Carregando")).toBeNull();
+  });
 
   // A fonte fica só na seção "Fonte dos dados" do painel, não em cada card.
   it("shows no source under the charts", () => {

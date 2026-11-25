@@ -134,14 +134,15 @@ const PATHS_24: Record<string, ReactNode> = {
   chevronDown: <path d="M6 9l6 6 6-6" />,
 };
 
-// Controles do mapa em tela cheia, desenhados num quadro de 20.
-const PATHS_20: Record<string, ReactNode> = {
-  zoomIn: <path d="M10 4v12M4 10h12" />,
-  zoomOut: <path d="M4 10h12" />,
-  fit: <path d="M4 8V4h4M12 4h4v4M16 12v4h-4M8 16H4v-4" />,
-};
+export type ProtoIconName = keyof typeof PATHS_24;
 
-export type ProtoIconName = keyof typeof PATHS_24 | keyof typeof PATHS_20;
+/**
+ * Os traços de um ícone como elementos React, para quem precisa deles fora do
+ * `<ProtoIcon>` (o cartaz de download monta o SVG como texto).
+ *
+ * @example protoIconNode("usd")
+ */
+export const protoIconNode = (name: ProtoIconName): ReactNode => PATHS_24[name];
 
 /**
  * Ícone do protótipo. `size` em px; `stroke`, a espessura do traço.
@@ -159,13 +160,11 @@ export const ProtoIcon = ({
   stroke?: number;
   className?: string;
 }) => {
-  const box = name in PATHS_20 ? 20 : 24;
-
   return (
     <svg
       width={size}
       height={size}
-      viewBox={`0 0 ${box} ${box}`}
+      viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth={stroke}
@@ -174,7 +173,7 @@ export const ProtoIcon = ({
       aria-hidden="true"
       className={className}
     >
-      {PATHS_20[name] ?? PATHS_24[name]}
+      {PATHS_24[name]}
     </svg>
   );
 };

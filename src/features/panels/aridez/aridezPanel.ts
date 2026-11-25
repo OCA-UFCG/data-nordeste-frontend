@@ -1,6 +1,5 @@
 import {
   ARIDEZ_CLASSES,
-  asdShare,
   EMPTY_ARIDEZ_AREAS,
   type AridezAreas,
   type AridezClassKey,
@@ -31,30 +30,23 @@ export const ARIDEZ_YEAR_RANGE: YearRange = {
 // Ano de comparação do "Veja mais" (o protótipo escreve "1990").
 export const ARIDEZ_BASE_YEAR = 1991;
 
-// Limita o tamanho da URL e do array do `= ANY($n)`, como nos outros painéis.
-export const ARIDEZ_MAX_PLACES = 100;
-
-// Um estado da área no mapa: `value` é o % da área classificada que é ASD.
-export type AridezStateRegion = {
-  code: string;
-  name: string;
-  areas: AridezAreas;
-  value: number;
-};
-
+// `uf`: a sigla do estado; o mapa soma as áreas por estado no hover por estado.
 export type AridezMunicipio = {
   cdMun: string;
+  uf: string;
   nome: string;
   areas: AridezAreas;
 };
 
 // `areas` e `baseAreas` são null quando o território não tem área classificada
-// no ano (escolhido e de comparação, respectivamente).
+// no ano (escolhido e de comparação, respectivamente). `porMunicipio` segue o
+// Estado e o Município do filtro; `mapa` não: são todos os municípios da área,
+// para o número e a legenda do mapa não mudarem a cada zoom.
 export type AridezPanelData = TerritorialSelection & {
   areas: AridezAreas | null;
   baseAreas: AridezAreas | null;
-  estados: AridezStateRegion[];
   porMunicipio: AridezMunicipio[];
+  mapa: AridezMunicipio[];
 };
 
 /**
@@ -71,8 +63,8 @@ export const emptyAridezPanel = (
   municipios: [],
   areas: null,
   baseAreas: null,
-  estados: [],
   porMunicipio: [],
+  mapa: [],
 });
 
 // Uma linha por município, ano e classe, com as colunas que
@@ -134,32 +126,13 @@ const areasOrNull = (byYear: Map<number, AridezAreas>, ano: number) => {
   return areas && hasArea(areas) ? areas : null;
 };
 
-// Como no PIB: o mapa mostra todos os estados da área, com ou sem estado no
-// filtro, e por isso ignora UF e município.
-const loadEstados = async (query: SqlQuery, filters: TerritorialFilters) => {
-  const where = buildTerritorialWhere(
-    { ano: filters.ano, area: filters.area },
-    { byYear: true, byMunicipality: false },
-  );
-  const rows = await query<ClassRow & { sigla_uf: string; estado_uf: string }>(
-    `SELECT sigla_uf, estado_uf, ${CLASS_SUMS} FROM ${ARIDEZ_VIEW}
-     WHERE ${where.sql} GROUP BY sigla_uf, estado_uf ORDER BY estado_uf`,
-    where.params,
-  );
-
-  return rows.map((row) => {
-    const areas = toAreas(row);
-
-    return {
-      code: row.sigla_uf.trim(),
-      name: row.estado_uf,
-      areas,
-      value: asdShare(areas),
-    };
-  });
+type MunicipioClassRow = ClassRow & {
+  cd_mun: string;
+  sigla_uf: string;
+  municipio_uf: string;
 };
 
-const loadPorMunicipio = async (
+const loadMunicipios = async (
   query: SqlQuery,
   filters: TerritorialFilters,
 ): Promise<AridezMunicipio[]> => {
@@ -167,25 +140,40 @@ const loadPorMunicipio = async (
     byYear: true,
     byMunicipality: true,
   });
-  const rows = await query<ClassRow & { cd_mun: string; municipio_uf: string }>(
-    `SELECT cd_mun, municipio_uf, ${CLASS_SUMS} FROM ${ARIDEZ_VIEW}
-     WHERE ${where.sql} GROUP BY cd_mun, municipio_uf ORDER BY municipio_uf`,
+  const rows = await query<MunicipioClassRow>(
+    `SELECT cd_mun, sigla_uf, municipio_uf, ${CLASS_SUMS} FROM ${ARIDEZ_VIEW}
+     WHERE ${where.sql} GROUP BY cd_mun, sigla_uf, municipio_uf
+     ORDER BY municipio_uf`,
     where.params,
   );
 
   return rows
     .map((row) => ({
-      cdMun: row.cd_mun,
+      cdMun: row.cd_mun.trim(),
+      uf: row.sigla_uf.trim(),
       nome: row.municipio_uf,
       areas: toAreas(row),
     }))
     .filter((row) => hasArea(row.areas));
 };
 
+// Como no PIB: o mapa mostra todos os municípios da área, com ou sem estado no
+// filtro, e por isso ignora UF e município. Sem eles no filtro, é a mesma
+// consulta de `porMunicipio`.
+const loadMapa = (
+  query: SqlQuery,
+  filters: TerritorialFilters,
+  porMunicipio: Promise<AridezMunicipio[]>,
+) =>
+  filters.uf?.length || filters.mun?.length
+    ? loadMunicipios(query, { ano: filters.ano, area: filters.area })
+    : porMunicipio;
+
 /**
  * Dados do painel de aridez para os filtros da URL: as opções de Estado e
- * Município, a área por classe no ano escolhido e no de comparação, o mapa por
- * estado e a divisão de cada município entre as classes.
+ * Município, a área por classe no ano escolhido e no de comparação, a divisão
+ * de cada município entre as classes e, à parte, a de todos os municípios da
+ * área (o mapa).
  *
  * @example await loadAridezPanel(queryDataDb, { ano: 2021, area: "nordeste" })
  */
@@ -199,17 +187,18 @@ export const loadAridezPanel = async (
     requested,
   );
   const { filters } = selection;
-  const [byYear, estados, porMunicipio] = await Promise.all([
+  const byTerritory = loadMunicipios(query, filters);
+  const [byYear, porMunicipio, mapa] = await Promise.all([
     loadAreasByYear(query, filters),
-    loadEstados(query, filters),
-    loadPorMunicipio(query, filters),
+    byTerritory,
+    loadMapa(query, filters, byTerritory),
   ]);
 
   return {
     ...selection,
     areas: areasOrNull(byYear, filters.ano),
     baseAreas: areasOrNull(byYear, ARIDEZ_BASE_YEAR),
-    estados,
     porMunicipio,
+    mapa,
   };
 };

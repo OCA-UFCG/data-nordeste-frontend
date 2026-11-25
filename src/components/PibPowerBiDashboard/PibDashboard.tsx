@@ -32,7 +32,6 @@ import {
 } from "@/features/panels/format";
 import {
   PIB_MAP_BUCKETS,
-  PIB_MAX_PLACES,
   PIB_YEAR_RANGE,
   type PibPanelData,
   type PibYearPoint,
@@ -239,7 +238,7 @@ export const PibDashboard = ({
           years={YEARS}
           onChange={applyFilters}
           multiple
-          maxPlaces={PIB_MAX_PLACES}
+          single
         />
       </PanelFilters>
       <SelectionSummary summary={summary} isPending={isPending} chip={chip} />

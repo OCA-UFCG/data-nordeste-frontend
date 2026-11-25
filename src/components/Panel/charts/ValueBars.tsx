@@ -1,7 +1,7 @@
 import {
   previewOnMouse,
   type PreviewHandler,
-} from "@/components/Panel/charts/RankedBars";
+} from "@/components/Panel/pointer";
 import type {
   ChartPoint,
   ValueFormatter,

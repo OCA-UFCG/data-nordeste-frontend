@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildIdhSearch,
   defaultIdhFilters,
+  describeIdhPosterChips,
   describeIdhSelection,
   describeIdhSerie,
   describeIdhShareChips,
@@ -258,6 +259,33 @@ describe("describeIdhShareChips", () => {
         "geral",
       ),
     ).toEqual(["Estado: Todos"]);
+  });
+});
+
+describe("describeIdhPosterChips", () => {
+  const ufs = [{ sigla: "PE", nome: "Pernambuco" }];
+
+  it("lists year, the fixed Nordeste area, the state and every municipality", () => {
+    expect(
+      describeIdhPosterChips({
+        filters: { ano: 2019, visao: "cor", uf: "PE" },
+        ufs,
+      }),
+    ).toEqual([
+      "Ano: 2019",
+      "Área: Nordeste",
+      "Estado: Pernambuco",
+      "Município: Todos",
+    ]);
+  });
+
+  it("says 'Todos' for the state and leaves the year out when there is none", () => {
+    expect(
+      describeIdhPosterChips({
+        filters: { ano: NO_YEAR, visao: "geral" },
+        ufs,
+      }),
+    ).toEqual(["Área: Nordeste", "Estado: Todos", "Município: Todos"]);
   });
 });
 

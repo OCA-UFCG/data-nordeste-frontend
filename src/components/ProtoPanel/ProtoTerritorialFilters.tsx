@@ -24,11 +24,9 @@ import {
 import { cn } from "@/lib/utils";
 
 // `years`: os anos do painel, do mais recente ao mais antigo (`listYears`).
-// `maxPlaces`: quantos municípios o painel aceita no filtro.
 type FieldsProps = {
   data: TerritorialSelection;
   years: readonly number[];
-  maxPlaces: number;
   onChange: (filters: TerritorialFilters) => void;
 };
 
@@ -58,11 +56,10 @@ const fieldClasses = (fluid: boolean, branded: boolean): FieldClasses => {
   return { year: fluid ? "max-w-[140px]" : undefined };
 };
 
-// Ano e Área são selects nativos; Estado e Município, multisseleção com busca.
+// Ano e Área são selects nativos; Estado e Município, escolha única com busca.
 const TerritorialFilterFields = ({
   data,
   years,
-  maxPlaces,
   onChange,
   wide,
   branded,
@@ -122,9 +119,10 @@ const TerritorialFilterFields = ({
        * INTENTIONAL: trocar a área mantém Estado e Município escolhidos,
        * diferente do `TerritorialSelects` do PIB, que zera os dois. É o que faz
        * o `norm()` do protótipo, que só descarta a UF que sai da área. Quem
-       * descarta UFs e municípios fora da área nova é o servidor (`keepKnown`
-       * em `src/features/panels/territorialOptions.ts`), o que preserva a
-       * seleção de vários estados (revisão da PR #401).
+       * descarta a UF e o município fora da área nova é o servidor (`keepKnown`
+       * em `src/features/panels/territorialOptions.ts`). Estado e Município
+       * aceitam uma opção só; trocar o Estado zera o Município, que pode não
+       * ser do estado novo.
        */}
       <ProtoSelectField
         label="Área de interesse"
@@ -158,9 +156,10 @@ const TerritorialFilterFields = ({
         label="Estado"
         plural="estados"
         multiple
+        single
         values={filters.uf}
         options={data.ufs.map((uf) => ({ value: uf.sigla, label: uf.nome }))}
-        onChange={(uf) => onChange({ ...filters, uf })}
+        onChange={(uf) => onChange({ ...filters, uf, mun: undefined })}
         look={placeLook}
       />
       <PlaceFilter
@@ -168,7 +167,7 @@ const TerritorialFilterFields = ({
         label="Município"
         plural="municípios"
         multiple
-        max={maxPlaces}
+        single
         values={filters.mun}
         options={data.municipios.map((mun) => ({
           value: mun.cdMun,
@@ -186,12 +185,11 @@ const TerritorialFilterFields = ({
  * e PIB): Ano, Área, Estado e Município, com o resumo e a folha no celular
  * (`ProtoFilterBar`).
  *
- * @example <ProtoTerritorialFilters data={panel} years={listYears(PIB_YEAR_RANGE)} maxPlaces={100} onChange={apply} onClear={reset} isDefault top={80} stuck={false} barRef={ref} />
+ * @example <ProtoTerritorialFilters data={panel} years={listYears(PIB_YEAR_RANGE)} onChange={apply} onClear={reset} isDefault top={80} stuck={false} barRef={ref} />
  */
 export const ProtoTerritorialFilters = ({
   data,
   years,
-  maxPlaces,
   onChange,
   onClear,
   isDefault,
@@ -232,7 +230,6 @@ export const ProtoTerritorialFilters = ({
       <TerritorialFilterFields
         data={data}
         years={years}
-        maxPlaces={maxPlaces}
         onChange={onChange}
         wide={wide}
         branded={brandInBar}

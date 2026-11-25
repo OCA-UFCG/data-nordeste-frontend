@@ -11,7 +11,6 @@ import { PanelTextsFrame } from "@/components/Panel/texts/PanelTextsFrame";
 import { buildMetadata } from "@/config/seo";
 import { loadDemografiaPanelContent } from "@/features/panels/demografia/demografiaContent";
 import {
-  DEMOGRAFIA_MAX_PLACES,
   DEMOGRAFIA_YEAR_RANGE,
   loadDemografiaPanel,
 } from "@/features/panels/demografia/demografiaPanel";
@@ -72,7 +71,6 @@ export default async function PerfilDemograficoPowerBiDemoPage({
   const filters = parseTerritorialFilters(
     await searchParams,
     DEMOGRAFIA_YEAR_RANGE,
-    DEMOGRAFIA_MAX_PLACES,
   );
   const [panel, content] = await Promise.all([
     loadPanel(filters),
