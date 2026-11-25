@@ -557,6 +557,63 @@ describe("PanelMap estado recortado pela área de interesse", () => {
   });
 });
 
+// Regressão: GEODATA_DIR sem os arquivos recortados (gamma antes do rsync)
+// derrubava o mapa com "collection.features is undefined".
+describe("PanelMap sem os estados recortados", () => {
+  const MISSING = [
+    "/api/geodata/vector/estados_nordeste.geojson",
+    "/api/geodata/vector/estados_fora_nordeste.geojson",
+  ];
+
+  async function renderWithoutAreaStates(recorte: MapRecorte) {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", new GeodataFetchFake(false, MISSING).fetch);
+    const factory = new PanelMapEngineFactoryFake();
+
+    render(<PanelMap {...panelMapProps(factory, { recorte })} />);
+    await waitFor(() => expect(factory.engine.fitTo).toHaveBeenCalled());
+
+    return factory.engine;
+  }
+
+  it("desenha o mapa com os estados inteiros e o véu de fora vazio", async () => {
+    const engine = await renderWithoutAreaStates(EMPTY_RECORTE);
+    const states = engine.setAreaStates.mock.lastCall?.[0];
+
+    expect(screen.getByRole("region")).toBeInTheDocument();
+    expect(states?.inside.features.map((f) => f.properties?.code)).toEqual([
+      "PE",
+      "PB",
+    ]);
+    expect(states?.outside).toEqual({
+      type: "FeatureCollection",
+      features: [],
+    });
+  });
+
+  it("com estado escolhido, seleciona e enquadra o estado inteiro", async () => {
+    const engine = await renderWithoutAreaStates(PE);
+
+    expect(engine.fitTo).toHaveBeenCalledTimes(1);
+    expect(engine.fitTo).toHaveBeenLastCalledWith(PE_BBOX);
+    expect(engine.setSelection).toHaveBeenLastCalledWith([
+      "in",
+      ["get", "code"],
+      ["literal", ["PE"]],
+    ]);
+  });
+
+  it("o hover por estado segue nomeando o estado", async () => {
+    const engine = await renderWithoutAreaStates(EMPTY_RECORTE);
+
+    act(() =>
+      engine.emitHover({ level: "estado", props: STATE_PE, x: 0, y: 0 }),
+    );
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Pernambuco (PE)");
+  });
+});
+
 describe("PanelMap ciclo de vida", () => {
   it("avisa quando os geodados não existem, sem criar o mapa", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});

@@ -32,16 +32,33 @@ const NO_OUTSIDE: FeatureCollection = {
   features: [],
 };
 
+// IMPORTANT: só uma FeatureCollection chega ao mapa. Um corpo sem `features`
+// (resposta de erro, arquivo pela metade) quebrava o enquadramento com
+// "collection.features is undefined"; aqui vira falha e cai no fallback.
+async function fetchFeatureCollection(
+  fetchGeodata: GeodataFetch,
+  path: string,
+): Promise<FeatureCollection> {
+  const body = await fetchGeodataJson<Partial<FeatureCollection>>(
+    fetchGeodata,
+    path,
+  );
+
+  if (body?.type === "FeatureCollection" && Array.isArray(body.features)) {
+    return body as FeatureCollection;
+  }
+  throw new Error(
+    `Geodata file "${path}" is ${JSON.stringify(body).slice(0, 80)}; expected a GeoJSON FeatureCollection.`,
+  );
+}
+
 async function loadAreaStates(
   area: TerritorialArea,
   fetchGeodata: GeodataFetch,
 ): Promise<AreaStates> {
   const [inside, outside] = await Promise.all([
-    fetchGeodataJson<FeatureCollection>(fetchGeodata, areaStatesFileFor(area)),
-    fetchGeodataJson<FeatureCollection>(
-      fetchGeodata,
-      areaStatesOutsideFileFor(area),
-    ),
+    fetchFeatureCollection(fetchGeodata, areaStatesFileFor(area)),
+    fetchFeatureCollection(fetchGeodata, areaStatesOutsideFileFor(area)),
   ]);
 
   return { inside, outside };
@@ -57,8 +74,8 @@ function areaStatesFailure(area: TerritorialArea, error: unknown): null {
   return null;
 }
 
-// Sem os arquivos da área: o estado inteiro (hover e seleção não somem) e
-// nenhum véu de "parte de fora" (melhor que acinzentar a parte de dentro).
+// Sem os arquivos da área (404, corpo inválido): o estado inteiro (hover e
+// seleção não somem) e um véu de "parte de fora" vazio — nunca undefined.
 function fallbackStates(
   loaded: LoadedAreaStates | null,
   area: TerritorialArea,

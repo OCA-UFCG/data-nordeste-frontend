@@ -442,8 +442,10 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   with `vector/estados_<area>.geojson` of the current area (`useAreaStates`,
   `areaStatesFileFor`; refetched when the area changes, `engine.setAreaStates`).
   While the files load, or if one is missing (a GEODATA_DIR built before
-  them), the full `estados.geojson` is used for hover and selection, the
-  outside veil is empty, and `panel_map_area_states_failed` is logged. The
+  them) or is not a GeoJSON FeatureCollection, the full `estados.geojson` is
+  used for hover, selection and fit, the outside veil is an empty
+  FeatureCollection (never undefined), and `panel_map_area_states_failed` is
+  logged. The
   state boundary lines (`state-outline`) and the veil of the other states keep
   the full `estados.geojson`. Fitting a chosen state frames its part inside
   the area (`fitTargetFor` with `areaStates`, falling back to the full state),

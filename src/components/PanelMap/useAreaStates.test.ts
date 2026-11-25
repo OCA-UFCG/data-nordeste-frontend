@@ -60,6 +60,23 @@ describe("useAreaStates", () => {
     await waitFor(() => expect(result.current).toEqual(loadedStates("sudene")));
   });
 
+  // Um 200 que não é FeatureCollection (página de erro, arquivo pela metade)
+  // não pode chegar ao mapa: `collection.features` seria undefined.
+  it("resposta sem FeatureCollection vale como falha: estados inteiros, fora vazio", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchGeodata = vi.fn(async () => Response.json({ error: "x" }));
+    const { result } = renderHook(() =>
+      useAreaStates("sudene", FULL, fetchGeodata),
+    );
+
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.inside).toBe(FULL);
+    expect(result.current.outside).toEqual({
+      type: "FeatureCollection",
+      features: [],
+    });
+  });
+
   it("a resposta atrasada da área anterior não vale para a nova", async () => {
     const fake = new DeferredGeodataFetchFake();
     const { result, rerender } = renderHook(
