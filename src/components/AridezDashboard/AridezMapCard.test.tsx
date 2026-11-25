@@ -155,11 +155,23 @@ describe("AridezMapCard", () => {
       ano: 2021,
       area: "semiarido",
       deepest: "municipio",
-      label: "Índice de aridez por município",
+      label: "Índice de aridez",
       formatValue: formatSharePercent,
-      valueLabel: "Área suscetível",
+      valueLabel: "Percentual de área suscetível à desertificação",
     });
     expect(lastProps().recorte).toEqual({ uf: ["PB"], mun: [] });
+  });
+
+  it("gives the map the % of each class per municipality and per state", () => {
+    render(ui());
+
+    const details = lastProps().tooltipDetails;
+
+    expect(details?.feature.get("B")).toEqual([
+      "Percentual de área semiárida: 80,00%",
+      "Percentual de área subúmida seca: 20,00%",
+    ]);
+    expect(details?.state.has("PB")).toBe(true);
   });
 
   it("gives the map the ASD share of every municipality of the area", () => {
@@ -215,17 +227,17 @@ describe("AridezMapCard", () => {
 
     // O título tem versão curta para o celular, no mesmo cabeçalho.
     expect(
-      screen.getByRole("heading", { name: /^Índice de aridez por município/ }),
-    ).toHaveTextContent("Aridez por município");
+      screen.getByRole("heading", { name: /^Índice de aridez/ }),
+    ).toHaveTextContent("Índice de aridez");
     expect(
-      screen.getByText(/^Classe de aridez · .+ · 2021$/),
+      screen.getByText(/^Índice de aridez · .+ · 2021$/),
     ).toBeInTheDocument();
   });
 
   it("takes the year of the subtitle from the requested selection, not from the loaded data", () => {
     render(ui(vi.fn(), "stale", DATA, { ...SELECTION, ano: 2011 }));
 
-    expect(screen.getByText(/^Classe de aridez · .+ · 2011$/)).toBeTruthy();
+    expect(screen.getByText(/^Índice de aridez · .+ · 2011$/)).toBeTruthy();
     expect(lastProps().ano).toBe(2011);
   });
 
@@ -293,7 +305,7 @@ describe("AridezMapCard", () => {
   async function downloadImage() {
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Mais opções: Índice de aridez por município",
+        name: "Mais opções: Índice de aridez",
       }),
     );
     fireEvent.click(
@@ -339,7 +351,7 @@ describe("AridezMapCard poster download", () => {
     });
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Mais opções: Índice de aridez por município",
+        name: "Mais opções: Índice de aridez",
       }),
     );
     fireEvent.click(
@@ -352,7 +364,7 @@ describe("AridezMapCard poster download", () => {
     expect(spy.mock.calls[0][1].poster).toMatchObject({
       panelName: POSTER_BASE.panelName,
       title: "Mapa do Índice de aridez - Paraíba",
-      subtitle: "Classe de aridez por município - 2021",
+      subtitle: "Índice de aridez - 2021",
       source: ARIDEZ_CARD_SOURCE,
     });
     expect(

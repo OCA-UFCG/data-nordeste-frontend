@@ -233,3 +233,42 @@ describe("PanelMap do painel de aridez", () => {
     expect(legendTexts()).toEqual(["Árido", "Semiárido"]);
   });
 });
+
+describe("PanelMap tooltip com linhas de detalhe (aridez)", () => {
+  const tooltipDetails = {
+    feature: new Map([
+      [
+        PETROLINA.code,
+        [
+          "Percentual de área semiárida: 90,00%",
+          "Percentual de área úmida: 10,00%",
+        ],
+      ],
+    ]),
+    state: new Map<string, string[]>(),
+  };
+
+  it("mostra as linhas de detalhe entre o nome e o valor", async () => {
+    const { engine } = await renderPanelMap({ ...aridezMap, tooltipDetails });
+
+    act(() => engine.emitHover({ props: PETROLINA, x: 0, y: 0 }));
+
+    const lines = [...screen.getByRole("tooltip").querySelectorAll("p")];
+
+    expect(lines.map((line) => line.textContent)).toEqual([
+      "Petrolina (PE)",
+      "Percentual de área semiárida: 90,00%",
+      "Percentual de área úmida: 10,00%",
+      "Área suscetível: 95%",
+      "1º de 2",
+    ]);
+  });
+
+  it("sem tooltipDetails, o tooltip segue só com nome, valor e posição", async () => {
+    const { engine } = await renderPanelMap(aridezMap);
+
+    act(() => engine.emitHover({ props: PETROLINA, x: 0, y: 0 }));
+
+    expect(screen.getByRole("tooltip").querySelectorAll("p")).toHaveLength(3);
+  });
+});

@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   PanelMapTooltip,
@@ -10,6 +10,7 @@ const tooltip = (
   overrides: Partial<PanelMapTooltipState> = {},
 ): PanelMapTooltipState => ({
   title: "Aroazes (PI)",
+  details: [],
   value: "População: 5.369",
   rank: "1.511º de 1.794",
   x: 10,
@@ -34,6 +35,29 @@ describe("PanelMapTooltip", () => {
       "População: 5.369",
       "1.511º de 1.794",
     ]);
+  });
+
+  it("renders repeated detail lines without a duplicate key warning", () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    render(
+      <PanelMapTooltip
+        tooltip={tooltip({ details: ["Área: 10%", "Área: 10%"] })}
+      />,
+    );
+
+    const lines = [...screen.getByRole("tooltip").querySelectorAll("p")];
+
+    expect(lines.map((line) => line.textContent)).toEqual([
+      "Aroazes (PI)",
+      "Área: 10%",
+      "Área: 10%",
+      "População: 5.369",
+      "1.511º de 1.794",
+    ]);
+    expect(consoleError).not.toHaveBeenCalled();
   });
 
   it("is a white card with a bold value line", () => {

@@ -29,6 +29,7 @@ import {
 } from "@/features/panelMap/featureLevel";
 import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
 import { hoverLevelFor } from "@/features/panelMap/hoverLevel";
+import type { MapTooltipDetails } from "@/features/panelMap/mapTooltip";
 import type { MapLevel, MapRecorte } from "@/features/panelMap/mapRecorte";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 import type {
@@ -70,6 +71,11 @@ export type PanelMapProps = {
   // do estado, não a soma dos %). Sem ele, a soma do `v<ano>` dos municípios
   // do estado que estão na área.
   stateValues?: ReadonlyMap<string, number>;
+
+  // Linhas extras do tooltip, entre o nome e o valor (aridez: % de cada classe
+  // por município e por estado). Chaves: `code` IBGE e sigla. Sem ele, só o
+  // nome, o valor e a posição.
+  tooltipDetails?: MapTooltipDetails;
 
   // Legenda da aridez: quantas feições por valor de classe da paleta.
   classCounts?: ReadonlyMap<number, number>;
@@ -256,10 +262,10 @@ const PanelMapStage = ({
  * carrega os geodados, pinta o indicador com as classes do `.qgz` e transforma
  * o zoom do usuário no recorte territorial do painel. Na aridez, o raster da
  * década é a camada principal e as feições são só contornos, com os números
- * do painel (`values`, `classCounts`). Sem geodados no ambiente, mostra um
- * aviso no lugar do mapa e o card continua de pé.
+ * do painel (`values`, `classCounts`, `tooltipDetails`). Sem geodados no
+ * ambiente, mostra um aviso no lugar do mapa e o card continua de pé.
  *
- * @example <PanelMap indicator="aridez" ano={2021} area="semiarido" recorte={recorte} deepest="municipio" onRecorteChange={apply} values={asdPorMunicipio} classCounts={predominantes} formatValue={formatPercent} valueLabel="Área suscetível" label="Mapa do índice de aridez" />
+ * @example <PanelMap indicator="aridez" ano={2021} area="semiarido" recorte={recorte} deepest="municipio" onRecorteChange={apply} values={asdPorMunicipio} classCounts={predominantes} tooltipDetails={linhasPorClasse} formatValue={formatPercent} valueLabel="Percentual de área suscetível à desertificação" label="Mapa do índice de aridez" />
  * @example <PanelMap indicator="pib" ano={2023} area="nordeste" recorte={recorte} deepest="municipio" onRecorteChange={apply} formatValue={formatPibReais} valueLabel="PIB" label="Mapa do PIB por município" />
  */
 export const PanelMap = (props: PanelMapProps) => {

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { AridezCardProps } from "@/components/AridezDashboard/aridezCardProps";
+import { AridezIndexInfo } from "@/components/AridezDashboard/AridezIndexInfo";
 import {
   ARIDEZ_CARD_INFO,
   ARIDEZ_CARD_SOURCE,
@@ -23,6 +24,7 @@ import {
   aridezMapValues,
   aridezPredominantClasses,
   aridezStateShares,
+  aridezTooltipDetails,
 } from "@/features/panels/aridez/aridezMap";
 import type { AridezPanelData } from "@/features/panels/aridez/aridezPanel";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
@@ -32,13 +34,13 @@ import { areaLabel } from "@/features/panels/territorialOptions";
 // classes fica abaixo da caixa.
 const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 
-// O número do tooltip (o do município e, só com a área, o do estado), as contagens da legenda e o destaque das classes saem
+// O número do tooltip e as linhas por classe (o do município e, só com a área, o do estado), as contagens da legenda e o destaque das classes saem
 // de todos os municípios da área (`data.mapa`): só mudam com Área e Ano, não
 // com o zoom.
 // O cartaz de download: "Mapa do Índice de aridez - {lugar}".
 const POSTER_TEXTS = {
   name: "Índice de aridez",
-  subtitle: "Classe de aridez por município",
+  subtitle: "Índice de aridez",
   source: ARIDEZ_CARD_SOURCE,
 };
 
@@ -54,26 +56,32 @@ const useAridezMapProps = (
     () => aridezPredominantClasses(data.mapa),
     [data.mapa],
   );
+  const tooltipDetails = useMemo(
+    () => aridezTooltipDetails(data.mapa),
+    [data.mapa],
+  );
 
   return {
     ...usePanelMapFilters(selection, onFiltersChange),
     indicator: "aridez",
     deepest: "municipio",
     formatValue: formatSharePercent,
-    valueLabel: "Área suscetível",
+    valueLabel: "Percentual de área suscetível à desertificação",
     label: ARIDEZ_MAP_TITLE,
     values,
     stateValues,
     classCounts,
     classOf,
+    tooltipDetails,
   };
 };
 
 /**
- * Card "Índice de aridez por município": o raster do índice da década do ano
- * escolhido, com a legenda das classes e o % de ASD de cada município no
- * tooltip. Aproximar ou clicar no mapa troca Estado e Município no filtro do
- * painel, pelo mesmo caminho da barra de filtros.
+ * Card "Índice de aridez": o raster do índice da década do ano escolhido, com
+ * a legenda das classes e, no tooltip, o % de cada classe e o % de ASD do
+ * município (ou do estado, só com a área). Aproximar ou clicar no mapa troca
+ * Estado e Município no filtro do painel, pelo mesmo caminho da barra de
+ * filtros.
  *
  * @example <AridezMapCard data={panel} selection={filters} onFiltersChange={request} state="ok" onRetry={retry} />
  */
@@ -90,7 +98,7 @@ export const AridezMapCard = ({
   const card = usePanelMapCard(ARIDEZ_CARD_SOURCE);
   const [fullscreen, setFullscreen] = useState(false);
   const mapProps = useAridezMapProps(data, selection, onFiltersChange);
-  const subtitle = `Classe de aridez · ${areaLabel(selection.area)} · ${selection.ano}`;
+  const subtitle = `Índice de aridez · ${areaLabel(selection.area)} · ${selection.ano}`;
 
   return (
     <ProtoCard
@@ -121,7 +129,7 @@ export const AridezMapCard = ({
       actions={
         <PanelMapCardActions
           title={ARIDEZ_MAP_TITLE}
-          info={ARIDEZ_CARD_INFO.map}
+          info={<AridezIndexInfo lead={ARIDEZ_CARD_INFO.map} />}
           imageSource={card.imageSource}
           engine={card.engine}
           poster={panelMapPosterInput(mapProps, card.geodata, POSTER_TEXTS)}

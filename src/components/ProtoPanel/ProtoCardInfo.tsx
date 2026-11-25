@@ -87,7 +87,7 @@ const InfoPopoverButton = ({ text }: { text: ReactNode }) => {
         sideOffset={6}
         style={protoToneStyle(tone)}
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="w-auto max-w-[280px] rounded-[8px] border-grey-300 bg-white px-3 py-2.5 text-[13px] leading-[19px] text-grey-1100 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.3)] [&>p+p]:mt-2"
+        className="max-h-[60vh] w-auto max-w-[280px] overflow-y-auto rounded-[8px] border-grey-300 bg-white px-3 py-2.5 text-[13px] leading-[19px] text-grey-1100 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.3)] [&>p+p]:mt-2"
       >
         {text}
       </PopoverContent>
