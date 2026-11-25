@@ -277,7 +277,13 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   `gdal_translate -r nearest` repeats each 0.1° pixel on a 0.01° grid (same
   extent, so `manifest.aridez.bounds` holds; no class value changes), then
   `gdalwarp -cutline` with that area's polygon leaves the outside as nodata
-  (transparent after `gdaldem color-relief`). The cutline is the unsimplified
+  (transparent after `gdaldem color-relief`). The same `gdalwarp` reprojects to
+  Web Mercator (`-t_srs EPSG:3857 -te <bounds> -te_srs EPSG:4674 -ts`): the
+  MapLibre `image` source only takes the 4 corners in lon/lat and stretches the
+  image linearly in Mercator, so a lat/lon PNG drew up to ~17 km (0.15°) south
+  of its real place in the middle of the Nordeste (~10 km in RN). `-te` keeps
+  the exact extent (the manifest bounds still hold) and `-ts` instead of `-tr`
+  stops GDAL from rounding the edge. The cutline is the unsimplified
   area polygons in a temp file: the simplified `areas.geojson` has degenerate
   rings that gdalwarp rejects ("Cutline polygon is invalid"). Without the
   finer grid the edge would follow the 0.1° source pixels, since gdalwarp

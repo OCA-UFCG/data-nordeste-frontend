@@ -12,6 +12,7 @@ Uso: `build(Path("<raw>"), Path("<out>"))`.
 """
 
 import json
+import math
 import os
 import re
 import subprocess
@@ -335,10 +336,40 @@ def aridez_upsample_command(tif: Path, bounds: list[list[float]], out_tif: Path)
     return ["gdal_translate", "-r", "nearest", "-outsize", str(width), str(height), str(tif), str(out_tif)]
 
 
-def aridez_clip_command(tif: Path, cutline: Path, area: str, out_tif: Path) -> list[str]:
-    """`gdalwarp` que recorta o raster pelo polígono da área; fora dele fica sem dado (transparente)."""
+def _mercator_y(lat: float) -> float:
+    """Ordenada Web Mercator em radianos. Ex.: `_mercator_y(0)` → `0.0`."""
+    return math.log(math.tan(math.pi / 4 + math.radians(lat) / 2))
+
+
+def mercator_size(bounds: list[list[float]]) -> tuple[int, int]:
+    """Pixels da grade em Web Mercator: largura da grade fina, altura pelo vão em Mercator.
+
+    Ex.: 16,3° × 19,1° (de -1,1° a -20,2°) → `(1630, 1953)`; pixels quadrados no mapa.
+    """
+    (west, south), (east, north) = bounds
+    width = clip_size(bounds)[0]
+    span_ratio = (_mercator_y(north) - _mercator_y(south)) / math.radians(east - west)
+    return width, round(width * span_ratio)
+
+
+def aridez_clip_command(
+    tif: Path, cutline: Path, area: str, bounds: list[list[float]], out_tif: Path
+) -> list[str]:
+    """`gdalwarp` que recorta o raster pelo polígono da área e o leva para Web Mercator.
+
+    Fora do polígono fica sem dado (transparente).
+    IMPORTANT: a fonte `image` do MapLibre recebe só os 4 cantos em lon/lat e estica a
+    imagem linearmente em Web Mercator. Em lat/lon (EPSG:4674) o meio da imagem descia
+    até ~17 km (0,15°) no Nordeste. `-te` + `-te_srs` mantêm a extensão exata (o bounds
+    do manifest segue valendo); `-ts` em vez de `-tr` para o GDAL não arredondar a borda.
+    """
+    (west, south), (east, north) = bounds
+    width, height = mercator_size(bounds)
     return [
         "gdalwarp", "-overwrite", "-of", "GTiff", "-r", "near",
+        "-t_srs", "EPSG:3857",
+        "-te", str(west), str(south), str(east), str(north), "-te_srs", "EPSG:4674",
+        "-ts", str(width), str(height),
         "-dstnodata", str(ARIDEZ_NODATA),
         "-cutline", str(cutline), "-cwhere", f"area = '{area}'",
         str(tif), str(out_tif),
@@ -360,7 +391,7 @@ def build_aridez_pngs(tif: Path, palette: list[dict], cutline: Path, png_dir: Pa
         run(aridez_upsample_command(tif, bounds, fine))
         for area in ARIDEZ_AREAS:
             clipped = Path(tmp) / f"{area}.tif"
-            run(aridez_clip_command(fine, cutline, area, clipped))
+            run(aridez_clip_command(fine, cutline, area, bounds, clipped))
             run(aridez_relief_command(clipped, colors, png_dir / aridez_png_name(year, area)))
     return bounds
 
