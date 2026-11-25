@@ -60,6 +60,22 @@ describe("useAreaStates", () => {
     await waitFor(() => expect(result.current).toEqual(loadedStates("sudene")));
   });
 
+  // Regressão do gamma (#416): uma função de fetch nova a cada render (o que o
+  // minificador fazia com o parâmetro padrão) não pode reiniciar a carga.
+  it("não busca de novo quando só muda a identidade da função de fetch", async () => {
+    const fake = new DeferredGeodataFetchFake();
+    const { result, rerender } = renderHook(() =>
+      useAreaStates("sudene", FULL, (url) => fake.fetch(url)),
+    );
+
+    rerender();
+    fake.respond("sudene");
+    await waitFor(() => expect(result.current).toEqual(loadedStates("sudene")));
+    rerender();
+
+    expect(fake.fetch).toHaveBeenCalledTimes(2);
+  });
+
   // Um 200 que não é FeatureCollection (página de erro, arquivo pela metade)
   // não pode chegar ao mapa: `collection.features` seria undefined.
   it("resposta sem FeatureCollection vale como falha: estados inteiros, fora vazio", async () => {

@@ -7,6 +7,7 @@ import {
   fetchGeodataJson,
   type GeodataFetch,
   globalFetch,
+  useStableGeodataFetch,
 } from "@/components/PanelMap/useGeodata";
 import {
   areaStatesFileFor,
@@ -101,16 +102,17 @@ export function useAreaStates(
   fetchGeodata: GeodataFetch = globalFetch,
 ): AreaStatesState {
   const [loaded, setLoaded] = useState<LoadedAreaStates | null>(null);
+  const stableFetch = useStableGeodataFetch(fetchGeodata);
 
   useEffect(() => {
     let cancelled = false;
 
-    loadAreaStates(area, fetchGeodata)
+    loadAreaStates(area, stableFetch)
       .catch((error: unknown) => areaStatesFailure(area, error))
       .then((states) => (cancelled ? undefined : setLoaded({ area, states })));
 
     return () => void (cancelled = true);
-  }, [area, fetchGeodata]);
+  }, [area, stableFetch]);
 
   return useMemo(
     () => fallbackStates(loaded, area, fallback),

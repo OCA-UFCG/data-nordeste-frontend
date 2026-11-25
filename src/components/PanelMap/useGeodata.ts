@@ -1,7 +1,7 @@
 "use client";
 
 import type { FeatureCollection } from "geojson";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { featureFileFor } from "@/features/panelMap/geodataFiles";
 import type {
@@ -80,6 +80,29 @@ function geodataFailure(indicator: PanelIndicator, error: unknown) {
 export const globalFetch: GeodataFetch = (url) => fetch(url);
 
 /**
+ * O `fetchGeodata` com identidade fixa entre renders, sempre chamando o mais
+ * recente. Os hooks de geodados o usam como dependência dos efeitos de carga.
+ *
+ * IMPORTANT: não use o `fetchGeodata` cru como dependência. No build de
+ * produção o minificador embutiu o `globalFetch` no parâmetro padrão
+ * (`t=e=>fetch(e)`): uma função nova a cada render reiniciava a carga, e o
+ * mapa ficava preso em "Carregando mapa…" no gamma (#416).
+ *
+ * @example const stableFetch = useStableGeodataFetch(fetchGeodata); useEffect(() => { load(stableFetch) }, [stableFetch]);
+ */
+export function useStableGeodataFetch(
+  fetchGeodata: GeodataFetch,
+): GeodataFetch {
+  const latest = useRef(fetchGeodata);
+
+  useEffect(() => {
+    latest.current = fetchGeodata;
+  });
+
+  return useCallback((url: string) => latest.current(url), []);
+}
+
+/**
  * Geodados do mapa de um indicador (estilos, manifest e GeoJSONs). Qualquer
  * resposta que não seja ok, ou JSON inválido, vira `status: "error"`.
  *
@@ -90,17 +113,18 @@ export function useGeodata(
   fetchGeodata: GeodataFetch = globalFetch,
 ): GeodataState {
   const [state, setState] = useState<GeodataState>({ status: "loading" });
+  const stableFetch = useStableGeodataFetch(fetchGeodata);
 
   useEffect(() => {
     let cancelled = false;
 
     setState({ status: "loading" });
-    loadGeodata(indicator, fetchGeodata)
+    loadGeodata(indicator, stableFetch)
       .catch((error: unknown) => geodataFailure(indicator, error))
       .then((next) => (cancelled ? undefined : setState(next)));
 
     return () => void (cancelled = true);
-  }, [indicator, fetchGeodata]);
+  }, [indicator, stableFetch]);
 
   return state;
 }
