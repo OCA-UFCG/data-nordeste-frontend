@@ -13,6 +13,44 @@ class AreaStatesFileTest(unittest.TestCase):
         self.assertEqual(build.area_states_outside_file("caatinga"), "estados_fora_caatinga.geojson")
 
 
+def _square(x: float, y: float, side: float) -> list:
+    return [[[x, y], [x + side, y], [x + side, y + side], [x, y + side], [x, y]]]
+
+
+def _multi(*parts: list) -> dict:
+    return {"type": "Feature", "properties": {"code": "PE"}, "geometry": {"type": "MultiPolygon", "coordinates": list(parts)}}
+
+
+class DropOutsideFragmentsTest(unittest.TestCase):
+    def test_keeps_the_large_part_and_drops_the_sliver(self):
+        big, sliver = _square(0, 0, 1), _square(5, 5, 0.01)
+
+        kept = build.drop_outside_fragments([_multi(big, sliver)])
+
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(kept[0]["geometry"], {"type": "MultiPolygon", "coordinates": [big]})
+        self.assertEqual(kept[0]["properties"], {"code": "PE"})
+
+    def test_drops_the_state_when_only_slivers_are_left(self):
+        self.assertEqual(build.drop_outside_fragments([_multi(_square(0, 0, 0.01), _square(5, 5, 0.02))]), [])
+
+    def test_threshold_separates_just_above_from_just_below(self):
+        above = _square(0, 0, (build.MIN_OUTSIDE_PART_DEG2 * 1.1) ** 0.5)
+        below = _square(5, 5, (build.MIN_OUTSIDE_PART_DEG2 * 0.9) ** 0.5)
+
+        kept = build.drop_outside_fragments([_multi(above, below)])
+
+        self.assertEqual(kept[0]["geometry"]["coordinates"], [above])
+
+    def test_area_ignores_holes_and_a_plain_polygon_is_handled(self):
+        with_hole = _square(0, 0, 1) + _square(0.4, 0.4, 0.1)
+        polygon = {"type": "Feature", "properties": {}, "geometry": {"type": "Polygon", "coordinates": with_hole}}
+
+        kept = build.drop_outside_fragments([polygon])
+
+        self.assertEqual(kept[0]["geometry"], {"type": "MultiPolygon", "coordinates": [with_hole]})
+
+
 class PolygonPartsTest(unittest.TestCase):
     def test_keeps_only_polygon_parts_of_collection(self):
         # Simplificar + arredondar a 5 casas colapsa anéis minúsculos em ponto/linha.

@@ -203,16 +203,51 @@ def has_polygon(feature: dict) -> bool:
     return geometry is not None and len(geometry["coordinates"]) > 0
 
 
+# WHY: o "fora" é o estado de uma malha menos os municípios de outra; as bordas
+# não coincidem e sobram milhares de fragmentos de franja (ex.: CE 721 partes, BA
+# 1982), que o véu desenha como pontilhado e que inflam o arquivo (até 97%). O
+# limiar (~11 km²) separa a franja das manchas reais: o maior fragmento
+# descartado tem ~12 km² e nenhuma parte maior é afetada. Só vale para
+# `estados_fora_<area>`; nenhuma outra camada passa por aqui.
+MIN_OUTSIDE_PART_DEG2 = 1e-3
+
+
+def _ring_area(ring: list) -> float:
+    """Área (graus²) do anel pela fórmula do cadarço; o sinal depende do sentido, por isso o `abs`."""
+    twice = sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(ring, ring[1:]))
+    return abs(twice) / 2
+
+
+def drop_outside_fragments(features: list[dict]) -> list[dict]:
+    """Tira de cada estado as partes com anel externo menor que `MIN_OUTSIDE_PART_DEG2`.
+
+    O estado sem nenhuma parte restante sai da lista; é o caso da UF inteira
+    dentro da área, cujo "fora" são só fragmentos de franja.
+    Ex.: um `MultiPolygon` com uma parte de 1° × 1° e outra de 0,01° × 0,01° fica só com a primeira.
+    """
+    kept = []
+    for feature in features:
+        geometry = feature["geometry"]
+        parts = [geometry["coordinates"]] if geometry["type"] == "Polygon" else geometry["coordinates"]
+        large = [part for part in parts if _ring_area(part[0]) >= MIN_OUTSIDE_PART_DEG2]
+        if large:
+            kept.append({**feature, "geometry": {"type": "MultiPolygon", "coordinates": large}})
+    return kept
+
+
 def build_area_states_vectors(raw: Path, out: Path) -> None:
     """Por área, `vector/estados_<area>.geojson` (parte de cada estado dentro dela) e
-    `vector/estados_fora_<area>.geojson` (a parte de fora, o véu do estado escolhido)."""
+    `vector/estados_fora_<area>.geojson` (a parte de fora, o véu do estado escolhido).
+
+    No "fora", os fragmentos de franja entre as malhas são descartados
+    (`drop_outside_fragments`): o estado todo dentro da área fica sem feição."""
     shp, states = raw / AREA_STATES_SHP, raw / STATES_SHP
     for area in AREA_FLAGS:
         inside = ogr_features(shp, area_states_select(layer_name(shp), area))
         write_feature_collection(out / "vector" / area_states_file(area), inside)
         sql = area_states_outside_select(layer_name(states), shp.resolve(), layer_name(shp), area)
         outside = [feature for feature in ogr_features(states, sql) if has_polygon(feature)]
-        write_feature_collection(out / "vector" / area_states_outside_file(area), outside)
+        write_feature_collection(out / "vector" / area_states_outside_file(area), drop_outside_fragments(outside))
 
 
 def area_features(raw: Path, simplify: bool = True) -> list[dict]:

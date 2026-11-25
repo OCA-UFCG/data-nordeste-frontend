@@ -292,13 +292,19 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   (`ST_Difference`, `area_states_outside_select`; the municipal shapefile is
   joined as `'<path>'.sudene_mun` in the top-level JOIN, since OGR does not
   resolve another datasource inside a subquery). The two sources' borders do
-  not coincide exactly, so the difference also has thin slivers along the
-  state edges; drawn as delivered, not cleaned. After `-simplify` the
+  not coincide exactly, so the difference also has thousands of thin slivers
+  along the state edges (hundreds to ~2000 parts per UF), which the map would
+  draw as a dotted outline. `drop_outside_fragments` drops every part whose
+  outer ring is under `MIN_OUTSIDE_PART_DEG2` (1e-3 deg², about 12 km²); only
+  `estados_fora_<area>` is filtered, and the largest fragment dropped is about
+  12 km². The data itself is not corrected, only the sliver noise is not
+  shipped. After `-simplify` the
   difference comes out as nested `GeometryCollection`s with collapsed
   lines/points; `polygon_parts` keeps the polygons at any depth (without the
   recursion BA and PE lost their whole remainder). A UF with nothing left is
-  dropped (`has_polygon`); today every UF of the area keeps a remainder (9 in
-  nordeste and caatinga, 11 in semiarido and sudene). Downloaded files are
+  dropped (`has_polygon`, then the fragment filter): PB, PI and RN drop out of
+  `estados_fora_nordeste` and `estados_fora_sudene`, since they lie entirely
+  inside those areas. Downloaded files are
   untrusted data: never run anything from `$RAW`. `issues-pdf` needs
   `google-chrome` on the PATH. The SELECTs live in `sql.py` (text only, tested
   on stdlib `sqlite3` with stub spatial functions in `tests/test_sql.py`);
