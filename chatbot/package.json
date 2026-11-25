@@ -1,0 +1,38 @@
+{
+  "name": "datane-chatbot",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Protótipo do assistente de dados do Data Nordeste: tabelão curado (lido do oca_db só com leitura), ferramentas só de leitura, página de chat e servidor MCP.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "tabelao": "./scripts/com-banco.sh tsx src/tabelao/montar-tabelao.ts",
+    "conferir": "./scripts/com-banco.sh tsx src/tabelao/conferir.ts",
+    "portal": "tsx src/tabelao/portal.ts",
+    "malha": "tsx src/tabelao/malha.ts",
+    "chat": "tsx src/chat/servidor-chat.ts",
+    "servidor": "tsx src/servidor.ts",
+    "prompt": "tsx src/prompt-sistema.ts",
+    "avaliar": "tsx --env-file-if-exists=.env src/avaliar.ts",
+    "clareza": "tsx --env-file-if-exists=.env src/clareza.ts",
+    "testar": "node --import tsx --test src/testes/*.teste.ts",
+    "tipos": "tsc -p tsconfig.json",
+    "candidatas": "tsx src/candidatas.ts",
+    "varrer": "tsx --env-file-if-exists=.env src/varrer.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.3.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "marked": "18.1.2",
+    "pg": "8.23.1",
+    "tsx": "4.23.15",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "@types/pg": "8.23.1",
+    "typescript": "6.0.3"
+  }
+}

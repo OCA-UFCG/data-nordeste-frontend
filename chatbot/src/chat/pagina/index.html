@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Data Nordeste · Assistente de dados</title>
+    <link rel="icon" href="favicon.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <!-- Como no cabeçalho do portal: o logo leva à página inicial do site
+           (no gamma o chat mora em /assistente/, então "/" é o portal). -->
+      <a href="/" class="topo-logo" aria-label="Data Nordeste, página inicial do portal">
+        <img src="logo-dne.svg" alt="" width="84" height="40" />
+      </a>
+
+      <div class="topo-titulo">
+        <span class="topo-nome">Assistente de dados</span>
+        <span class="selo">Protótipo</span>
+      </div>
+
+      <div class="topo-acoes">
+        <div class="modelo" role="radiogroup" aria-label="Modelo" id="modelo">
+          <button
+            type="button"
+            role="radio"
+            data-modelo="haiku"
+            aria-checked="true"
+          >
+            Haiku
+          </button>
+          <button
+            type="button"
+            role="radio"
+            data-modelo="sonnet"
+            aria-checked="false"
+          >
+            Sonnet
+          </button>
+        </div>
+        <button type="button" class="botao botao-primario" id="nova" aria-label="Nova conversa">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M10 4v12M4 10h12" />
+          </svg>
+          <span>Nova conversa</span>
+        </button>
+        <button
+          type="button"
+          class="botao botao-icone"
+          id="abrir-historico"
+          aria-label="Conversas anteriores"
+          aria-controls="historico"
+          aria-expanded="false"
+        >
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M3 5h14M3 10h14M3 15h14" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="corpo">
+      <aside class="historico" id="historico" aria-label="Conversas anteriores">
+        <h2>Conversas</h2>
+        <p class="historico-vazio" id="historico-vazio">
+          As conversas ficam gravadas aqui, com as suas avaliações.
+        </p>
+        <ol id="lista-conversas"></ol>
+      </aside>
+      <div class="veu" id="veu" hidden></div>
+
+      <main class="chat">
+        <div class="rolagem" id="rolagem">
+          <section class="boas-vindas" id="boas-vindas">
+            <h1>O que você quer saber?</h1>
+            <p class="lead">
+              Pergunte como você falaria com um colega. O assistente é uma
+              inteligência artificial que consulta os indicadores do Data
+              Nordeste para qualquer município da área da Sudene, estado,
+              região ou o Semiárido, desenha o gráfico ou o mapa e diz de onde
+              veio cada número. Ele pode errar: confira os números importantes
+              nos painéis do site.
+            </p>
+            <h2 class="sugestoes-titulo">Experimente perguntar</h2>
+            <ul class="sugestoes" id="sugestoes">
+              <li>
+                <button type="button" style="--cor-tema: var(--tema-hidrica)">
+                  <span class="tema"><i aria-hidden="true"><svg><use href="icones.svg#drop" /></svg></i>Segurança hídrica · mapa</span>
+                  <p>Mostre no mapa a área em seca moderada ou pior na Paraíba em agosto de 2026.</p>
+                  <small>Pinta os 223 municípios com o Monitor de Secas</small>
+                </button>
+              </li>
+              <li>
+                <button type="button" style="--cor-tema: var(--tema-economia)">
+                  <span class="tema"><i aria-hidden="true"><svg><use href="icones.svg#money" /></svg></i>Economia e renda · ranking</span>
+                  <p>Quais os 10 municípios do Semiárido com maior PIB per capita em 2023?</p>
+                  <small>Gráfico de ranking, com a ressalva sobre o que o número mede</small>
+                </button>
+              </li>
+              <li>
+                <button type="button" style="--cor-tema: var(--tema-saude)">
+                  <span class="tema"><i aria-hidden="true"><svg><use href="icones.svg#health" /></svg></i>Saúde · comparação</span>
+                  <p>A mortalidade infantil de Campina Grande está melhor ou pior que a da Paraíba e a do Brasil?</p>
+                  <small>Município, estado e país no mesmo ano</small>
+                </button>
+              </li>
+              <li>
+                <button type="button" style="--cor-tema: var(--tema-educacao)">
+                  <span class="tema"><i aria-hidden="true"><svg><use href="icones.svg#book" /></svg></i>Educação · Censo</span>
+                  <p>Qual a taxa de analfabetismo das mulheres pretas com 60 anos ou mais no Nordeste, e como era em 2010?</p>
+                  <small>Separa por sexo, cor ou raça e idade</small>
+                </button>
+              </li>
+              <li>
+                <button type="button" style="--cor-tema: var(--tema-social)">
+                  <span class="tema"><i aria-hidden="true"><svg><use href="icones.svg#social-development" /></svg></i>Desenvolvimento social · evolução</span>
+                  <p>Como evoluiu a população em situação de rua em Fortaleza desde 2022?</p>
+                  <small>Série histórica do CadÚnico, com gráfico</small>
+                </button>
+              </li>
+              <li>
+                <button type="button" style="--cor-tema: var(--tema-saude)">
+                  <span class="tema"><i aria-hidden="true"><svg><use href="icones.svg#health" /></svg></i>Saúde · vacinação</span>
+                  <p>Quantos municípios do Ceará ficaram abaixo da meta da tríplice viral em 2025?</p>
+                  <small>Conta pela meta de cada vacina</small>
+                </button>
+              </li>
+              <li>
+                <button type="button" style="--cor-tema: var(--tema-infra)">
+                  <span class="tema"><i aria-hidden="true"><svg><use href="icones.svg#screwdriver" /></svg></i>Saneamento · três Censos</span>
+                  <p>Quantos por cento dos domicílios de Pernambuco têm esgoto ligado à rede geral, e como mudou desde 2000?</p>
+                  <small>2000, 2010 e 2022 lado a lado</small>
+                </button>
+              </li>
+              <li>
+                <button type="button" style="--cor-tema: var(--tema-economia)">
+                  <span class="tema"><i aria-hidden="true"><svg><use href="icones.svg#money" /></svg></i>Economia e renda · no portal</span>
+                  <p>Onde eu vejo os dados de exportação do Nordeste no site?</p>
+                  <small>Aponta o painel e a base para baixar</small>
+                </button>
+              </li>
+            </ul>
+          </section>
+          <ol class="mensagens" id="mensagens" aria-live="polite"></ol>
+        </div>
+
+        <form class="compositor" id="compositor">
+          <p class="aviso-erro aviso-fora" id="aviso-fora" role="status" hidden>
+            O assistente está indisponível no momento. Tente de novo mais tarde.
+          </p>
+          <div class="caixa">
+            <label for="entrada" class="so-leitor">Sua pergunta</label>
+            <textarea
+              id="entrada"
+              rows="1"
+              placeholder="Digite sua pergunta"
+              autocomplete="off"
+              maxlength="2000"
+            ></textarea>
+            <button
+              type="submit"
+              class="enviar"
+              id="enviar"
+              aria-label="Enviar"
+            >
+              <svg class="icone-enviar" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M10 16V4M5 9l5-5 5 5" />
+              </svg>
+              <svg class="icone-parar" viewBox="0 0 20 20" aria-hidden="true">
+                <rect x="5" y="5" width="10" height="10" rx="1.5" />
+              </svg>
+            </button>
+          </div>
+          <p class="nota" id="nota">
+            As respostas são feitas por inteligência artificial, com os dados
+            do Data Nordeste. Podem ter erros: confira os números importantes
+            nos painéis do site.
+          </p>
+        </form>
+      </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

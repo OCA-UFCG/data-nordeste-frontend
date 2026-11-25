@@ -1,0 +1,7 @@
+node_modules/
+# Gerados: tabelão, conteúdo do portal, malha dos municípios.
+dados/
+# Conversas da página (perguntas de quem usou) e saídas brutas da avaliação.
+conversas/
+resultados/
+.env

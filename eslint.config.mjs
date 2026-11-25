@@ -2,6 +2,9 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import tseslint from "typescript-eslint";
 
 const eslintConfig = [
+  // INTENTIONAL: chatbot/ é um pacote Node à parte (o assistente de dados), com
+  // as próprias dependências, testes e checagem de tipos (ver chatbot/README.md).
+  { ignores: ["chatbot/**"] },
   ...nextCoreWebVitals,
   ...tseslint.configs.recommended,
   {

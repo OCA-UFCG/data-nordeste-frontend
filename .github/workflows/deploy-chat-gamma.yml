@@ -1,0 +1,43 @@
+name: Assistente de dados Gamma
+
+# O assistente de dados (chatbot/) roda num contêiner próprio na VM do gamma,
+# ao lado do site, e é servido em /assistente/ pelo mesmo endereço do gamma.
+# A imagem é montada na própria VM, sem passar pelo Docker Hub. O tabelão
+# (~2 GB, gerado do banco) e as conversas ficam em pastas da VM, montadas como
+# volume: ver "Gamma" em chatbot/README.md.
+on:
+  push:
+    branches: ["main"]
+    paths: ["chatbot/**", ".github/workflows/deploy-chat-gamma.yml"]
+  workflow_dispatch:
+
+jobs:
+  deploy-chat-gamma:
+    runs-on: [self-hosted, datane-gamma-lsd-runner]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: sudo docker build -t datane-chat-gamma:latest chatbot
+
+      - name: Stop existing container
+        run: sudo docker rm -f datane-chat-gamma || true
+
+      - name: Run new container
+        run: |
+          sudo docker run \
+            --name datane-chat-gamma \
+            --restart unless-stopped \
+            --memory 1500m \
+            -e ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY_GAMMA }}" \
+            -e DATANE_CHAT_SENHA="${{ secrets.DATANE_CHAT_SENHA_GAMMA }}" \
+            -v /home/ubuntu/datane-chat/dados:/app/dados:ro \
+            -v /home/ubuntu/datane-chat/conversas:/app/conversas \
+            -p 9100:3220 \
+            -d \
+            datane-chat-gamma:latest
+
+      # Só as imagens antigas do chat: as dos outros serviços da VM ficam.
+      - name: Remove old chat images
+        run: sudo docker image prune -f --filter label=datane.servico=chat

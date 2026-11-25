@@ -1,1 +1,3 @@
 public/maps/
+# Pacote à parte, com o próprio estilo (ver chatbot/README.md).
+chatbot/
