@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   stubPanelBrowserApis,
@@ -66,6 +66,17 @@ describe("ProtoVejaMais", () => {
     // `data-state` é do diálogo do Radix (a folha); o cartão não o tem.
     expect(sheet.getAttribute("data-state")).toBe("open");
     expect(sheet.textContent).toContain(FOOTNOTE);
+  });
+
+  it("no celular devolve o foco ao botão ao fechar a folha pelo Esc", async () => {
+    stubPhoneMedia();
+    render(<ProtoVejaMais analysis={analysis("Semiárido.")} state="ok" />);
+    toggle().focus();
+    fireEvent.click(toggle());
+
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+
+    await waitFor(() => expect(document.activeElement).toBe(toggle()));
   });
 
   it("ao abrir o cartão rola até a barra de filtros grudar", () => {
