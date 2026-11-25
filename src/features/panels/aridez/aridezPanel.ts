@@ -152,8 +152,8 @@ const loadMunicipios = async (
 
   return rows
     .map((row) => ({
-      cdMun: row.cd_mun,
-      uf: row.sigla_uf,
+      cdMun: row.cd_mun.trim(),
+      uf: row.sigla_uf.trim(),
       nome: row.municipio_uf,
       areas: toAreas(row),
     }))
