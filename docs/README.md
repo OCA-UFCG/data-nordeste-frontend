@@ -825,10 +825,11 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     level, `.qgz` classes as delivered; `PibMapCard`), not the prototype's
     state-only SVG. Title "PIB por município" (`PIB_MAP_TITLE`, content
     team review, PR #413; "total" dropped in the later standardization of
-    "PIB total" to "PIB"). Its ⓘ (`PIB_MAP_INFO`, rendered by
-    `PibInfoParagraphs` with the term in bold) keeps only the content team's
-    PIB definition and the "Obs." verbatim: the per capita definition lives in
-    the big numbers' ⓘ and how the map filters is no longer explained there.
+    "PIB total" to "PIB"). Its ⓘ (`PIB_INFO`, rendered by
+    `PibInfoParagraphs` with the terms in bold) is the content team's text
+    verbatim: the PIB and PIB per capita definitions and the "Obs."; the same
+    text is on the big numbers' ⓘ. How the map filters is no longer
+    explained there.
     #413 also built a municipal map on the old canvas stack
     (`ProtoMunicipalMap`, `pibMunicipios`, a `GROUP BY cd_mun` query in
     `loadPibPanel`); the merge kept the MapLibre card and dropped those.
@@ -903,8 +904,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   says "Primeiro ano da série" only on the first year; with a zero previous
   year there is no pill. The arrow colour uses the shared `yearChangeTone`
   (was `perfilChangeTone`).
-  Each of the two cells has an ⓘ (`ProtoStatCell.info`, `PIB_BIG_NUMBERS_INFO`)
-  with the content team's PIB and per capita definitions and the "Obs.".
+  Each of the two cells has an ⓘ (`ProtoStatCell.info`, `PIB_BIG_NUMBER_INFO`)
+  with the indicator's own definition (PIB, or PIB per capita) and the shared
+  "Obs.".
 - Local setup: the tunnel command is not in any repository; ask the team.
   The Gamma database conventionally sits on local port 5434.
 

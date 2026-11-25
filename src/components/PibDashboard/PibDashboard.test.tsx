@@ -105,13 +105,27 @@ describe("PibDashboard", () => {
     vi.useRealTimers();
   });
 
-  it("gives each big number an ⓘ with the PIB definitions", () => {
+  it("gives each big number an ⓘ with its own definition and the Obs.", async () => {
     render(<PibDashboard data={PANEL} catalogHref="/catalog" />);
 
     const group = screen.getByRole("region", { name: "Números do PIB" });
+    const [pibInfo, perCapitaInfo] = within(group).getAllByRole("button", {
+      name: "Sobre este gráfico",
+    });
+
+    fireEvent.click(pibInfo);
+    expect(await screen.findByText(/^Obs\.: Os valores do PIB/)).toBeVisible();
+    expect(screen.queryByText("PIB per capita", { selector: "b" })).toBeNull();
+    fireEvent.click(pibInfo);
+
+    fireEvent.click(perCapitaInfo);
     expect(
-      within(group).getAllByRole("button", { name: "Sobre este gráfico" }),
-    ).toHaveLength(2);
+      await screen.findByText("PIB per capita", { selector: "b" }),
+    ).toBeVisible();
+    expect(screen.getByText(/^Obs\.: Os valores do PIB/)).toBeVisible();
+    expect(
+      screen.queryByText("Produto Interno Bruto (PIB)", { selector: "b" }),
+    ).toBeNull();
   });
 
   it("lists the series years without VAB in the sector notice", () => {

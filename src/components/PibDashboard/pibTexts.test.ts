@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   PIB_ATIVIDADE_INFO,
   PIB_ATIVIDADE_UNIT,
-  PIB_BIG_NUMBERS_INFO,
   PIB_CARD_INFO,
-  PIB_MAP_INFO,
+  PIB_BIG_NUMBER_INFO,
+  PIB_INFO,
   PIB_VAB_TERM,
 } from "@/components/PibDashboard/pibTexts";
 
@@ -27,26 +27,30 @@ const PIB_PER_CAPITA_DEFINITION =
 const PIB_CURRENT_PRICES_NOTE =
   "Obs.: Os valores do PIB são apresentados a preços correntes de cada ano. A evolução nominal incorpora tanto variações na produção quanto nos preços.";
 
-describe("PIB_MAP_INFO", () => {
-  it("keeps only the PIB definition and the Obs., verbatim", () => {
-    expect(flatten(PIB_MAP_INFO)).toEqual([
-      PIB_DEFINITION,
-      PIB_CURRENT_PRICES_NOTE,
-    ]);
-  });
-});
-
-describe("PIB_BIG_NUMBERS_INFO", () => {
-  it("adds the PIB per capita definition, verbatim", () => {
-    expect(flatten(PIB_BIG_NUMBERS_INFO)).toEqual([
+describe("PIB_INFO", () => {
+  it("keeps the content team paragraphs verbatim", () => {
+    expect(flatten(PIB_INFO)).toEqual([
       PIB_DEFINITION,
       PIB_PER_CAPITA_DEFINITION,
       PIB_CURRENT_PRICES_NOTE,
     ]);
-    expect(PIB_BIG_NUMBERS_INFO.map(({ term }) => term)).toEqual([
+    expect(PIB_INFO.map(({ term }) => term)).toEqual([
       "Produto Interno Bruto (PIB)",
       "PIB per capita",
       undefined,
+    ]);
+  });
+});
+
+describe("PIB_BIG_NUMBER_INFO", () => {
+  it("gives each big number its own definition and the shared Obs.", () => {
+    expect(flatten(PIB_BIG_NUMBER_INFO.pib)).toEqual([
+      PIB_DEFINITION,
+      PIB_CURRENT_PRICES_NOTE,
+    ]);
+    expect(flatten(PIB_BIG_NUMBER_INFO.perCapita)).toEqual([
+      PIB_PER_CAPITA_DEFINITION,
+      PIB_CURRENT_PRICES_NOTE,
     ]);
   });
 });

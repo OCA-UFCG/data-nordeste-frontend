@@ -309,7 +309,7 @@ describe("PibMapCard", () => {
     expect(frame).not.toContain("flex-1");
   });
 
-  it("explains only the PIB term and the Obs. in the info balloon", async () => {
+  it("explains the PIB terms and the Obs. in the info balloon", async () => {
     renderCard();
 
     fireEvent.click(screen.getByRole("button", { name: "Sobre este gráfico" }));
@@ -317,8 +317,8 @@ describe("PibMapCard", () => {
     const paragraphs = term.closest("p")?.parentElement?.querySelectorAll("p");
 
     expect(term.tagName).toBe("B");
-    expect(screen.queryByText("PIB per capita")).toBeNull();
-    expect(paragraphs).toHaveLength(2);
-    expect(paragraphs?.[1].textContent).toMatch(/^Obs\.: /);
+    expect(screen.getByText("PIB per capita").tagName).toBe("B");
+    expect(paragraphs).toHaveLength(3);
+    expect(paragraphs?.[2].textContent).toMatch(/^Obs\.: /);
   });
 });

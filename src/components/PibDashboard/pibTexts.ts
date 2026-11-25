@@ -35,16 +35,19 @@ const PIB_CURRENT_PRICES_NOTE: PibInfoParagraph = {
   rest: "Obs.: Os valores do PIB são apresentados a preços correntes de cada ano. A evolução nominal incorpora tanto variações na produção quanto nos preços.",
 };
 
-export const PIB_MAP_INFO: readonly PibInfoParagraph[] = [
-  PIB_DEFINITION,
-  PIB_CURRENT_PRICES_NOTE,
-];
-
-export const PIB_BIG_NUMBERS_INFO: readonly PibInfoParagraph[] = [
+// ⓘ do mapa: o texto da equipe de conteúdo inteiro.
+export const PIB_INFO: readonly PibInfoParagraph[] = [
   PIB_DEFINITION,
   PIB_PER_CAPITA_DEFINITION,
   PIB_CURRENT_PRICES_NOTE,
 ];
+
+// ⓘ de cada big number: a definição do próprio indicador e a Obs., que vale
+// para os dois.
+export const PIB_BIG_NUMBER_INFO = {
+  pib: [PIB_DEFINITION, PIB_CURRENT_PRICES_NOTE],
+  perCapita: [PIB_PER_CAPITA_DEFINITION, PIB_CURRENT_PRICES_NOTE],
+} as const satisfies Record<string, readonly PibInfoParagraph[]>;
 
 export const PIB_ATIVIDADE_INFO: readonly PibInfoParagraph[] = [
   {
