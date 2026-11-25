@@ -69,17 +69,15 @@ const useIdhMapProps = (
  * caminho da barra de filtros. O diálogo da tela cheia fica no `overlay`: no
  * corpo, o esqueleto do carregando o desmontaria a cada filtro aplicado.
  *
- * @example <IdhMapCard selection={filters} updatedAt="10/2026" state="ok" onRetry={retry} onFiltersChange={changeFilters} />
+ * @example <IdhMapCard selection={filters} state="ok" onRetry={retry} onFiltersChange={changeFilters} />
  */
 export const IdhMapCard = ({
   selection,
-  updatedAt,
   state,
   onRetry,
   onFiltersChange,
 }: {
   selection: IdhFilters;
-  updatedAt?: string;
   state: ProtoCardState;
   onRetry: () => void;
   onFiltersChange: (filters: IdhFilters) => void;
@@ -100,7 +98,6 @@ export const IdhMapCard = ({
       skeleton={<PanelMapSkeleton boxClassName={MAP_BOX_CLASS} />}
       state={state}
       onRetry={onRetry}
-      updatedAt={updatedAt}
       bodyClassName="flex flex-col"
       actions={
         <PanelMapCardActions

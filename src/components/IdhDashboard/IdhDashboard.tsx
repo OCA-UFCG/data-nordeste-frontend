@@ -90,13 +90,11 @@ type IdhTabIds = ReturnType<typeof useIdhTabIds>;
 type ViewProps = {
   data: IdhPanelData;
   dashboard: IdhDashboardModel;
-  updatedAt?: string;
 };
 
-const IdhGeneralView = ({ data, dashboard, updatedAt }: ViewProps) => (
+const IdhGeneralView = ({ data, dashboard }: ViewProps) => (
   <IdhOverview
     data={data}
-    updatedAt={updatedAt}
     selection={dashboard.selection}
     states={dashboard.states}
     onRetry={dashboard.retry}
@@ -106,14 +104,13 @@ const IdhGeneralView = ({ data, dashboard, updatedAt }: ViewProps) => (
   />
 );
 
-const IdhView = ({ data, dashboard, updatedAt }: ViewProps) =>
+const IdhView = ({ data, dashboard }: ViewProps) =>
   dashboard.tab === "geral" ? (
-    <IdhGeneralView data={data} dashboard={dashboard} updatedAt={updatedAt} />
+    <IdhGeneralView data={data} dashboard={dashboard} />
   ) : (
     <IdhGroupView
       visao={dashboard.tab}
       data={data}
-      updatedAt={updatedAt}
       state={dashboard.states.groups}
       onRetry={dashboard.retry}
       onReset={dashboard.actions.reset}
@@ -132,6 +129,9 @@ type PanelProps = ViewProps & {
   ids: IdhTabIds;
   catalogHref: string | null;
   macroTheme?: string;
+
+  // Só o cartaz do mapa usa a data; os cards não mostram "Atualizado em".
+  updatedAt?: string;
 };
 
 const tabsOf = ({ ids, dashboard }: PanelProps) => ({
@@ -206,7 +206,7 @@ const IdhCardsWithMenu = ({
 
   return (
     <ProtoCardMenuContext.Provider value={cardMenu}>
-      <IdhView data={data} dashboard={dashboard} updatedAt={updatedAt} />
+      <IdhView data={data} dashboard={dashboard} />
     </ProtoCardMenuContext.Provider>
   );
 };
@@ -233,8 +233,8 @@ type IdhDashboardProps = {
  * Painel de IDH no formato do protótipo: barra de abas, barra de filtros e o
  * conteúdo da visão, com a fonte e o catálogo abaixo. `failed`:
  * a consulta falhou e os cards mostram o erro com "Tentar de novo".
- * `updatedAt`: "MM/AAAA" do rodapé dos cards e do cartaz do mapa; sem ele, o
- * rótulo some. `macroTheme`: o nome do painel no cartaz do mapa.
+ * `updatedAt`: "MM/AAAA" do cartaz do mapa. Os cards não mostram mais
+ * "Atualizado em" (revisão do painel, 25/11/2026). `macroTheme`: o nome do painel no cartaz do mapa.
  *
  * @example <IdhDashboard data={panel} catalogHref="/catalog?category=desenvolvimento-social" />
  */

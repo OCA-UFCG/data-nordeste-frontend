@@ -111,13 +111,11 @@ const GroupCard = ({
   catalog,
   visao,
   data,
-  updatedAt,
   state,
   onRetry,
 }: (typeof METRIC_CARDS)[number] & {
   visao: GroupVisao;
   data: IdhPanelData;
-  updatedAt?: string;
   state: ProtoCardState;
   onRetry: () => void;
 }) => {
@@ -130,7 +128,6 @@ const GroupCard = ({
 
   return (
     <ProtoCard
-      updatedAt={updatedAt}
       title={title}
       subtitle={gap ? `${gap} · ${place}` : place}
       kind="grp"
@@ -192,14 +189,12 @@ const NoGroupData = ({
 export const IdhGroupView = ({
   visao,
   data,
-  updatedAt,
   state,
   onRetry,
   onReset,
 }: {
   visao: GroupVisao;
   data: IdhPanelData;
-  updatedAt?: string;
   state: ProtoCardState;
   onRetry: () => void;
   onReset: () => void;
@@ -219,7 +214,6 @@ export const IdhGroupView = ({
           {...card}
           visao={visao}
           data={data}
-          updatedAt={updatedAt}
           state={state}
           onRetry={onRetry}
         />
