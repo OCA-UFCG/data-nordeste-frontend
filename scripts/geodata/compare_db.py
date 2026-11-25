@@ -154,6 +154,23 @@ def _unmatched_issue(key: str, only_shape: list[str], only_db: list[str], max_ex
     }
 
 
+def _unmatched_years_issue(key: str, only_shape: list[int], only_db: list[int]) -> dict:
+    spec = build.INDICATORS[key]
+    parts = []
+    if only_shape:
+        parts.append(f"{len(only_shape)} ano(s) só no mapa: {', '.join(map(str, only_shape))}")
+    if only_db:
+        parts.append(f"{len(only_db)} ano(s) só no banco: {', '.join(map(str, only_db))}")
+    return {
+        "arquivo": spec["shp"],
+        "camada": key,
+        "campo": f"{spec['prefix']}<ano>",
+        "problema": f"{COMPARISON_PREFIX} anos sem correspondência entre mapa e banco",
+        "evidencia": "; ".join(parts),
+        "esperado": "mesmo conjunto de anos no mapa e no banco",
+    }
+
+
 def compare_indicator(
     key: str, features: list[dict], rows: list[tuple], threshold: float = THRESHOLD, max_examples: int = MAX_EXAMPLES
 ) -> list[dict]:
@@ -169,6 +186,13 @@ def compare_indicator(
     only_shape, only_db = sorted(shape_codes - db_codes), sorted(db_codes - shape_codes)
     if only_shape or only_db:
         issues.append(_unmatched_issue(key, only_shape, only_db, max_examples))
+    # IMPORTANT: ano inteiro ausente de um lado não aparece em `find_divergences` (só compara
+    # pares presentes nos dois); sem isto o banco sem, p.ex., IDH 2024 passaria em silêncio.
+    shape_years = {year for (_, year), value in shapes.items() if value is not None}
+    db_years = {year for _, year in dbs}
+    only_shape_years, only_db_years = sorted(shape_years - db_years), sorted(db_years - shape_years)
+    if only_shape_years or only_db_years:
+        issues.append(_unmatched_years_issue(key, only_shape_years, only_db_years))
     return issues
 
 

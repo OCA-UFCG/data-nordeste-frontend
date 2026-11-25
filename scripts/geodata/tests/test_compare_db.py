@@ -127,9 +127,29 @@ class CompareIndicatorTest(unittest.TestCase):
     def test_codes_without_counterpart_become_their_own_issue(self):
         rows = [("100", 2022, 1000.0), ("999", 2022, 1.0)]
         issues = compare_db.compare_indicator("pib", FEATURES, rows)
-        [missing] = [i for i in issues if "sem correspondência" in i["problema"]]
+        [missing] = [i for i in issues if "códigos sem correspondência" in i["problema"]]
         self.assertIn("200", missing["evidencia"])
         self.assertIn("999", missing["evidencia"])
+
+    def test_year_missing_in_database_is_reported(self):
+        # Regressão: o banco sem o ano inteiro (ex.: 2023) só derrubava o contador de comparações.
+        rows = [("100", 2022, 1000.0), ("200", 2022, 500.0)]
+        [issue] = compare_db.compare_indicator("pib", FEATURES, rows)
+        self.assertTrue(issue["problema"].startswith(compare_db.COMPARISON_PREFIX))
+        self.assertIn("ano", issue["problema"])
+        self.assertEqual(issue["camada"], "pib")
+        self.assertIn("1 ano(s) só no mapa: 2023", issue["evidencia"])
+        self.assertNotIn("só no banco", issue["evidencia"])
+
+    def test_year_missing_in_map_is_reported(self):
+        rows = [("100", 2022, 1000.0), ("100", 2023, 2000.0), ("200", 2022, 500.0), ("100", 2024, 3.0)]
+        [issue] = compare_db.compare_indicator("pib", FEATURES, rows)
+        self.assertIn("1 ano(s) só no banco: 2024", issue["evidencia"])
+        self.assertNotIn("só no mapa", issue["evidencia"])
+
+    def test_map_year_with_only_null_values_is_not_reported_as_missing(self):
+        features = [{"properties": {"code": "100", "name": "Alfa", "v2022": 1.0, "v2024": None}}]
+        self.assertEqual(compare_db.compare_indicator("pib", features, [("100", 2022, 1.0)]), [])
 
     def test_idh_compares_state_code(self):
         features = [{"properties": {"code": "PB", "name": "Paraíba (PB)", "uf": "PB", "v2023": 0.7}}]
