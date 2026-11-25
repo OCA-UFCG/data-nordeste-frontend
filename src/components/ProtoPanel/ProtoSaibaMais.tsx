@@ -139,7 +139,7 @@ export const ProtoSaibaMais = ({
             aria-expanded={expanded}
             aria-controls={moreId}
             onClick={() => setExpanded(!expanded)}
-            className="mt-2 py-1.5 text-sm font-semibold text-green-900 underline underline-offset-3"
+            className="mt-2 cursor-pointer py-1.5 text-sm font-semibold text-green-900 underline underline-offset-3"
           >
             {expanded ? "Ler menos" : "Ler mais"}
           </button>
