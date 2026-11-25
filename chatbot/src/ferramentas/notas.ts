@@ -5,7 +5,7 @@
  * colada no resultado da consulta que precisa dela, ele cumpre. Cada aviso
  * aqui corresponde a um erro que o tabelão permite cometer.
  */
-import { CATALOGO, IDS, dimensoesDe, indicadoresNoSql, metasDasVacinas } from "./catalogo.ts";
+import { CATALOGO, IDS, SO_INDICE, dimensoesDe, indicadoresNoSql, metasDasVacinas, sobreOsIndicadores } from "./catalogo.ts";
 import { distancia } from "./territorio.ts";
 import { CONSULTAS, INDICADORES, type Dimensao, type Indicador } from "../tabelao/indicadores.ts";
 import { ehNumero, type Linhas } from "./banco.ts";
@@ -192,6 +192,7 @@ export function notasDeMetas(sql: string, linhas: Linhas): string[] {
 /** Todos os avisos de uma consulta que trouxe linhas. */
 export function notasDaConsulta(sql: string, colunas: string[], linhas: Linhas, truncadoPorLimit: boolean): string {
   const notas = [
+    ...(SO_INDICE ? sobreOsIndicadores(indicadoresNoSql(sql)) : []),
     ...notasDeIdsDesconhecidos(sql),
     ...notasDosRecortes(sql),
     ...notasDoResultado(sql, colunas, linhas),

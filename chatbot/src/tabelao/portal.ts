@@ -47,11 +47,11 @@ const textoDe = (no: NoRichText | null | undefined): string =>
 
 const CONSULTA = `query {
   postCollection(limit: 300, order: date_DESC) { items { sys { id } title type date link descriptionNew { json } categoryCollection(limit: 5) { items { name } } } }
-  panelsCollection(limit: 200) { items { title date macroTheme description { json } } }
+  panelsCollection(limit: 200) { items { title descriptionTitle date macroTheme description { json } } }
 }`;
 
 type Post = { sys: { id: string }; title: string; type: string; date: string | null; link: string | null; descriptionNew: { json: NoRichText } | null; categoryCollection: { items: Array<{ name: string } | null> } };
-type Painel = { title: string; date: string | null; macroTheme: string | null; description: { json: NoRichText } | null };
+type Painel = { title: string; descriptionTitle: string | null; date: string | null; macroTheme: string | null; description: { json: NoRichText } | null };
 
 /** Mesma regra do frontend (ContentPost): StoryMaps e Experience viram páginas do portal. */
 function linkDoPost(p: Post): string {
@@ -61,6 +61,27 @@ function linkDoPost(p: Post): string {
   if (p.link?.startsWith("/")) return `${PORTAL}${p.link}`;
 
   return p.link ?? PORTAL;
+}
+
+/**
+ * Nome dos painéis como o portal mostra. O campo title do painel no Contentful
+ * é o id da rota (populacaorua); o nome legível está no post "data-panel" que
+ * aponta para ele. Mesma regra do frontend (getPanelDisplayTitle em
+ * src/features/search/contentful.ts): título do post sem "Acessar painel:",
+ * depois descriptionTitle. Sem isso a resposta listava "Painel populacaorua"
+ * (UR22, 25/11/2026).
+ *
+ *   nomesDosPaineis([{ type: "data-panel", link: "/data-panel/pib", title: "Acessar painel: PIB" }]).get("pib") // "PIB"
+ */
+export function nomesDosPaineis(posts: Array<Pick<Post, "type" | "link" | "title">>): Map<string, string> {
+  const nomes = new Map<string, string>();
+  for (const p of posts) {
+    const id = p.type === "data-panel" ? /\/data-panel\/([^/?#]+)/.exec(p.link ?? "")?.[1] : undefined;
+    const nome = p.title.replace(/^Acessar\s+painel:\s*/i, "").trim();
+    if (id && nome) nomes.set(decodeURIComponent(id), nome);
+  }
+
+  return nomes;
 }
 
 const TIPO_DO_POST: Record<string, ItemDoPortal["tipo"]> = { newsletter: "boletim", "data-story": "data-story" };
@@ -77,13 +98,15 @@ async function doContentful(): Promise<ItemDoPortal[]> {
   });
   if (!r.ok) throw new Error(`Contentful respondeu ${r.status} ${r.statusText}; esperado JSON do GraphQL.`);
   const corpo = (await r.json()) as { data: { postCollection: { items: Array<Post | null> }; panelsCollection: { items: Array<Painel | null> } } };
-  const posts = corpo.data.postCollection.items.filter((p): p is Post => Boolean(p?.title) && p!.type !== "data-panel");
+  const todos = corpo.data.postCollection.items.filter((p): p is Post => Boolean(p?.title));
+  const posts = todos.filter((p) => p.type !== "data-panel");
   const paineis = corpo.data.panelsCollection.items.filter((p): p is Painel => Boolean(p?.title));
+  const nomes = nomesDosPaineis(todos);
 
   return [
     ...paineis.map((p): ItemDoPortal => ({
       tipo: "painel",
-      titulo: `Painel ${p.title}`,
+      titulo: nomes.get(p.title) || p.descriptionTitle?.trim() || `Painel ${p.title}`,
       data: p.date?.slice(0, 10) ?? null,
       tema: p.macroTheme,
       resumo: textoDe(p.description?.json).slice(0, 600),

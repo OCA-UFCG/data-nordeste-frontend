@@ -4,8 +4,10 @@
  * conversa). Para cada resposta, grava tempo, rodadas, ferramentas e tokens,
  * confere os números esperados e pede a nota a um juiz (Sonnet, pelo claude).
  *
- * O motor "claude" (padrão) e o juiz gastam a assinatura de quem roda; o motor
- * "api" gasta a chave (ANTHROPIC_API_KEY).
+ * Com ANTHROPIC_API_KEY no .env (npm run avaliar carrega), o bot e o juiz
+ * gastam a chave; sem ela, a assinatura de quem roda (motor "claude",
+ * claude -p). --motor claude força a assinatura para o bot;
+ * DATANE_JUIZ_MOTOR=claude, para o juiz.
  *
  * Uso:
  *   npm run avaliar                               # todas, Haiku
@@ -23,7 +25,6 @@
  * Grava resultados/brutos/<rotulo>/<id>.json (fora do git) e o resumo em
  * resultados/rodadas/<rotulo>.md.
  */
-import { execFile } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -42,11 +43,13 @@ import {
 } from "./avaliacao.ts";
 import { Turno, type FimDoTurno, type Motor } from "./chat/turno.ts";
 import { catalogoResumido, encerrarFerramentas } from "./ferramentas/index.ts";
+import { gastoDosJuizes, motorDoJuiz, perguntarAoClaude } from "./juiz-claude.ts";
 
 const { values: opc, positionals } = parseArgs({
   options: {
     modelo: { type: "string", default: "haiku" },
-    motor: { type: "string", default: "claude" },
+    // Com a chave no .env, o bot e o juiz gastam a chave, não a assinatura.
+    motor: { type: "string", default: process.env.ANTHROPIC_API_KEY ? "api" : "claude" },
     so: { type: "string" },
     categoria: { type: "string" },
     rotulo: { type: "string" },
@@ -284,6 +287,7 @@ const ESQUEMA_JUIZ = JSON.stringify({
     motivo: { type: "string" },
   },
   required: ["nota", "motivo"],
+  additionalProperties: false,
 });
 
 function textoParaOJuiz(r: Resultado) {
@@ -326,45 +330,16 @@ function textoParaOJuiz(r: Resultado) {
   return partes.join("\n");
 }
 
-function julgar(r: Resultado): Promise<Resultado["juiz"]> {
-  const pasta = path.join(os.homedir(), ".cache/datane-chatbot-juiz");
-  mkdirSync(pasta, { recursive: true });
-  return new Promise((ok) => {
-    const proc = execFile(
-      "claude",
-      [
-        "-p",
-        "--model",
-        opc.juiz!,
-        "--tools",
-        "",
-        "--setting-sources",
-        "",
-        "--disable-slash-commands",
-        "--no-session-persistence",
-        "--system-prompt",
-        JUIZ_SISTEMA,
-        "--output-format",
-        "json",
-        "--json-schema",
-        ESQUEMA_JUIZ,
-      ],
-      { cwd: pasta, maxBuffer: 10_000_000, timeout: 180_000 },
-      (erro, stdout) => {
-        try {
-          const j = JSON.parse(stdout) as {
-            structured_output?: { nota: Nota; motivo: string };
-          };
-          if (!j.structured_output) throw new Error("sem structured_output");
-          ok({ ...j.structured_output, modelo: opc.juiz! });
-        } catch (e) {
-          console.error(`[juiz] ${r.id}: ${erro?.message ?? e}`);
-          ok(undefined);
-        }
-      },
-    );
-    proc.stdin!.end(textoParaOJuiz(r));
+async function julgar(r: Resultado): Promise<Resultado["juiz"]> {
+  const j = await perguntarAoClaude<{ nota: Nota; motivo: string }>({
+    modelo: opc.juiz!,
+    sistema: JUIZ_SISTEMA,
+    esquema: ESQUEMA_JUIZ,
+    texto: textoParaOJuiz(r),
+    rotulo: r.id,
   });
+
+  return j && { ...j, modelo: opc.juiz! };
 }
 
 // --- resumo -------------------------------------------------------------------
@@ -633,3 +608,5 @@ async function principal() {
 }
 
 await principal();
+if (motorDoJuiz === "api" && gastoDosJuizes() > 0)
+  console.error(`Juiz pela API: US$ ${gastoDosJuizes().toFixed(2)}.`);

@@ -4,6 +4,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { limparResposta, respostaDaRevisao } from "../chat/acabamento.ts";
+import type Anthropic from "@anthropic-ai/sdk";
+import { fecharConferencia } from "../chat/motor-api.ts";
 
 const CORRIGIDA =
   "Os municípios com mais cisternas não são, em geral, os de pior mortalidade infantil.";
@@ -45,4 +47,19 @@ test("link de painel que veio de conteudo_do_portal fica no texto; os outros vir
   const texto = `Painéis: [PIB](${pib}) e [Aridez](${aridez}).\n\n[Ver o painel](${pib})`;
   assert.equal(limparResposta(texto).resposta, "Painéis: PIB e Aridez.");
   assert.equal(limparResposta(texto, new Set([pib])).resposta, `Painéis: [PIB](${pib}) e Aridez.\n\n[Ver o painel](${pib})`);
+});
+
+test("a conferência da página sai do histórico; fica a resposta que a pessoa viu (UR20)", () => {
+  const mensagens: Anthropic.Beta.BetaMessageParam[] = [
+    { role: "user", content: "Compare a população de Campina Grande com a de Caruaru" },
+    { role: "assistant", content: [{ type: "tool_use", id: "t1", name: "consultar_sql", input: {} }] },
+    { role: "user", content: [{ type: "tool_result", tool_use_id: "t1", content: "419379 | 378048" }] },
+    { role: "assistant", content: "Rascunho com 419.379 e 378.048." },
+    { role: "user", content: "[Conferência automática da página, não é mensagem da pessoa] Releia…" },
+    { role: "assistant", content: "OK" },
+  ];
+  fecharConferencia(mensagens, 3, "Campina Grande tinha 419.379 habitantes e Caruaru, 378.048.");
+  assert.equal(mensagens.length, 4);
+  assert.deepEqual(mensagens.at(-1), { role: "assistant", content: "Campina Grande tinha 419.379 habitantes e Caruaru, 378.048." });
+  assert.doesNotMatch(JSON.stringify(mensagens), /Conferência|"OK"/);
 });

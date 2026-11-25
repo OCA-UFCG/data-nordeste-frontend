@@ -5,55 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Data Nordeste · Assistente de dados</title>
     <link rel="icon" href="favicon.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
     <link rel="stylesheet" href="estilo.css" />
     <style>
-      /* Tela da senha da equipe (modo equipe do servidor-chat.ts). */
+      /* Tela da senha da equipe (modo equipe do servidor-chat.ts), no estilo
+         dos cartões do portal. */
       .entrar {
         min-height: 100dvh;
         display: grid;
         place-items: center;
         padding: 16px;
         background: var(--superficie);
+        overflow: auto;
       }
       .entrar form {
-        width: min(100%, 22rem);
+        width: min(100%, 24rem);
         display: grid;
-        gap: 12px;
-        padding: 28px 24px;
+        gap: 14px;
+        padding: 32px 28px 24px;
         background: var(--fundo);
         border: 1px solid var(--borda);
-        border-radius: 12px;
-        font-family: Inter, system-ui, sans-serif;
+        border-radius: 8px;
+        box-shadow: var(--sombra);
         color: var(--texto);
       }
-      .entrar h1 { font-size: 1.15rem; margin: 8px 0 0; }
-      .entrar p { margin: 0; color: var(--texto-suave); font-size: 0.92rem; line-height: 1.4; }
+      .entrar img { display: block; width: 99px; height: 47px; margin-bottom: 8px; }
+      .entrar h1 { font-size: 22px; font-weight: 600; line-height: 1.25; margin: 0; }
+      .entrar p { margin: 0; color: var(--texto-suave); font-size: 14.5px; line-height: 1.45; }
       .entrar input {
         font: inherit;
-        padding: 10px 12px;
-        border: 1px solid var(--borda);
+        height: 40px;
+        padding: 0 12px;
+        border: 1px solid var(--borda-forte);
         border-radius: 8px;
       }
-      .entrar input:focus-visible { outline: 2px solid var(--verde); outline-offset: 1px; }
+      .entrar input:focus-visible {
+        outline: none;
+        border-color: var(--verde-botao);
+        box-shadow: 0 0 0 3px rgb(1 127 53 / 0.15);
+      }
       .entrar button {
         font: inherit;
-        font-weight: 600;
-        padding: 10px 12px;
+        font-weight: 500;
+        height: 40px;
         border: 0;
         border-radius: 8px;
-        background: var(--verde);
+        background: var(--verde-botao);
         color: #fff;
         cursor: pointer;
       }
+      .entrar button:hover { background: var(--verde-escuro); }
       .entrar button:disabled { opacity: 0.6; cursor: wait; }
-      .entrar .erro { color: var(--erro); min-height: 1.3em; }
+      .entrar .erro { color: var(--erro); min-height: 1.3em; font-size: 14px; }
       .visualmente-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     </style>
   </head>
   <body>
     <main class="entrar">
       <form id="form" autocomplete="on">
-        <img src="logo.png" alt="Data Nordeste" width="99" height="47" />
+        <img src="logo-dne.svg" alt="Data Nordeste" width="99" height="47" />
         <h1>Assistente de dados</h1>
         <p>Versão de teste para a equipe. Digite a senha que você recebeu.</p>
         <label for="senha" class="visualmente-oculto">Senha</label>

@@ -15,11 +15,12 @@
     "chat": "tsx src/chat/servidor-chat.ts",
     "servidor": "tsx src/servidor.ts",
     "prompt": "tsx src/prompt-sistema.ts",
-    "avaliar": "tsx src/avaliar.ts",
+    "avaliar": "tsx --env-file-if-exists=.env src/avaliar.ts",
+    "clareza": "tsx --env-file-if-exists=.env src/clareza.ts",
     "testar": "node --import tsx --test src/testes/*.teste.ts",
     "tipos": "tsc -p tsconfig.json",
     "candidatas": "tsx src/candidatas.ts",
-    "varrer": "tsx src/varrer.ts"
+    "varrer": "tsx --env-file-if-exists=.env src/varrer.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.3.0",

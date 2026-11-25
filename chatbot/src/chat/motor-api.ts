@@ -19,6 +19,8 @@ import { promptDoSistema } from "../prompt-sistema.ts";
 import type { Motor, Pedido } from "./turno.ts";
 import { paraOModelo } from "./lingua.ts";
 import { acabar } from "./acabamento.ts";
+import { PRECOS } from "./precos.ts";
+import { classificarFalha, mensagemDaFalha, type Falha } from "./disponibilidade.ts";
 
 type Mensagem = Anthropic.Beta.BetaMessageParam;
 
@@ -27,21 +29,6 @@ export const MODELOS: Record<string, string> = {
   sonnet: "claude-sonnet-5-5",
 };
 
-// US$ por milhão de tokens. Cache: escrita 1,25× a entrada (5 min); leitura
-// 0,1× no Haiku e US$ 0,10 no Sonnet 5.5. No Haiku, prompts acima de 100 mil
-// tokens custam mais; aqui uma pergunta fica em ~20 mil.
-const PRECOS: Record<
-  string,
-  { entrada: number; saida: number; leitura: number; escrita: number }
-> = {
-  "claude-haiku-5-5": {
-    entrada: 0.1,
-    saida: 0.5,
-    leitura: 0.01,
-    escrita: 0.125,
-  },
-  "claude-sonnet-5-5": { entrada: 2, saida: 10, leitura: 0.1, escrita: 2.5 },
-};
 
 const RODADAS = Number(process.env.DATANE_CHAT_RODADAS ?? 8);
 const ESFORCO = process.env.DATANE_CHAT_ESFORCO as
@@ -70,11 +57,17 @@ const TOOLS: Anthropic.Beta.BetaTool[] = FERRAMENTAS.map((f) => {
 function sistema(): Anthropic.Beta.BetaTextBlockParam[] {
   // O mesmo prompt do motor claude. Muda só uma vez por dia (a data), então o
   // cache do prompt e das ferramentas vale para todas as conversas do dia.
+  // PERF: 1 hora, não 5 minutos. Prompt e ferramentas são ~29 mil tokens; com
+  // 5 minutos, numa equipe que pergunta de vez em quando, quase toda pergunta
+  // grava tudo de novo (~US$ 0,0036 no Haiku, mais que o resto da pergunta).
+  // A gravação de 1 hora custa 2× a entrada em vez de 1,25×: compensa a partir
+  // de 2 perguntas por hora com mais de 5 minutos entre elas. A conversa
+  // continua no cache de 5 minutos (o mais longo precisa vir antes).
   return [
     {
       type: "text",
       text: promptDoSistema(),
-      cache_control: { type: "ephemeral" },
+      cache_control: { type: "ephemeral", ttl: "1h" },
     },
   ];
 }
@@ -84,6 +77,8 @@ type Uso = {
   saida: number;
   cache_leitura: number;
   cache_escrita: number;
+  /** A parte de cache_escrita gravada por 1 hora (o prompt e as ferramentas). */
+  cache_escrita_1h: number;
   rodadas: number;
 };
 
@@ -94,22 +89,10 @@ function custo(modelo: string, u: Uso) {
     (u.entrada * p.entrada +
       u.saida * p.saida +
       u.cache_leitura * p.leitura +
-      u.cache_escrita * p.escrita) /
+      (u.cache_escrita - u.cache_escrita_1h) * p.escrita +
+      u.cache_escrita_1h * 2 * p.entrada) /
     1e6
   );
-}
-
-function mensagemDeErro(e: unknown) {
-  if (e instanceof Anthropic.RateLimitError)
-    return "A API está com pedidos demais agora. Tente de novo em um minuto.";
-  if (
-    e instanceof Anthropic.AuthenticationError ||
-    e instanceof Anthropic.PermissionDeniedError
-  )
-    return "A chave da API foi recusada. Avise quem cuida do chat.";
-  if (e instanceof Anthropic.APIError)
-    return `A API respondeu com erro${e.status ? ` ${e.status}` : ""}. Tente de novo; se continuar, avise quem cuida do chat.`;
-  return `Erro ao responder: ${(e as Error).message ?? String(e)}`;
 }
 
 type Estado = {
@@ -117,7 +100,27 @@ type Estado = {
   controle?: AbortController;
 };
 
-export function criarMotorApi(opcoes: { cliente?: Anthropic } = {}): Motor {
+type OpcoesDoMotor = {
+  cliente?: Anthropic;
+  /** Avisa o servidor de cada falha da API (ver disponibilidade.ts). */
+  aoFalhar?: (f: Falha) => void;
+};
+
+/**
+ * Tira do histórico a conversa interna do turno: rascunho, pedido de
+ * conferência da página e a volta do modelo (às vezes só "OK"). Fica no lugar
+ * a resposta que a pessoa viu. Sem isso, na pergunta seguinte o modelo lia a
+ * conferência como parte da conversa e falava dela ("errei ao responder só OK
+ * à mensagem de conferência", UR20 em exp-b-indice, 25/11/2026).
+ *
+ *   fecharConferencia(mensagens, indiceDoRascunho, turno.resposta);
+ */
+export function fecharConferencia(mensagens: Mensagem[], inicio: number, resposta: string): void {
+  if (!resposta.trim() || inicio < 1 || inicio >= mensagens.length) return;
+  mensagens.splice(inicio, mensagens.length - inicio, { role: "assistant", content: resposta });
+}
+
+export function criarMotorApi(opcoes: OpcoesDoMotor = {}): Motor {
   let cliente = opcoes.cliente;
   const conversas = new Map<string, Estado>();
 
@@ -152,11 +155,14 @@ export function criarMotorApi(opcoes: { cliente?: Anthropic } = {}): Motor {
       saida: 0,
       cache_leitura: 0,
       cache_escrita: 0,
+      cache_escrita_1h: 0,
       rodadas: 0,
     };
     const sonnet = modelo.startsWith("claude-sonnet");
     let erro: string | null = null;
     let interrompida = false;
+    // Onde começa a conversa interna com a página (rascunho e conferência).
+    let inicioDaConferencia: number | undefined;
 
     try {
       for (let rodada = 1; ; rodada++) {
@@ -220,6 +226,8 @@ export function criarMotorApi(opcoes: { cliente?: Anthropic } = {}): Motor {
         uso.saida += msg.usage.output_tokens;
         uso.cache_leitura += msg.usage.cache_read_input_tokens ?? 0;
         uso.cache_escrita += msg.usage.cache_creation_input_tokens ?? 0;
+        uso.cache_escrita_1h +=
+          msg.usage.cache_creation?.ephemeral_1h_input_tokens ?? 0;
 
         if (msg.stop_reason === "refusal") {
           erro = "O modelo não quis responder esta pergunta.";
@@ -236,6 +244,7 @@ export function criarMotorApi(opcoes: { cliente?: Anthropic } = {}): Motor {
           // modelo reescreve uma vez.
           const correcao = msg.stop_reason === "end_turn" ? acabar(pedido) : null;
           if (!correcao) break;
+          inicioDaConferencia ??= mensagens.length - 1;
           mensagens.push({ role: "user", content: correcao });
           continue;
         }
@@ -284,8 +293,10 @@ export function criarMotorApi(opcoes: { cliente?: Anthropic } = {}): Motor {
     } catch (e) {
       if (controle.signal.aborted) interrompida = true;
       else {
-        erro = mensagemDeErro(e);
-        console.error(`[motor-api] ${pedido.conversa}:`, e);
+        const falha = classificarFalha(e);
+        erro = mensagemDaFalha(falha);
+        opcoes.aoFalhar?.(falha);
+        console.error(JSON.stringify({ event: "falha_na_api", conversa: pedido.conversa, ...falha, mensagem: (e as Error)?.message }));
       }
     }
 
@@ -302,7 +313,8 @@ export function criarMotorApi(opcoes: { cliente?: Anthropic } = {}): Motor {
           content: turno.resposta || "(resposta interrompida antes de começar)",
         },
       );
-    }
+    } else if (inicioDaConferencia !== undefined)
+      fecharConferencia(mensagens, inicioDaConferencia, turno.resposta);
     if (estado.controle === controle) estado.controle = undefined;
     turno.terminar({
       ms: Date.now() - turno.inicio,

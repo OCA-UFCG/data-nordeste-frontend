@@ -98,8 +98,13 @@ export async function desenharMapa(destino, entrada, ref) {
     if (categorias) return categorias[k];
     if (!cortes.length) return formatar(min, entrada?.unidade);
     if (k === 0) return `até ${formatar(cortes[0], entrada?.unidade)}`;
-    if (k === cortes.length)
-      return `${formatar(cortes[k - 1], entrada?.unidade)} ou mais`;
+    if (k === cortes.length) {
+      const ultimo = formatar(cortes[k - 1], entrada?.unidade);
+
+      // Faixa de um valor só (60 municípios com 100% da área em seca, 25/11/2026):
+      // "100% ou mais" não existe para porcentagem da área.
+      return formatar(max, entrada?.unidade) === ultimo ? ultimo : `${ultimo} ou mais`;
+    }
     return `${formatar(cortes[k - 1], entrada?.unidade)} a ${formatar(cortes[k], entrada?.unidade)}`;
   };
   const texto = (i) =>

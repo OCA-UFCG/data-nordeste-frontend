@@ -11,7 +11,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { catalogoResumido, GERADO_EM } from "./ferramentas/index.ts";
+import { catalogoIndice, catalogoResumido, GERADO_EM, SO_INDICE } from "./ferramentas/index.ts";
 import { dataBr } from "./ferramentas/banco.ts";
 
 const PACOTE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -25,8 +25,19 @@ function sobreOPortal() {
 export function promptDoSistema(agora = new Date()) {
   const hoje = agora.toLocaleDateString("pt-BR", { timeZone: "America/Fortaleza" });
   const arquivo = process.env.DATANE_PROMPT ?? path.join(PACOTE, "prompt.md");
-  const partes = [readFileSync(arquivo, "utf8").trim(), sobreOPortal().trim()];
-  if (process.env.DATANE_CATALOGO_NO_PROMPT !== "0")
+  let regras = readFileSync(arquivo, "utf8").trim();
+  // EXPERIMENTO: ver SO_INDICE em ferramentas/catalogo.ts.
+  if (SO_INDICE)
+    regras = regras.replace(
+      "ids, unidades, períodos, recortes e ressalvas.",
+      "só o índice (ids, unidades, períodos e recortes). A descrição, a fonte e as ressalvas de cada indicador vêm no resultado de consultar_sql; para explicar um indicador sem consultar números, use detalhar_indicador.",
+    );
+  const partes = [regras, sobreOPortal().trim()];
+  if (SO_INDICE)
+    partes.push(
+      `## Catálogo de indicadores (índice)\n\nDados copiados do banco do portal em ${dataBr(GERADO_EM)}. "razão das somas" quer dizer que o valor de estados e recortes já está calculado somando numerador e denominador dos municípios. O que cada indicador mede, a fonte e as ressalvas vêm junto do resultado de consultar_sql.\n\n${catalogoIndice()}`,
+    );
+  else if (process.env.DATANE_CATALOGO_NO_PROMPT !== "0")
     partes.push(
       `## Catálogo de indicadores\n\nDados copiados do banco do portal em ${dataBr(GERADO_EM)}. "razão das somas" quer dizer que o valor de estados e recortes já está calculado somando numerador e denominador dos municípios.\n\n${catalogoResumido()}`,
     );

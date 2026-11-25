@@ -12,7 +12,7 @@ import type { Ferramenta } from "./tipos.ts";
 
 export type { Contexto, Ferramenta } from "./tipos.ts";
 export { GERADO_EM, TABELAO } from "./banco.ts";
-export { catalogoResumido, paineisDasConsultas } from "./catalogo.ts";
+export { catalogoIndice, catalogoResumido, paineisDasConsultas, SO_INDICE } from "./catalogo.ts";
 export { dadosDoMapa } from "./consultar.ts";
 export { encerrarFerramentas } from "./sql.ts";
 

@@ -13,7 +13,7 @@
  * teto mensal é do Data Nordeste (US$ 50, decisão da equipe em 24/11/2026).
  *
  * Variáveis de ambiente (0 = sem limite):
- *   DATANE_CHAT_PERGUNTAS_POR_DIA   perguntas por pessoa por dia (padrão 40)
+ *   DATANE_CHAT_PERGUNTAS_POR_DIA   perguntas por pessoa por dia (padrão 100)
  *   DATANE_CHAT_TETO_DIARIO_USD     gasto máximo por dia (padrão 5)
  *   DATANE_CHAT_TETO_MENSAL_USD     gasto máximo por mês (padrão 50)
  */
@@ -53,7 +53,7 @@ function contarDoDisco(diretorio: string, agora: number): Contagem {
 }
 
 export function criarLimites(diretorio: string, env: NodeJS.ProcessEnv = process.env, agora: () => number = Date.now) {
-  const porPessoa = Number(env.DATANE_CHAT_PERGUNTAS_POR_DIA ?? 40);
+  const porPessoa = Number(env.DATANE_CHAT_PERGUNTAS_POR_DIA ?? 100);
   const tetoDia = Number(env.DATANE_CHAT_TETO_DIARIO_USD ?? 5);
   const tetoMes = Number(env.DATANE_CHAT_TETO_MENSAL_USD ?? 50);
   let c = contarDoDisco(diretorio, agora());

@@ -1,16 +1,10 @@
 import { marked } from "./marked.js";
 import { desenharGrafico } from "./grafico.js";
 import { desenharMapa } from "./mapa.js";
+import { configurarMarkdown, escaparHtml } from "./markdown.js";
 
-// O texto vem do modelo: HTML cru dentro do markdown aparece como texto.
-marked.use({
-  gfm: true,
-  renderer: {
-    html({ text }) {
-      return esc(text);
-    },
-  },
-});
+// O texto vem do modelo: ver markdown.js (HTML, links e imagens).
+configurarMarkdown(marked);
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -22,22 +16,27 @@ const el = {
   enviar: $("enviar"),
   modelo: $("modelo"),
   nova: $("nova"),
-  logo: $("logo"),
   lista: $("lista-conversas"),
   historico: $("historico"),
   historicoVazio: $("historico-vazio"),
   abrirHistorico: $("abrir-historico"),
   veu: $("veu"),
   nota: $("nota"),
+  avisoFora: $("aviso-fora"),
 };
+
+// O mesmo texto de disponibilidade.ts (INDISPONIVEL), para quando o servidor
+// nem responde.
+const INDISPONIVEL =
+  "O assistente está indisponível no momento. Tente de novo mais tarde.";
 
 const estado = { conversa: null, modelo: "haiku", ocupado: false };
 const NOMES_MODELO = { sonnet: "Sonnet 5.5", haiku: "Haiku 5.5" };
 
 const PASSOS = {
   detalhar_indicador: {
-    fazendo: "Lendo a ficha do indicador…",
-    feito: (e) => `Leu a ficha de ${e.id ?? "um indicador"}`,
+    fazendo: "Lendo a descrição do indicador…",
+    feito: (e) => `Leu a descrição de ${e.id ?? "um indicador"}`,
   },
   buscar_territorio: {
     fazendo: "Procurando o território…",
@@ -45,13 +44,13 @@ const PASSOS = {
       `Procurou “${e.nome ?? ""}”${e.uf ? ` (${String(e.uf).toUpperCase()})` : ""}`,
   },
   consultar_sql: {
-    fazendo: "Consultando o tabelão…",
+    fazendo: "Consultando os dados…",
     feito: (e) =>
       e.grafico?.tipo === "mapa"
-        ? "Consultou o tabelão e montou o mapa"
+        ? "Consultou os dados e montou o mapa"
         : e.grafico
-          ? "Consultou o tabelão e montou o gráfico"
-          : "Consultou o tabelão",
+          ? "Consultou os dados e montou o gráfico"
+          : "Consultou os dados",
   },
   conteudo_do_portal: {
     fazendo: "Procurando no portal…",
@@ -69,15 +68,7 @@ const ICONES = {
     '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg>',
 };
 
-function esc(s) {
-  return String(s ?? "").replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ],
-  );
-}
+const esc = escaparHtml;
 
 function segundos(ms) {
   return `${(ms / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} s`;
@@ -127,7 +118,7 @@ function renderizarMarkdown(destino, texto) {
 /** Cria a mensagem do bot e devolve funções para ir preenchendo. */
 function criarResposta() {
   const li = criar("li", "msg-bot");
-  const avatar = criar("div", "avatar", '<img src="logo.svg" alt="" />');
+  const avatar = criar("div", "avatar", '<img src="marca-dne.svg" alt="" />');
   const coluna = criar("div", "coluna");
   const passos = criar("details", "passos");
   passos.hidden = true;
@@ -387,6 +378,9 @@ function rodape(r, ms, avaliacao) {
 function setOcupado(sim) {
   estado.ocupado = sim;
   el.compositor.classList.toggle("ocupado", sim);
+  // A resposta chega aos pedaços; com aria-busy o leitor de tela espera o fim
+  // em vez de ler cada pedaço que aparece.
+  el.mensagens.setAttribute("aria-busy", String(sim));
   el.enviar.setAttribute("aria-label", sim ? "Parar a resposta" : "Enviar");
   atualizarBotaoEnviar();
 }
@@ -429,8 +423,9 @@ async function perguntar(texto) {
     // 401: a senha da equipe venceu ou foi trocada; recarregar mostra a tela de senha.
     if (resp.status === 401) return location.reload();
     if (!resp.ok) {
+      // Sem JSON (502/504 do nginx com o chat parado): o chat está fora do ar.
       const corpo = await resp.json().catch(() => ({}));
-      throw new Error(corpo.erro ?? `erro ${resp.status}`);
+      throw new Error(corpo.erro ?? INDISPONIVEL);
     }
     const leitor = resp.body.pipeThrough(new TextDecoderStream()).getReader();
     let resto = "";
@@ -473,9 +468,16 @@ async function perguntar(texto) {
       }
     }
     if (!terminou)
-      r.terminar({ erro: "A conexão com o servidor do chat caiu." });
+      r.terminar({
+        erro: "A conexão caiu antes do fim da resposta. Tente de novo.",
+      });
   } catch (e) {
-    if (!terminou) r.terminar({ erro: `Não deu para responder: ${e.message}` });
+    // TypeError: o fetch nem chegou ao servidor (sem internet, VPN caída).
+    const erro =
+      e instanceof TypeError
+        ? "Não consegui falar com o assistente. Confira a sua internet e tente de novo."
+        : e.message;
+    if (!terminou) r.terminar({ erro });
   } finally {
     setOcupado(false);
     carregarHistorico();
@@ -643,10 +645,6 @@ for (const b of $("sugestoes").querySelectorAll("button"))
   );
 
 el.nova.addEventListener("click", novaConversa);
-el.logo.addEventListener("click", (e) => {
-  e.preventDefault();
-  novaConversa();
-});
 el.abrirHistorico.addEventListener("click", abrirHistorico);
 el.veu.addEventListener("click", fecharHistorico);
 document.addEventListener("keydown", (e) => {
@@ -675,8 +673,9 @@ fetch("api/info")
         .split("-")
         .reverse()
         .join("/");
-      el.nota.textContent = `Os números vêm do tabelão do Data Nordeste, montado a partir do banco do portal em ${data}. Confira os importantes nos painéis do site.`;
+      el.nota.textContent = `As respostas são feitas por inteligência artificial, com os dados do Data Nordeste (cópia de ${data}). Podem ter erros: confira os números importantes nos painéis do site.`;
     }
+    if (info.disponivel === false) el.avisoFora.hidden = false;
   })
   .catch(() => {});
 

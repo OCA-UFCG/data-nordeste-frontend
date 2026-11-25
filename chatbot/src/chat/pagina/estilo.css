@@ -1,20 +1,32 @@
-/* Cores e fonte do portal Data Nordeste (verde #018F39 e Inter, como no frontend). */
+/* Cores e fonte do portal Data Nordeste: os tokens de src/app/globals.css do
+   frontend (paleta grey/green do @theme) e as cores dos temas, que no portal
+   vêm do Contentful (amostradas da página inicial em 25/11/2026). */
 :root {
-  --verde: #018f39;
-  --verde-escuro: #077432;
-  --verde-noite: #0e3a20;
-  --oliva: #2e9e57;
-  --oliva-claro: #ddeadf;
-  --oliva-borda: #c4dfcc;
-  --texto: #292829;
-  --texto-suave: #676264;
-  --texto-fraco: #6e696b;
-  --borda: #dcdbdc;
-  --superficie: #f8f7f8;
-  --fundo-topo: #f8f7f8;
+  --verde: #018f39; /* o verde do logo */
+  --verde-botao: #017f35; /* green-800: botões do portal (ui/button.tsx) */
+  --verde-escuro: #077432; /* green-900: botão com o mouse em cima */
+  --verde-noite: #003616; /* green-1100 */
+  --oliva: #017f35;
+  --oliva-claro: #eef6f0;
+  --oliva-borda: #d6e9db; /* green-neutro */
+  --texto: #292829; /* grey-1100 */
+  --texto-suave: #595557; /* grey-800 */
+  --texto-fraco: #6e696b; /* grey-600 */
+  --borda: #efefef; /* grey-200: borda dos cartões */
+  --borda-forte: #dcdbdc; /* grey-300: campos e divisórias */
+  --superficie: #f8f7f8; /* grey-100: fundo das seções cinzas */
   --fundo: #ffffff;
-  --erro: #b3261e;
-  --topo: 66px;
+  --erro: #bf1621; /* red-800 */
+  --sombra: 0 1px 2px -1px rgb(0 0 0 / 0.1), 0 1px 3px rgb(0 0 0 / 0.1);
+  --tema-demografia: #d65384;
+  --tema-educacao: #f99c07;
+  --tema-saude: #e5333f;
+  --tema-economia: #f79339;
+  --tema-infra: #001a72;
+  --tema-social: #a001e9;
+  --tema-hidrica: #35b2db;
+  --tema-ambiente: #97b42e;
+  --topo: 72px;
   --largura: 46rem;
   color-scheme: light;
 }
@@ -73,7 +85,7 @@ svg {
   white-space: nowrap;
 }
 
-/* ---------- topo: a aba verde pendurada, como no site ---------- */
+/* ---------- topo: o cabeçalho branco do portal (components/Header) ---------- */
 
 .topo {
   position: relative;
@@ -82,61 +94,21 @@ svg {
   height: var(--topo);
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 16px 0 calc(176px + 32px);
-  background: var(--fundo-topo);
-  border-bottom: 2px solid var(--verde-escuro);
+  gap: 20px;
+  padding: 0 24px;
+  background: var(--fundo);
+  border-bottom: 2px solid var(--borda);
 }
 
-.aba {
-  position: absolute;
-  top: 0;
-  left: 24px;
-  width: 176px;
-  height: 82px;
-  /* Acima da dobra: só a ponta dela aparece, à direita da aba, como no site. */
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  background: var(--verde);
-  transition:
-    height 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    background-color 300ms;
-}
-
-.aba:has(a:hover) {
-  background: var(--verde-escuro);
-  height: 88px;
-}
-
-.aba a {
-  display: grid;
-  place-items: center;
-  padding: 6px;
-}
-
-.aba img {
+.topo-logo {
+  flex: none;
   display: block;
-  height: 64px;
-  width: auto;
+  line-height: 0;
 }
 
-.dobra {
-  position: absolute;
-  top: var(--topo);
-  left: calc(24px + 163px);
-  width: 26px;
-  height: 19px;
-  z-index: 1;
-  background: var(--verde-noite);
-  clip-path: polygon(0 0, 100% 0, 50% 85%);
-  pointer-events: none;
-  transform-origin: top;
-  transition: scale 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.aba:has(a:hover) + .dobra {
-  scale: 1 1.37;
+.topo-logo img {
+  width: 84px;
+  height: 40px;
 }
 
 .topo-titulo {
@@ -144,28 +116,27 @@ svg {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  padding-left: 20px;
+  border-left: 1px solid var(--borda-forte);
+  height: 32px;
 }
 
 .topo-nome {
-  font-family: Inter, sans-serif;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 17px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .selo {
-  font-family: Inter, sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--verde-escuro);
-  background: var(--oliva-claro);
-  border: 1px solid var(--oliva-borda);
-  border-radius: 999px;
-  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #085f2d; /* green-1000 */
+  background: var(--oliva-borda);
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
 }
 
 .topo-acoes {
@@ -178,15 +149,15 @@ svg {
 .modelo {
   display: flex;
   padding: 3px;
-  border: 1px solid var(--borda);
-  border-radius: 999px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 8px;
   background: var(--fundo);
 }
 
 .modelo button {
   border: 0;
   background: transparent;
-  border-radius: 999px;
+  border-radius: 5px;
   padding: 4px 12px;
   font-family: Inter, sans-serif;
   font-size: 13px;
@@ -195,7 +166,7 @@ svg {
 }
 
 .modelo button[aria-checked="true"] {
-  background: var(--verde);
+  background: var(--verde-botao);
   color: #fff;
 }
 
@@ -210,13 +181,14 @@ svg {
 .botao {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  height: 40px;
   border-radius: 8px;
   border: 1px solid transparent;
   font-family: Inter, sans-serif;
   font-size: 14px;
   font-weight: 500;
-  padding: 7px 14px;
+  padding: 0 16px;
   transition: background-color 150ms;
 }
 
@@ -226,7 +198,7 @@ svg {
 }
 
 .botao-primario {
-  background: var(--verde);
+  background: var(--verde-botao);
   color: #fff;
 }
 
@@ -236,9 +208,11 @@ svg {
 
 .botao-icone {
   display: none;
-  padding: 7px;
+  width: 40px;
+  padding: 0;
+  justify-content: center;
   background: var(--fundo);
-  border-color: var(--borda);
+  border-color: var(--borda-forte);
 }
 
 /* ---------- corpo ---------- */
@@ -251,20 +225,17 @@ svg {
 
 .historico {
   flex: none;
-  width: 272px;
-  padding: 36px 12px 16px;
+  width: 280px;
+  padding: 24px 12px 16px;
   border-right: 1px solid var(--borda);
   background: var(--superficie);
   overflow-y: auto;
 }
 
 .historico h2 {
-  font-family: Inter, sans-serif;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--texto-suave);
+  color: var(--texto);
   margin: 0 8px 8px;
 }
 
@@ -289,7 +260,7 @@ svg {
 
 .historico a {
   display: block;
-  padding: 7px 8px;
+  padding: 8px 10px;
   border-radius: 8px;
   color: var(--texto);
   text-decoration: none;
@@ -298,12 +269,14 @@ svg {
 }
 
 .historico a:hover {
-  background: #eceee9;
+  background: var(--borda);
 }
 
 .historico a[aria-current="true"] {
-  background: var(--oliva-claro);
-  box-shadow: inset 3px 0 0 var(--verde);
+  background: var(--fundo);
+  box-shadow:
+    inset 3px 0 0 var(--verde),
+    var(--sombra);
 }
 
 .historico .titulo-conversa {
@@ -351,38 +324,36 @@ svg {
   display: none;
 }
 
-.sobretitulo {
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--oliva);
-  margin: 0 0 8px;
-}
-
 .boas-vindas h1 {
-  font-size: clamp(28px, 4vw, 38px);
-  line-height: 1.15;
-  font-weight: 700;
+  font-size: clamp(26px, 3.4vw, 32px);
+  line-height: 1.2;
+  font-weight: 600;
   margin: 0 0 12px;
-  color: var(--verde-noite);
+  color: var(--texto);
 }
 
 .lead {
   font-size: 16px;
   color: var(--texto-suave);
-  margin: 0 0 28px;
-  max-width: 38rem;
+  margin: 0 0 32px;
+  max-width: 40rem;
 }
 
+.sugestoes-titulo {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+/* Cartões como os de "Explore os dados por temas" (components/CategoryCard):
+   branco, borda clara, sombra leve, o ícone do tema num quadrado da cor dele. */
 .sugestoes {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
   padding-bottom: 8px;
 }
 
@@ -395,43 +366,60 @@ svg {
   text-align: left;
   background: var(--fundo);
   border: 1px solid var(--borda);
-  border-radius: 12px;
-  padding: 12px 14px 14px;
-  font-size: 14px;
+  border-radius: 8px;
+  box-shadow: var(--sombra);
+  padding: 14px 16px 16px;
+  font-size: 14.5px;
   line-height: 1.45;
   transition:
-    border-color 150ms,
     background-color 150ms,
-    transform 150ms;
+    border-color 150ms;
 }
 
 .sugestoes button:hover {
-  border-color: var(--oliva);
-  background: #fbfbf3;
-  transform: translateY(-1px);
+  background: #f8f8f8;
+  border-color: var(--borda-forte);
 }
 
 .sugestoes p {
   margin: 0;
+  font-weight: 500;
 }
 
 .sugestoes small {
   display: block;
   margin-top: 8px;
-  font-size: 12px;
+  font-size: 12.5px;
   line-height: 1.4;
   color: var(--texto-fraco);
 }
 
-.sugestoes span {
-  display: block;
-  font-family: Inter, sans-serif;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--verde);
-  margin-bottom: 4px;
+.sugestoes .tema {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--texto-suave);
+  margin-bottom: 10px;
+}
+
+.sugestoes .tema i {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: var(--cor-tema, var(--verde));
+  color: #fff;
+}
+
+/* Os ícones do portal são preenchidos, não traço (regra "svg" lá em cima). */
+.sugestoes .tema svg {
+  width: 16px;
+  height: 16px;
+  stroke: none;
 }
 
 /* ---------- mensagens ---------- */
@@ -449,9 +437,9 @@ svg {
 .msg-usuario {
   align-self: flex-end;
   max-width: 85%;
-  background: var(--oliva-claro);
-  border: 1px solid var(--oliva-borda);
-  border-radius: 16px 16px 4px 16px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 8px 8px 2px 8px;
   padding: 10px 16px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -463,22 +451,22 @@ svg {
   gap: 12px;
 }
 
+/* Os quadradinhos coloridos do logo, que são as cores dos temas. */
 .avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: var(--verde);
+  border-radius: 8px;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  box-shadow: var(--sombra);
   display: grid;
   place-items: center;
   overflow: hidden;
 }
 
-/* Só o brasão da logo: o nome fica cortado à direita. */
 .avatar img {
-  width: 22px;
-  height: 22px;
-  object-fit: cover;
-  object-position: left center;
+  width: 24px;
+  height: auto;
 }
 
 .msg-bot.respondendo .avatar {
@@ -487,7 +475,7 @@ svg {
 
 @keyframes pulsar {
   50% {
-    box-shadow: 0 0 0 5px rgb(152 159 67 / 0.25);
+    box-shadow: 0 0 0 5px rgb(1 143 57 / 0.18);
   }
 }
 
@@ -496,7 +484,7 @@ svg {
 .passos {
   margin: 2px 0 10px;
   border: 1px solid var(--borda);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--superficie);
 }
 
@@ -605,7 +593,7 @@ svg {
 
 .passo pre.sql {
   color: var(--verde-noite);
-  background: #fbfbf3;
+  background: var(--oliva-claro);
   border-color: var(--oliva-borda);
 }
 
@@ -655,16 +643,16 @@ svg {
 .resposta h3 {
   font-size: 16px;
   margin: 16px 0 6px;
-  color: var(--verde-noite);
+  color: var(--texto);
 }
 
 .resposta strong {
   font-weight: 600;
-  color: var(--verde-noite);
+  color: var(--texto);
 }
 
 .resposta a {
-  color: var(--verde);
+  color: var(--verde-botao);
   text-underline-offset: 2px;
 }
 
@@ -691,8 +679,8 @@ svg {
 }
 
 .resposta th {
-  background: var(--oliva-claro);
-  color: var(--verde-noite);
+  background: var(--superficie);
+  color: var(--texto);
   font-weight: 600;
   text-align: left;
 }
@@ -770,10 +758,19 @@ svg {
   margin-top: 8px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #fbeeed;
-  border: 1px solid #f0c9c6;
+  background: #fef2f3; /* red-100 */
+  border: 1px solid #ffc8cc; /* red-300 */
   color: var(--erro);
   font-size: 13.5px;
+}
+
+.aviso-fora {
+  max-width: var(--largura);
+  margin: 0 auto 8px;
+}
+
+.aviso-fora[hidden] {
+  display: none;
 }
 
 /* rodapé de cada resposta: tempo e avaliação */
@@ -816,7 +813,7 @@ svg {
 
 .rodape-msg button[aria-pressed="true"] {
   color: #fff;
-  background: var(--verde);
+  background: var(--verde-botao);
 }
 
 .rodape-msg button.ruim[aria-pressed="true"] {
@@ -831,7 +828,7 @@ svg {
   margin-top: 8px;
   padding: 12px;
   border: 1px solid var(--borda);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--superficie);
 }
 
@@ -846,7 +843,7 @@ svg {
   width: 100%;
   min-height: 64px;
   resize: vertical;
-  border: 1px solid var(--borda);
+  border: 1px solid var(--borda-forte);
   border-radius: 8px;
   padding: 8px 10px;
   background: var(--fundo);
@@ -866,8 +863,8 @@ svg {
 }
 
 .comentario .botao-secundario {
-  background: transparent;
-  border-color: var(--borda);
+  background: var(--fundo);
+  border-color: var(--borda-forte);
 }
 
 .comentario-salvo {
@@ -896,16 +893,16 @@ svg {
   align-items: flex-end;
   gap: 8px;
   padding: 8px 8px 8px 16px;
-  border: 1px solid #c9c6c0;
-  border-radius: 16px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 8px;
   background: var(--fundo);
-  box-shadow: 0 2px 12px rgb(41 40 41 / 0.06);
+  box-shadow: var(--sombra);
   transition: border-color 150ms;
 }
 
 .caixa:focus-within {
-  border-color: var(--verde);
-  box-shadow: 0 0 0 3px rgb(100 107 45 / 0.12);
+  border-color: var(--verde-botao);
+  box-shadow: 0 0 0 3px rgb(1 127 53 / 0.15);
 }
 
 .caixa textarea {
@@ -925,10 +922,10 @@ svg {
   width: 36px;
   height: 36px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 6px;
   display: grid;
   place-items: center;
-  background: var(--verde);
+  background: var(--verde-botao);
   color: #fff;
   transition: background-color 150ms;
 }
@@ -938,7 +935,7 @@ svg {
 }
 
 .enviar:disabled {
-  background: #c9c6c0;
+  background: var(--borda-forte);
   cursor: default;
 }
 
@@ -1009,25 +1006,21 @@ svg {
 
 @media (max-width: 720px) {
   .topo {
-    padding-left: calc(144px + 24px);
-    gap: 8px;
+    padding: 0 16px;
+    gap: 12px;
   }
 
-  .aba {
-    left: 12px;
-    width: 144px;
-  }
-
-  .aba img {
-    height: 52px;
-  }
-
-  .dobra {
-    left: calc(12px + 131px);
+  .topo-logo img {
+    width: 67px;
+    height: 32px;
   }
 
   .topo-titulo {
-    display: none;
+    padding-left: 12px;
+  }
+
+  .topo-nome {
+    font-size: 15px;
   }
 
   .botao-primario span {
@@ -1035,7 +1028,9 @@ svg {
   }
 
   .botao-primario {
-    padding: 7px;
+    width: 40px;
+    padding: 0;
+    justify-content: center;
   }
 
   .rolagem {
@@ -1051,6 +1046,19 @@ svg {
   }
 
   .avatar {
+    display: none;
+  }
+}
+
+/* No celular estreito (360-400 px) logo, título e os dois botões não cabem
+   com o selo. */
+@media (max-width: 480px) {
+  .selo {
+    display: none;
+  }
+
+  /* A escolha do modelo é coisa do teste local (no gamma só há o Haiku). */
+  .modelo {
     display: none;
   }
 }
@@ -1075,10 +1083,11 @@ svg {
 
 .grafico {
   margin: 0 0 12px;
-  padding: 12px 14px 8px;
+  padding: 14px 16px 10px;
   border: 1px solid var(--borda);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--fundo);
+  box-shadow: var(--sombra);
 }
 
 .grafico figcaption {
@@ -1112,17 +1121,17 @@ svg {
 }
 
 .grafico .grade {
-  stroke: #eceee9;
+  stroke: var(--borda);
   stroke-width: 1;
 }
 
 .grafico .base {
-  stroke: #c9c6c0;
+  stroke: var(--borda-forte);
   stroke-width: 1;
 }
 
 .grafico .cruz {
-  stroke: #c9c6c0;
+  stroke: var(--borda-forte);
   stroke-width: 1;
 }
 
@@ -1149,7 +1158,7 @@ svg {
   align-items: center;
   padding: 4px 8px;
   border-radius: 6px;
-  background: var(--verde-noite);
+  background: var(--texto);
   color: #fff;
   font-family: Inter, sans-serif;
   font-size: 12px;
@@ -1239,26 +1248,29 @@ svg {
   margin-top: 12px;
 }
 
+/* Como o "Ver todos ›" do portal: branco, borda clara, texto verde. */
 .ver-no-portal {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid var(--verde);
-  border-radius: 999px;
-  color: var(--verde);
-  font-family: Inter, sans-serif;
-  font-size: 13px;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--fundo);
+  box-shadow: var(--sombra);
+  color: var(--verde-botao);
+  font-size: 13.5px;
   font-weight: 500;
   text-decoration: none;
   transition:
     background-color 150ms,
-    color 150ms;
+    border-color 150ms;
 }
 
 .ver-no-portal:hover {
-  background: var(--verde);
-  color: #fff;
+  background: #f8f8f8;
+  border-color: var(--borda-forte);
 }
 
 .ver-no-portal svg {
@@ -1284,24 +1296,25 @@ svg {
   text-align: left;
   background: var(--fundo);
   border: 1px solid var(--borda);
-  border-radius: 10px;
-  padding: 7px 12px;
+  border-radius: 8px;
+  padding: 8px 14px;
   font-size: 13.5px;
   line-height: 1.4;
-  color: var(--verde-escuro);
+  color: var(--texto);
   transition:
     border-color 150ms,
     background-color 150ms;
 }
 
 .proxima::before {
-  content: "↳ ";
-  color: var(--oliva);
+  content: "→ ";
+  color: var(--verde-botao);
+  font-weight: 600;
 }
 
 .proxima:hover {
-  border-color: var(--oliva);
-  background: #fbfbf3;
+  border-color: var(--borda-forte);
+  background: #f8f8f8;
 }
 
 /* ---------- mapa ---------- */
@@ -1324,7 +1337,7 @@ svg {
 }
 
 .mapa-forma:hover {
-  stroke: var(--verde-noite);
+  stroke: var(--texto);
   stroke-width: 1.4;
 }
 
@@ -1356,39 +1369,6 @@ svg {
 .mapa-legenda small {
   font-size: 11px;
   color: var(--texto-fraco);
-}
-
-/* Página de acesso (herdada do chat do SEDES; sem uso enquanto o chat é só local). */
-.acesso {
-  max-width: 30rem;
-  margin: 12vh auto 0;
-  padding: 0 16px;
-  overflow: auto;
-}
-/* O logo é branco, como na aba verde do topo. */
-.acesso img {
-  display: block;
-  background: var(--verde);
-  padding: 14px 20px;
-  border-radius: 8px;
-  box-sizing: content-box;
-}
-.acesso h1 {
-  font-size: 1.4rem;
-  color: var(--verde-noite);
-  margin: 1.5rem 0 0.75rem;
-}
-.acesso .botao {
-  display: inline-block;
-  background: var(--verde);
-  color: #fff;
-  padding: 0.55rem 1.1rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 600;
-}
-.acesso .botao:hover {
-  background: var(--verde-escuro);
 }
 
 /* Com um modelo só, o servidor esconde o seletor. */

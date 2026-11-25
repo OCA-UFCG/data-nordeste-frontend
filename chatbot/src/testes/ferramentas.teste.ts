@@ -79,6 +79,14 @@ test("botão de painel sai dos indicadores consultados", () => {
   assert.match(paineisDasConsultas(["SELECT valor FROM valores WHERE indicador='monitor_secas'"])[0].url, /monitordesecas\.ana\.gov\.br/);
 });
 
+test("dois painéis do mesmo tema saem com nomes diferentes (conversa fe633356)", () => {
+  const p = paineisDasConsultas(["SELECT valor FROM valores WHERE indicador IN ('esgoto_rede_geral', 'lixo_coletado')"]);
+  assert.deepEqual(
+    p.map((x) => x.titulo),
+    ["Painel de esgotamento sanitário no Data Nordeste", "Painel de coleta de lixo no Data Nordeste"],
+  );
+});
+
 test("HTML do Zenodo vira texto com acento", () => {
   assert.equal(textoDoHtml("<p>Delimita&ccedil;&atilde;o do Semi&aacute;rido&nbsp;&#8211; 2021</p>"), "Delimitação do Semiárido – 2021");
 });

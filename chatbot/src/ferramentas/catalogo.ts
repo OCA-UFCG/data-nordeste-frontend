@@ -7,6 +7,7 @@
 import { z } from "zod";
 import { db, tabela } from "./banco.ts";
 import { semAcento } from "../texto.ts";
+import { INDICADORES } from "../tabelao/indicadores.ts";
 import type { Ferramenta } from "./tipos.ts";
 
 export type IndicadorDoCatalogo = {
@@ -31,7 +32,29 @@ export type IndicadorDoCatalogo = {
 
 type Categoria = { indicador: string; dimensao: string; ordem: number; valor: string; descricao: string | null };
 
-export const CATALOGO = db.prepare("SELECT * FROM indicadores ORDER BY rowid").all() as IndicadorDoCatalogo[];
+// INTENTIONAL: o texto (nome, descrição, observação…) vem do código, que vai
+// com cada deploy; do tabelão vêm só os períodos e dimensões, que dependem dos
+// dados. Assim corrigir uma explicação não exige regerar e copiar o tabelão
+// (~2 GB no gamma).
+const TEXTO_DO_CODIGO = new Map(INDICADORES.map((i) => [i.id, i]));
+
+function comTextoDoCodigo(linha: IndicadorDoCatalogo): IndicadorDoCatalogo {
+  const ind = TEXTO_DO_CODIGO.get(linha.id);
+  if (!ind) return linha;
+
+  return {
+    ...linha,
+    nome: ind.nome,
+    tema: ind.tema,
+    descricao: ind.descricao,
+    formula: ind.formula,
+    fonte: ind.fonte,
+    observacao: ind.observacao ?? null,
+    painel: ind.painel ?? null,
+  };
+}
+
+export const CATALOGO = (db.prepare("SELECT * FROM indicadores ORDER BY rowid").all() as IndicadorDoCatalogo[]).map(comTextoDoCodigo);
 const CATEGORIAS = db.prepare("SELECT * FROM categorias ORDER BY indicador, dimensao, ordem").all() as Categoria[];
 export const IDS = new Set(CATALOGO.map((i) => i.id));
 
@@ -74,6 +97,37 @@ function linhaDoCatalogo(i: IndicadorDoCatalogo) {
   return partes.filter(Boolean).join("\n");
 }
 
+/**
+ * EXPERIMENTO (25/11/2026): com DATANE_CATALOGO=indice, o prompt leva só o
+ * índice (id, nome, unidade, períodos, recortes) e a descrição, a fonte e as
+ * ressalvas de cada indicador vão no resultado de consultar_sql (notas.ts).
+ */
+export const SO_INDICE = process.env.DATANE_CATALOGO === "indice";
+
+function linhaDoIndice(i: IndicadorDoCatalogo) {
+  const dims = [...dimensoesDe(i.id)].map(([d, vs]) => `${d}: ${vs.join(" | ")}`);
+
+  return [`- **${i.id}**: ${i.nome} (${i.unidade}; ${AGREGACAO[i.agregacao]}). Períodos: ${i.periodos}.`, dims.length ? `  Recortes: ${dims.join("; ")}.` : ""]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/** Só o índice do catálogo, por tema (modo DATANE_CATALOGO=indice). */
+export function catalogoIndice() {
+  const temas = [...new Set(CATALOGO.map((i) => i.tema))];
+
+  return temas.map((t) => `### ${t}\n\n${CATALOGO.filter((i) => i.tema === t).map(linhaDoIndice).join("\n")}`).join("\n\n");
+}
+
+/** O que cada indicador mede, a fonte e as ressalvas, para ir junto da consulta. */
+export function sobreOsIndicadores(ids: string[]): string[] {
+  return ids.flatMap((id) => {
+    const i = CATALOGO.find((x) => x.id === id);
+
+    return i ? [`Sobre ${i.id}: ${i.descricao} Fonte: ${i.fonte}.${i.observacao ? ` Ressalvas: ${i.observacao}` : ""}`] : [];
+  });
+}
+
 /** O catálogo inteiro, agrupado por tema, para o prompt do sistema (~12 mil caracteres). */
 export function catalogoResumido() {
   const temas = [...new Set(CATALOGO.map((i) => i.tema))];
@@ -102,13 +156,39 @@ const FONTE_SEM_PAINEL: Record<string, { url: string; titulo: string }> = Object
   ]),
 );
 
+/**
+ * O nome de cada painel no botão. Pelo tema, dois painéis do mesmo tema saíam
+ * com o mesmo nome (esgoto e lixo: "Painel de saneamento" duas vezes, conversa
+ * fe633356). Desde 25/11/2026 o portal.json traz o nome que o portal mostra
+ * ("Domicílios por destino de lixo"), mas no botão vale o nome curto e simples
+ * daqui. Painel que não estiver aqui sai pelo tema.
+ */
+const NOMES_DOS_PAINEIS: Record<string, string> = {
+  analfabetismo: "Painel de analfabetismo",
+  cisternas: "Painel de cisternas",
+  idhm: "Painel do IDHM",
+  imunizacao: "Painel de vacinação",
+  lixo: "Painel de coleta de lixo",
+  mortalidade: "Painel de mortalidade",
+  pib: "Painel do PIB",
+  populacao: "Painel de população",
+  populacaorua: "Painel da população em situação de rua",
+  saneamento: "Painel de esgotamento sanitário",
+};
+
+function nomeDoPainel(url: string, tema: string): string {
+  const nome = NOMES_DOS_PAINEIS[url.split("/data-panel/")[1] ?? ""];
+
+  return nome ? `${nome} no Data Nordeste` : `Painel de ${tema.toLowerCase()} no Data Nordeste`;
+}
+
 /** Os painéis do portal dos indicadores consultados, para o botão da página (no máximo 2). */
 export function paineisDasConsultas(consultas: string[]): Array<{ url: string; titulo: string }> {
   const vistos = new Map<string, string>();
   for (const sql of consultas)
     for (const id of indicadoresNoSql(sql)) {
       const i = CATALOGO.find((x) => x.id === id);
-      if (i?.painel && !vistos.has(i.painel)) vistos.set(i.painel, `Painel de ${i.tema.toLowerCase()} no Data Nordeste`);
+      if (i?.painel && !vistos.has(i.painel)) vistos.set(i.painel, nomeDoPainel(i.painel, i.tema));
       const fonte = FONTE_SEM_PAINEL[id];
       if (!i?.painel && fonte && !vistos.has(fonte.url)) vistos.set(fonte.url, fonte.titulo);
     }

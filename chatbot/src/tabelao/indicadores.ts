@@ -294,7 +294,7 @@ const DEMOGRAFIA: Indicador[] = [
     formula: "contagem de pessoas",
     fonte: CENSO,
     observacao:
-      "Censos de 2000, 2010 e 2022. Sexo e cor ou raça não se cruzam (não há 'mulheres pardas'): filtre um dos dois e deixe o outro em 'total'. Em 2000 há 2.066 municípios (8 foram criados depois). 'Indígena' aqui é a cor ou raça declarada; o Censo 2022 também conta como indígena quem se considera indígena, o que dá um número maior (é o do card de população indígena do portal).",
+      "Censos de 2000, 2010 e 2022. Sexo e cor ou raça não se cruzam (não há 'mulheres pardas'): filtre um dos dois e deixe o outro em 'total'. Em 2000 há 2.066 municípios (8 foram criados depois). 'Indígena' aqui é a cor ou raça declarada; os Censos também contam como indígena quem mora em área indígena e se considera indígena, o que dá um número maior (indicador populacao_indigena, o do card de população indígena do portal).",
     painel: painel("populacao"),
   },
   {
@@ -562,7 +562,7 @@ const SAUDE: Indicador[] = [
     linhas: uma("doses_aplicadas"),
     formula: "contagem",
     fonte: "Programa Nacional de Imunizações (DATASUS, Ministério da Saúde)",
-    observacao: "Anos 2023 a 2026 (2026 parcial). Não some vacinas diferentes como se fossem uma: cada uma tem seu público.",
+    observacao: "Anos 2023 a 2026 (2026 parcial). O total de doses aplicadas (soma de todas as vacinas) pode ser dado, como no painel do portal: diga que é a soma de todas as vacinas. Doses não são pessoas (uma criança toma várias), e cobertura não se soma.",
     painel: painel("imunizacao"),
   },
 ];

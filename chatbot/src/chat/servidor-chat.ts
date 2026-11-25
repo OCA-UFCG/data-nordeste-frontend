@@ -35,6 +35,7 @@ import { dadosDoMapa, GERADO_EM, TABELAO } from "../ferramentas/index.ts";
 import { criarPortao } from "./equipe.ts";
 import { criarLimites } from "./limites.ts";
 import { criarMotorApi } from "./motor-api.ts";
+import { criarDisponibilidade } from "./disponibilidade.ts";
 import { criarMotorClaude } from "./motor-claude.ts";
 import { SAIDA_MAX, Turno, type Evento, type FimDoTurno, type Motor } from "./turno.ts";
 
@@ -62,7 +63,8 @@ mkdirSync(CONVERSAS, { recursive: true });
 const limites = criarLimites(CONVERSAS);
 
 const nomeDoMotor = process.env.DATANE_CHAT_MOTOR ?? "claude";
-const motor: Motor = nomeDoMotor === "api" ? criarMotorApi() : criarMotorClaude();
+const disponibilidade = criarDisponibilidade();
+const motor: Motor = nomeDoMotor === "api" ? criarMotorApi({ aoFalhar: disponibilidade.registrar }) : criarMotorClaude();
 const MODELOS = (process.env.DATANE_CHAT_MODELOS ?? "haiku,sonnet")
   .split(",")
   .map((m) => m.trim())
@@ -242,8 +244,12 @@ const ESTATICOS: Record<string, string> = {
   "/app.js": path.join(PAGINA, "app.js"),
   "/grafico.js": path.join(PAGINA, "grafico.js"),
   "/mapa.js": path.join(PAGINA, "mapa.js"),
+  "/markdown.js": path.join(PAGINA, "markdown.js"),
   "/marked.js": path.join(PACOTE, "node_modules/marked/lib/marked.esm.js"),
   "/logo.png": path.join(PAGINA, "logo.png"),
+  "/logo-dne.svg": path.join(PAGINA, "logo-dne.svg"),
+  "/marca-dne.svg": path.join(PAGINA, "marca-dne.svg"),
+  "/icones.svg": path.join(PAGINA, "icones.svg"),
   "/favicon.png": path.join(PAGINA, "logo.png"),
 };
 
@@ -323,6 +329,9 @@ function responderMensagem(res: http.ServerResponse, corpo: Record<string, unkno
   const texto = String(corpo.texto ?? "").trim();
   if (!texto) return json(res, 400, { erro: "pergunta vazia" });
   if (texto.length > PERGUNTA_MAX) return json(res, 400, { erro: `a pergunta passou de ${PERGUNTA_MAX} caracteres; resuma e tente de novo` });
+  // Fora do ar (chave recusada, crédito acabou): recusa sem chamar a API.
+  const fora = disponibilidade.recusa();
+  if (fora) return json(res, 503, { erro: fora, indisponivel: true });
   const recusa = limites.recusa(pessoa);
   if (recusa) return json(res, 429, { erro: recusa });
   const modelo = MODELOS.includes(String(corpo.modelo)) ? String(corpo.modelo) : MODELOS[0];
@@ -358,12 +367,8 @@ function origemPermitida(req: http.IncomingMessage): boolean {
   return Boolean(portao) && URL.canParse(origem) && new URL(origem).host === host;
 }
 
-// O nginx do gamma põe o endereço de quem pede em X-Real-IP.
-const ipDe = (req: http.IncomingMessage) =>
-  String(req.headers["x-real-ip"] ?? (String(req.headers["x-forwarded-for"] ?? "").split(",")[0].trim() || req.socket.remoteAddress));
-
 // Sem a senha, só a tela de entrada e o que ela usa.
-const PUBLICOS = new Set(["/estilo.css", "/logo.png", "/favicon.png", "/api/saude", "/api/entrar"]);
+const PUBLICOS = new Set(["/estilo.css", "/logo.png", "/logo-dne.svg", "/favicon.png", "/api/saude", "/api/entrar"]);
 
 function servirEstatico(res: http.ServerResponse, arquivo: string) {
   res.writeHead(200, { "content-type": TIPOS[path.extname(arquivo)] ?? TIPOS[".html"], "cache-control": "no-cache" });
@@ -376,7 +381,7 @@ async function atender(req: http.IncomingMessage, res: http.ServerResponse) {
   if (req.method === "POST" && !origemPermitida(req)) return json(res, 403, { erro: "origem não permitida" });
   const pessoa = portao?.pessoa(req.headers.cookie) ?? null;
   if (portao && req.method === "POST" && url.pathname === "/api/entrar") {
-    const r = portao.entrar(String((await lerCorpo(req)).senha ?? ""), ipDe(req), req.headers["x-forwarded-proto"] === "https");
+    const r = portao.entrar(String((await lerCorpo(req)).senha ?? ""), req.headers["x-forwarded-proto"] === "https");
     if (!r.ok) return json(res, 401, { erro: r.erro });
     res.writeHead(200, { "content-type": "application/json; charset=utf-8", "set-cookie": r.cookie });
 
@@ -391,9 +396,9 @@ async function atender(req: http.IncomingMessage, res: http.ServerResponse) {
   if (req.method === "GET" && ESTATICOS[url.pathname]) {
     return servirEstatico(res, ESTATICOS[url.pathname]);
   }
-  if (req.method === "GET" && url.pathname === "/api/saude") return json(res, 200, { ok: true, motor: motor.nome, tabelao: GERADO_EM });
+  if (req.method === "GET" && url.pathname === "/api/saude") return json(res, 200, { ok: true, motor: motor.nome, tabelao: GERADO_EM, ...disponibilidade.estado() });
   if (req.method === "GET" && url.pathname === "/api/info")
-    return json(res, 200, { tabelaoGeradoEm: GERADO_EM, motor: motor.nome, modelos: MODELOS, usuario: null, temMapa: existsSync(MALHA) });
+    return json(res, 200, { tabelaoGeradoEm: GERADO_EM, motor: motor.nome, modelos: MODELOS, usuario: null, temMapa: existsSync(MALHA), disponivel: disponibilidade.estado().disponivel });
   if (req.method === "GET" && url.pathname === "/api/conversas") return json(res, 200, listarConversas(pessoa));
   const m = url.pathname.match(/^\/api\/conversas\/([a-z0-9-]+)$/);
   if (req.method === "GET" && m) {

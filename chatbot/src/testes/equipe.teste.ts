@@ -13,8 +13,8 @@ const cookieDoSetCookie = (setCookie: string) => setCookie.split(";")[0];
 
 test("senha certa dá um cookie que identifica o navegador; errada não", () => {
   const portao = criarPortao("teste-123")!;
-  assert.deepEqual(portao.entrar("errada", "1.2.3.4", false), { ok: false, erro: "Senha errada." });
-  const r = portao.entrar("teste-123", "1.2.3.4", true);
+  assert.deepEqual(portao.entrar("errada", false), { ok: false, erro: "Senha errada." });
+  const r = portao.entrar("teste-123", true);
   assert.ok(r.ok);
   assert.match(r.cookie, /HttpOnly; SameSite=Lax; Path=\/; Max-Age=2592000; Secure$/);
   assert.match(String(portao.pessoa(cookieDoSetCookie(r.cookie))), /^[0-9a-f]{8}$/);
@@ -23,7 +23,7 @@ test("senha certa dá um cookie que identifica o navegador; errada não", () => 
 test("cookie adulterado, de outra senha ou vencido não vale", () => {
   let agora = Date.now();
   const portao = criarPortao("teste-123", () => agora)!;
-  const r = portao.entrar("teste-123", "ip", false);
+  const r = portao.entrar("teste-123", false);
   assert.ok(r.ok);
   const cookie = cookieDoSetCookie(r.cookie);
   // Troca o último caractere da assinatura por outro, sempre diferente (com um
@@ -35,14 +35,16 @@ test("cookie adulterado, de outra senha ou vencido não vale", () => {
   assert.equal(portao.pessoa(cookie), null);
 });
 
-test("depois de 10 senhas erradas o endereço espera 15 minutos", () => {
+test("depois de 30 senhas erradas em um minuto, ninguém entra até o minuto passar", () => {
   let agora = Date.now();
   const portao = criarPortao("teste-123", () => agora)!;
-  for (let i = 0; i < 10; i++) portao.entrar("errada", "5.5.5.5", false);
-  assert.match(String((portao.entrar("teste-123", "5.5.5.5", false) as { erro: string }).erro), /Muitas tentativas/);
-  assert.ok(portao.entrar("teste-123", "6.6.6.6", false).ok);
-  agora += 16 * 60_000;
-  assert.ok(portao.entrar("teste-123", "5.5.5.5", false).ok);
+  const jaEntrou = (portao.entrar("teste-123", false) as { cookie: string }).cookie.split(";")[0];
+  for (let i = 0; i < 30; i++) portao.entrar("errada", false);
+  assert.match(String((portao.entrar("teste-123", false) as { erro: string }).erro), /Muitas tentativas/);
+  // Quem já tinha entrado continua: o teto vale só para a tela de senha.
+  assert.ok(portao.pessoa(jaEntrou));
+  agora += 61_000;
+  assert.ok(portao.entrar("teste-123", false).ok);
 });
 
 test("sem senha não há portão (modo local)", () => {

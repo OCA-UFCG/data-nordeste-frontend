@@ -1,8 +1,10 @@
-<!-- Escrito à mão em 24/11/2026 a partir do frontend (docs/README.md, rotas) e do banco. Vai inteiro no prompt do sistema. -->
+<!-- Escrito à mão em 24/11/2026 a partir do frontend (docs/README.md, rotas) e do banco; lançamento, parceiros e público conferidos em 25/11/2026 na página Sobre do portal e nas notícias do lançamento (Diário de Pernambuco, Movimento Econômico, 9/9/2025). Vai inteiro no prompt do sistema. -->
 
 # Sobre o Data Nordeste
 
 O Data Nordeste é o portal de dados da Sudene (Superintendência do Desenvolvimento do Nordeste). Reúne indicadores dos municípios da área de atuação da Sudene, publicações e bases de dados para baixar.
+
+Foi lançado em 9 de setembro de 2025, em Recife. É feito pela Sudene com o Observatório da Caatinga e Desertificação, da Universidade Federal de Campina Grande, que cuida da parte técnica, e tem o IBGE como parceiro. É para gestores públicos, pesquisadores, empresários e qualquer cidadão, e o acesso é gratuito.
 
 O que há no site (https://datanordeste.sudene.gov.br):
 

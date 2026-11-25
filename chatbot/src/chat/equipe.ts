@@ -7,20 +7,26 @@
  * limite de perguntas por dia (limites.ts). Não há nome nem e-mail.
  *
  * A assinatura do cookie sai da própria senha: trocar a senha desloga todo
- * mundo. Tentativas erradas são limitadas por endereço, para a senha não ser
- * descoberta por tentativa.
+ * mundo.
+ *
+ * IMPORTANT: as tentativas erradas são contadas juntas, não por endereço. No
+ * gamma, o proxy da frente não repassa o IP de quem acessa: todo mundo chega
+ * como o mesmo endereço (verificado em 25/11/2026). Uma trava por IP seria uma
+ * trava de todos, e uma trava pelo X-Forwarded-For seria contornada inventando
+ * o cabeçalho. O que impede adivinhar é o tamanho da senha (19 caracteres
+ * aleatórios); o teto só corta abuso, e quem já tem o cookie não é afetado.
  *
  * Uso:
  *   const portao = criarPortao(process.env.DATANE_CHAT_SENHA);
- *   const r = portao?.entrar(senhaDigitada, ip, true); // { ok, cookie } | { ok: false, erro }
+ *   const r = portao?.entrar(senhaDigitada, true); // { ok, cookie } | { ok: false, erro }
  *   const pessoa = portao?.pessoa(req.headers.cookie);  // id do navegador ou null
  */
 import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 
 export const COOKIE_EQUIPE = "datane_chat";
 const VALIDADE_MS = 30 * 24 * 3600_000;
-const TENTATIVAS_MAX = 10;
-const JANELA_MS = 15 * 60_000;
+const ERROS_POR_JANELA = 30;
+const JANELA_MS = 60_000;
 
 export type Entrada = { ok: true; cookie: string } | { ok: false; erro: string };
 
@@ -44,22 +50,21 @@ export function criarPortao(senha: string | undefined, agora: () => number = Dat
   if (!senha) return null;
   const chave = resumo(`datane-chat:${senha}`);
   const assinar = (valor: string) => createHmac("sha256", chave).update(valor).digest("base64url");
-  const erradas = new Map<string, number[]>();
+  let erradas: number[] = [];
 
-  function recentes(ip: string): number[] {
-    const lista = (erradas.get(ip) ?? []).filter((t) => agora() - t < JANELA_MS);
-    erradas.set(ip, lista);
+  function errosRecentes(): number[] {
+    erradas = erradas.filter((t) => agora() - t < JANELA_MS);
 
-    return lista;
+    return erradas;
   }
 
   return {
     /** Confere a senha; com ela certa, devolve o cabeçalho Set-Cookie. */
-    entrar(tentativa: string, ip: string, https: boolean): Entrada {
-      if (recentes(ip).length >= TENTATIVAS_MAX)
-        return { ok: false, erro: "Muitas tentativas erradas. Espere 15 minutos e tente de novo." };
+    entrar(tentativa: string, https: boolean): Entrada {
+      if (errosRecentes().length >= ERROS_POR_JANELA)
+        return { ok: false, erro: "Muitas tentativas erradas. Espere um minuto e tente de novo." };
       if (!iguais(tentativa, senha)) {
-        recentes(ip).push(agora());
+        erradas.push(agora());
 
         return { ok: false, erro: "Senha errada." };
       }

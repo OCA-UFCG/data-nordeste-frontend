@@ -178,7 +178,7 @@ export const INDICADORES_AMPLIACAO: Indicador[] = [
     formula: "contagem de estabelecimentos no cadastro",
     fonte: "Cadastro Nacional de Estabelecimentos de Saúde (CNES/DATASUS)",
     observacao:
-      "Anos 2010 e 2020 a 2025. Inclui públicos e privados (consultório isolado e clínica são a maioria). Não diz número de leitos nem de profissionais. 'Hospital Geral' e 'Hospital Especializado' são categorias separadas: para 'hospitais', some as duas e diga isso.",
+      "Anos 2010 e 2020 a 2025. Inclui públicos e privados (consultório isolado e clínica são a maioria). Não diz número de leitos nem de profissionais. 'Hospital Geral', 'Hospital Especializado' e 'Hospital/Dia - Isolado' são categorias separadas: para 'hospitais', some as três, como o painel do portal faz, e diga quais entraram.",
     painel: painel("estabelecimentos"),
   },
   {
@@ -206,7 +206,7 @@ export const INDICADORES_AMPLIACAO: Indicador[] = [
     nome: "População indígena",
     tema: "Demografia",
     descricao:
-      "Pessoas indígenas segundo o Censo (quem se declarou indígena na cor ou raça e, em 2022, também quem se considera indígena), por sexo e faixa etária; categoria separa quem mora em terra indígena e fora dela.",
+      "Pessoas indígenas segundo o Censo (quem se declarou indígena na cor ou raça e também quem mora em área indígena e se considera indígena), por sexo e faixa etária; categoria separa quem mora em terra indígena e fora dela.",
     unidade: "pessoas",
     casas: 0,
     consulta: "indigenas",
@@ -222,7 +222,7 @@ export const INDICADORES_AMPLIACAO: Indicador[] = [
     formula: "contagem de pessoas",
     fonte: CENSO,
     observacao:
-      "Censos de 2010 e 2022. Sexo e categoria (dentro ou fora de terra indígena) não se cruzam: filtre um e deixe o outro em 'total'. Dentro + fora fica um pouco abaixo do total (pessoas sem a informação). Este número é maior que o da cor ou raça 'Indígena' do indicador populacao, porque o Censo 2022 também conta quem se considera indígena. Faixas de 10 anos: 0 a 9 até 80 anos ou mais.",
+      "Censos de 2010 e 2022. Sexo e categoria (dentro ou fora de terra indígena) não se cruzam: filtre um e deixe o outro em 'total'. Dentro + fora fica um pouco abaixo do total (pessoas sem a informação). Este número é maior que o da cor ou raça 'Indígena' do indicador populacao porque também conta quem mora em área indígena e se considera indígena. Em 2010 essa pergunta só foi feita dentro das terras indígenas; em 2022, numa área maior (as localidades indígenas). Parte do aumento de 2010 para 2022 vem dessa mudança, não só de mais pessoas: diga isso ao comparar os dois Censos. Faixas de 10 anos: 0 a 9 até 80 anos ou mais.",
   },
   {
     id: "populacao_quilombola",
@@ -243,7 +243,7 @@ export const INDICADORES_AMPLIACAO: Indicador[] = [
     ],
     formula: "contagem de pessoas",
     fonte: CENSO,
-    observacao: "Só 2022. Sexo e categoria não se cruzam: filtre um e deixe o outro em 'total'.",
+    observacao: "Só 2022. Sexo e categoria não se cruzam: filtre um e deixe o outro em 'total'. Em território e fora dele somam um pouco menos que o total (no Nordeste, 11.233 a menos): ao dar a divisão, diga que uma parte não foi classificada.",
     painel: painel("demografia_quilombola"),
   },
   {
