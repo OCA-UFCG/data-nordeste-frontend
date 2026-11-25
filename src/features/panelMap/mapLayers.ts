@@ -66,9 +66,14 @@ const NO_VEIL: VeilFilters = {
 /**
  * Filtros do véu cinza. WHY: o véu só existe a partir do nível estado — no
  * nível área toda a região está em foco, então nada é cobrido.
- * Ex.: `veilFilters({ uf: ["PE"], mun: [] }).states` → estados com `code` fora de PE.
+ * Os municípios fora da área já são cobertos pela forma exata dela
+ * (`selectedStates`), então o véu das feições só cobre os de dentro.
+ * Ex.: `veilFilters({ uf: ["PE"], mun: [] }, "nordeste").states` → estados com `code` fora de PE.
  */
-export function veilFilters(recorte: MapRecorte): VeilFilters {
+export function veilFilters(
+  recorte: MapRecorte,
+  area: TerritorialArea,
+): VeilFilters {
   if (recorte.uf.length === 0) return NO_VEIL;
 
   const selectedStates = propertyIn("code", recorte.uf);
@@ -82,6 +87,7 @@ export function veilFilters(recorte: MapRecorte): VeilFilters {
     selectedStates,
     features: [
       "all",
+      areaFilter(area) as ExpressionSpecification,
       propertyIn("uf", recorte.uf),
       ["!", propertyIn("code", recorte.mun)],
     ],

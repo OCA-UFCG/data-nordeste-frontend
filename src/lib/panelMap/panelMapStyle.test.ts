@@ -9,6 +9,7 @@ import {
   PANEL_MAP_LAYER,
   PANEL_MAP_SOURCE,
   panelMapStyle,
+  VEIL_MATCHES_NOTHING,
 } from "@/lib/panelMap/panelMapStyle";
 
 // minzoom de cada camada acima dos basemaps (undefined = qualquer zoom).
@@ -108,8 +109,11 @@ describe("estado recortado pela área de interesse", () => {
     expect(layerById(PANEL_MAP_LAYER.veilOutsideArea)).toMatchObject({
       type: "fill",
       source: PANEL_MAP_SOURCE.areaStatesOutside,
-      layout: { visibility: "none" },
+      filter: VEIL_MATCHES_NOTHING,
     });
+
+    // PERF: oculta, a fonte não carrega tiles até o clique no estado.
+    expect(layerById(PANEL_MAP_LAYER.veilOutsideArea)?.layout).toBeUndefined();
     expect(ids().indexOf(PANEL_MAP_LAYER.veilOutsideArea)).toBeGreaterThan(
       ids().indexOf(PANEL_MAP_LAYER.classMuted),
     );

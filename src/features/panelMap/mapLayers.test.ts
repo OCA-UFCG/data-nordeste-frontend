@@ -63,7 +63,7 @@ describe("areaFilter", () => {
 
 describe("veilFilters", () => {
   it("has no veil at area level", () => {
-    expect(veilFilters(EMPTY_RECORTE)).toEqual({
+    expect(veilFilters(EMPTY_RECORTE, "semiarido")).toEqual({
       states: null,
       selectedStates: null,
       features: null,
@@ -71,7 +71,7 @@ describe("veilFilters", () => {
   });
 
   it("veils the states outside the selection at state level", () => {
-    expect(veilFilters({ uf: ["PE"], mun: [] })).toEqual({
+    expect(veilFilters({ uf: ["PE"], mun: [] }, "semiarido")).toEqual({
       states: ["!", ["in", ["get", "code"], ["literal", ["PE"]]]],
       selectedStates: ["in", ["get", "code"], ["literal", ["PE"]]],
       features: null,
@@ -79,18 +79,18 @@ describe("veilFilters", () => {
   });
 
   it("veils the states outside the union of several states", () => {
-    expect(veilFilters({ uf: ["PE", "PB"], mun: [] }).states).toEqual([
-      "!",
-      ["in", ["get", "code"], ["literal", ["PE", "PB"]]],
-    ]);
+    expect(
+      veilFilters({ uf: ["PE", "PB"], mun: [] }, "semiarido").states,
+    ).toEqual(["!", ["in", ["get", "code"], ["literal", ["PE", "PB"]]]]);
   });
 
-  it("veils the other municipalities of the state at municipality level", () => {
-    expect(veilFilters({ uf: ["PE"], mun: ["2611606"] })).toEqual({
+  it("veils only the area municipalities of the state at municipality level", () => {
+    expect(veilFilters({ uf: ["PE"], mun: ["2611606"] }, "semiarido")).toEqual({
       states: ["!", ["in", ["get", "code"], ["literal", ["PE"]]]],
       selectedStates: ["in", ["get", "code"], ["literal", ["PE"]]],
       features: [
         "all",
+        ["==", ["get", "semiarido"], 1],
         ["in", ["get", "uf"], ["literal", ["PE"]]],
         ["!", ["in", ["get", "code"], ["literal", ["2611606"]]]],
       ],

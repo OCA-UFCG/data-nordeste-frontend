@@ -1,5 +1,6 @@
 import type {
   ExpressionSpecification,
+  FilterSpecification,
   GeoJSONSourceSpecification,
   LayerSpecification,
   LineLayerSpecification,
@@ -124,12 +125,24 @@ function indicatorFillLayer(): LayerSpecification {
   };
 }
 
+// Filtro que não casa nenhuma feição: o véu "desligado". PERF: o véu nunca usa
+// `visibility: none`. O MapLibre só carrega os tiles de uma fonte quando alguma
+// camada dela está visível; a parte do estado fora da área (`areaStatesOutside`)
+// só tem esta camada e, oculta, começava a gerar os tiles no clique. Durante o
+// enquadramento o estado escolhido aparecia inteiro, sem o véu na parte de fora
+// da área, e só depois ela escurecia.
+export const VEIL_MATCHES_NOTHING: FilterSpecification = [
+  "==",
+  ["get", "code"],
+  "",
+];
+
 function veilLayer(id: string, source: string): LayerSpecification {
   return {
     id,
     type: "fill",
     source,
-    layout: { visibility: "none" },
+    filter: VEIL_MATCHES_NOTHING,
     paint: { "fill-color": VEIL_COLOR, "fill-opacity": VEIL_OPACITY },
   };
 }

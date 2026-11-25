@@ -12,6 +12,7 @@ import {
   PANEL_MAP_LAYER,
   PANEL_MAP_SOURCE,
   panelMapStyle,
+  VEIL_MATCHES_NOTHING,
 } from "@/lib/panelMap/panelMapStyle";
 
 /** Só o que as funções de pintura usam do MapLibre: layout, paint, filtro e fontes. */
@@ -98,31 +99,32 @@ describe("applyClassHighlight", () => {
 describe("estado escolhido recortado pela área", () => {
   it("o véu da parte de fora da área casa o estado escolhido", () => {
     const map = new MaplibrePaintFake();
-    const veil = veilFilters({ uf: ["MG"], mun: [] });
+    const veil = veilFilters({ uf: ["MG"], mun: [] }, "semiarido");
 
     applyVeil(map.asMap(), veil);
 
-    expect(map.setLayoutProperty).toHaveBeenCalledWith(
-      PANEL_MAP_LAYER.veilOutsideArea,
-      "visibility",
-      "visible",
-    );
     expect(map.setFilter).toHaveBeenCalledWith(
       PANEL_MAP_LAYER.veilOutsideArea,
       ["in", ["get", "code"], ["literal", ["MG"]]],
     );
   });
 
-  it("sem estado escolhido, o véu da parte de fora some", () => {
+  // Regressão: com a camada oculta, o MapLibre não carregava os tiles de
+  // `area-states-outside` até o clique no estado, e durante o zoom a parte de
+  // fora da área ficava sem véu (o estado parecia destacado por inteiro).
+  it("sem estado escolhido, o véu casa nada e a camada continua visível", () => {
     const map = new MaplibrePaintFake();
 
-    applyVeil(map.asMap(), veilFilters({ uf: [], mun: [] }));
+    applyVeil(map.asMap(), veilFilters({ uf: [], mun: [] }, "semiarido"));
 
-    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+    [
+      PANEL_MAP_LAYER.veilStates,
       PANEL_MAP_LAYER.veilOutsideArea,
-      "visibility",
-      "none",
+      PANEL_MAP_LAYER.veilFeatures,
+    ].forEach((layerId) =>
+      expect(map.setFilter).toHaveBeenCalledWith(layerId, VEIL_MATCHES_NOTHING),
     );
+    expect(map.setLayoutProperty).not.toHaveBeenCalled();
   });
 
   it("a parte de dentro vai para o hover e a seleção; a de fora, para o véu", () => {

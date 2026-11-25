@@ -147,7 +147,7 @@ function useRecorteFraming(
     const drawn = recorteForLevel(recorte, level);
     const fitSources = { ...sources, areaStates: areaStates ?? undefined };
 
-    engine.setVeil(veilFilters(drawn));
+    engine.setVeil(veilFilters(drawn, area));
     engine.setSelection(selectionFilter(drawn, level));
     engine.setStateMunicipalLines(
       stateMunicipalLinesFilter(drawn, area, level),

@@ -22,6 +22,7 @@ import {
 import {
   PANEL_MAP_LAYER,
   PANEL_MAP_SOURCE,
+  VEIL_MATCHES_NOTHING,
 } from "@/lib/panelMap/panelMapStyle";
 
 export type IndicatorPaint = {
@@ -116,15 +117,25 @@ function filterOrHide(
   if (filter) map.setFilter(layerId, filter);
 }
 
+// O véu sem recorte casa nada em vez de esconder a camada: ver
+// `VEIL_MATCHES_NOTHING` (os tiles da fonte já estão prontos no clique).
+function setVeilFilter(
+  map: MaplibreMap,
+  layerId: string,
+  filter: FilterSpecification | null,
+): void {
+  map.setFilter(layerId, filter ?? VEIL_MATCHES_NOTHING);
+}
+
 /**
  * Véu cinza sobre o que está fora do recorte: os outros estados, a parte do(s)
  * estado(s) escolhido(s) fora da área de interesse e, no nível município, os
  * outros municípios.
  */
 export function applyVeil(map: MaplibreMap, veil: VeilFilters): void {
-  filterOrHide(map, PANEL_MAP_LAYER.veilStates, veil.states);
-  filterOrHide(map, PANEL_MAP_LAYER.veilOutsideArea, veil.selectedStates);
-  filterOrHide(map, PANEL_MAP_LAYER.veilFeatures, veil.features);
+  setVeilFilter(map, PANEL_MAP_LAYER.veilStates, veil.states);
+  setVeilFilter(map, PANEL_MAP_LAYER.veilOutsideArea, veil.selectedStates);
+  setVeilFilter(map, PANEL_MAP_LAYER.veilFeatures, veil.features);
 }
 
 /**
