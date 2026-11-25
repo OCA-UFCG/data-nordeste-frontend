@@ -1,6 +1,7 @@
 "use client";
 
 import { type Ref, useId } from "react";
+import { MultiSelectCombobox } from "@/components/Panel/filters/MultiSelectCombobox";
 import { PlaceFilter } from "@/components/Panel/filters/TerritorialFilterBar";
 import {
   ProtoFilterBar,
@@ -56,7 +57,9 @@ const fieldClasses = (fluid: boolean, branded: boolean): FieldClasses => {
   return { year: fluid ? "max-w-[140px]" : undefined };
 };
 
-// Ano e Área são selects nativos; Estado e Município, escolha única com busca.
+// Ano é select nativo; Área, Estado e Município, escolha única com busca no
+// padrão do Estado. A Área é obrigatória (`required`): não desmarca nem tem
+// "Limpar seleção".
 const TerritorialFilterFields = ({
   data,
   years,
@@ -124,33 +127,19 @@ const TerritorialFilterFields = ({
        * aceitam uma opção só; trocar o Estado zera o Município, que pode não
        * ser do estado novo.
        */}
-      <ProtoSelectField
+      <MultiSelectCombobox
+        id={`${id}-area`}
         label="Área de interesse"
-        wide={wide}
-        fluid={fluid}
-        fill={fillRow}
-        className={classes.field}
-      >
-        {(fieldId) => (
-          <select
-            id={fieldId}
-            value={filters.area}
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                area: event.target.value as TerritorialArea,
-              })
-            }
-            className={selectClass}
-          >
-            {TERRITORIAL_AREAS.map((area) => (
-              <option key={area.value} value={area.value}>
-                {area.label}
-              </option>
-            ))}
-          </select>
-        )}
-      </ProtoSelectField>
+        plural="áreas"
+        single
+        required
+        values={[filters.area]}
+        options={[...TERRITORIAL_AREAS]}
+        onChange={([area]) =>
+          onChange({ ...filters, area: area as TerritorialArea })
+        }
+        {...placeLook}
+      />
       <PlaceFilter
         id={`${id}-uf`}
         label="Estado"
