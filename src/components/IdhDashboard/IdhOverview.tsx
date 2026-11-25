@@ -86,10 +86,7 @@ const RankingCard = ({
     {...status}
     title={RANKING_TITLE}
     mobileTitle="Comparação entre os estados"
-    subtitle={withYear(
-      "Do maior para o menor · barras de 0 a 1",
-      data.filters.ano,
-    )}
+    subtitle={withYear("Índice varia de 0 a 1", data.filters.ano)}
     mobileSubtitle={withYear("IDH por estado", data.filters.ano)}
     kind="rank"
     bodyClassName="flex flex-col"
