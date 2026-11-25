@@ -300,7 +300,9 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   dropped (`has_polygon`); today every UF of the area keeps a remainder (9 in
   nordeste and caatinga, 11 in semiarido and sudene). Downloaded files are
   untrusted data: never run anything from `$RAW`. `issues-pdf` needs
-  `google-chrome` on the PATH. Tests:
+  `google-chrome` on the PATH. The SELECTs live in `sql.py` (text only, tested
+  on stdlib `sqlite3` with stub spatial functions in `tests/test_sql.py`);
+  `build.py` runs them and writes the files. Tests:
   `python3 -m unittest discover -s scripts/geodata/tests -v`.
 
 - **Where it runs: gamma only, for now.** The VM keeps the directory at
