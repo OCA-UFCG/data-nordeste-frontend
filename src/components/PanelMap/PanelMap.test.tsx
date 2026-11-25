@@ -477,7 +477,7 @@ describe("PanelMap hover por estado (só a área de interesse)", () => {
 });
 
 describe("PanelMap estado recortado pela área de interesse", () => {
-  it("entrega ao motor os estados da área e troca quando a área muda", async () => {
+  it("entrega ao motor as partes de dentro e de fora da área e troca com a área", async () => {
     const { engine, rerender } = await renderPanelMap();
 
     expect(engine.setAreaStates).toHaveBeenLastCalledWith(
@@ -492,9 +492,24 @@ describe("PanelMap estado recortado pela área de interesse", () => {
     );
   });
 
-  it("com estado escolhido, enquadra só a parte dele dentro da área", async () => {
+  // Montar com estado escolhido enquadra uma vez só: espera o corte chegar.
+  it("com estado escolhido, enquadra uma vez só a parte dele dentro da área", async () => {
     const { engine } = await renderPanelMap({ area: "semiarido", recorte: PE });
 
+    expect(engine.fitTo).toHaveBeenCalledTimes(1);
+    expect(engine.fitTo).toHaveBeenLastCalledWith([
+      [-40.5, -9.4],
+      [-39.5, -8.4],
+    ]);
+  });
+
+  it("trocar a área com estado escolhido enquadra uma vez o corte da nova área", async () => {
+    const { engine, rerender } = await renderPanelMap({ recorte: PE });
+
+    engine.fitTo.mockClear();
+    rerender({ area: "semiarido" });
+
+    await waitFor(() => expect(engine.fitTo).toHaveBeenCalledTimes(1));
     expect(engine.fitTo).toHaveBeenLastCalledWith([
       [-40.5, -9.4],
       [-39.5, -8.4],
@@ -507,7 +522,7 @@ describe("PanelMap estado recortado pela área de interesse", () => {
     expect(engine.fitTo).toHaveBeenCalledTimes(1);
   });
 
-  it("o estado escolhido ganha o véu sob o preenchimento (parte fora da área)", async () => {
+  it("o véu da parte de fora da área casa o estado escolhido", async () => {
     const { engine } = await renderPanelMap({ recorte: PE });
 
     expect(engine.setVeil.mock.lastCall?.[0].selectedStates).toEqual([
@@ -517,7 +532,7 @@ describe("PanelMap estado recortado pela área de interesse", () => {
     ]);
   });
 
-  it("sem o arquivo da área, usa os estados inteiros e registra a falha", async () => {
+  it("sem o arquivo da área, usa os estados inteiros, sem véu de fora, e registra a falha", async () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     const missing = ["/api/geodata/vector/estados_semiarido.geojson"];
     vi.stubGlobal("fetch", new GeodataFetchFake(false, missing).fetch);
@@ -529,13 +544,16 @@ describe("PanelMap estado recortado pela área de interesse", () => {
     expect(String(error.mock.lastCall?.[0])).toContain(
       "panel_map_area_states_failed",
     );
-    expect(factory.engine.setAreaStates.mock.lastCall?.[0].features).toEqual(
+    const states = factory.engine.setAreaStates.mock.lastCall?.[0];
+
+    expect(states?.inside.features).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           properties: expect.objectContaining({ uf: "PE" }),
         }),
       ]),
     );
+    expect(states?.outside.features).toEqual([]);
   });
 });
 

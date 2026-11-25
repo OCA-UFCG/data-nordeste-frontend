@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   areaStatesFileFor,
+  areaStatesOutsideFileFor,
   featureFileFor,
 } from "@/features/panelMap/geodataFiles";
 
@@ -25,4 +26,10 @@ describe("areaStatesFileFor", () => {
       expect(areaStatesFileFor(area)).toBe(`vector/estados_${area}.geojson`);
     },
   );
+
+  it("a parte de fora da área tem arquivo próprio", () => {
+    expect(areaStatesOutsideFileFor("sudene")).toBe(
+      "vector/estados_fora_sudene.geojson",
+    );
+  });
 });

@@ -1,7 +1,8 @@
 """Gera os arquivos do mapa dos painéis (`<out>/`) a partir da pasta bruta do Drive.
 
 Saídas: `vector/*.geojson` (inclui `municipios.geojson`, a malha sem indicador, e
-`estados_<area>.geojson`, os estados recortados por área),
+`estados_<area>.geojson` / `estados_fora_<area>.geojson`, a parte de cada estado
+dentro / fora da área),
 `raster/aridez_<ano>_<area>.png` (recortado pela área), `styles.json`,
 `manifest.json` e `data-issues.json`. IMPORTANT: nada aqui corrige dado do Drive;
 só renomeia propriedades, converte texto numérico para desenhar (o que não
@@ -177,6 +178,28 @@ def area_states_file(area: str) -> str:
     return f"estados_{area}.geojson"
 
 
+def area_states_outside_select(states_layer: str, municipios_shp: Path, municipios_layer: str, area: str) -> str:
+    """Parte de cada estado fora da área: o estado inteiro menos a união dos municípios dela.
+
+    Só UFs com município na área; a que fica toda dentro (sobra vazia) sai.
+    WHY o JOIN no nível de cima: o OGR só acha a malha de outro arquivo
+    (`'<caminho>'.<camada>`) no FROM/JOIN principal, não numa subconsulta.
+    Ex.: `area_states_outside_select("brasil_estado_4674", Path("m.shp"), "sudene_mun", "sudene")`.
+    """
+    other = "'" + str(municipios_shp).replace("'", "''") + "'"
+    grouped = (
+        "SELECT s.uf AS code, s.estado AS name, s.geometry AS state, ST_Union(m.geometry) AS cut "
+        f"FROM {states_layer} s JOIN {other}.{municipios_layer} m "
+        f"ON m.sigla_uf_1 = s.uf AND m.{AREA_FLAGS[area]} = 'Sim' GROUP BY s.uf, s.estado"
+    )
+    return f"SELECT code, name, ST_Difference(state, cut) AS geometry FROM ({grouped}) WHERE NOT ST_IsEmpty(geometry)"
+
+
+def area_states_outside_file(area: str) -> str:
+    """Ex.: `area_states_outside_file("sudene")` → `"estados_fora_sudene.geojson"`."""
+    return f"estados_fora_{area}.geojson"
+
+
 # ---------------------------------------------------------------- vetores
 
 
@@ -189,13 +212,20 @@ def polygon_parts(geometry: dict) -> dict:
     """
     if geometry is None or geometry["type"] != "GeometryCollection":
         return geometry
+    return {"type": "MultiPolygon", "coordinates": _collection_polygons(geometry)}
+
+
+def _collection_polygons(collection: dict) -> list:
+    """Polígonos de uma coleção, entrando nas coleções aninhadas (o `ST_Difference` as gera)."""
     polygons = []
-    for part in geometry["geometries"]:
+    for part in collection["geometries"]:
         if part["type"] == "Polygon":
             polygons.append(part["coordinates"])
         elif part["type"] == "MultiPolygon":
             polygons.extend(part["coordinates"])
-    return {"type": "MultiPolygon", "coordinates": polygons}
+        elif part["type"] == "GeometryCollection":
+            polygons.extend(_collection_polygons(part))
+    return polygons
 
 
 def ogr_features(shp: Path, sql: str, simplify: bool = True) -> list[dict]:
@@ -260,12 +290,22 @@ def build_municipios_vector(raw: Path, out: Path) -> None:
     write_feature_collection(out / "vector" / "municipios.geojson", features)
 
 
+def has_polygon(feature: dict) -> bool:
+    """Feição com alguma área depois de simplificar (sliver colapsado não conta)."""
+    geometry = feature["geometry"]
+    return geometry is not None and len(geometry["coordinates"]) > 0
+
+
 def build_area_states_vectors(raw: Path, out: Path) -> None:
-    """`vector/estados_<area>.geojson` de cada área: só a parte de cada estado dentro dela."""
-    shp = raw / AREA_STATES_SHP
+    """Por área, `vector/estados_<area>.geojson` (parte de cada estado dentro dela) e
+    `vector/estados_fora_<area>.geojson` (a parte de fora, o véu do estado escolhido)."""
+    shp, states = raw / AREA_STATES_SHP, raw / STATES_SHP
     for area in AREA_FLAGS:
-        features = ogr_features(shp, area_states_select(layer_name(shp), area))
-        write_feature_collection(out / "vector" / area_states_file(area), features)
+        inside = ogr_features(shp, area_states_select(layer_name(shp), area))
+        write_feature_collection(out / "vector" / area_states_file(area), inside)
+        sql = area_states_outside_select(layer_name(states), shp.resolve(), layer_name(shp), area)
+        outside = [feature for feature in ogr_features(states, sql) if has_polygon(feature)]
+        write_feature_collection(out / "vector" / area_states_outside_file(area), outside)
 
 
 def area_features(raw: Path, simplify: bool = True) -> list[dict]:

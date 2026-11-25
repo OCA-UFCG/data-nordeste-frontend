@@ -270,8 +270,8 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   ```
 
   `build` writes `vector/*.geojson` (`pib`, `demografia`, `idh`, `estados`,
-  `municipios`, `areas`, and `estados_<area>` for `nordeste`, `semiarido`,
-  `caatinga`, `sudene`), `raster/aridez_<ano>_<area>.png`, `styles.json` (classes and outlines read
+  `municipios`, `areas`, and `estados_<area>` / `estados_fora_<area>` for
+  `nordeste`, `semiarido`, `caatinga`, `sudene`), `raster/aridez_<ano>_<area>.png`, `styles.json` (classes and outlines read
   from the `.qgz`), `manifest.json` and `data-issues.json`. Each aridez PNG is
   clipped to one area (`nordeste`, `semiarido`, `caatinga`, `sudene`; 16 files):
   `gdal_translate -r nearest` repeats each 0.1° pixel on a 0.01° grid (same
@@ -287,7 +287,18 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   `ST_Union` of the `sudene_mun.shp` municipalities flagged `Sim` for the area
   (same flags as the municipal vectors), simplified like the other vectors so
   it matches the municipal mesh (`area_states_select`). Real counts: 9 UFs in
-  nordeste and caatinga, 11 in semiarido and sudene. Downloaded files are
+  nordeste and caatinga, 11 in semiarido and sudene. `estados_fora_<area>` is
+  the rest of those UFs: the `brasil_estado_4674.shp` state minus that union
+  (`ST_Difference`, `area_states_outside_select`; the municipal shapefile is
+  joined as `'<path>'.sudene_mun` in the top-level JOIN, since OGR does not
+  resolve another datasource inside a subquery). The two sources' borders do
+  not coincide exactly, so the difference also has thin slivers along the
+  state edges; drawn as delivered, not cleaned. After `-simplify` the
+  difference comes out as nested `GeometryCollection`s with collapsed
+  lines/points; `polygon_parts` keeps the polygons at any depth (without the
+  recursion BA and PE lost their whole remainder). A UF with nothing left is
+  dropped (`has_polygon`); today every UF of the area keeps a remainder (9 in
+  nordeste and caatinga, 11 in semiarido and sudene). Downloaded files are
   untrusted data: never run anything from `$RAW`. `issues-pdf` needs
   `google-chrome` on the PATH. Tests:
   `python3 -m unittest discover -s scripts/geodata/tests -v`.
@@ -416,23 +427,26 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
 - **Veil:** grey (`VEIL_COLOR`) only from the state level: states outside the
   chosen ones and, at municipality level, the municipalities of those states
   that are not chosen (`veilFilters`, a layer filter). At area level there is
-  no veil. The chosen states also get a veil (`selectedStates`, layer
-  `veil-selected-states` on the full `states` source) placed **below** the
-  indicator fill and the aridez raster: the part of the state inside the area
-  is painted on top, so only the part outside the area of interest (e.g. most
-  of MG in the Sudene area) is grey, like the rest outside the recorte. User
-  decision, 24/11/2026. Since the fill is 85% opaque, the in-area part shows a
-  faint grey tint under the class colours.
+  no veil. The part of the chosen states outside the area of interest (e.g.
+  most of MG in the Sudene area) is grey too, like the rest outside the
+  recorte (user decision, 24/11/2026): layer `veil-outside-area` over the fill,
+  on the `area-states-outside` source (`estados_fora_<area>.geojson`, the exact
+  shape), filtered by `selectedStates`. INTENTIONAL: not a whole-state veil
+  under the fill — the fill is 85% opaque and the grey showed through inside
+  the area (controller ruling, 24/11/2026).
 - **State cut by the area** (user decision, 24/11/2026): the state hover
   outline and the thick state selection outline only cover the part of the
   state inside the area of interest. They use the `area-states` source, fed
   with `vector/estados_<area>.geojson` of the current area (`useAreaStates`,
   `areaStatesFileFor`; refetched when the area changes, `engine.setAreaStates`).
-  While it loads, or if the file is missing (a GEODATA_DIR built before it),
-  the full `estados.geojson` is used and `panel_map_area_states_failed` is
-  logged. The state boundary lines (`state-outline`) and the veil keep the
-  full `estados.geojson`. Fitting a chosen state frames its part inside the
-  area (`fitTargetFor` with `areaStates`, falling back to the full state).
+  While the files load, or if one is missing (a GEODATA_DIR built before
+  them), the full `estados.geojson` is used for hover and selection, the
+  outside veil is empty, and `panel_map_area_states_failed` is logged. The
+  state boundary lines (`state-outline`) and the veil of the other states keep
+  the full `estados.geojson`. Fitting a chosen state frames its part inside
+  the area (`fitTargetFor` with `areaStates`, falling back to the full state),
+  once: at state level the fit waits for the area files (`ready`), so mounting
+  or switching the area with a state chosen does not fit twice.
 - **Legend highlight** (as the old profile "porte" chips did): pointer over a
   legend chip (mouse only: `previewOnMouse` in `src/components/Panel/pointer.ts`,
   shared with the bar charts), keyboard focus or a tap highlights that class.

@@ -20,3 +20,12 @@ export function featureFileFor(indicator: PanelIndicator): string {
 export function areaStatesFileFor(area: TerritorialArea): string {
   return `vector/estados_${area}.geojson`;
 }
+
+/**
+ * A parte de cada estado fora da área (o estado inteiro menos a de dentro):
+ * o véu do estado escolhido. Só UFs com município na área.
+ * Ex.: `areaStatesOutsideFileFor("sudene")` → `"vector/estados_fora_sudene.geojson"`.
+ */
+export function areaStatesOutsideFileFor(area: TerritorialArea): string {
+  return `vector/estados_fora_${area}.geojson`;
+}

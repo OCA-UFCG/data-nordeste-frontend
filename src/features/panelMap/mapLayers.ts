@@ -25,11 +25,21 @@ export type FitSources = {
   areaStates?: FeatureCollection;
 };
 
+/**
+ * Cada estado partido pela área de interesse: `inside` é o
+ * `estados_<area>.geojson` (hover e seleção), `outside` o
+ * `estados_fora_<area>.geojson` (véu da parte de fora do estado escolhido).
+ */
+export type AreaStates = {
+  inside: FeatureCollection;
+  outside: FeatureCollection;
+};
+
 type VeilFilters = {
   states: FilterSpecification | null;
 
-  // Os estados escolhidos, inteiros, num véu sob o preenchimento: a parte
-  // deles fora da área fica cinza e a de dentro segue pintada por cima.
+  // Os estados escolhidos, na fonte da parte deles fora da área: esse pedaço
+  // fica cinza como o resto fora do recorte.
   selectedStates: FilterSpecification | null;
   features: FilterSpecification | null;
 };

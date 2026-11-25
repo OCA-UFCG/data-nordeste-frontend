@@ -1,21 +1,51 @@
 "use client";
 
 import type { FeatureCollection } from "geojson";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   fetchGeodataJson,
   type GeodataFetch,
   globalFetch,
 } from "@/components/PanelMap/useGeodata";
-import { areaStatesFileFor } from "@/features/panelMap/geodataFiles";
+import {
+  areaStatesFileFor,
+  areaStatesOutsideFileFor,
+} from "@/features/panelMap/geodataFiles";
+import type { AreaStates } from "@/features/panelMap/mapLayers";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 
-// O arquivo carregado e a área dele: o de outra área nunca é devolvido.
+/**
+ * Estados partidos pela área atual. `ready`: os arquivos da área chegaram (ou
+ * falharam e valem os do fallback) — o enquadramento de estado espera por ele.
+ */
+export type AreaStatesState = AreaStates & { ready: boolean };
+
+// Os arquivos carregados e a área deles: os de outra área nunca são devolvidos.
 type LoadedAreaStates = {
   area: TerritorialArea;
-  states: FeatureCollection | null;
+  states: AreaStates | null;
 };
+
+const NO_OUTSIDE: FeatureCollection = {
+  type: "FeatureCollection",
+  features: [],
+};
+
+async function loadAreaStates(
+  area: TerritorialArea,
+  fetchGeodata: GeodataFetch,
+): Promise<AreaStates> {
+  const [inside, outside] = await Promise.all([
+    fetchGeodataJson<FeatureCollection>(fetchGeodata, areaStatesFileFor(area)),
+    fetchGeodataJson<FeatureCollection>(
+      fetchGeodata,
+      areaStatesOutsideFileFor(area),
+    ),
+  ]);
+
+  return { inside, outside };
+}
 
 function areaStatesFailure(area: TerritorialArea, error: unknown): null {
   const message = error instanceof Error ? error.message : String(error);
@@ -27,11 +57,24 @@ function areaStatesFailure(area: TerritorialArea, error: unknown): null {
   return null;
 }
 
+// Sem os arquivos da área: o estado inteiro (hover e seleção não somem) e
+// nenhum véu de "parte de fora" (melhor que acinzentar a parte de dentro).
+function fallbackStates(
+  loaded: LoadedAreaStates | null,
+  area: TerritorialArea,
+  fallback: FeatureCollection,
+): AreaStatesState {
+  const current = loaded?.area === area ? loaded : null;
+  const states = current?.states ?? { inside: fallback, outside: NO_OUTSIDE };
+
+  return { ...states, ready: current !== null };
+}
+
 /**
- * Estados recortados pela área de interesse (`estados_<area>.geojson`), ou
- * `fallback` (o `estados.geojson` inteiro) enquanto o arquivo da área atual
- * carrega ou se ele falhar — o hover e a seleção voltam ao estado inteiro em
- * vez de sumirem. Trocar a área busca o arquivo dela.
+ * Estados partidos pela área de interesse: `estados_<area>.geojson` (dentro)
+ * e `estados_fora_<area>.geojson` (fora). Enquanto carregam, ou se falharem,
+ * `inside` é o `fallback` (o `estados.geojson` inteiro) e `outside` fica vazio.
+ * Trocar a área busca os arquivos dela.
  *
  * @example const areaStates = useAreaStates("sudene", geodata.states);
  */
@@ -39,18 +82,21 @@ export function useAreaStates(
   area: TerritorialArea,
   fallback: FeatureCollection,
   fetchGeodata: GeodataFetch = globalFetch,
-): FeatureCollection {
+): AreaStatesState {
   const [loaded, setLoaded] = useState<LoadedAreaStates | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    fetchGeodataJson<FeatureCollection>(fetchGeodata, areaStatesFileFor(area))
+    loadAreaStates(area, fetchGeodata)
       .catch((error: unknown) => areaStatesFailure(area, error))
       .then((states) => (cancelled ? undefined : setLoaded({ area, states })));
 
     return () => void (cancelled = true);
   }, [area, fetchGeodata]);
 
-  return (loaded?.area === area && loaded.states) || fallback;
+  return useMemo(
+    () => fallbackStates(loaded, area, fallback),
+    [loaded, area, fallback],
+  );
 }

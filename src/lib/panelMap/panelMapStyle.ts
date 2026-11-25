@@ -23,11 +23,13 @@ import { MUNICIPAL_LINES_ZOOM } from "@/features/panelMap/mapRecorte";
 
 // `states` é o `estados.geojson` inteiro (contorno estadual, véu); `areaStates`
 // é o `estados_<area>.geojson`, só a parte de cada estado dentro da área de
-// interesse (hover e contorno da seleção de estado).
+// interesse (hover e contorno da seleção de estado); `areaStatesOutside` é o
+// `estados_fora_<area>.geojson`, a parte de fora (véu do estado escolhido).
 export const PANEL_MAP_SOURCE = {
   features: "features",
   states: "states",
   areaStates: "area-states",
+  areaStatesOutside: "area-states-outside",
   areas: "areas",
   aridez: "aridez",
 } as const;
@@ -35,11 +37,11 @@ export const PANEL_MAP_SOURCE = {
 // A ordem do array em panelMapStyle é a ordem de desenho (de baixo para cima).
 // A aridez entra sob demanda logo abaixo de indicatorFill (ver panelMapAridez).
 export const PANEL_MAP_LAYER = {
-  veilSelectedStates: "veil-selected-states",
   aridez: "aridez",
   indicatorFill: "indicator-fill",
   classMuted: "class-muted",
   veilStates: "veil-states",
+  veilOutsideArea: "veil-outside-area",
   veilFeatures: "veil-features",
   featureOutline: "feature-outline",
   featureHover: "feature-hover",
@@ -205,19 +207,20 @@ function areaOutlineLayer(): LayerSpecification {
   };
 }
 
-// Camadas acima dos basemaps, de baixo para cima. WHY o véu do estado
-// escolhido fica sob o preenchimento (e sob o raster da aridez, que entra logo
-// abaixo do preenchimento): cobre o estado inteiro, mas a parte dele na área é
-// pintada por cima; só a de fora fica cinza, como o resto fora do recorte.
+// Camadas acima dos basemaps, de baixo para cima. O véu da parte do estado
+// escolhido fora da área usa a forma exata dela (`area-states-outside`), por
+// cima do preenchimento como os outros véus. INTENTIONAL: não um véu do estado
+// inteiro sob o preenchimento — o preenchimento é 85% opaco e o cinza
+// apareceria dentro da área (decisão do controlador, 24/11/2026).
 function overlayLayers(municipal: boolean): LayerSpecification[] {
-  const { features, states, areaStates } = PANEL_MAP_SOURCE;
+  const { features, states, areaStates, areaStatesOutside } = PANEL_MAP_SOURCE;
   const layer = PANEL_MAP_LAYER;
 
   return [
-    veilLayer(layer.veilSelectedStates, states),
     indicatorFillLayer(),
     classMutedLayer(),
     veilLayer(layer.veilStates, states),
+    veilLayer(layer.veilOutsideArea, areaStatesOutside),
     veilLayer(layer.veilFeatures, features),
     featureOutlineLayer(municipal),
     hoverLayer(layer.featureHover, features),
@@ -240,6 +243,7 @@ function panelMapSources(): StyleSpecification["sources"] {
     [PANEL_MAP_SOURCE.features]: featureSource(),
     [PANEL_MAP_SOURCE.states]: featureSource(),
     [PANEL_MAP_SOURCE.areaStates]: featureSource(),
+    [PANEL_MAP_SOURCE.areaStatesOutside]: featureSource(),
     [PANEL_MAP_SOURCE.areas]: featureSource(),
   };
 }

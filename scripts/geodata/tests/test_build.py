@@ -116,6 +116,41 @@ class AreaStatesSelectTest(unittest.TestCase):
         self.assertEqual(build.area_states_file("sudene"), "estados_sudene.geojson")
 
 
+def fake_difference(state, cut):
+    """`ST_Difference` de mentira: tira de `state` (texto "A,B,C") as partes que estão em `cut`."""
+    cut_parts = set(cut.split("+"))
+    return ",".join(part for part in state.split(",") if part not in cut_parts)
+
+
+class AreaStatesOutsideSelectTest(unittest.TestCase):
+    STATES = [("MG", "Minas Gerais", "MG1,MG2,MG3"), ("PE", "Pernambuco", "PE1"), ("SP", "São Paulo", "SP1")]
+    MUNICIPIOS = [("MG", "Sim", "MG1"), ("MG", "Não", "MG2"), ("PE", "Sim", "PE1"), ("SP", "Não", "SP1")]
+
+    def run_select(self, municipios_path: str) -> list:
+        with sqlite3.connect(":memory:") as db:
+            db.create_aggregate("ST_Union", 1, ConcatUnion)
+            db.create_function("ST_Difference", 2, fake_difference)
+            db.create_function("ST_IsEmpty", 1, lambda geometry: int(geometry == ""))
+            db.execute("ATTACH ':memory:' AS ?", (municipios_path,))
+            db.execute("CREATE TABLE estados (uf TEXT, estado TEXT, geometry TEXT)")
+            db.execute(f'CREATE TABLE "{municipios_path}".sudene_mun (sigla_uf_1 TEXT, aas_21_1 TEXT, geometry TEXT)')
+            db.executemany("INSERT INTO estados VALUES (?, ?, ?)", self.STATES)
+            db.executemany(f'INSERT INTO "{municipios_path}".sudene_mun VALUES (?, ?, ?)', self.MUNICIPIOS)
+            sql = build.area_states_outside_select("estados", Path(municipios_path), "sudene_mun", "sudene")
+            return db.execute(sql + " ORDER BY code").fetchall()
+
+    def test_full_state_minus_the_part_in_the_area_dropping_empty_ones(self):
+        # PE está todo na área (sobra vazio) e SP não tem município nela: os dois saem.
+        self.assertEqual(self.run_select("/raw/sudene_mun.shp"), [("MG", "Minas Gerais", "MG2,MG3")])
+
+    def test_quotes_the_other_datasource_path(self):
+        sql = build.area_states_outside_select("estados", Path("/raw/d'água/m.shp"), "m", "sudene")
+        self.assertIn("'/raw/d''água/m.shp'.m", sql)
+
+    def test_file_name_per_area(self):
+        self.assertEqual(build.area_states_outside_file("caatinga"), "estados_fora_caatinga.geojson")
+
+
 class PolygonPartsTest(unittest.TestCase):
     def test_keeps_only_polygon_parts_of_collection(self):
         # Simplificar + arredondar a 5 casas colapsa anéis minúsculos em ponto/linha.
@@ -129,6 +164,18 @@ class PolygonPartsTest(unittest.TestCase):
             ],
         }
         self.assertEqual(build.polygon_parts(geometry), {"type": "MultiPolygon", "coordinates": [square, square]})
+
+    def test_keeps_polygons_of_nested_collections(self):
+        # O ST_Difference dos estados_fora_<area> sai assim depois do -simplify (BA no Semiárido).
+        square = [[[0, 0], [1, 0], [1, 1], [0, 0]]]
+        geometry = {
+            "type": "GeometryCollection",
+            "geometries": [
+                {"type": "GeometryCollection", "geometries": [{"type": "Polygon", "coordinates": square}]},
+                {"type": "MultiLineString", "coordinates": [[[0, 0], [1, 1]]]},
+            ],
+        }
+        self.assertEqual(build.polygon_parts(geometry), {"type": "MultiPolygon", "coordinates": [square]})
 
     def test_polygon_untouched(self):
         polygon = {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]]}

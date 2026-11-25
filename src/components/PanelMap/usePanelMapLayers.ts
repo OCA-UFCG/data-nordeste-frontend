@@ -3,6 +3,7 @@
 import type { FeatureCollection } from "geojson";
 import { useEffect, useMemo, useState } from "react";
 
+import type { AreaStatesState } from "@/components/PanelMap/useAreaStates";
 import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
 import type {
   MapFeatureProps,
@@ -34,9 +35,9 @@ export type PanelMapLayersArgs = {
   engine: PanelMapEngine | null;
   geodata: ReadyGeodata;
 
-  // `estados_<area>.geojson` da área atual (ou o `estados.geojson` inteiro
-  // enquanto ele carrega): hover, seleção e enquadramento de estado.
-  areaStates: FeatureCollection;
+  // Estados partidos pela área atual (`useAreaStates`): hover, seleção, véu
+  // da parte de fora e enquadramento de estado.
+  areaStates: AreaStatesState;
   indicator: PanelIndicator;
   ano: number;
   area: TerritorialArea;
@@ -85,7 +86,11 @@ function useSourcesAndPaint(args: PanelMapLayersArgs, sources: FitSources) {
   const paint = usePaint(args);
 
   useEffect(() => engine?.setSources(sources), [engine, sources]);
-  useEffect(() => engine?.setAreaStates(areaStates), [engine, areaStates]);
+  useEffect(() => {
+    const { inside, outside } = areaStates;
+
+    engine?.setAreaStates({ inside, outside });
+  }, [engine, areaStates]);
   useEffect(() => {
     const { stateOutline } = geodata.styles;
 
@@ -107,15 +112,18 @@ function fitRecorte(
 }
 
 // Os estados da área só entram no enquadramento de estado (a parte do estado
-// dentro da área). WHY: assim a chegada do arquivo da área (assíncrona) só
-// reenquadra quando o enquadramento depende dele.
+// dentro da área): `undefined` fora dele, `null` enquanto os arquivos da área
+// carregam. WHY: o estado escolhido é enquadrado uma vez só, já pelo corte, e
+// a chegada dos arquivos não reenquadra a área inteira nem o município.
 function fitStatesFor(
   args: PanelMapLayersArgs,
   recorte: MapRecorte,
-): FeatureCollection | undefined {
+): FeatureCollection | null | undefined {
   const drawn = recorteForLevel(recorte, args.level);
 
-  return levelOfRecorte(drawn) === "estado" ? args.areaStates : undefined;
+  if (levelOfRecorte(drawn) !== "estado") return undefined;
+
+  return args.areaStates.ready ? args.areaStates.inside : null;
 }
 
 // IMPORTANT: todo recorte novo é enquadrado (zoom, arraste, clique, barra,
@@ -136,10 +144,11 @@ function useRecorteFraming(
   useEffect(() => {
     if (!engine) return;
     const drawn = recorteForLevel(recorte, level);
-    const fitSources = { ...sources, areaStates };
+    const fitSources = { ...sources, areaStates: areaStates ?? undefined };
 
     engine.setVeil(veilFilters(drawn));
     engine.setSelection(selectionFilter(drawn, level));
+    if (areaStates === null) return;
     fitRecorte(engine, recorte, { area, level }, fitSources);
   }, [engine, recorte, area, level, sources, areaStates]);
 }

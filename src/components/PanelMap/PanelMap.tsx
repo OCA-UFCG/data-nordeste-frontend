@@ -135,7 +135,8 @@ function usePanelMapRecorte(
 ) {
   const aridez = aridezModeFor(props.indicator, props.aridez);
 
-  // Hover e seleção de estado só na parte dele dentro da área de interesse.
+  // Hover e seleção de estado só na parte dele dentro da área de interesse; a
+  // parte de fora do estado escolhido fica sob o véu.
   const areaStates = useAreaStates(props.area, geodata.states);
   const layers = { ...props, engine, geodata, areaStates, aridez, level };
   usePanelMapLayers(layers);

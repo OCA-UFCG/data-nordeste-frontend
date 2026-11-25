@@ -1,9 +1,12 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { FeatureCollection } from "geojson";
 import type { FilterSpecification, Map as MaplibreMap } from "maplibre-gl";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
-import type { Bounds, FitSources } from "@/features/panelMap/mapLayers";
+import type {
+  AreaStates,
+  Bounds,
+  FitSources,
+} from "@/features/panelMap/mapLayers";
 import { type ChartImageSource, canvasImageSource } from "@/lib/chartImage";
 import type { BasemapKind } from "@/lib/panelMap/basemaps";
 import { type AridezOverlay, showAridez } from "@/lib/panelMap/panelMapAridez";
@@ -53,9 +56,9 @@ export interface PanelMapEngine {
   setBasemap(kind: BasemapKind): void;
   setSources(sources: FitSources): void;
 
-  // Estados recortados pela área de interesse (`estados_<area>.geojson`): o
-  // hover por estado e o contorno da seleção de estado usam só essa parte.
-  setAreaStates(states: FeatureCollection): void;
+  // Estados partidos pela área de interesse: o hover por estado e o contorno
+  // da seleção usam só a parte de dentro; o véu do estado escolhido, a de fora.
+  setAreaStates(states: AreaStates): void;
   setIndicatorPaint(paint: IndicatorPaint): void;
   setVeil(veil: VeilFilters): void;
   setSelection(filter: FilterSpecification | null): void;

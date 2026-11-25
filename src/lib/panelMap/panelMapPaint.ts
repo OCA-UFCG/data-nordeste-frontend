@@ -1,4 +1,3 @@
-import type { FeatureCollection } from "geojson";
 import type {
   ExpressionSpecification,
   FilterSpecification,
@@ -8,6 +7,7 @@ import type {
 
 import type { QgisOutline } from "@/features/panelMap/geodataTypes";
 import {
+  type AreaStates,
   areaFilter,
   type FitSources,
   type veilFilters,
@@ -64,14 +64,14 @@ export function setSourceData(map: MaplibreMap, sources: FitSources): void {
 }
 
 /**
- * Troca os estados recortados pela área de interesse (`estados_<area>.geojson`),
- * a fonte do hover e da seleção de estado.
+ * Troca os estados partidos pela área de interesse: a parte de dentro (hover
+ * e seleção de estado) e a de fora (véu do estado escolhido).
  */
-export function setAreaStatesData(
-  map: MaplibreMap,
-  states: FeatureCollection,
-): void {
-  geojsonSource(map, PANEL_MAP_SOURCE.areaStates).setData(states);
+export function setAreaStatesData(map: MaplibreMap, states: AreaStates): void {
+  geojsonSource(map, PANEL_MAP_SOURCE.areaStates).setData(states.inside);
+  geojsonSource(map, PANEL_MAP_SOURCE.areaStatesOutside).setData(
+    states.outside,
+  );
 }
 
 function paintLine(map: MaplibreMap, layerId: string, outline: QgisOutline) {
@@ -116,13 +116,13 @@ function filterOrHide(
 }
 
 /**
- * Véu cinza sobre o que está fora do recorte: os outros estados e municípios
- * por cima do preenchimento; o(s) estado(s) escolhido(s) por baixo dele, para
- * só a parte fora da área de interesse ficar cinza.
+ * Véu cinza sobre o que está fora do recorte: os outros estados, a parte do(s)
+ * estado(s) escolhido(s) fora da área de interesse e, no nível município, os
+ * outros municípios.
  */
 export function applyVeil(map: MaplibreMap, veil: VeilFilters): void {
-  filterOrHide(map, PANEL_MAP_LAYER.veilSelectedStates, veil.selectedStates);
   filterOrHide(map, PANEL_MAP_LAYER.veilStates, veil.states);
+  filterOrHide(map, PANEL_MAP_LAYER.veilOutsideArea, veil.selectedStates);
   filterOrHide(map, PANEL_MAP_LAYER.veilFeatures, veil.features);
 }
 

@@ -23,7 +23,7 @@ const minZooms = (municipal: boolean) =>
 const ALWAYS_VISIBLE = [
   PANEL_MAP_LAYER.indicatorFill,
   PANEL_MAP_LAYER.classMuted,
-  PANEL_MAP_LAYER.veilSelectedStates,
+  PANEL_MAP_LAYER.veilOutsideArea,
   PANEL_MAP_LAYER.veilStates,
   PANEL_MAP_LAYER.veilFeatures,
   PANEL_MAP_LAYER.areaOutline,
@@ -102,16 +102,18 @@ describe("estado recortado pela área de interesse", () => {
     );
   });
 
-  // O preenchimento da área (e o raster da aridez, que entra logo abaixo do
-  // preenchimento) fica por cima: só a parte de fora do estado fica cinza.
-  it("o véu do estado escolhido é o estado inteiro, logo abaixo do preenchimento", () => {
-    expect(layerById(PANEL_MAP_LAYER.veilSelectedStates)).toMatchObject({
+  // Forma exata, por cima do preenchimento: um véu sob o preenchimento (85%
+  // opaco) acinzentava também a parte de dentro.
+  it("o véu do estado escolhido cobre só a parte dele fora da área, sobre o preenchimento", () => {
+    expect(layerById(PANEL_MAP_LAYER.veilOutsideArea)).toMatchObject({
       type: "fill",
-      source: PANEL_MAP_SOURCE.states,
+      source: PANEL_MAP_SOURCE.areaStatesOutside,
       layout: { visibility: "none" },
     });
-    expect(ids().indexOf(PANEL_MAP_LAYER.veilSelectedStates)).toBe(
-      ids().indexOf(PANEL_MAP_LAYER.indicatorFill) - 1,
+    expect(ids().indexOf(PANEL_MAP_LAYER.veilOutsideArea)).toBeGreaterThan(
+      ids().indexOf(PANEL_MAP_LAYER.classMuted),
     );
+    expect(ids()[0]).not.toBe("veil-selected-states");
+    expect(ids()).not.toContain("veil-selected-states");
   });
 });

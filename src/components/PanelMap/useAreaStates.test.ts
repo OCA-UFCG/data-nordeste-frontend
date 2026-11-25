@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { FeatureCollection } from "geojson";
 import { describe, expect, it, vi } from "vitest";
 
@@ -7,60 +7,78 @@ import type { TerritorialArea } from "@/features/panels/territorialFilters";
 
 const FULL: FeatureCollection = { type: "FeatureCollection", features: [] };
 
-const clipped = (area: string): FeatureCollection => ({
+const piece = (area: string, side: string): FeatureCollection => ({
   type: "FeatureCollection",
   features: [
     {
       type: "Feature",
-      properties: { code: "MG", name: area },
+      properties: { code: "MG", name: `${area} ${side}` },
       geometry: { type: "Point", coordinates: [0, 0] },
     },
   ],
 });
 
-// Respostas que o teste solta na ordem que quiser (rede lenta).
-function deferredFetch() {
-  const pending = new Map<string, (response: Response) => void>();
-  const fetchGeodata = vi.fn(
-    (url: string) =>
-      new Promise<Response>((resolve) => pending.set(url, resolve)),
-  );
-  const respond = (area: string) =>
-    pending.get(`/api/geodata/vector/estados_${area}.geojson`)?.(
-      Response.json(clipped(area)),
-    );
+/** Rota dos geodados que só responde quando o teste manda (rede lenta). */
+class DeferredGeodataFetchFake {
+  private readonly pending = new Map<string, (response: Response) => void>();
 
-  return { fetchGeodata, respond };
+  readonly fetch = vi.fn(
+    (url: string) =>
+      new Promise<Response>((resolve) => this.pending.set(url, resolve)),
+  );
+
+  respond(area: string): void {
+    this.pending.get(`/api/geodata/vector/estados_${area}.geojson`)?.(
+      Response.json(piece(area, "dentro")),
+    );
+    this.pending.get(`/api/geodata/vector/estados_fora_${area}.geojson`)?.(
+      Response.json(piece(area, "fora")),
+    );
+  }
 }
 
+const loadedStates = (area: string) => ({
+  inside: piece(area, "dentro"),
+  outside: piece(area, "fora"),
+  ready: true,
+});
+
 describe("useAreaStates", () => {
-  it("usa os estados inteiros até o arquivo da área chegar", async () => {
-    const { fetchGeodata, respond } = deferredFetch();
+  it("usa os estados inteiros, sem parte de fora, até os arquivos chegarem", async () => {
+    const fake = new DeferredGeodataFetchFake();
     const { result } = renderHook(() =>
-      useAreaStates("sudene", FULL, fetchGeodata),
+      useAreaStates("sudene", FULL, fake.fetch),
     );
 
-    expect(result.current).toBe(FULL);
-    respond("sudene");
+    expect(result.current).toEqual({
+      inside: FULL,
+      outside: { type: "FeatureCollection", features: [] },
+      ready: false,
+    });
+    fake.respond("sudene");
 
-    await waitFor(() => expect(result.current).toEqual(clipped("sudene")));
+    await waitFor(() => expect(result.current).toEqual(loadedStates("sudene")));
   });
 
   it("a resposta atrasada da área anterior não vale para a nova", async () => {
-    const { fetchGeodata, respond } = deferredFetch();
+    const fake = new DeferredGeodataFetchFake();
     const { result, rerender } = renderHook(
       ({ area }: { area: TerritorialArea }) =>
-        useAreaStates(area, FULL, fetchGeodata),
+        useAreaStates(area, FULL, fake.fetch),
       { initialProps: { area: "sudene" } },
     );
 
     rerender({ area: "caatinga" });
-    respond("sudene");
-    await Promise.resolve();
+    fake.respond("sudene");
 
-    expect(result.current).toBe(FULL);
-    respond("caatinga");
+    // Deixa a resposta velha terminar (json + setState) antes de conferir.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
 
-    await waitFor(() => expect(result.current).toEqual(clipped("caatinga")));
+    expect(result.current.ready).toBe(false);
+    fake.respond("caatinga");
+
+    await waitFor(() =>
+      expect(result.current).toEqual(loadedStates("caatinga")),
+    );
   });
 });

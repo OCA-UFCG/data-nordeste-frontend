@@ -96,46 +96,53 @@ describe("applyClassHighlight", () => {
 });
 
 describe("estado escolhido recortado pela área", () => {
-  it("o véu sob o preenchimento cobre o estado escolhido inteiro", () => {
+  it("o véu da parte de fora da área casa o estado escolhido", () => {
     const map = new MaplibrePaintFake();
     const veil = veilFilters({ uf: ["MG"], mun: [] });
 
     applyVeil(map.asMap(), veil);
 
     expect(map.setLayoutProperty).toHaveBeenCalledWith(
-      PANEL_MAP_LAYER.veilSelectedStates,
+      PANEL_MAP_LAYER.veilOutsideArea,
       "visibility",
       "visible",
     );
     expect(map.setFilter).toHaveBeenCalledWith(
-      PANEL_MAP_LAYER.veilSelectedStates,
+      PANEL_MAP_LAYER.veilOutsideArea,
       ["in", ["get", "code"], ["literal", ["MG"]]],
     );
   });
 
-  it("sem estado escolhido, o véu do estado some", () => {
+  it("sem estado escolhido, o véu da parte de fora some", () => {
     const map = new MaplibrePaintFake();
 
     applyVeil(map.asMap(), veilFilters({ uf: [], mun: [] }));
 
     expect(map.setLayoutProperty).toHaveBeenCalledWith(
-      PANEL_MAP_LAYER.veilSelectedStates,
+      PANEL_MAP_LAYER.veilOutsideArea,
       "visibility",
       "none",
     );
   });
 
-  it("os estados da área vão para a fonte do hover e da seleção", () => {
+  it("a parte de dentro vai para o hover e a seleção; a de fora, para o véu", () => {
     const map = new MaplibrePaintFake();
-    const states: FeatureCollection = {
+    const inside: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [],
+    };
+    const outside: FeatureCollection = {
       type: "FeatureCollection",
       features: [],
     };
 
-    setAreaStatesData(map.asMap(), states);
+    setAreaStatesData(map.asMap(), { inside, outside });
 
     expect(
       map.sources.get(PANEL_MAP_SOURCE.areaStates)?.setData,
-    ).toHaveBeenCalledWith(states);
+    ).toHaveBeenCalledWith(inside);
+    expect(
+      map.sources.get(PANEL_MAP_SOURCE.areaStatesOutside)?.setData,
+    ).toHaveBeenCalledWith(outside);
   });
 });

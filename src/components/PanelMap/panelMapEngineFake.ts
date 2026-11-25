@@ -1,8 +1,11 @@
-import type { FeatureCollection } from "geojson";
 import { vi } from "vitest";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
-import type { Bounds, FitSources } from "@/features/panelMap/mapLayers";
+import type {
+  AreaStates,
+  Bounds,
+  FitSources,
+} from "@/features/panelMap/mapLayers";
 import type { ChartImageSource } from "@/lib/chartImage";
 import type {
   AridezOverlay,
@@ -32,7 +35,7 @@ export class PanelMapEngineFake implements PanelMapEngine {
 
   readonly setBasemap = vi.fn<(kind: BasemapKind) => void>();
   readonly setSources = vi.fn<(sources: FitSources) => void>();
-  readonly setAreaStates = vi.fn<(states: FeatureCollection) => void>();
+  readonly setAreaStates = vi.fn<(states: AreaStates) => void>();
   readonly setIndicatorPaint = vi.fn<(paint: IndicatorPaint) => void>();
   readonly setVeil = vi.fn<(veil: VeilFilters) => void>();
   readonly setSelection = vi.fn<(filter: SelectionFilter) => void>();
