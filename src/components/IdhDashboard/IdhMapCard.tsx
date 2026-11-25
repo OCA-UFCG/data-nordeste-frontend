@@ -29,12 +29,12 @@ import { formatIdhCard } from "@/features/panels/idh/idhFormat";
 import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 import { withYear } from "@/features/panels/territorialFilters";
 
-const TITLE = "Mapa do IDH por estado";
+const TITLE = "IDH por estado";
 
 // O cartaz de download: "Mapa do IDH - {lugar}".
 const POSTER_TEXTS = {
   name: "IDH",
-  subtitle: "Faixas de desenvolvimento humano",
+  subtitle: "Nível de desenvolvimento humano",
   source: IDH_CARD_SOURCE,
 };
 
@@ -64,7 +64,7 @@ const useIdhMapProps = (
 });
 
 /**
- * Card "Mapa do IDH por estado": cada estado na cor da faixa do seu IDH.
+ * Card "IDH por estado": cada estado na cor da faixa do seu IDH.
  * Aproximar ou clicar no mapa troca o Estado no filtro do painel, pelo mesmo
  * caminho da barra de filtros. O diálogo da tela cheia fica no `overlay`: no
  * corpo, o esqueleto do carregando o desmontaria a cada filtro aplicado.
@@ -88,7 +88,7 @@ export const IdhMapCard = ({
 
   // O ano pedido, como o mapa: o card não espera o servidor (`map: []` em
   // `idhCardState.ts`).
-  const subtitle = withYear("Faixas de desenvolvimento humano", selection.ano);
+  const subtitle = withYear("Nível de desenvolvimento humano", selection.ano);
 
   return (
     <ProtoCard

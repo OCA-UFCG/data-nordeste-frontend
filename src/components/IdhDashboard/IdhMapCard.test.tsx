@@ -89,7 +89,7 @@ describe("IdhMapCard poster download", () => {
     });
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Mais opções: Mapa do IDH por estado",
+        name: "Mais opções: IDH por estado",
       }),
     );
     fireEvent.click(
@@ -103,7 +103,7 @@ describe("IdhMapCard poster download", () => {
 
     expect(poster).toMatchObject({
       title: "Mapa do IDH - Nordeste",
-      subtitle: "Faixas de desenvolvimento humano - 2021",
+      subtitle: "Nível de desenvolvimento humano - 2021",
       source: IDH_CARD_SOURCE,
     });
     expect(poster?.legend.map((item) => item.label)).toEqual([
