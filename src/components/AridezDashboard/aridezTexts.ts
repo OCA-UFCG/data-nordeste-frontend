@@ -21,6 +21,33 @@ export const ARIDEZ_CARD_INFO = {
     "Para cada município, a divisão da sua área entre as classes do índice de aridez, em %. Passe o mouse sobre um trecho da barra para ver a área em km².",
 } as const;
 
+// Definição do índice (texto do revisor, UNCCD), mostrada no ⓘ dos três cards.
+// Mantida palavra por palavra: é a redação aprovada, não um resumo.
+export const ARIDEZ_INDEX_DEFINITION: {
+  intro: readonly string[];
+  classes: readonly string[];
+  outro: readonly string[];
+} = {
+  intro: [
+    "Índice de Aridez (IA) é um indicador climático que mensura a relação entre precipitação e evaporação potencial em uma região específica, variando de 0 a 1.",
+    "Valores próximos de 0 indicam regiões muito secas, onde a evapotranspiração potencial é muito superior à precipitação.",
+    "Valores próximos de 1 indicam regiões mais úmidas, onde a precipitação se aproxima da demanda evaporativa da atmosfera.",
+    "De acordo com os critérios estabelecidos pela Convenção das Nações Unidas de Combate à Desertificação (UNCCD), as classificações baseadas no IA são as seguintes:",
+  ],
+  classes: [
+    "Hiperárido: IA abaixo de 0,05;",
+    "Árido: IA entre 0,05 e 0,20;",
+    "Semiárido: IA entre 0,20 e 0,50;",
+    "Subúmido seco: IA entre 0,50 e 0,65; e",
+    "Úmido: IA superior a 0,65.",
+  ],
+  outro: [
+    "As áreas suscetíveis à desertificação (ASD) ocorrem quando o IA é inferior a 0,65.",
+    "Evapotranspiração potencial (ETP) é a quantidade máxima de água que poderia ser transferida da superfície terrestre para a atmosfera por evaporação e transpiração, se houver água disponível em quantidade ilimitada no solo.",
+    'Obs.: Os campos com valor "sem dados" se referem majoritariamente à regiões costeiras, onde a cobertura da terra predominante é água, de modo que a classificação de cobertura da vegetação é afetada.',
+  ],
+};
+
 export const ARIDEZ_SAIBA_MAIS_TITLE = "Saiba mais";
 
 export const ARIDEZ_SAIBA_MAIS_SUMMARY =

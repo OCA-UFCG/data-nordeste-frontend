@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { AridezCardProps } from "@/components/AridezDashboard/aridezCardProps";
+import { AridezIndexInfo } from "@/components/AridezDashboard/AridezIndexInfo";
 import {
   ARIDEZ_CARD_INFO,
   ARIDEZ_CARD_SOURCE,
@@ -121,7 +122,7 @@ export const AridezMapCard = ({
       actions={
         <PanelMapCardActions
           title={ARIDEZ_MAP_TITLE}
-          info={ARIDEZ_CARD_INFO.map}
+          info={<AridezIndexInfo lead={ARIDEZ_CARD_INFO.map} />}
           imageSource={card.imageSource}
           engine={card.engine}
           poster={panelMapPosterInput(mapProps, card.geodata, POSTER_TEXTS)}
