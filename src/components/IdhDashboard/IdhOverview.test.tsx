@@ -207,4 +207,31 @@ describe("IdhOverview", () => {
     expect(info).toHaveTextContent("IDH ajustado à desigualdade (IDHAD)");
     expect(info).toHaveTextContent("Clique em um ponto para escolher um ano.");
   });
+
+  // Revisão do painel (25/11/2026): o subtítulo do ranking fala do índice, não
+  // das barras, e não repete a ordem.
+  it("subtitles the ranking with the index range and the year", () => {
+    render(overview(allIdhCards("ok")));
+
+    expect(
+      screen.getByText("Índice varia de 0 a 1 · 2021"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Do maior para o menor/)).toBeNull();
+  });
+
+  it("explains the ranking colors and click in its ⓘ", () => {
+    render(overview(allIdhCards("ok")));
+
+    const card = screen
+      .getByRole("heading", { name: /^Ranking do IDH por estado/ })
+      .closest<HTMLElement>("section, article, [class*='rounded']");
+
+    fireEvent.click(
+      within(card!).getByRole("button", { name: "Sobre este gráfico" }),
+    );
+
+    expect(screen.getByRole("dialog")).toHaveTextContent(
+      "Os estados são ordenados de forma decrescente",
+    );
+  });
 });

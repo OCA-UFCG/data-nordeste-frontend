@@ -3,10 +3,11 @@
 
 // Textos do ⓘ de cada card, do protótipo. Diferem dele num ponto: no banco há
 // série anual por estado, então a linha não é sempre a média do Nordeste.
+// O mapa e o ranking usam o texto da revisão do painel (25/11/2026).
 export const IDH_CARD_INFO = {
-  map: "Cada estado recebe a cor da sua faixa de desenvolvimento humano. Aproxime o mapa ou clique em um estado para usá-lo como filtro do painel. O painel sempre mostra um estado: afastar o mapa não tira o estado escolhido do filtro.",
+  map: "Cada estado é representado pela cor correspondente à sua classificação do Índice de Desenvolvimento Humano (IDH). Clique em um estado para filtrar os dados do painel.",
   ranking:
-    "Estados ordenados do maior para o menor IDH, na cor da faixa. As barras vão de 0 a 1. Clique em uma barra para filtrar o painel.",
+    "Os estados são ordenados de forma decrescente pelo Índice de Desenvolvimento Humano (IDH) e representados por cores correspondentes às suas respectivas classes. Clique em uma barra do gráfico para filtrar os dados do painel.",
   groups:
     "Compara os dois grupos no local e no ano escolhidos. O tamanho da barra segue a escala indicada abaixo dela.",
 } as const;
