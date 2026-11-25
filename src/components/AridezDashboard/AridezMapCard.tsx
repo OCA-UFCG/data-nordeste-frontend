@@ -21,6 +21,7 @@ import {
   aridezClassCounts,
   aridezMapValues,
   aridezPredominantClasses,
+  aridezStateShares,
 } from "@/features/panels/aridez/aridezMap";
 import type { AridezPanelData } from "@/features/panels/aridez/aridezPanel";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
@@ -30,7 +31,7 @@ import { areaLabel } from "@/features/panels/territorialOptions";
 // classes fica abaixo da caixa.
 const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 
-// O número do tooltip, as contagens da legenda e o destaque das classes saem
+// O número do tooltip (o do município e, só com a área, o do estado), as contagens da legenda e o destaque das classes saem
 // de todos os municípios da área (`data.mapa`): só mudam com Área e Ano, não
 // com o zoom.
 const useAridezMapProps = (
@@ -39,6 +40,7 @@ const useAridezMapProps = (
   onFiltersChange: (filters: TerritorialFilters) => void,
 ): PanelMapProps => {
   const values = useMemo(() => aridezMapValues(data.mapa), [data.mapa]);
+  const stateValues = useMemo(() => aridezStateShares(data.mapa), [data.mapa]);
   const classCounts = useMemo(() => aridezClassCounts(data.mapa), [data.mapa]);
   const classOf = useMemo(
     () => aridezPredominantClasses(data.mapa),
@@ -53,6 +55,7 @@ const useAridezMapProps = (
     valueLabel: "Área suscetível",
     label: ARIDEZ_MAP_TITLE,
     values,
+    stateValues,
     classCounts,
     classOf,
   };

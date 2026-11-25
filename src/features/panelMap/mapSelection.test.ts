@@ -57,10 +57,24 @@ describe("recorteForClick", () => {
     });
   });
 
-  it("município clicado vira o filtro de município", () => {
+  it("área: o clique num município escolhe o estado dele, não o município", () => {
     expect(
       recorteForClick(RECIFE, "municipio", "municipio", EMPTY_RECORTE),
     ).toEqual({
+      uf: ["PE"],
+      mun: [],
+    });
+  });
+
+  it("o clique desce um nível por vez: área → estado → município", () => {
+    const estado = recorteForClick(
+      RECIFE,
+      "municipio",
+      "municipio",
+      EMPTY_RECORTE,
+    );
+
+    expect(recorteForClick(RECIFE, "municipio", "municipio", estado)).toEqual({
       uf: ["PE"],
       mun: ["2611606"],
     });

@@ -59,6 +59,25 @@ describe("useMapRecorte", () => {
     expect(onRecorteChange).not.toHaveBeenCalled();
   });
 
+  // Girar (botão direito, Ctrl + arrastar, dois dedos ou a bússola) é gesto
+  // do usuário, mas não muda zoom nem centro: o recorte fica.
+  it("girar o mapa sem mover não troca o recorte", () => {
+    const { engine, onRecorteChange } = renderMapRecorte(
+      { uf: ["PE"], mun: ["2611606"] },
+      "municipio",
+    );
+
+    engine.emitMoveEnd({
+      zoom: 10,
+      fit: true,
+      fittedZoom: 10,
+      programmatic: true,
+    });
+    engine.emitMoveEnd({ zoom: 10, centerUf: "PE", centerMun: "2611606" });
+
+    expect(onRecorteChange).not.toHaveBeenCalled();
+  });
+
   // O motor só manda códigos da feição do indicador (já filtrada pela área):
   // centro fora da área ou no mar chega sem UF, e o recorte não muda.
   it("um centro sem feição do indicador não emite recorte", () => {

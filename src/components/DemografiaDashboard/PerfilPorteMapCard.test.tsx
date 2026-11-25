@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   PerfilPorteMapCard,
@@ -62,8 +62,6 @@ const lastProps = (): PanelMapProps =>
   panelMapRenders[panelMapRenders.length - 1];
 
 const CLOSED: PorteMapView = {
-  view: "municipios",
-  setView: vi.fn(),
   fullscreen: false,
   setFullscreen: vi.fn(),
 };
@@ -179,66 +177,26 @@ describe("PerfilPorteMapCard", () => {
     expect(setFullscreen).toHaveBeenCalledWith(true);
   });
 
-  it("shows the Municípios | Estados switch with the current view pressed", () => {
-    renderCard();
-    const group = screen.getByRole("group", { name: "Mostrar no mapa" });
-
-    expect(
-      within(group).getByRole("button", { name: "Municípios" }),
-    ).toHaveAttribute("aria-pressed", "true");
-    expect(
-      within(group).getByRole("button", { name: "Estados" }),
-    ).toHaveAttribute("aria-pressed", "false");
-  });
-
-  it("asks the dashboard to switch the view", () => {
-    const setView = vi.fn();
-
-    renderCard(vi.fn(), { ...CLOSED, setView });
-    fireEvent.click(screen.getByRole("button", { name: "Estados" }));
-
-    expect(setView).toHaveBeenCalledWith("estados");
-  });
-
-  it("the Estados view maps only the states and filters only the UF", () => {
-    renderCard(vi.fn(), { ...CLOSED, view: "estados" });
-
-    expect(lastProps()).toMatchObject({
-      indicator: "demografia",
-      featureLevel: "estado",
-      deepest: "estado",
-      label: "Mapa dos estados do Nordeste",
-      area: "semiarido",
-    });
-    expect(lastProps().recorte).toEqual({ uf: ["PB"], mun: [] });
-  });
-
-  it("the Municípios view maps the municipalities", () => {
+  // A vista Estados saiu: o card só tem o mapa dos municípios.
+  it("has no Municípios | Estados switch", () => {
     renderCard();
 
-    expect(lastProps().featureLevel).toBe("municipio");
+    expect(screen.queryByRole("group", { name: "Mostrar no mapa" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Estados" })).toBeNull();
   });
 
-  it("the fullscreen map follows the chosen view", () => {
-    renderCard(vi.fn(), { ...CLOSED, view: "estados", fullscreen: true });
+  it("the fullscreen map is the municipal map too", () => {
+    renderCard(vi.fn(), { ...CLOSED, fullscreen: true });
 
     const maps = screen.getAllByTestId("panel-map");
 
     expect(maps.map((map) => map.getAttribute("aria-label"))).toEqual([
-      "Mapa dos estados do Nordeste",
-      "Mapa dos estados do Nordeste",
+      "Mapa dos municípios por porte",
+      "Mapa dos municípios por porte",
     ]);
-    expect(panelMapRenders.every((props) => props.deepest === "estado")).toBe(
-      true,
-    );
-  });
-
-  it("drops the sr-only porte table in the Estados view", () => {
-    renderCard(vi.fn(), { ...CLOSED, view: "estados" });
-
     expect(
-      screen.queryByRole("table", { name: "Porte populacional em 2022" }),
-    ).toBeNull();
+      panelMapRenders.every((props) => props.deepest === "municipio"),
+    ).toBe(true);
   });
 
   it("keeps the accessible sr-only table in the card", () => {

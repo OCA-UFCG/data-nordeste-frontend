@@ -185,7 +185,7 @@ describe("PibMapCard", () => {
     expect(screen.getByText("PIB per capita").tagName).toBe("B");
     expect(paragraphs).toHaveLength(4);
     expect(paragraphs?.[0].textContent).toMatch(
-      /clique em um estado ou município/,
+      /o primeiro clique escolhe o estado/,
     );
     expect(paragraphs?.[0].textContent).toMatch(/legenda/);
   });

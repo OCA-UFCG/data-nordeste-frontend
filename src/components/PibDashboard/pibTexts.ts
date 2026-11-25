@@ -26,7 +26,7 @@ export type PibInfoParagraph = { term?: string; rest: string };
 // outros são da equipe de conteúdo, sem mudança.
 export const PIB_MAP_INFO: readonly PibInfoParagraph[] = [
   {
-    rest: "Cada município recebe a cor da faixa do seu PIB total. Aproxime o mapa ou clique em um estado ou município para usá-lo como filtro do painel; clicar de novo no município escolhido volta ao estado, e clicar fora do estado escolhido volta à área de interesse. Passe o mouse sobre uma faixa da legenda para destacar os municípios dela no mapa.",
+    rest: "Cada município recebe a cor da faixa do seu PIB total. Aproxime o mapa ou clique nele para filtrar o painel: o primeiro clique escolhe o estado e o seguinte, um município desse estado; clicar de novo no município escolhido volta ao estado, e clicar fora do estado escolhido volta à área de interesse. Passe o mouse sobre uma faixa da legenda para destacar os municípios dela no mapa.",
   },
   {
     term: "Produto Interno Bruto (PIB)",

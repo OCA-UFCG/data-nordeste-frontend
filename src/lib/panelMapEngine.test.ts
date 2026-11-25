@@ -13,7 +13,6 @@ type Listener = () => void;
  */
 class MaplibreMountFake {
   static last: MaplibreMountFake;
-  readonly touchZoomRotate = { disableRotation: vi.fn() };
   readonly addControl = vi.fn();
   readonly remove = vi.fn();
   readonly on = vi.fn();
@@ -35,9 +34,12 @@ class MaplibreMountFake {
 
 class NavigationControlFake {}
 
+class ScaleControlFake {}
+
 vi.mock("maplibre-gl", () => ({
   Map: MaplibreMountFake,
   NavigationControl: NavigationControlFake,
+  ScaleControl: ScaleControlFake,
 }));
 
 const CONTAINER = document.createElement("div");
@@ -82,6 +84,16 @@ describe("createPanelMapEngine", () => {
 
     expect(onReady).toHaveBeenCalledTimes(1);
     expect(map.once).not.toHaveBeenCalledWith("load", expect.anything());
+  });
+
+  it("monta os botões de zoom com a bússola e a barra de escala", async () => {
+    const { map } = await mountEngine();
+    const controls = map.addControl.mock.calls.map(([control]) => control);
+
+    expect(controls).toEqual([
+      expect.any(NavigationControlFake),
+      expect.any(ScaleControlFake),
+    ]);
   });
 
   it("não chama onReady se o mapa foi desmontado antes do estilo", async () => {

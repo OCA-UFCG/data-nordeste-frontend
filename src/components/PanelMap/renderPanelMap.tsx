@@ -3,7 +3,10 @@ import { expect, vi } from "vitest";
 
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapEngineFactoryFake } from "@/components/PanelMap/panelMapEngineFake";
-import { GeodataFetchFake } from "@/components/PanelMap/panelMapFixtures";
+import {
+  AREA_STATES_FIXTURES,
+  GeodataFetchFake,
+} from "@/components/PanelMap/panelMapFixtures";
 import { EMPTY_RECORTE, type MapRecorte } from "@/features/panelMap/mapRecorte";
 
 /** Props do mapa do PIB em 2023 no Nordeste, com o motor fake da `factory`. */
@@ -28,7 +31,8 @@ export function panelMapProps(
 
 /**
  * Renderiza o `PanelMap` com geodados e motor fakes e espera o motor receber
- * as fontes. `rerender` troca só as props passadas.
+ * as fontes e os estados recortados da área. `rerender` troca só as props
+ * passadas.
  *
  * @example const { engine, rerender } = await renderPanelMap({ ano: 2022 });
  */
@@ -42,8 +46,14 @@ export async function renderPanelMap(overrides: Partial<PanelMapProps> = {}) {
     view.rerender(<PanelMap {...props} />);
   };
 
-  // Pronto = o motor já recebeu as fontes (todos os efeitos do motor rodaram).
+  // Pronto = o motor já recebeu as fontes (todos os efeitos do motor rodaram)
+  // e os estados da área chegaram (o enquadramento de estado depende deles).
   await waitFor(() => expect(factory.engine.setSources).toHaveBeenCalled());
+  await waitFor(() =>
+    expect(factory.engine.setAreaStates).toHaveBeenLastCalledWith(
+      AREA_STATES_FIXTURES[props.area],
+    ),
+  );
 
   return { factory, engine: factory.engine, props, view, rerender };
 }

@@ -1,7 +1,11 @@
 import { vi } from "vitest";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
-import type { Bounds, FitSources } from "@/features/panelMap/mapLayers";
+import type {
+  AreaStates,
+  Bounds,
+  FitSources,
+} from "@/features/panelMap/mapLayers";
 import type { ChartImageSource } from "@/lib/chartImage";
 import type {
   AridezOverlay,
@@ -10,6 +14,7 @@ import type {
   PanelMapEngine,
   PanelMapEngineOptions,
   PanelMapHover,
+  PanelMapHoverLevel,
   PanelMapMoveEnd,
   VeilFilters,
 } from "@/lib/panelMapEngine";
@@ -30,12 +35,15 @@ export class PanelMapEngineFake implements PanelMapEngine {
 
   readonly setBasemap = vi.fn<(kind: BasemapKind) => void>();
   readonly setSources = vi.fn<(sources: FitSources) => void>();
+  readonly setAreaStates = vi.fn<(states: AreaStates) => void>();
   readonly setIndicatorPaint = vi.fn<(paint: IndicatorPaint) => void>();
   readonly setVeil = vi.fn<(veil: VeilFilters) => void>();
   readonly setSelection = vi.fn<(filter: SelectionFilter) => void>();
+  readonly setStateMunicipalLines = vi.fn<(filter: SelectionFilter) => void>();
   readonly setClassHighlight = vi.fn<(filter: SelectionFilter) => void>();
   readonly setAridez = vi.fn<(overlay: AridezOverlay | null) => void>();
   readonly fitTo = vi.fn<(bbox: Bounds) => void>();
+  readonly setHoverLevel = vi.fn<(level: PanelMapHoverLevel) => void>();
   readonly destroy = vi.fn<() => void>();
 
   readonly toImageSource = vi.fn(
@@ -77,8 +85,11 @@ export class PanelMapEngineFake implements PanelMapEngine {
     });
   }
 
-  emitHover(hover: PanelMapHover | null): void {
-    this.hoverListener?.(hover);
+  /** Hover; sem `level`, o da feição do indicador (o padrão do motor). */
+  emitHover(
+    hover: (Omit<PanelMapHover, "level"> & Partial<PanelMapHover>) | null,
+  ): void {
+    this.hoverListener?.(hover && { level: "feicao", ...hover });
   }
 
   /** Clique no mapa; `null` é um clique fora de qualquer feição. */

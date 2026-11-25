@@ -6,6 +6,8 @@ import type {
   GeodataStyles,
   MapFeatureProps,
 } from "@/features/panelMap/geodataTypes";
+import type { AreaStates } from "@/features/panelMap/mapLayers";
+import type { TerritorialArea } from "@/features/panels/territorialFilters";
 
 // Recortes mínimos dos geodados reais (styles.json, manifest.json, vector/*).
 
@@ -169,6 +171,47 @@ const STATES_FIXTURE = collection([
   square(-38.8, -8.3, 4, { code: "PB", name: "Paraíba", uf: "PB" }),
 ]);
 
+// Estados recortados por área (vector/estados_<area>.geojson): no Nordeste,
+// os estados inteiros; no Semiárido e na Caatinga, só um pedaço de PE.
+const AREA_STATES_INSIDE: Record<TerritorialArea, FeatureCollection> = {
+  nordeste: collection([
+    square(-41, -9.5, 6, { code: "PE", name: "Pernambuco" }),
+    square(-38.8, -8.3, 4, { code: "PB", name: "Paraíba" }),
+  ]),
+  semiarido: collection([
+    square(-40.5, -9.4, 1, { code: "PE", name: "Pernambuco" }),
+  ]),
+  caatinga: collection([
+    square(-40.5, -9.4, 0.5, { code: "PE", name: "Pernambuco" }),
+  ]),
+  sudene: collection([
+    square(-41, -9.5, 6, { code: "PE", name: "Pernambuco" }),
+    square(-38.8, -8.3, 4, { code: "PB", name: "Paraíba" }),
+  ]),
+};
+
+// A parte de fora (vector/estados_fora_<area>.geojson): vazia onde o estado
+// está todo na área; no Semiárido e na Caatinga, o resto de PE.
+const PE_OUTSIDE = collection([
+  square(-41, -9.5, 0.5, { code: "PE", name: "Pernambuco" }),
+]);
+const NO_OUTSIDE = collection([]);
+
+/** Estados partidos por área, como o motor os recebe (`setAreaStates`). */
+export const AREA_STATES_FIXTURES: Record<TerritorialArea, AreaStates> = {
+  nordeste: { inside: AREA_STATES_INSIDE.nordeste, outside: NO_OUTSIDE },
+  semiarido: { inside: AREA_STATES_INSIDE.semiarido, outside: PE_OUTSIDE },
+  caatinga: { inside: AREA_STATES_INSIDE.caatinga, outside: PE_OUTSIDE },
+  sudene: { inside: AREA_STATES_INSIDE.sudene, outside: NO_OUTSIDE },
+};
+
+const areaStatesRoutes = Object.fromEntries(
+  Object.entries(AREA_STATES_FIXTURES).flatMap(([area, states]) => [
+    [`/api/geodata/vector/estados_${area}.geojson`, states.inside],
+    [`/api/geodata/vector/estados_fora_${area}.geojson`, states.outside],
+  ]),
+);
+
 const AREAS_FIXTURE = collection([
   square(-48, -18, 13, { area: "nordeste" }),
   square(-45, -16, 9, { area: "semiarido" }),
@@ -183,20 +226,26 @@ const GEODATA_FIXTURES: Record<string, object> = {
   "/api/geodata/vector/municipios.geojson": MUNICIPIOS_FIXTURE,
   "/api/geodata/vector/estados.geojson": STATES_FIXTURE,
   "/api/geodata/vector/areas.geojson": AREAS_FIXTURE,
+  ...areaStatesRoutes,
 };
 
 /**
  * Rota `/api/geodata/*` de mentira. `failing` responde 503 em tudo, como um
- * ambiente sem GEODATA_DIR.
+ * ambiente sem GEODATA_DIR; `missing` responde 404 nas URLs listadas (ex.: um
+ * GEODATA_DIR gerado antes dos `estados_<area>.geojson`).
  *
  * @example vi.stubGlobal("fetch", new GeodataFetchFake().fetch)
  */
 export class GeodataFetchFake {
-  constructor(private readonly failing = false) {}
+  constructor(
+    private readonly failing = false,
+    private readonly missing: string[] = [],
+  ) {}
 
   readonly fetch = vi.fn(
     async (input: RequestInfo | URL): Promise<Response> => {
-      const body = GEODATA_FIXTURES[String(input)];
+      const url = String(input);
+      const body = this.missing.includes(url) ? null : GEODATA_FIXTURES[url];
 
       if (this.failing) return new Response("indisponível", { status: 503 });
       if (!body) return new Response("não encontrado", { status: 404 });

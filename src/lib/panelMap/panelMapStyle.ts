@@ -19,14 +19,17 @@ import {
   VEIL_COLOR,
   VEIL_OPACITY,
 } from "@/features/panelMap/mapLayers";
-import {
-  MUNICIPAL_LINES_ZOOM,
-  STATE_LINES_ZOOM,
-} from "@/features/panelMap/mapRecorte";
+import { MUNICIPAL_LINES_ZOOM } from "@/features/panelMap/mapRecorte";
 
+// `states` é o `estados.geojson` inteiro (contorno estadual, véu); `areaStates`
+// é o `estados_<area>.geojson`, só a parte de cada estado dentro da área de
+// interesse (hover e contorno da seleção de estado); `areaStatesOutside` é o
+// `estados_fora_<area>.geojson`, a parte de fora (véu do estado escolhido).
 export const PANEL_MAP_SOURCE = {
   features: "features",
   states: "states",
+  areaStates: "area-states",
+  areaStatesOutside: "area-states-outside",
   areas: "areas",
   aridez: "aridez",
 } as const;
@@ -38,10 +41,13 @@ export const PANEL_MAP_LAYER = {
   indicatorFill: "indicator-fill",
   classMuted: "class-muted",
   veilStates: "veil-states",
+  veilOutsideArea: "veil-outside-area",
   veilFeatures: "veil-features",
   featureOutline: "feature-outline",
+  stateMunicipalOutline: "state-municipal-outline",
   featureHover: "feature-hover",
   stateOutline: "state-outline",
+  stateHover: "state-hover",
   areaOutline: "area-outline",
   selectionFeatures: "selection-features",
   selectionStates: "selection-states",
@@ -142,13 +148,13 @@ function classMutedLayer(): LayerSpecification {
 }
 
 // Limites conforme o zoom, um nível antes dos limiares do recorte
-// (mapRecorte): a área de interesse sempre; os estados a partir de
-// STATE_LINES_ZOOM; os municípios a partir de MUNICIPAL_LINES_ZOOM. Assim a
-// divisa já aparece antes de o zoom filtrar por ela. O preenchimento das classes, o
-// véu e a seleção aparecem em qualquer zoom. INTENTIONAL: com feições de
-// estado (IDH, vista Estados), o contorno delas aparece em qualquer zoom;
-// sem ele a malha rosa da vista Estados vira uma mancha só (decisão do
-// controlador, 24/11/2026).
+// (mapRecorte): a área de interesse e os estados em qualquer zoom (decisão do
+// usuário, 24/11/2026); os municípios a partir de MUNICIPAL_LINES_ZOOM. Assim a
+// divisa municipal já aparece antes de o zoom filtrar por ela. O preenchimento
+// das classes, o véu e a seleção aparecem em qualquer zoom. INTENTIONAL: com feições de
+// estado (IDH), o contorno delas aparece em qualquer zoom; sem ele a antiga
+// malha rosa da vista Estados do perfil virava uma mancha só (decisão do
+// controlador, 24/11/2026; a vista saiu depois, a regra ficou para o IDH).
 function withMinZoom<Layer extends LayerSpecification>(
   layer: Layer,
   minzoom: number,
@@ -169,25 +175,22 @@ function featureOutlineLayer(municipal: boolean): LayerSpecification {
 
 function stateOutlineLayer(): LayerSpecification {
   const { states } = PANEL_MAP_SOURCE;
-  const layer = lineLayer(PANEL_MAP_LAYER.stateOutline, states, UNPAINTED_LINE);
 
-  return withMinZoom(layer, STATE_LINES_ZOOM);
+  return lineLayer(PANEL_MAP_LAYER.stateOutline, states, UNPAINTED_LINE);
 }
 
 // WHY o hover não tem minzoom: não é limite, é o sinal de qual feição o
-// tooltip está nomeando, em qualquer zoom (decisão do controlador).
-function hoverLayer(): LayerSpecification {
+// tooltip está nomeando, em qualquer zoom (decisão do controlador). Há um por
+// fonte: o das feições e o dos estados recortados pela área (hover por estado
+// só com a área de interesse, `hoverLevelFor`; só a parte do estado dentro da
+// área acende); o dos estados fica acima do contorno estadual.
+function hoverLayer(id: string, source: string): LayerSpecification {
   const hovered: ExpressionSpecification = [
     "boolean",
     ["feature-state", "hover"],
     false,
   ];
-  const { featureHover } = PANEL_MAP_LAYER;
-  const layer = lineLayer(
-    featureHover,
-    PANEL_MAP_SOURCE.features,
-    HOVER_OUTLINE,
-  );
+  const layer = lineLayer(id, source, HOVER_OUTLINE);
 
   return {
     ...layer,
@@ -205,22 +208,32 @@ function areaOutlineLayer(): LayerSpecification {
   };
 }
 
-// Camadas acima dos basemaps, de baixo para cima.
+// Camadas acima dos basemaps, de baixo para cima. O véu da parte do estado
+// escolhido fora da área usa a forma exata dela (`area-states-outside`), por
+// cima do preenchimento como os outros véus. INTENTIONAL: não um véu do estado
+// inteiro sob o preenchimento — o preenchimento é 85% opaco e o cinza
+// apareceria dentro da área (decisão do controlador, 24/11/2026).
 function overlayLayers(municipal: boolean): LayerSpecification[] {
-  const { features, states } = PANEL_MAP_SOURCE;
+  const { features, states, areaStates, areaStatesOutside } = PANEL_MAP_SOURCE;
   const layer = PANEL_MAP_LAYER;
 
   return [
     indicatorFillLayer(),
     classMutedLayer(),
     veilLayer(layer.veilStates, states),
+    veilLayer(layer.veilOutsideArea, areaStatesOutside),
     veilLayer(layer.veilFeatures, features),
     featureOutlineLayer(municipal),
-    hoverLayer(),
+
+    // Sem minzoom: os municípios do estado escolhido, ligada pelo
+    // setStateMunicipalLines (stateMunicipalLinesFilter).
+    lineLayer(layer.stateMunicipalOutline, features, UNPAINTED_LINE, "none"),
+    hoverLayer(layer.featureHover, features),
     stateOutlineLayer(),
+    hoverLayer(layer.stateHover, areaStates),
     areaOutlineLayer(),
     lineLayer(layer.selectionFeatures, features, SELECTION_OUTLINE, "none"),
-    lineLayer(layer.selectionStates, states, SELECTION_OUTLINE, "none"),
+    lineLayer(layer.selectionStates, areaStates, SELECTION_OUTLINE, "none"),
   ];
 }
 
@@ -234,6 +247,8 @@ function panelMapSources(): StyleSpecification["sources"] {
     ...Object.fromEntries(basemaps),
     [PANEL_MAP_SOURCE.features]: featureSource(),
     [PANEL_MAP_SOURCE.states]: featureSource(),
+    [PANEL_MAP_SOURCE.areaStates]: featureSource(),
+    [PANEL_MAP_SOURCE.areaStatesOutside]: featureSource(),
     [PANEL_MAP_SOURCE.areas]: featureSource(),
   };
 }

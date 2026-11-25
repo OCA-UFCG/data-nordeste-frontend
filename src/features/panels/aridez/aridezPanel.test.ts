@@ -50,11 +50,13 @@ class AridezDatabaseFake {
       return [
         {
           cd_mun: "2611101",
+          sigla_uf: "PE",
           municipio_uf: "Petrolina (PE)",
           ...classRow("4560", "0"),
         },
         {
           cd_mun: "2611606",
+          sigla_uf: "PE",
           municipio_uf: "Recife (PE)",
           ...classRow("0", "0"),
         },
@@ -134,6 +136,20 @@ describe("loadAridezPanel", () => {
     expect(panel.porMunicipio.map(({ nome }) => nome)).toEqual([
       "Petrolina (PE)",
     ]);
+  });
+
+  // O hover por estado do mapa soma as áreas dos municípios de cada estado.
+  it("keeps each municipality's state", async () => {
+    const db = new AridezDatabaseFake();
+    const panel = await loadAridezPanel(db.query, {
+      ano: 2021,
+      area: "nordeste",
+    });
+
+    expect(panel.mapa.map(({ cdMun, uf }) => [cdMun, uf])).toEqual([
+      ["2611101", "PE"],
+    ]);
+    expect(db.callFor("GROUP BY cd_mun").sql).toContain("sigla_uf");
   });
 
   it("returns null areas for a year the view does not have", async () => {

@@ -1,4 +1,3 @@
-import sqlite3
 import sys
 import unittest
 from pathlib import Path
@@ -8,68 +7,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import build
 
 
-def eval_sql_expression(expression: str, column: str, values: list) -> list:
-    """Avalia `expression` no SQLite real (mesma semântica do `-dialect sqlite` do OGR)."""
-    with sqlite3.connect(":memory:") as db:
-        db.execute(f"CREATE TABLE t ({column} TEXT)")
-        db.executemany("INSERT INTO t VALUES (?)", [(v,) for v in values])
-        return [row[0] for row in db.execute(f"SELECT {expression} FROM t ORDER BY rowid")]
-
-
-class YearColumnsTest(unittest.TestCase):
-    def test_year_columns_maps_prefix_to_v(self):
-        columns = build.year_columns(["cd_mun_1", "pib_2010", "pib_2023"], "pib_")
-        self.assertEqual(columns, {"pib_2010": "v2010", "pib_2023": "v2023"})
-
-    def test_year_columns_ignores_non_year_suffix(self):
-        columns = build.year_columns(["pop_2000", "pop_total", "pop_20221"], "pop_")
-        self.assertEqual(columns, {"pop_2000": "v2000"})
-
-
-class SelectSqlTest(unittest.TestCase):
-    def test_municipal_select_sql(self):
-        sql = build.municipal_select("pib", {"pib_2010": "v2010"})
-        self.assertIn("CAST(cd_mun_1 AS TEXT) AS code", sql)
-        self.assertIn("(ne = 'Sim') AS nordeste", sql)
-        self.assertIn("CAST(pib_2010 AS REAL) AS v2010", sql)
-        self.assertIn("sigla_uf_1 AS uf", sql)
-        self.assertIn("FROM pib", sql)
-
-    def test_text_column_that_is_not_a_number_becomes_null(self):
-        # SQLite faz CAST('abc' AS REAL) = 0.0; isso inventaria um valor.
-        expression = build.numeric_expression("pop_2000", is_text=True)
-        got = eval_sql_expression(expression, "pop_2000", ["597934", None, "", "abc", "12abc", " 15914 ", "1.2.3", "-7.5"])
-        self.assertEqual(got, [597934.0, None, None, None, None, 15914.0, None, -7.5])
-
-    def test_municipal_select_guards_text_columns(self):
-        sql = build.municipal_select("demografia", {"pop_2000": "v2000"}, text_columns={"pop_2000"})
-        self.assertIn(build.numeric_expression("pop_2000", is_text=True) + " AS v2000", sql)
-
-    def test_municipios_select_has_identity_and_area_flags_only(self):
-        sql = build.municipios_select("sudene_mun")
-        self.assertIn("CAST(cd_mun_1 AS TEXT) AS code", sql)
-        self.assertIn("nm_mun_1 AS name", sql)
-        self.assertIn("sigla_uf_1 AS uf", sql)
-        for area, column in build.AREA_FLAGS.items():
-            self.assertIn(f"({column} = 'Sim') AS {area}", sql)
-        self.assertIn("geometry FROM sudene_mun", sql)
-        self.assertNotIn(" AS v", sql)
-
-    def test_municipios_select_runs_on_sqlite(self):
-        with sqlite3.connect(":memory:") as db:
-            db.execute(
-                "CREATE TABLE sudene_mun (cd_mun_1 INTEGER, nm_mun_1 TEXT, sigla_uf_1 TEXT, "
-                "ne TEXT, semi_21_1 TEXT, caat_24 TEXT, aas_21_1 TEXT, geometry BLOB)"
-            )
-            db.execute("INSERT INTO sudene_mun VALUES (2611606, 'Recife', 'PE', 'Sim', 'Não', 'Não', 'Sim', NULL)")
-            row = db.execute(build.municipios_select("sudene_mun")).fetchone()
-        self.assertEqual(row, ("2611606", "Recife", "PE", 1, 0, 0, 1, None))
-
-    def test_semiarido_is_union_of_marked_municipalities(self):
-        sql = build.semiarido_select("sudene_mun")
-        self.assertIn("ST_Union(geometry)", sql)
-        self.assertIn("semi_21_1 = 'Sim'", sql)
-        self.assertIn("'semiarido' AS area", sql)
+class AreaStatesFileTest(unittest.TestCase):
+    def test_file_names_per_area(self):
+        self.assertEqual(build.area_states_file("sudene"), "estados_sudene.geojson")
+        self.assertEqual(build.area_states_outside_file("caatinga"), "estados_fora_caatinga.geojson")
 
 
 class PolygonPartsTest(unittest.TestCase):
@@ -85,6 +26,18 @@ class PolygonPartsTest(unittest.TestCase):
             ],
         }
         self.assertEqual(build.polygon_parts(geometry), {"type": "MultiPolygon", "coordinates": [square, square]})
+
+    def test_keeps_polygons_of_nested_collections(self):
+        # O ST_Difference dos estados_fora_<area> sai assim depois do -simplify (BA no Semiárido).
+        square = [[[0, 0], [1, 0], [1, 1], [0, 0]]]
+        geometry = {
+            "type": "GeometryCollection",
+            "geometries": [
+                {"type": "GeometryCollection", "geometries": [{"type": "Polygon", "coordinates": square}]},
+                {"type": "MultiLineString", "coordinates": [[[0, 0], [1, 1]]]},
+            ],
+        }
+        self.assertEqual(build.polygon_parts(geometry), {"type": "MultiPolygon", "coordinates": [square]})
 
     def test_polygon_untouched(self):
         polygon = {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]]}

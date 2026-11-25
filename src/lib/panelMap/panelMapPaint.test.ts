@@ -1,14 +1,31 @@
+import type { FeatureCollection } from "geojson";
 import type { FilterSpecification, Map as MaplibreMap } from "maplibre-gl";
 import { describe, expect, it, vi } from "vitest";
 
-import { CLASS_MUTED_COLOR } from "@/features/panelMap/mapLayers";
-import { applyClassHighlight } from "@/lib/panelMap/panelMapPaint";
-import { PANEL_MAP_LAYER, panelMapStyle } from "@/lib/panelMap/panelMapStyle";
+import { CLASS_MUTED_COLOR, veilFilters } from "@/features/panelMap/mapLayers";
+import {
+  applyClassHighlight,
+  applyVeil,
+  setAreaStatesData,
+} from "@/lib/panelMap/panelMapPaint";
+import {
+  PANEL_MAP_LAYER,
+  PANEL_MAP_SOURCE,
+  panelMapStyle,
+} from "@/lib/panelMap/panelMapStyle";
 
-/** Só o que `applyClassHighlight` usa do MapLibre: layout e paint da camada. */
+/** Só o que as funções de pintura usam do MapLibre: layout, paint, filtro e fontes. */
 class MaplibrePaintFake {
   readonly setLayoutProperty = vi.fn();
   readonly setPaintProperty = vi.fn();
+  readonly setFilter = vi.fn();
+  readonly sources = new Map<string, { setData: ReturnType<typeof vi.fn> }>();
+
+  readonly getSource = (id: string) => {
+    if (!this.sources.has(id)) this.sources.set(id, { setData: vi.fn() });
+
+    return this.sources.get(id);
+  };
 
   asMap(): MaplibreMap {
     return this as unknown as MaplibreMap;
@@ -75,5 +92,57 @@ describe("applyClassHighlight", () => {
       "none",
     );
     expect(map.setPaintProperty).not.toHaveBeenCalled();
+  });
+});
+
+describe("estado escolhido recortado pela área", () => {
+  it("o véu da parte de fora da área casa o estado escolhido", () => {
+    const map = new MaplibrePaintFake();
+    const veil = veilFilters({ uf: ["MG"], mun: [] });
+
+    applyVeil(map.asMap(), veil);
+
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      PANEL_MAP_LAYER.veilOutsideArea,
+      "visibility",
+      "visible",
+    );
+    expect(map.setFilter).toHaveBeenCalledWith(
+      PANEL_MAP_LAYER.veilOutsideArea,
+      ["in", ["get", "code"], ["literal", ["MG"]]],
+    );
+  });
+
+  it("sem estado escolhido, o véu da parte de fora some", () => {
+    const map = new MaplibrePaintFake();
+
+    applyVeil(map.asMap(), veilFilters({ uf: [], mun: [] }));
+
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      PANEL_MAP_LAYER.veilOutsideArea,
+      "visibility",
+      "none",
+    );
+  });
+
+  it("a parte de dentro vai para o hover e a seleção; a de fora, para o véu", () => {
+    const map = new MaplibrePaintFake();
+    const inside: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [],
+    };
+    const outside: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [],
+    };
+
+    setAreaStatesData(map.asMap(), { inside, outside });
+
+    expect(
+      map.sources.get(PANEL_MAP_SOURCE.areaStates)?.setData,
+    ).toHaveBeenCalledWith(inside);
+    expect(
+      map.sources.get(PANEL_MAP_SOURCE.areaStatesOutside)?.setData,
+    ).toHaveBeenCalledWith(outside);
   });
 });

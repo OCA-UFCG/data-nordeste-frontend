@@ -270,7 +270,8 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   ```
 
   `build` writes `vector/*.geojson` (`pib`, `demografia`, `idh`, `estados`,
-  `areas`), `raster/aridez_<ano>_<area>.png`, `styles.json` (classes and outlines read
+  `municipios`, `areas`, and `estados_<area>` / `estados_fora_<area>` for
+  `nordeste`, `semiarido`, `caatinga`, `sudene`), `raster/aridez_<ano>_<area>.png`, `styles.json` (classes and outlines read
   from the `.qgz`), `manifest.json` and `data-issues.json`. Each aridez PNG is
   clipped to one area (`nordeste`, `semiarido`, `caatinga`, `sudene`; 16 files):
   `gdal_translate -r nearest` repeats each 0.1° pixel on a 0.01° grid (same
@@ -280,9 +281,28 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   area polygons in a temp file: the simplified `areas.geojson` has degenerate
   rings that gdalwarp rejects ("Cutline polygon is invalid"). Without the
   finer grid the edge would follow the 0.1° source pixels, since gdalwarp
-  masks the cutline on the source grid. Downloaded files are
+  masks the cutline on the source grid. `estados_<area>.geojson` is the part
+  of each state inside the area: one feature per UF (`code` = sigla, `name` =
+  the `uf` column of `sudene_mun.shp`, same text as `estados.geojson`), the
+  `ST_Union` of the `sudene_mun.shp` municipalities flagged `Sim` for the area
+  (same flags as the municipal vectors), simplified like the other vectors so
+  it matches the municipal mesh (`area_states_select`). Real counts: 9 UFs in
+  nordeste and caatinga, 11 in semiarido and sudene. `estados_fora_<area>` is
+  the rest of those UFs: the `brasil_estado_4674.shp` state minus that union
+  (`ST_Difference`, `area_states_outside_select`; the municipal shapefile is
+  joined as `'<path>'.sudene_mun` in the top-level JOIN, since OGR does not
+  resolve another datasource inside a subquery). The two sources' borders do
+  not coincide exactly, so the difference also has thin slivers along the
+  state edges; drawn as delivered, not cleaned. After `-simplify` the
+  difference comes out as nested `GeometryCollection`s with collapsed
+  lines/points; `polygon_parts` keeps the polygons at any depth (without the
+  recursion BA and PE lost their whole remainder). A UF with nothing left is
+  dropped (`has_polygon`); today every UF of the area keeps a remainder (9 in
+  nordeste and caatinga, 11 in semiarido and sudene). Downloaded files are
   untrusted data: never run anything from `$RAW`. `issues-pdf` needs
-  `google-chrome` on the PATH. Tests:
+  `google-chrome` on the PATH. The SELECTs live in `sql.py` (text only, tested
+  on stdlib `sqlite3` with stub spatial functions in `tests/test_sql.py`);
+  `build.py` runs them and writes the files. Tests:
   `python3 -m unittest discover -s scripts/geodata/tests -v`.
 
 - **Where it runs: gamma only, for now.** The VM keeps the directory at
@@ -319,25 +339,22 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   there is no feature, and the recorte stays as it is, except when zooming out
   to the area level (below the anchor minus the tolerance): that clears the
   recorte without a centre feature, since the empty recorte always round-trips.
-- **Boundaries by zoom** (`panelMapStyle.ts`, layer `minzoom` from
-  `STATE_LINES_ZOOM` = `STATE_ZOOM` - 1 and `MUNICIPAL_LINES_ZOOM` =
-  `MUNICIPALITY_ZOOM` - 1): the map opens on the area of interest with only
-  its outline; state limits appear one zoom level before the state filter
-  (5.5) and municipal limits one level before the municipality filter (7.5),
-  so the limits show before the zoom filters by them (the filter thresholds
-  themselves are unchanged). The class fill, veil,
+- **Boundaries by zoom** (`panelMapStyle.ts`; only the municipal layer has a
+  `minzoom`, from `MUNICIPAL_LINES_ZOOM` = `MUNICIPALITY_ZOOM` - 1): the map
+  opens on the area of interest with its outline. State limits show at every
+  zoom (user decision, 24/11/2026: they used to start at 5.5 and vanished when
+  zoomed out); municipal limits appear one level before the municipality
+  filter (7.5), so they show before the zoom filters by them (the filter
+  thresholds themselves are unchanged). The class fill, veil,
   selection outline and hover outline show at any zoom (the hover is not a
   boundary: it marks the feature the tooltip names). With state features
-  (IDH, Estados view) their own outline has no `minzoom`: without it the
-  uniform pink Estados mesh reads as one blob at the area zoom (the separate
-  state-outline layer still starts at `STATE_LINES_ZOOM`). State outlines keep
+  (IDH) their own outline has no `minzoom` either. State outlines keep
   the `.qgz` colour but never draw thinner than `STATE_OUTLINE_MIN_WIDTH_PX`
   (1.5 px, `visibleStateOutline` in `qgisPaint.ts`): the `.qgz` width is a print
   one (0.15 mm = 0.57 px) and the limits were invisible on screen (user
   feedback, 24/11/2026). It applies to the separate state-outline layer
-  (`paintIndicator`) and to the state features' own outline (`stateMeshPaint`);
-  municipal outlines are unchanged. In the Estados view the
-  zoom also resolves from the drawn recorte (`recorteForLevel`), so a
+  (`paintIndicator`); municipal outlines are unchanged. With state features
+  (IDH) the zoom also resolves from the drawn recorte (`recorteForLevel`), so a
   município chosen in the bar does not pin the level at municipality. The engine's
   `municipal` flag picks the variant when the style is built.
 - **Going up uses the anchor zoom.** The recorte is only cleared one level when
@@ -366,19 +383,19 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   content from fitting twice. Every map click (`onMapClick`, the feature
   under the cursor or `null`) goes through `recorteForClick`, and the result is
   emitted and fitted through the prop change only when it differs from the
-  current recorte. Rules, by the
-  current recorte: **area** — a feature is selected (municipality; the state in
-  the IDH, the profile "Estados" view or a card that stops at state), a click
-  on empty map does nothing; **state** — a municipality inside the selected
-  state(s) is selected (with several states, one of them is narrowed to), while
-  clicking the state itself (state-level maps or cards that stop at state), a
-  feature of another state under the veil, or empty map (ocean, outside the
-  area) goes back to `EMPTY_RECORTE`; **municipality** — clicking the
-  selected municipality (or one of several selected) goes back to its state,
-  clicking another municipality selects it (no going up), and clicking empty
-  map changes nothing. So clicking outside the highlight goes up one level
-  only at state level, never at municipality level. Drags are not
-  clicks (MapLibre's `click` excludes them).
+  current recorte. Rules, by the current recorte: **area** — the clicked
+  feature's state is selected, never the municipality directly (clicks go
+  down one level at a time: area → state → municipality; user decision,
+  24/11/2026), a click on empty map does nothing; **state** — a municipality
+  inside the selected state(s) is selected (with several states, one of them
+  is narrowed to), while clicking the state itself (state-level maps or cards
+  that stop at state), a feature of another state under the veil, or empty
+  map (ocean, outside the area) goes back to `EMPTY_RECORTE`;
+  **municipality** — clicking the selected municipality (or one of several
+  selected) goes back to its state, clicking another municipality selects it
+  (no going up), and clicking empty map changes nothing. So clicking outside
+  the highlight goes up one level only at state level, never at municipality
+  level. Drags are not clicks (MapLibre's `click` excludes them).
 - **Gestures and zoom cap** (`src/lib/panelMap/panelMapOptions.ts`): the
   map inside the card uses MapLibre's cooperative gestures (Ctrl/⌘ + wheel,
   two fingers on touch, prompt in Portuguese) so it does not hijack the page
@@ -386,23 +403,54 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   prop). Double-click zoom is off, because it interrupted the fit of the
   click. `fitTo` stops at zoom 10, so a small municipality is not zoomed in
   too far.
-- **Feature level** (`featureLevel` prop, `src/features/panelMap/featureLevel.ts`):
-  what each feature is, a municipality or a state (`mapFeatureMode`). The IDH
-  is always "estado" (its GeoJSON already has the states, with values). For the
-  other indicators, `featureLevel="estado"` swaps the municipalities for the
-  state mesh (`estados.geojson`), flagged with the areas of their
-  municipalities (`statesWithAreaFlags`: a state is in the area when any of its
-  municipalities is), so the area filter and the centre of the zoom only see
-  states the server accepts. The mesh is pink `#f6d3e0`, the chosen states
-  `#e98dae` (`stateMeshPaint`), with no legend, and the tooltip shows only the
-  name. Engine (`municipal`), click and selection follow the level; with state
-  features a municipality chosen in the bar counts as its state
-  (`recorteForLevel`), otherwise the veil would cover the chosen state. The
-  level is read when the engine mounts: switch it with a `key`.
+- **Scale and compass** (`addPanelMapControls` in `panelMapOptions.ts`, user
+  request 24/11/2026): every panel map (card and fullscreen) has a metric
+  `ScaleControl` (max 100 px) at the bottom left, clear of the compact
+  attribution (bottom right; the legend sits below the frame), and a
+  `NavigationControl` with the compass at the top right. The map rotates
+  (right-button or Ctrl + drag, two-finger twist) but never tilts
+  (`pitchWithRotate`/`touchPitch` off, `maxPitch: 0`); the needle follows the
+  bearing and clicking it resets to north. Button titles are in Portuguese
+  (`locale`: "Aproximar", "Afastar", "Alinhar ao norte", the attribution
+  toggle and the canvas label "Mapa"). A rotation
+  `moveend` carries `originalEvent`, so it is a user move, but it changes
+  neither zoom nor centre and the recorte stays. `fitTo` keeps the current
+  bearing (MapLibre's `fitBounds` would snap back to north). Both controls are
+  DOM, so they are not in the "Baixar imagem" PNG (only the canvas is).
+- **Feature level** (`src/features/panelMap/featureLevel.ts`): what each
+  feature is, a municipality or a state (`featureLevelFor`). The IDH is
+  "estado" (its GeoJSON already has the states, with values); every other
+  indicator is "municipio". Engine (`municipal`), click and selection follow
+  the level; with state features a municipality chosen in the bar counts as
+  its state (`recorteForLevel`), otherwise the veil would cover the chosen
+  state. The profile's "Estados" view (pink state mesh, `featureLevel` prop,
+  `stateMeshPaint`, `statesWithAreaFlags`) was removed on 24/11/2026 (user
+  decision): the porte card only has the municipal map.
 - **Veil:** grey (`VEIL_COLOR`) only from the state level: states outside the
   chosen ones and, at municipality level, the municipalities of those states
   that are not chosen (`veilFilters`, a layer filter). At area level there is
-  no veil.
+  no veil. The part of the chosen states outside the area of interest (e.g.
+  most of MG in the Sudene area) is grey too, like the rest outside the
+  recorte (user decision, 24/11/2026): layer `veil-outside-area` over the fill,
+  on the `area-states-outside` source (`estados_fora_<area>.geojson`, the exact
+  shape), filtered by `selectedStates`. INTENTIONAL: not a whole-state veil
+  under the fill — the fill is 85% opaque and the grey showed through inside
+  the area (controller ruling, 24/11/2026).
+- **State cut by the area** (user decision, 24/11/2026): the state hover
+  outline and the thick state selection outline only cover the part of the
+  state inside the area of interest. They use the `area-states` source, fed
+  with `vector/estados_<area>.geojson` of the current area (`useAreaStates`,
+  `areaStatesFileFor`; refetched when the area changes, `engine.setAreaStates`).
+  While the files load, or if one is missing (a GEODATA_DIR built before
+  them) or is not a GeoJSON FeatureCollection, the full `estados.geojson` is
+  used for hover, selection and fit, the outside veil is an empty
+  FeatureCollection (never undefined), and `panel_map_area_states_failed` is
+  logged. The
+  state boundary lines (`state-outline`) and the veil of the other states keep
+  the full `estados.geojson`. Fitting a chosen state frames its part inside
+  the area (`fitTargetFor` with `areaStates`, falling back to the full state),
+  once: at state level the fit waits for the area files (`ready`), so mounting
+  or switching the area with a state chosen does not fit twice.
 - **Legend highlight** (as the old profile "porte" chips did): pointer over a
   legend chip (mouse only: `previewOnMouse` in `src/components/Panel/pointer.ts`,
   shared with the bar charts), keyboard focus or a tap highlights that class.
@@ -430,6 +478,29 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   the year (`featuresInArea` + `rankWithinArea`, built on `rankRegions` from
   `features/panels/choropleth.ts`); in the IDH, among the 9 states. Features
   without a number in the year show "sem dado" and are not ranked.
+- **Hover level** (`hoverLevelFor` in `src/features/panelMap/hoverLevel.ts`,
+  user decision 24/11/2026, the Atlas da Desertificação behaviour: the hover
+  names the next level down of the recorte). On municipal maps (PIB, perfil,
+  aridez) with only the area of interest (no Estado/Município), the hover is
+  by **state**; with a state or municipality chosen, by municipality, as
+  before. The IDH (state features) always hovers its own feature. The engine
+  (`setHoverLevel`, `src/lib/panelMap/panelMapHover.ts`) still listens on the
+  area-filtered indicator layer and, at state level, lights the hovered
+  municipality's state on the `area-states` source (`state-hover` layer, same
+  outline as the feature hover, any zoom, above the state outline). So only
+  states with municipalities in the area light up, and the outline covers
+  only the part of the state inside the area (`estados_<area>.geojson`; e.g.
+  MG in the Sudene area is the cut, not the whole state); the part outside
+  shows no tooltip. Switching the level clears the current
+  hover (a click on a state switches it with the pointer still on the map).
+  The state tooltip is "Nome (UF)" (name from `estados.geojson`), "<label>:
+  <value>" and "Nº de M" among the states with a number in the area
+  (`describeState` in `stateTotals.ts`). The value is the sum of the
+  municipalities' `v<ano>` inside the area (`stateTotalsInArea`; municipalities
+  without a number are skipped, a state with none is "sem dado") unless the
+  card passes `stateValues`: the aridez does, with the ASD share of the state
+  (`aridezStateShares`: summed ASD area over summed classified area of its
+  municipalities in the area, not the mean of the municipal %).
 - **The map does not correct data.** Values, classes and geometries are drawn
   as delivered: the "Médio" population range with inverted limits, the
   negative PIB lower limit and the rest show in the legend as they are. Only
@@ -650,17 +721,15 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Deliberate deviations from the prototype:
   - The map is the shared MapLibre `PanelMap` (indicator "demografia", the
     `.qgz` classes as delivered, including the inverted "Médio" range in the
-    legend). The "Municípios | Estados" switch (green-800 pressed button
-    group above the map) stays: "Municípios" shows the porte classes with the
-    legend chips (`deepest: "municipio"`); "Estados" is the same `PanelMap`
-    with `featureLevel="estado"` and `deepest: "estado"` (state mesh in pink,
-    chosen states stronger, no legend, no `sr-only` table, tooltip with the
-    state name). The SVG state map, the old porte pills
-    (`PerfilPorteToggles`) and `useDemografiaHighlight` are gone (the legend
-    chips of `PanelMap` highlight the class). Zooming or clicking the map
-    changes Estado and Município (Estados view: only Estado) in the panel
-    filters through `usePanelMapFilters` (the same `request` as the filter
-    bar).
+    legend). Only the municipal map remains: the porte classes with the
+    legend chips (`deepest: "municipio"`). The prototype's "Municípios |
+    Estados" switch was removed on 24/11/2026 (user decision), together with
+    the Estados view; `usePorteMapView` now only keeps the fullscreen state.
+    The SVG state map, the old porte pills (`PerfilPorteToggles`) and
+    `useDemografiaHighlight` are gone (the legend chips of `PanelMap`
+    highlight the class). Zooming or clicking the map changes Estado and
+    Município in the panel filters through `usePanelMapFilters` (the same
+    `request` as the filter bar).
   - Estado and Município keep multiple selection (up to 100, as before),
     styled like the prototype selects; links with several places still work.
   - Axis and labels come from the data (`perfilCharts.ts`: `niceAxis`,
@@ -751,8 +820,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     state-only SVG. Title "PIB total por município" (`PIB_MAP_TITLE`, content
     team review, PR #413). Its ⓘ (`PIB_MAP_INFO`, rendered by
     `PibInfoParagraphs` with the terms in bold) opens with how the map filters
-    (zoom or click, second click goes up a level, legend hover highlights a
-    class), then the content team's PIB and per capita definitions verbatim.
+    (zoom or click, first click picks the state and the next a municipality,
+    clicking it again goes up a level, legend hover highlights a class), then the content team's PIB and per capita definitions verbatim.
     #413 also built a municipal map on the old canvas stack
     (`ProtoMunicipalMap`, `pibMunicipios`, a `GROUP BY cd_mun` query in
     `loadPibPanel`); the merge kept the MapLibre card and dropped those.
@@ -878,7 +947,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   aridez · área · ano" uses `selection.ano`.
   - Hover shows the municipality and its % of ASD (`formatSharePercent`, the
     same number as the municipalities card) with its rank in the area, from the
-    `values` prop. The legend below the map is the raster palette
+    `values` prop; with only the area of interest it shows the state and its %
+    of ASD (`stateValues`, `aridezStateShares`; `AridezMunicipio.uf` comes from
+    `sigla_uf`). The legend below the map is the raster palette
     (`styles.json`) with, per class, the number of municipalities where it is
     the predominant class (largest area among `dn_uni` 2..5; a tie goes to the
     drier class), from `classCounts`. Both come from pure functions in

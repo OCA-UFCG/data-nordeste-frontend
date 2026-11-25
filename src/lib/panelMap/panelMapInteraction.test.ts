@@ -19,6 +19,7 @@ type RenderedQuery = { layers: string[] };
  */
 class MaplibreMovesFake {
   zoom = 5;
+  bearing = 0;
   centerFeature: Partial<MapFeatureProps> | null = null;
   private moveEnd: ((event: MoveEndEvent) => void) | null = null;
 
@@ -26,6 +27,7 @@ class MaplibreMovesFake {
     this.moveEnd = callback;
   });
   readonly getZoom = () => this.zoom;
+  readonly getBearing = () => this.bearing;
   readonly getCenter = () => ({ lng: -37, lat: -8 });
   readonly project = () => ({ x: 0, y: 0 });
   readonly queryRenderedFeatures = vi.fn(
@@ -94,6 +96,38 @@ describe("trackMoves", () => {
       expect.objectContaining({ maxZoom: 10 }),
       expect.anything(),
     );
+  });
+
+  // Com o mapa girado, o enquadramento não o volta para o norte.
+  it("o fitTo mantém o giro atual do mapa", () => {
+    const { map, tracker } = trackedMoves();
+
+    map.bearing = 30;
+    tracker.fitTo([
+      [-41, -9.5],
+      [-35, -3.5],
+    ]);
+
+    expect(map.fitBounds).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ bearing: 30 }),
+      expect.anything(),
+    );
+  });
+
+  // O moveend do giro (arrasto com botão direito ou a bússola) traz o evento.
+  it("girar o mapa é gesto do usuário, com o mesmo zoom e centro", () => {
+    const { map, moves } = trackedMoves();
+
+    map.centerFeature = { code: "2611606", uf: "PE" };
+    map.end({ originalEvent: new MouseEvent("mouseup") });
+
+    expect(moves.at(-1)).toMatchObject({
+      programmatic: false,
+      zoom: 5,
+      centerUf: "PE",
+      centerMun: "2611606",
+    });
   });
 
   it("um resize é programático, mas não é fit e mantém o fittedZoom", () => {

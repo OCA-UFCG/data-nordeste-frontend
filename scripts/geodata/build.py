@@ -1,6 +1,8 @@
 """Gera os arquivos do mapa dos painéis (`<out>/`) a partir da pasta bruta do Drive.
 
-Saídas: `vector/*.geojson` (inclui `municipios.geojson`, a malha sem indicador),
+Saídas: `vector/*.geojson` (inclui `municipios.geojson`, a malha sem indicador, e
+`estados_<area>.geojson` / `estados_fora_<area>.geojson`, a parte de cada estado
+dentro / fora da área),
 `raster/aridez_<ano>_<area>.png` (recortado pela área), `styles.json`,
 `manifest.json` e `data-issues.json`. IMPORTANT: nada aqui corrige dado do Drive;
 só renomeia propriedades, converte texto numérico para desenhar (o que não
@@ -20,6 +22,18 @@ from pathlib import Path
 
 import checks
 import qgis_style
+from sql import (
+    AREA_FLAGS,
+    area_select,
+    area_states_outside_select,
+    area_states_select,
+    municipal_select,
+    municipios_select,
+    semiarido_select,
+    state_indicator_select,
+    states_select,
+    year_columns,
+)
 
 SIMPLIFY_TOLERANCE_DEG = 0.002
 COORD_PRECISION = 5
@@ -40,7 +54,6 @@ INDICATORS = {
 }
 STATES_SHP = "shapefile_geral/brasil/brasil_estado_4674.shp"
 STATE_OUTLINE_QGZ = "pib/pib.qgz"
-AREA_FLAGS = {"nordeste": "ne", "semiarido": "semi_21_1", "caatinga": "caat_24", "sudene": "aas_21_1"}
 AREA_POLYGONS = {
     "nordeste": "shapefile_geral/nordeste/limite_nordeste_4674.shp",
     "caatinga": "shapefile_geral/caatinga/Caatinga.shp",
@@ -49,6 +62,9 @@ AREA_POLYGONS = {
 SEMIARIDO_SOURCE_SHP = "shapefile_geral/area_sudene/sudene_mun.shp"
 # Malha municipal sem indicador (painel de aridez): a mesma base do Semiárido.
 MUNICIPIOS_SHP = SEMIARIDO_SOURCE_SHP
+# Estados recortados pela área (hover e seleção do mapa): a união dos municípios
+# da mesma malha, para coincidir com as feições municipais desenhadas.
+AREA_STATES_SHP = SEMIARIDO_SOURCE_SHP
 # O Semiárido não tem polígono no Drive; listá-lo faz a lacuna aparecer no relatório.
 EXPECTED_SHAPEFILES = [
     *(spec["shp"] for spec in INDICATORS.values()),
@@ -78,81 +94,17 @@ def run(cmd: list[str]) -> str:
         ) from error
 
 
-# ---------------------------------------------------------------- SQL
+# ---------------------------------------------------------------- arquivos
 
 
-def year_columns(fields: list[str], prefix: str) -> dict[str, str]:
-    """Colunas `<prefix><ano>` → `v<ano>`. Ex.: `year_columns(["pib_2023"], "pib_")` → `{"pib_2023": "v2023"}`.
-
-    IMPORTANT: só nomes que casam `^<prefix>\\d{4}$` entram no SQL (nome de coluna vem do Drive).
-    """
-    pattern = re.compile(rf"^{re.escape(prefix)}(\d{{4}})$")
-    matches = ((name, pattern.match(name)) for name in fields)
-    return {name: f"v{match.group(1)}" for name, match in matches if match}
+def area_states_file(area: str) -> str:
+    """Ex.: `area_states_file("sudene")` → `"estados_sudene.geojson"`."""
+    return f"estados_{area}.geojson"
 
 
-def numeric_expression(column: str, is_text: bool = False) -> str:
-    """Expressão SQLite que dá o número da coluna, ou NULL.
-
-    WARNING: no SQLite `CAST('abc' AS REAL)` é 0.0 e `CAST('12abc' AS REAL)` é 12.0;
-    para coluna texto só convertemos decimal simples (`-12.5`, `597934`), o resto vira NULL.
-    """
-    if not is_text:
-        return f"CAST({column} AS REAL)"
-    value = f"trim({column})"
-    looks_decimal = (
-        f"{value} GLOB '*[0-9]*' AND {value} NOT GLOB '*[^0-9.-]*' "
-        f"AND {value} NOT GLOB '?*-*' AND {value} NOT GLOB '*.*.*'"
-    )
-    return f"CASE WHEN {looks_decimal} THEN CAST({value} AS REAL) END"
-
-
-def _value_columns(years: dict[str, str], text_columns: set[str]) -> list[str]:
-    return [f"{numeric_expression(column, column in text_columns)} AS {alias}" for column, alias in years.items()]
-
-
-def municipal_select(layer: str, years: dict[str, str], text_columns: set[str] = frozenset()) -> str:
-    """SELECT (dialeto sqlite) das feições municipais com propriedades do mapa.
-
-    Ex.: `municipal_select("pib", {"pib_2023": "v2023"})`.
-    """
-    flags = [f"({column} = 'Sim') AS {area}" for area, column in AREA_FLAGS.items()]
-    columns = [
-        "CAST(cd_mun_1 AS TEXT) AS code",
-        "nm_mun_1 AS name",
-        "sigla_uf_1 AS uf",
-        *flags,
-        *_value_columns(years, text_columns),
-        "geometry",
-    ]
-    return f"SELECT {', '.join(columns)} FROM {layer}"
-
-
-def municipios_select(layer: str) -> str:
-    """SELECT da malha municipal sem valores: `code`, `name`, `uf` e as flags de área.
-
-    Ex.: `municipios_select("sudene_mun")`. Mesmas colunas do `municipal_select`, sem anos.
-    """
-    return municipal_select(layer, {})
-
-
-def state_indicator_select(layer: str, years: dict[str, str], text_columns: set[str] = frozenset()) -> str:
-    """SELECT do IDH (um polígono por estado do Nordeste). Ex.: `state_indicator_select("idh", {...})`."""
-    columns = ["uf AS code", "Estado_UF AS name", "uf AS uf", "1 AS nordeste", *_value_columns(years, text_columns)]
-    return f"SELECT {', '.join(columns)}, geometry FROM {layer}"
-
-
-def states_select(layer: str) -> str:
-    return f"SELECT uf AS code, estado AS name, uf AS uf, geometry FROM {layer}"
-
-
-def area_select(area: str, layer: str) -> str:
-    return f"SELECT '{area}' AS area, geometry FROM {layer}"
-
-
-def semiarido_select(layer: str) -> str:
-    """Semiárido = união dos municípios marcados (não há polígono próprio no Drive)."""
-    return f"SELECT 'semiarido' AS area, ST_Union(geometry) AS geometry FROM {layer} WHERE semi_21_1 = 'Sim'"
+def area_states_outside_file(area: str) -> str:
+    """Ex.: `area_states_outside_file("sudene")` → `"estados_fora_sudene.geojson"`."""
+    return f"estados_fora_{area}.geojson"
 
 
 # ---------------------------------------------------------------- vetores
@@ -167,13 +119,20 @@ def polygon_parts(geometry: dict) -> dict:
     """
     if geometry is None or geometry["type"] != "GeometryCollection":
         return geometry
+    return {"type": "MultiPolygon", "coordinates": _collection_polygons(geometry)}
+
+
+def _collection_polygons(collection: dict) -> list:
+    """Polígonos de uma coleção, entrando nas coleções aninhadas (o `ST_Difference` as gera)."""
     polygons = []
-    for part in geometry["geometries"]:
+    for part in collection["geometries"]:
         if part["type"] == "Polygon":
             polygons.append(part["coordinates"])
         elif part["type"] == "MultiPolygon":
             polygons.extend(part["coordinates"])
-    return {"type": "MultiPolygon", "coordinates": polygons}
+        elif part["type"] == "GeometryCollection":
+            polygons.extend(_collection_polygons(part))
+    return polygons
 
 
 def ogr_features(shp: Path, sql: str, simplify: bool = True) -> list[dict]:
@@ -236,6 +195,24 @@ def build_municipios_vector(raw: Path, out: Path) -> None:
     shp = raw / MUNICIPIOS_SHP
     features = ogr_features(shp, municipios_select(layer_name(shp)))
     write_feature_collection(out / "vector" / "municipios.geojson", features)
+
+
+def has_polygon(feature: dict) -> bool:
+    """Feição com alguma área depois de simplificar (sliver colapsado não conta)."""
+    geometry = feature["geometry"]
+    return geometry is not None and len(geometry["coordinates"]) > 0
+
+
+def build_area_states_vectors(raw: Path, out: Path) -> None:
+    """Por área, `vector/estados_<area>.geojson` (parte de cada estado dentro dela) e
+    `vector/estados_fora_<area>.geojson` (a parte de fora, o véu do estado escolhido)."""
+    shp, states = raw / AREA_STATES_SHP, raw / STATES_SHP
+    for area in AREA_FLAGS:
+        inside = ogr_features(shp, area_states_select(layer_name(shp), area))
+        write_feature_collection(out / "vector" / area_states_file(area), inside)
+        sql = area_states_outside_select(layer_name(states), shp.resolve(), layer_name(shp), area)
+        outside = [feature for feature in ogr_features(states, sql) if has_polygon(feature)]
+        write_feature_collection(out / "vector" / area_states_outside_file(area), outside)
 
 
 def area_features(raw: Path, simplify: bool = True) -> list[dict]:
@@ -466,6 +443,7 @@ def build(raw: Path, out: Path, now: datetime | None = None) -> list[dict]:
         issues += indicator_issues(raw, key, field_types[key])
     build_states_vector(raw, out)
     build_municipios_vector(raw, out)
+    build_area_states_vectors(raw, out)
     build_areas_vector(raw, out)
     palette, bounds, aridez_issues = build_aridez(raw, out)
     generated_at = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")

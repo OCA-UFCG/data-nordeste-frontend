@@ -3,6 +3,7 @@ import {
   aridezClassCounts,
   aridezMapValues,
   aridezPredominantClasses,
+  aridezStateShares,
 } from "@/features/panels/aridez/aridezMap";
 import type { AridezMunicipio } from "@/features/panels/aridez/aridezPanel";
 
@@ -12,8 +13,10 @@ const town = (
   semiarido: number,
   subumido: number,
   umido: number,
+  uf = "PE",
 ): AridezMunicipio => ({
   cdMun,
+  uf,
   nome: cdMun,
   areas: { arido, semiarido, subumido, umido },
 });
@@ -88,5 +91,31 @@ describe("aridezClassCounts", () => {
 
   it("skips municipalities without classified area", () => {
     expect(aridezClassCounts([town("1", 0, 0, 0, 0)]).size).toBe(0);
+  });
+});
+
+describe("aridezStateShares", () => {
+  it("gives each state the ASD share of its summed classified area", () => {
+    // PE: (100 + 0) de (100 + 900) = 10%. A média dos % seria (100 + 0) / 2 = 50.
+    const shares = aridezStateShares([
+      town("1", 0, 100, 0, 0, "PE"),
+      town("2", 0, 0, 0, 900, "PE"),
+      town("3", 10, 0, 10, 20, "PB"),
+    ]);
+
+    expect(shares.get("PE")).toBeCloseTo(10);
+    expect(shares.get("PB")).toBeCloseTo(50);
+  });
+
+  it("counts every ASD class (arid, semiarid and dry subhumid), not the humid", () => {
+    const shares = aridezStateShares([town("1", 1, 1, 1, 1, "CE")]);
+
+    expect(shares.get("CE")).toBeCloseTo(75);
+  });
+
+  it("leaves out a state without classified area", () => {
+    expect(aridezStateShares([town("1", 0, 0, 0, 0, "RN")]).has("RN")).toBe(
+      false,
+    );
   });
 });

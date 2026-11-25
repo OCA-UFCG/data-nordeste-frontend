@@ -1,7 +1,9 @@
 "use client";
 
+import type { FeatureCollection } from "geojson";
 import { useEffect, useMemo, useState } from "react";
 
+import type { AreaStatesState } from "@/components/PanelMap/useAreaStates";
 import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
 import type {
   MapFeatureProps,
@@ -9,17 +11,17 @@ import type {
 } from "@/features/panelMap/geodataTypes";
 import {
   type FeatureLevel,
-  type MapFeatureMode,
   recorteForLevel,
-  stateMeshPaint,
 } from "@/features/panelMap/featureLevel";
 import {
   fitTargetFor,
   type FitSources,
   selectionFilter,
+  stateMunicipalLinesFilter,
   veilFilters,
 } from "@/features/panelMap/mapLayers";
 import {
+  levelOfRecorte,
   type MapLevel,
   type MapRecorte,
   sameRecorte,
@@ -33,17 +35,19 @@ import type { PanelMapEngine } from "@/lib/panelMapEngine";
 export type PanelMapLayersArgs = {
   engine: PanelMapEngine | null;
   geodata: ReadyGeodata;
+
+  // Estados partidos pela área atual (`useAreaStates`): hover, seleção, véu
+  // da parte de fora e enquadramento de estado.
+  areaStates: AreaStatesState;
   indicator: PanelIndicator;
   ano: number;
   area: TerritorialArea;
   recorte: MapRecorte;
   deepest: MapLevel;
   aridez: PanelMapAridez;
-  mode: MapFeatureMode;
+  level: FeatureLevel;
   onRecorteChange: (recorte: MapRecorte) => void;
 };
-
-const NO_UFS: string[] = [];
 
 /**
  * O mesmo recorte enquanto a seleção não muda. O pai costuma montar um objeto
@@ -69,29 +73,25 @@ function useFitSources(geodata: ReadyGeodata): FitSources {
   );
 }
 
-// A malha dos estados pinta os escolhidos mais forte: só ela depende da UF.
-function usePaint(args: PanelMapLayersArgs, meshUfs: string[]) {
+function usePaint(args: PanelMapLayersArgs) {
   const { geodata, indicator, ano, aridez } = args;
-  const { stateMesh } = args.mode;
 
   return useMemo(
-    () =>
-      stateMesh
-        ? stateMeshPaint(geodata.styles, meshUfs)
-        : featurePaint(geodata.styles, indicator, ano, aridez === "base"),
-    [geodata, indicator, ano, aridez, stateMesh, meshUfs],
+    () => featurePaint(geodata.styles, indicator, ano, aridez === "base"),
+    [geodata, indicator, ano, aridez],
   );
 }
 
-function useSourcesAndPaint(
-  args: PanelMapLayersArgs,
-  sources: FitSources,
-  recorte: MapRecorte,
-) {
-  const { engine, geodata, area, mode } = args;
-  const paint = usePaint(args, mode.stateMesh ? recorte.uf : NO_UFS);
+function useSourcesAndPaint(args: PanelMapLayersArgs, sources: FitSources) {
+  const { engine, geodata, area, areaStates } = args;
+  const paint = usePaint(args);
 
   useEffect(() => engine?.setSources(sources), [engine, sources]);
+  useEffect(() => {
+    const { inside, outside } = areaStates;
+
+    engine?.setAreaStates({ inside, outside });
+  }, [engine, areaStates]);
   useEffect(() => {
     const { stateOutline } = geodata.styles;
 
@@ -112,6 +112,21 @@ function fitRecorte(
   if (target) engine.fitTo(target);
 }
 
+// Os estados da área só entram no enquadramento de estado (a parte do estado
+// dentro da área): `undefined` fora dele, `null` enquanto os arquivos da área
+// carregam. WHY: o estado escolhido é enquadrado uma vez só, já pelo corte, e
+// a chegada dos arquivos não reenquadra a área inteira nem o município.
+function fitStatesFor(
+  args: PanelMapLayersArgs,
+  recorte: MapRecorte,
+): FeatureCollection | null | undefined {
+  const drawn = recorteForLevel(recorte, args.level);
+
+  if (levelOfRecorte(drawn) !== "estado") return undefined;
+
+  return args.areaStates.ready ? args.areaStates.inside : null;
+}
+
 // IMPORTANT: todo recorte novo é enquadrado (zoom, arraste, clique, barra,
 // limpar, montagem, área nova), com o mesmo teto de zoom do `fitTo`. Não há
 // exceção para o recorte que o próprio mapa emitiu: o filtro aplicado pelo zoom
@@ -124,17 +139,22 @@ function useRecorteFraming(
   sources: FitSources,
   recorte: MapRecorte,
 ) {
-  const { engine, area } = args;
-  const { level } = args.mode;
+  const { engine, area, level } = args;
+  const areaStates = fitStatesFor(args, recorte);
 
   useEffect(() => {
     if (!engine) return;
     const drawn = recorteForLevel(recorte, level);
+    const fitSources = { ...sources, areaStates: areaStates ?? undefined };
 
     engine.setVeil(veilFilters(drawn));
     engine.setSelection(selectionFilter(drawn, level));
-    fitRecorte(engine, recorte, { area, level }, sources);
-  }, [engine, recorte, area, level, sources]);
+    engine.setStateMunicipalLines(
+      stateMunicipalLinesFilter(drawn, area, level),
+    );
+    if (areaStates === null) return;
+    fitRecorte(engine, recorte, { area, level }, fitSources);
+  }, [engine, recorte, area, level, sources, areaStates]);
 }
 
 // Clique emite o recorte direto e o enquadramento vem da mudança de props.
@@ -144,8 +164,8 @@ function handleMapClick(
   clicked: MapFeatureProps | null,
   args: PanelMapLayersArgs,
 ): void {
-  const { mode, deepest, recorte } = args;
-  const next = recorteForClick(clicked, mode.level, deepest, recorte);
+  const { level, deepest, recorte } = args;
+  const next = recorteForClick(clicked, level, deepest, recorte);
 
   if (sameRecorte(next, recorte)) return;
   args.onRecorteChange(next);
@@ -169,7 +189,7 @@ export function usePanelMapLayers(args: PanelMapLayersArgs): void {
   const sources = useFitSources(args.geodata);
   const recorte = useStableRecorte(args.recorte);
 
-  useSourcesAndPaint(args, sources, recorte);
+  useSourcesAndPaint(args, sources);
   useRecorteFraming(args, sources, recorte);
   useMapClicks(args);
 }

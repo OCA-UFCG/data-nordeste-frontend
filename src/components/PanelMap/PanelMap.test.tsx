@@ -1,10 +1,11 @@
-import { act, render, screen, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ENGINE_UNAVAILABLE, PanelMap } from "@/components/PanelMap/PanelMap";
 import { PanelMapEngineFactoryFake } from "@/components/PanelMap/panelMapEngineFake";
 import {
+  AREA_STATES_FIXTURES,
   GeodataFetchFake,
   JOAO_PESSOA,
   PERNAMBUCO,
@@ -20,6 +21,9 @@ import { EMPTY_RECORTE, type MapRecorte } from "@/features/panelMap/mapRecorte";
 import { classColorExpression } from "@/features/panelMap/qgisPaint";
 
 const PE: MapRecorte = { uf: ["PE"], mun: [] };
+
+// Como o motor entrega o estado no hover por estado: só a sigla.
+const STATE_PE = { code: "PE", name: "PE", uf: "PE" };
 const NORDESTE_BBOX = [
   [-48, -18],
   [-35, -5],
@@ -158,6 +162,7 @@ describe("PanelMap pintura e enquadramento", () => {
     expect(engine.fitTo).toHaveBeenCalledWith(NORDESTE_BBOX);
     expect(engine.setVeil).toHaveBeenLastCalledWith({
       states: null,
+      selectedStates: null,
       features: null,
     });
   });
@@ -176,6 +181,21 @@ describe("PanelMap pintura e enquadramento", () => {
     expect(engine.setIndicatorPaint.mock.lastCall?.[0].color).toEqual(
       classColorExpression(STYLES_FIXTURE.indicators.pib.classes, 2022),
     );
+  });
+
+  // Pedido do usuário (25/11/2026): com o estado selecionado, a divisa dos
+  // municípios dele aparece já no zoom do enquadramento do estado.
+  it("com estado selecionado mostra os limites municipais dele", async () => {
+    const { engine, rerender } = await renderPanelMap();
+
+    expect(engine.setStateMunicipalLines).toHaveBeenLastCalledWith(null);
+    rerender({ recorte: PE });
+
+    expect(engine.setStateMunicipalLines).toHaveBeenLastCalledWith([
+      "all",
+      ["==", ["get", "nordeste"], 1],
+      ["in", ["get", "uf"], ["literal", ["PE"]]],
+    ]);
   });
 
   it("recorte novo por props enquadra e aplica véu e seleção", async () => {
@@ -271,8 +291,16 @@ describe("PanelMap recorte pelo zoom (regras 3 e 4)", () => {
     expect(engine.fitTo).toHaveBeenCalledWith(PE_BBOX);
   });
 
-  it("clique num município escolhe o município", async () => {
+  it("clique num município na área escolhe o estado dele", async () => {
     const { engine, props } = await renderPanelMap();
+
+    act(() => engine.emitClick(RECIFE));
+
+    expect(props.onRecorteChange).toHaveBeenCalledWith(PE);
+  });
+
+  it("clique num município do estado escolhido escolhe o município", async () => {
+    const { engine, props } = await renderPanelMap({ recorte: PE });
 
     act(() => engine.emitClick(RECIFE));
 
@@ -406,6 +434,198 @@ describe("PanelMap tooltip", () => {
     act(() => engine.emitHover(null));
 
     expect(screen.queryByRole("tooltip")).toBeNull();
+  });
+});
+
+describe("PanelMap hover por estado (só a área de interesse)", () => {
+  it("só com a área, o hover nomeia estados; com estado escolhido, municípios", async () => {
+    const { engine, rerender } = await renderPanelMap();
+
+    expect(engine.setHoverLevel).toHaveBeenLastCalledWith("estado");
+
+    rerender({ recorte: PE });
+
+    await waitFor(() =>
+      expect(engine.setHoverLevel).toHaveBeenLastCalledWith("feicao"),
+    );
+  });
+
+  it("no IDH (feições de estado) o hover é sempre a própria feição", async () => {
+    const { engine } = await renderPanelMap({ indicator: "idh", ano: 2024 });
+
+    expect(engine.setHoverLevel).toHaveBeenLastCalledWith("feicao");
+  });
+
+  it("mostra o estado, a soma dos municípios dele na área e a posição", async () => {
+    const { engine } = await renderPanelMap();
+
+    act(() =>
+      engine.emitHover({ level: "estado", props: STATE_PE, x: 0, y: 0 }),
+    );
+
+    const tooltip = screen.getByRole("tooltip");
+
+    expect(tooltip).toHaveTextContent("Pernambuco (PE)");
+    expect(tooltip).toHaveTextContent("PIB: R$ 69000000000");
+    expect(tooltip).toHaveTextContent("1º de 2");
+  });
+
+  it("soma só os municípios da área de interesse", async () => {
+    const { engine } = await renderPanelMap({ area: "semiarido" });
+
+    act(() =>
+      engine.emitHover({ level: "estado", props: STATE_PE, x: 0, y: 0 }),
+    );
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("PIB: R$ 9000000000");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 1");
+  });
+
+  it("com estado escolhido, o hover do município segue como antes", async () => {
+    const { engine } = await renderPanelMap({ recorte: PE });
+
+    act(() => engine.emitHover({ level: "feicao", props: RECIFE, x: 0, y: 0 }));
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Recife (PE)");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 3");
+  });
+});
+
+describe("PanelMap estado recortado pela área de interesse", () => {
+  it("entrega ao motor as partes de dentro e de fora da área e troca com a área", async () => {
+    const { engine, rerender } = await renderPanelMap();
+
+    expect(engine.setAreaStates).toHaveBeenLastCalledWith(
+      AREA_STATES_FIXTURES.nordeste,
+    );
+    rerender({ area: "semiarido" });
+
+    await waitFor(() =>
+      expect(engine.setAreaStates).toHaveBeenLastCalledWith(
+        AREA_STATES_FIXTURES.semiarido,
+      ),
+    );
+  });
+
+  // Montar com estado escolhido enquadra uma vez só: espera o corte chegar.
+  it("com estado escolhido, enquadra uma vez só a parte dele dentro da área", async () => {
+    const { engine } = await renderPanelMap({ area: "semiarido", recorte: PE });
+
+    expect(engine.fitTo).toHaveBeenCalledTimes(1);
+    expect(engine.fitTo).toHaveBeenLastCalledWith([
+      [-40.5, -9.4],
+      [-39.5, -8.4],
+    ]);
+  });
+
+  it("trocar a área com estado escolhido enquadra uma vez o corte da nova área", async () => {
+    const { engine, rerender } = await renderPanelMap({ recorte: PE });
+
+    engine.fitTo.mockClear();
+    rerender({ area: "semiarido" });
+
+    await waitFor(() => expect(engine.fitTo).toHaveBeenCalledTimes(1));
+    expect(engine.fitTo).toHaveBeenLastCalledWith([
+      [-40.5, -9.4],
+      [-39.5, -8.4],
+    ]);
+  });
+
+  it("na área inteira, a chegada dos estados da área não reenquadra", async () => {
+    const { engine } = await renderPanelMap({ area: "semiarido" });
+
+    expect(engine.fitTo).toHaveBeenCalledTimes(1);
+  });
+
+  it("o véu da parte de fora da área casa o estado escolhido", async () => {
+    const { engine } = await renderPanelMap({ recorte: PE });
+
+    expect(engine.setVeil.mock.lastCall?.[0].selectedStates).toEqual([
+      "in",
+      ["get", "code"],
+      ["literal", ["PE"]],
+    ]);
+  });
+
+  it("sem o arquivo da área, usa os estados inteiros, sem véu de fora, e registra a falha", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const missing = ["/api/geodata/vector/estados_semiarido.geojson"];
+    vi.stubGlobal("fetch", new GeodataFetchFake(false, missing).fetch);
+    const factory = new PanelMapEngineFactoryFake();
+
+    render(<PanelMap {...panelMapProps(factory, { area: "semiarido" })} />);
+
+    await waitFor(() => expect(error).toHaveBeenCalled());
+    expect(String(error.mock.lastCall?.[0])).toContain(
+      "panel_map_area_states_failed",
+    );
+    const states = factory.engine.setAreaStates.mock.lastCall?.[0];
+
+    expect(states?.inside.features).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          properties: expect.objectContaining({ uf: "PE" }),
+        }),
+      ]),
+    );
+    expect(states?.outside.features).toEqual([]);
+  });
+});
+
+// Regressão: GEODATA_DIR sem os arquivos recortados (gamma antes do rsync)
+// derrubava o mapa com "collection.features is undefined".
+describe("PanelMap sem os estados recortados", () => {
+  const MISSING = [
+    "/api/geodata/vector/estados_nordeste.geojson",
+    "/api/geodata/vector/estados_fora_nordeste.geojson",
+  ];
+
+  async function renderWithoutAreaStates(recorte: MapRecorte) {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", new GeodataFetchFake(false, MISSING).fetch);
+    const factory = new PanelMapEngineFactoryFake();
+
+    render(<PanelMap {...panelMapProps(factory, { recorte })} />);
+    await waitFor(() => expect(factory.engine.fitTo).toHaveBeenCalled());
+
+    return factory.engine;
+  }
+
+  it("desenha o mapa com os estados inteiros e o véu de fora vazio", async () => {
+    const engine = await renderWithoutAreaStates(EMPTY_RECORTE);
+    const states = engine.setAreaStates.mock.lastCall?.[0];
+
+    expect(screen.getByRole("region")).toBeInTheDocument();
+    expect(states?.inside.features.map((f) => f.properties?.code)).toEqual([
+      "PE",
+      "PB",
+    ]);
+    expect(states?.outside).toEqual({
+      type: "FeatureCollection",
+      features: [],
+    });
+  });
+
+  it("com estado escolhido, seleciona e enquadra o estado inteiro", async () => {
+    const engine = await renderWithoutAreaStates(PE);
+
+    expect(engine.fitTo).toHaveBeenCalledTimes(1);
+    expect(engine.fitTo).toHaveBeenLastCalledWith(PE_BBOX);
+    expect(engine.setSelection).toHaveBeenLastCalledWith([
+      "in",
+      ["get", "code"],
+      ["literal", ["PE"]],
+    ]);
+  });
+
+  it("o hover por estado segue nomeando o estado", async () => {
+    const engine = await renderWithoutAreaStates(EMPTY_RECORTE);
+
+    act(() =>
+      engine.emitHover({ level: "estado", props: STATE_PE, x: 0, y: 0 }),
+    );
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Pernambuco (PE)");
   });
 });
 

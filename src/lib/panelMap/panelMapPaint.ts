@@ -7,6 +7,7 @@ import type {
 
 import type { QgisOutline } from "@/features/panelMap/geodataTypes";
 import {
+  type AreaStates,
   areaFilter,
   type FitSources,
   type veilFilters,
@@ -62,6 +63,17 @@ export function setSourceData(map: MaplibreMap, sources: FitSources): void {
   geojsonSource(map, PANEL_MAP_SOURCE.areas).setData(sources.areas);
 }
 
+/**
+ * Troca os estados partidos pela área de interesse: a parte de dentro (hover
+ * e seleção de estado) e a de fora (véu do estado escolhido).
+ */
+export function setAreaStatesData(map: MaplibreMap, states: AreaStates): void {
+  geojsonSource(map, PANEL_MAP_SOURCE.areaStates).setData(states.inside);
+  geojsonSource(map, PANEL_MAP_SOURCE.areaStatesOutside).setData(
+    states.outside,
+  );
+}
+
 function paintLine(map: MaplibreMap, layerId: string, outline: QgisOutline) {
   map.setPaintProperty(layerId, "line-color", outline.color);
   map.setPaintProperty(layerId, "line-width", outline.widthPx);
@@ -81,6 +93,7 @@ export function paintIndicator(map: MaplibreMap, paint: IndicatorPaint): void {
     map.setFilter(layerId, inArea),
   );
   paintLine(map, featureOutline, paint.outline);
+  paintLine(map, PANEL_MAP_LAYER.stateMunicipalOutline, paint.outline);
   paintLine(
     map,
     PANEL_MAP_LAYER.stateOutline,
@@ -103,15 +116,21 @@ function filterOrHide(
   if (filter) map.setFilter(layerId, filter);
 }
 
-/** Véu cinza sobre o que está fora do recorte (estados e feições). */
+/**
+ * Véu cinza sobre o que está fora do recorte: os outros estados, a parte do(s)
+ * estado(s) escolhido(s) fora da área de interesse e, no nível município, os
+ * outros municípios.
+ */
 export function applyVeil(map: MaplibreMap, veil: VeilFilters): void {
   filterOrHide(map, PANEL_MAP_LAYER.veilStates, veil.states);
+  filterOrHide(map, PANEL_MAP_LAYER.veilOutsideArea, veil.selectedStates);
   filterOrHide(map, PANEL_MAP_LAYER.veilFeatures, veil.features);
 }
 
 /**
  * Contorno grosso da seleção. O filtro casa por `code`, que pode ser de
- * município ou de UF; aplicado às duas fontes, cada uma só casa os seus.
+ * município ou de UF; aplicado às duas fontes, cada uma só casa os seus. O de
+ * estado vem dos estados recortados: contorna só a parte dentro da área.
  */
 export function applySelection(
   map: MaplibreMap,
@@ -119,6 +138,17 @@ export function applySelection(
 ): void {
   filterOrHide(map, PANEL_MAP_LAYER.selectionFeatures, filter);
   filterOrHide(map, PANEL_MAP_LAYER.selectionStates, filter);
+}
+
+/**
+ * Limites dos municípios do estado escolhido em qualquer zoom, com o traço da
+ * malha municipal do qgz. Null esconde (sem estado, a malha segue o minzoom).
+ */
+export function applyStateMunicipalLines(
+  map: MaplibreMap,
+  filter: FilterSpecification | null,
+): void {
+  filterOrHide(map, PANEL_MAP_LAYER.stateMunicipalOutline, filter);
 }
 
 /**

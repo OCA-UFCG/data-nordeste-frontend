@@ -1,16 +1,8 @@
-import type {
-  FeatureIdentifier,
-  MapLayerMouseEvent,
-  Map as MaplibreMap,
-  PointLike,
-} from "maplibre-gl";
+import type { Map as MaplibreMap, PointLike } from "maplibre-gl";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
 import type { Bounds } from "@/features/panelMap/mapLayers";
-import {
-  PANEL_MAP_LAYER,
-  PANEL_MAP_SOURCE,
-} from "@/lib/panelMap/panelMapStyle";
+import { PANEL_MAP_LAYER } from "@/lib/panelMap/panelMapStyle";
 
 export type PanelMapMoveEnd = {
   zoom: number;
@@ -23,10 +15,6 @@ export type PanelMapMoveEnd = {
   fittedZoom: number;
 };
 
-export type PanelMapHover = { props: MapFeatureProps; x: number; y: number };
-
-type FeatureId = FeatureIdentifier["id"];
-
 // Marca os moveend do fitTo, só para registrar o fittedZoom. WHY eventData e
 // não um flag: o flag fica preso quando o MapLibre não consegue enquadrar (sem
 // moveend) e erra quando um fitTo interrompe outro.
@@ -36,8 +24,9 @@ const FIT_EVENT_DATA = { panelMapFit: true };
 // ficaria ampliado demais.
 const FIT_MAX_ZOOM = 10;
 
-// IMPORTANT: só gesto do usuário vira filtro. Arrastar, roda do mouse, toque,
-// teclado e os botões +/− mandam `originalEvent` no moveend; o
+// IMPORTANT: só gesto do usuário vira filtro. Arrastar, girar, roda do mouse,
+// toque, teclado, os botões +/− e a bússola mandam `originalEvent` no
+// moveend (girar não muda zoom nem centro, então o recorte fica); o
 // fitTo e o resize do container (ResizeObserver → map.resize) não. Sem isto,
 // redimensionar a janela viraria um recorte que ninguém escolheu.
 function isUserMove(event: object): boolean {
@@ -103,70 +92,23 @@ export function trackMoves(map: MaplibreMap, municipal: boolean) {
     listener?.(describeMoveEnd(map, municipal, event, fittedZoom));
   });
 
+  // WHY bearing: o `fitBounds` sem ele volta o mapa para o norte; quem girou
+  // o mapa mantém o giro (o norte volta pela bússola).
   return {
     fitTo: (bbox: Bounds) => {
       map.fitBounds(
         bbox,
-        { padding: 24, duration: 600, maxZoom: FIT_MAX_ZOOM },
+        {
+          padding: 24,
+          duration: 600,
+          maxZoom: FIT_MAX_ZOOM,
+          bearing: map.getBearing(),
+        },
         FIT_EVENT_DATA,
       );
     },
     onMoveEnd: (callback: (move: PanelMapMoveEnd) => void) => {
       listener = callback;
-    },
-  };
-}
-
-// Uma feição com contorno de hover por vez; o id é o `code` (promoteId).
-class FeatureHoverTracker {
-  private hoveredId: FeatureId | null = null;
-  listener: ((hover: PanelMapHover | null) => void) | null = null;
-
-  constructor(private readonly map: MaplibreMap) {}
-
-  readonly hover = (event: MapLayerMouseEvent) => {
-    const feature = event.features?.[0];
-
-    if (feature?.id === undefined) return this.clear();
-    this.highlight(feature.id);
-    this.listener?.({
-      props: feature.properties as MapFeatureProps,
-      x: event.point.x,
-      y: event.point.y,
-    });
-  };
-
-  readonly clear = () => {
-    this.highlight(null);
-    this.listener?.(null);
-  };
-
-  private highlight(id: FeatureId | null) {
-    const { map, hoveredId } = this;
-    const source = PANEL_MAP_SOURCE.features;
-
-    if (hoveredId !== null && hoveredId !== id) {
-      map.setFeatureState({ source, id: hoveredId }, { hover: false });
-    }
-    if (id !== null) map.setFeatureState({ source, id }, { hover: true });
-    map.getCanvas().style.cursor = id === null ? "" : "pointer";
-    this.hoveredId = id;
-  }
-}
-
-/**
- * Hover nas feições do indicador: contorno escuro por feature-state, cursor de
- * clique e o callback com as propriedades e a posição (null ao sair).
- */
-export function trackHover(map: MaplibreMap) {
-  const tracker = new FeatureHoverTracker(map);
-
-  map.on("mousemove", PANEL_MAP_LAYER.indicatorFill, tracker.hover);
-  map.on("mouseleave", PANEL_MAP_LAYER.indicatorFill, tracker.clear);
-
-  return {
-    onHover: (callback: (hover: PanelMapHover | null) => void) => {
-      tracker.listener = callback;
     },
   };
 }

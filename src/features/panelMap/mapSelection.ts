@@ -48,10 +48,11 @@ function ufOfFeature(feature: MapFeatureProps, level: FeatureLevel): string {
 /**
  * Recorte escolhido pelo clique no mapa. `clicked` é a feição sob o cursor, ou
  * `null` quando o clique caiu fora das feições do indicador (mar, fora da
- * área). Com feições de estado (IDH, vista Estados) a feição é o estado; com
- * as municipais é o município, ou o estado dele quando o painel não desce até
- * município. Regras, pelo recorte atual:
- * - área: a feição vira o recorte; clique no vazio não muda nada.
+ * área). Com feições de estado (IDH) a feição é o estado; com as municipais é
+ * o município. O clique desce um nível por vez (área → estado → município).
+ * Regras, pelo recorte atual:
+ * - área: o estado da feição vira o recorte (nunca o município direto);
+ *   clique no vazio não muda nada.
  * - estado: uma feição dentro do(s) estado(s) escolhido(s) vira o recorte
  *   (município, ou só aquele estado se eram vários); clicar no próprio estado
  *   (já era o recorte), em outro estado ou no vazio volta à área.
@@ -59,8 +60,8 @@ function ufOfFeature(feature: MapFeatureProps, level: FeatureLevel): string {
  *   estado dele; clicar em outro município o escolhe; clicar no vazio não
  *   muda nada (clicar fora não sobe de nível).
  * Ex.: clique em Recife (`deepest: "municipio"`) com `EMPTY_RECORTE` →
- * `{ uf: ["PE"], mun: ["2611606"] }`; novo clique em Recife → `{ uf: ["PE"], mun: [] }`;
- * clique em Petrolina → `{ uf: ["PE"], mun: ["2611101"] }`; no vazio, nada muda.
+ * `{ uf: ["PE"], mun: [] }`; novo clique em Recife → `{ uf: ["PE"], mun: ["2611606"] }`;
+ * de novo em Recife → `{ uf: ["PE"], mun: [] }`; no vazio, nada muda.
  */
 export function recorteForClick(
   clicked: MapFeatureProps | null,
@@ -72,7 +73,7 @@ export function recorteForClick(
     return recorteFromMunicipio(clicked, level, deepest, current);
   }
   if (current.uf.length === 0) {
-    return clicked ? pickedRecorte(clicked, level, deepest) : current;
+    return clicked ? { uf: [ufOfFeature(clicked, level)], mun: [] } : current;
   }
   if (!clicked || !current.uf.includes(ufOfFeature(clicked, level))) {
     return EMPTY_RECORTE;

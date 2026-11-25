@@ -163,6 +163,26 @@ describe("PanelMap do painel de aridez", () => {
     expect(screen.getByRole("tooltip")).not.toHaveTextContent("º de");
   });
 
+  // O % do estado é do painel (razão das áreas), não a soma dos % municipais.
+  it("no hover por estado mostra o % de ASD do estado vindo do painel", async () => {
+    const stateValues = new Map([
+      ["PE", 72.5],
+      ["PB", 30],
+    ]);
+    const { engine } = await renderPanelMap({ ...aridezMap, stateValues });
+    const pernambuco = { code: "PE", name: "PE", uf: "PE" };
+
+    act(() =>
+      engine.emitHover({ level: "estado", props: pernambuco, x: 0, y: 0 }),
+    );
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Pernambuco (PE)");
+    expect(screen.getByRole("tooltip")).toHaveTextContent(
+      "Área suscetível: 72.5%",
+    );
+    expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 2");
+  });
+
   it("ranqueia só entre os municípios da área", async () => {
     const { engine } = await renderPanelMap({
       ...aridezMap,
@@ -174,8 +194,11 @@ describe("PanelMap do painel de aridez", () => {
     expect(screen.getByRole("tooltip")).toHaveTextContent("1º de 1");
   });
 
-  it("clique num município escolhe o município", async () => {
-    const { engine, props } = await renderPanelMap(aridezMap);
+  it("clique num município do estado escolhido escolhe o município", async () => {
+    const { engine, props } = await renderPanelMap({
+      ...aridezMap,
+      recorte: { uf: ["PE"], mun: [] },
+    });
 
     act(() => engine.emitClick(RECIFE));
 

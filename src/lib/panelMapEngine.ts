@@ -2,35 +2,48 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { FilterSpecification, Map as MaplibreMap } from "maplibre-gl";
 
 import type { MapFeatureProps } from "@/features/panelMap/geodataTypes";
-import type { Bounds, FitSources } from "@/features/panelMap/mapLayers";
+import type {
+  AreaStates,
+  Bounds,
+  FitSources,
+} from "@/features/panelMap/mapLayers";
 import { type ChartImageSource, canvasImageSource } from "@/lib/chartImage";
 import type { BasemapKind } from "@/lib/panelMap/basemaps";
 import { type AridezOverlay, showAridez } from "@/lib/panelMap/panelMapAridez";
 import {
   type PanelMapHover,
+  type PanelMapHoverLevel,
+  trackHover,
+} from "@/lib/panelMap/panelMapHover";
+import {
   type PanelMapMoveEnd,
   trackMapClicks,
-  trackHover,
   trackMoves,
 } from "@/lib/panelMap/panelMapInteraction";
 import {
   applyClassHighlight,
   applySelection,
+  applyStateMunicipalLines,
   applyVeil,
   type IndicatorPaint,
   paintIndicator,
+  setAreaStatesData,
   setSourceData,
   showBasemap,
   type VeilFilters,
 } from "@/lib/panelMap/panelMapPaint";
-import { panelMapOptions } from "@/lib/panelMap/panelMapOptions";
+import {
+  addPanelMapControls,
+  panelMapOptions,
+} from "@/lib/panelMap/panelMapOptions";
 
 export { BASEMAPS, type BasemapKind } from "@/lib/panelMap/basemaps";
 export type { AridezOverlay } from "@/lib/panelMap/panelMapAridez";
 export type {
   PanelMapHover,
-  PanelMapMoveEnd,
-} from "@/lib/panelMap/panelMapInteraction";
+  PanelMapHoverLevel,
+} from "@/lib/panelMap/panelMapHover";
+export type { PanelMapMoveEnd } from "@/lib/panelMap/panelMapInteraction";
 export type { IndicatorPaint, VeilFilters } from "@/lib/panelMap/panelMapPaint";
 
 type MaplibreModule = typeof import("maplibre-gl");
@@ -43,9 +56,16 @@ type MaplibreModule = typeof import("maplibre-gl");
 export interface PanelMapEngine {
   setBasemap(kind: BasemapKind): void;
   setSources(sources: FitSources): void;
+
+  // Estados partidos pela área de interesse: o hover por estado e o contorno
+  // da seleção usam só a parte de dentro; o véu do estado escolhido, a de fora.
+  setAreaStates(states: AreaStates): void;
   setIndicatorPaint(paint: IndicatorPaint): void;
   setVeil(veil: VeilFilters): void;
   setSelection(filter: FilterSpecification | null): void;
+
+  // Limites dos municípios do estado escolhido em qualquer zoom; null esconde.
+  setStateMunicipalLines(filter: FilterSpecification | null): void;
 
   // Destaque da legenda: o filtro casa as feições da classe; as demais da
   // área ficam cinza sólido (CLASS_MUTED_COLOR). Null desliga.
@@ -54,6 +74,10 @@ export interface PanelMapEngine {
   fitTo(bbox: Bounds): void;
   onMoveEnd(callback: (move: PanelMapMoveEnd) => void): void;
   onHover(callback: (hover: PanelMapHover | null) => void): void;
+
+  // O que o hover nomeia: a feição do indicador ou o estado do município sob o
+  // ponteiro (`hoverLevelFor`). Trocar apaga o hover atual.
+  setHoverLevel(level: PanelMapHoverLevel): void;
 
   // Todo clique no mapa: a feição sob o cursor, ou null fora das feições.
   onMapClick(callback: (props: MapFeatureProps | null) => void): void;
@@ -85,8 +109,7 @@ function createMap(
 ): MaplibreMap {
   const map = new maplibre.Map(panelMapOptions(container, options));
 
-  map.touchZoomRotate.disableRotation();
-  map.addControl(new maplibre.NavigationControl({ showCompass: false }));
+  addPanelMapControls(map, maplibre);
 
   return map;
 }
@@ -95,9 +118,11 @@ type PanelMapPaintControls = Pick<
   PanelMapEngine,
   | "setBasemap"
   | "setSources"
+  | "setAreaStates"
   | "setIndicatorPaint"
   | "setVeil"
   | "setSelection"
+  | "setStateMunicipalLines"
   | "setClassHighlight"
   | "setAridez"
 >;
@@ -106,9 +131,11 @@ function paintControls(map: MaplibreMap): PanelMapPaintControls {
   return {
     setBasemap: (kind) => showBasemap(map, kind),
     setSources: (sources) => setSourceData(map, sources),
+    setAreaStates: (states) => setAreaStatesData(map, states),
     setIndicatorPaint: (paint) => paintIndicator(map, paint),
     setVeil: (veil) => applyVeil(map, veil),
     setSelection: (filter) => applySelection(map, filter),
+    setStateMunicipalLines: (filter) => applyStateMunicipalLines(map, filter),
     setClassHighlight: (filter) => applyClassHighlight(map, filter),
     setAridez: (overlay) => showAridez(map, overlay),
   };
@@ -120,12 +147,14 @@ function engineFor(
   destroy: () => void,
 ): PanelMapEngine {
   const moves = trackMoves(map, municipal);
+  const hover = trackHover(map);
 
   return {
     ...paintControls(map),
     fitTo: moves.fitTo,
     onMoveEnd: moves.onMoveEnd,
-    onHover: trackHover(map).onHover,
+    onHover: hover.onHover,
+    setHoverLevel: hover.setHoverLevel,
     onMapClick: trackMapClicks(map).onMapClick,
     toImageSource: () => canvasImageSource(map.getCanvas()),
     destroy,

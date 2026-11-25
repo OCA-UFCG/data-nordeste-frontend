@@ -37,8 +37,10 @@ const PANEL: AridezPanelData = {
   municipios: [{ cdMun: "2611101", nome: "Petrolina (PE)" }],
   areas: AREAS,
   baseAreas: AREAS,
-  porMunicipio: [{ cdMun: "2611101", nome: "Petrolina (PE)", areas: AREAS }],
-  mapa: [{ cdMun: "2611101", nome: "Petrolina (PE)", areas: AREAS }],
+  porMunicipio: [
+    { cdMun: "2611101", uf: "PE", nome: "Petrolina (PE)", areas: AREAS },
+  ],
+  mapa: [{ cdMun: "2611101", uf: "PE", nome: "Petrolina (PE)", areas: AREAS }],
 };
 
 describe("aridezBigNumbers", () => {

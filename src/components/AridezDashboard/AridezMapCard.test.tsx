@@ -45,7 +45,12 @@ const town = (
   semiarido: number,
   subumido: number,
   umido: number,
-) => ({ cdMun, nome: cdMun, areas: { arido, semiarido, subumido, umido } });
+) => ({
+  cdMun,
+  uf: "PB",
+  nome: cdMun,
+  areas: { arido, semiarido, subumido, umido },
+});
 
 // A: 40% ASD, predomina o úmido. B: 100% ASD, predomina o semiárido.
 // C: 100% ASD, predomina o semiárido. D: sem área classificada fica de fora.
@@ -124,6 +129,13 @@ describe("AridezMapCard", () => {
     expect([...(values?.keys() ?? [])]).toEqual(["A", "B", "C"]);
     expect(values?.get("A")).toBeCloseTo(40);
     expect(values?.get("B")).toBe(100);
+  });
+
+  // Hover por estado (só a área): A, B e C são da PB, 240 de 300 km² em ASD.
+  it("gives the map the ASD share of each state of the area", () => {
+    render(ui());
+
+    expect([...(lastProps().stateValues ?? [])]).toEqual([["PB", 80]]);
   });
 
   it("counts the municipalities by predominant class, keyed by the numeric code", () => {
