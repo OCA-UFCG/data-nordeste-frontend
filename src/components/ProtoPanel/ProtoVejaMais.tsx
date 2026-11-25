@@ -28,11 +28,14 @@ type VejaMaisMode = "closed" | "card" | "sheet";
 const FLOATING_SHADOW = "shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]";
 
 // Ponto vermelho do protótipo (`.anl-dot`): o texto mudou com o filtro
-// enquanto o cartão estava fechado.
+// enquanto o cartão estava fechado. Selo cheio no canto superior direito do
+// botão (o `fixed` do botão é a referência do `absolute`), não ao lado do
+// texto: inline, o anel branco sobre a cor do botão parecia um círculo vazado
+// (pedido do time, 24/11/2026).
 const UpdatedDot = () => (
   <i
     title="Texto atualizado"
-    className="ml-2 inline-block size-2 rounded-full bg-[#d93025] align-middle shadow-[0_0_0_2px_#fff]"
+    className="absolute top-0 right-3 size-3 rounded-full border-2 border-white bg-[#d93025]"
   />
 );
 
