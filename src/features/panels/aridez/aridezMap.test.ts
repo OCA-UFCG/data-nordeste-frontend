@@ -139,6 +139,23 @@ describe("aridezTooltipDetails", () => {
     expect(feature.get("2")).toEqual(["Percentual de área úmida: 100,00%"]);
   });
 
+  it("leaves out a class whose share rounds to 0,00%", () => {
+    // Árido: 3 de 100.000 km² = 0,003%, que o formato de 2 casas mostra 0,00%.
+    const { feature } = aridezTooltipDetails([town("4", 3, 0, 0, 99_997)]);
+
+    expect(feature.get("4")).toEqual(["Percentual de área úmida: 100,00%"]);
+  });
+
+  it("keeps the smallest share the format can show", () => {
+    // Árido: 1 de 10.000 km² = 0,01%.
+    const { feature } = aridezTooltipDetails([town("5", 1, 0, 0, 9_999)]);
+
+    expect(feature.get("5")).toEqual([
+      "Percentual de área árida: 0,01%",
+      "Percentual de área úmida: 99,99%",
+    ]);
+  });
+
   it("gives a municipality without classified area no lines", () => {
     const { feature } = aridezTooltipDetails([town("3", 0, 0, 0, 0)]);
 

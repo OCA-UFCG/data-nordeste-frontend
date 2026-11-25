@@ -101,15 +101,22 @@ const sumStateAreas = (
   return byState;
 };
 
+// Texto de uma classe sem área. Uma lasca abaixo de 0,005% também sai assim no
+// formato de 2 casas, por isso o filtro compara o texto, não o número.
+const ZERO_SHARE_TEXT = formatSharePercent(0);
+
 // Uma linha por classe com área, na ordem das classes: "Percentual de área
-// semiárida: 90,00%". Classe sem área fica de fora.
+// semiárida: 90,00%". Classe sem área fica de fora, e também a que arredonda
+// para 0,00%: listá-la daria a entender que a classe está presente.
 const classShareLines = (areas: AridezAreas): string[] => {
   const shares = classShares(areas);
 
-  return ARIDEZ_CLASSES.filter(({ key }) => shares[key] > 0).map(
-    ({ key }) =>
-      `Percentual de área ${CLASS_ADJECTIVES[key]}: ${formatSharePercent(shares[key])}`,
-  );
+  return ARIDEZ_CLASSES.map(({ key }) => ({
+    adjective: CLASS_ADJECTIVES[key],
+    share: formatSharePercent(shares[key]),
+  }))
+    .filter(({ share }) => share !== ZERO_SHARE_TEXT)
+    .map(({ adjective, share }) => `Percentual de área ${adjective}: ${share}`);
 };
 
 /**
