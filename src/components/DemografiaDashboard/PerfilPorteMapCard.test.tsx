@@ -124,6 +124,27 @@ describe("PerfilPorteMapCard", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
+  it("opens the fullscreen map on the card's active basemap", () => {
+    const { rerender } = renderCard();
+    act(() => lastProps().onBasemapChange?.("satelite"));
+    rerender(
+      <ProtoCardMenuContext.Provider value={MENU}>
+        <PerfilPorteMapCard
+          data={PANEL}
+          place="Semiárido"
+          selection={SELECTION}
+          onFiltersChange={vi.fn()}
+          mapView={{ fullscreen: true, setFullscreen: vi.fn() }}
+          state="ok"
+          onRetry={vi.fn()}
+        />
+      </ProtoCardMenuContext.Provider>,
+    );
+
+    const fullscreen = panelMapRenders.filter((props) => !props.onEngine);
+    expect(fullscreen.at(-1)?.initialBasemap).toBe("satelite");
+  });
+
   it("renders the municipal demografia map for the requested area, year and selection", () => {
     renderCard();
 

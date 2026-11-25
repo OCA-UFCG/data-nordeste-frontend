@@ -12,9 +12,10 @@ import type { BasemapKind, PanelMapEngine } from "@/lib/panelMapEngine";
  * imagem), o basemap ativo (para o crédito dessa imagem) e os geodados (a
  * legenda e o mini-mapa do cartaz; `null` até carregarem). `mapBinding` vai
  * direto no `PanelMap` do card, já com os gestos cooperativos; o da tela
- * cheia não o recebe.
+ * cheia não o recebe. Ele recebe `fullscreenBinding`: nasce no basemap que o
+ * card mostra, em vez do Padrão.
  *
- * @example const card = usePanelMapCard(PIB_CARD_SOURCE); <PanelMap {...mapProps} {...card.mapBinding} />
+ * @example const card = usePanelMapCard(PIB_CARD_SOURCE); <PanelMap {...mapProps} {...card.mapBinding} />; <PanelMap {...mapProps} {...card.fullscreenBinding} />
  */
 export function usePanelMapCard(cardSource: string) {
   const [engine, setEngine] = useState<PanelMapEngine | null>(null);
@@ -39,5 +40,6 @@ export function usePanelMapCard(cardSource: string) {
       onBasemapChange: setBasemap,
       onGeodata: setGeodata,
     },
+    fullscreenBinding: { initialBasemap: basemap },
   };
 }

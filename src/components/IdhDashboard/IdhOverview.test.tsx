@@ -67,6 +67,17 @@ describe("IdhOverview", () => {
     stubPanelBrowserApis();
   });
 
+  it("opens the fullscreen map on the card's active basemap", () => {
+    render(overview(allIdhCards("ok")));
+    act(() => lastProps().onBasemapChange?.("satelite"));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Abrir mapa em tela cheia" }),
+    );
+
+    const fullscreen = panelMapRenders.filter((props) => !props.onEngine);
+    expect(fullscreen.at(-1)?.initialBasemap).toBe("satelite");
+  });
+
   it("renders the state-level IDH map for the Northeast, year and selected state", () => {
     render(overview(allIdhCards("ok")));
 

@@ -46,4 +46,15 @@ describe("usePanelMapCard", () => {
     expect(result.current.engine).toBe(engine);
     expect(result.current.mapBinding.cooperative).toBe(true);
   });
+
+  // A tela cheia monta outro mapa a cada abertura: ele nasce no basemap que o
+  // card mostra, não no Padrão.
+  it("abre a tela cheia no basemap ativo do card", () => {
+    const { result } = renderHook(() => usePanelMapCard(SOURCE));
+
+    expect(result.current.fullscreenBinding.initialBasemap).toBe("padrao");
+    act(() => result.current.mapBinding.onBasemapChange("satelite"));
+
+    expect(result.current.fullscreenBinding.initialBasemap).toBe("satelite");
+  });
 });

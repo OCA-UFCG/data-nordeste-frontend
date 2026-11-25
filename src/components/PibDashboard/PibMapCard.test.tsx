@@ -110,6 +110,17 @@ describe("PibMapCard", () => {
     panelMapRenders.length = 0;
     vi.stubGlobal("matchMedia", DESKTOP_MEDIA);
   });
+
+  it("opens the fullscreen map on the card's active basemap", () => {
+    renderCard();
+    act(() => lastProps().onBasemapChange?.("satelite"));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Abrir mapa em tela cheia" }),
+    );
+
+    const fullscreen = panelMapRenders.filter((props) => !props.onEngine);
+    expect(fullscreen.at(-1)?.initialBasemap).toBe("satelite");
+  });
   afterEach(() => vi.unstubAllGlobals());
 
   it("renders the municipal PIB map for the requested area, year and selection", () => {

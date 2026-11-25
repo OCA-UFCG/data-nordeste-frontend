@@ -20,6 +20,9 @@ export const DEFAULT_BASEMAP: BasemapKind = "padrao";
 export type PanelMapEngineMount = {
   municipal: boolean;
   cooperative: boolean;
+
+  // Basemap com que o motor nasce; sem ele, o Padrão.
+  basemap?: BasemapKind;
   createEngine?: typeof createPanelMapEngine;
   onEngine?: (engine: PanelMapEngine | null) => void;
 };
@@ -29,17 +32,17 @@ type EngineState = { engine: PanelMapEngine | null; failed: boolean };
 
 const NO_ENGINE: EngineState = { engine: null, failed: false };
 
-// `municipal`, `cooperative` e a fábrica são lidos só aqui, na montagem: valem
-// pela vida do componente. `onEngine` é lido pelo ref na hora, para pegar o
-// mais recente.
+// `municipal`, `cooperative`, `basemap` e a fábrica são lidos só aqui, na
+// montagem: valem pela vida do componente. `onEngine` é lido pelo ref na hora,
+// para pegar o mais recente.
 function mountEngine(
   container: HTMLElement,
   mountRef: MutableRefObject<PanelMapEngineMount>,
   setState: Dispatch<SetStateAction<EngineState>>,
 ): () => void {
-  const { municipal, cooperative, createEngine } = mountRef.current;
+  const { municipal, cooperative, basemap, createEngine } = mountRef.current;
   const teardown = (createEngine ?? createPanelMapEngine)(container, {
-    basemap: DEFAULT_BASEMAP,
+    basemap: basemap ?? DEFAULT_BASEMAP,
     municipal,
     cooperative,
     onReady: (ready) => {

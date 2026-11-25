@@ -86,6 +86,10 @@ export type PanelMapProps = {
   // O usuário trocou o basemap (o card ajusta o crédito da imagem baixada).
   onBasemapChange?: (kind: BasemapKind) => void;
 
+  // Basemap com que o mapa nasce (lido só na montagem; sem ele, o Padrão): a
+  // tela cheia abre no basemap que o card mostra.
+  initialBasemap?: BasemapKind;
+
   // Gestos cooperativos (Ctrl/⌘ + roda, dois dedos): o mapa no card não
   // sequestra a rolagem da página. A tela cheia deixa desligado.
   cooperative?: boolean;
@@ -165,10 +169,15 @@ function usePanelMapStage(
   const { containerRef, engine, failed } = usePanelMapEngine({
     municipal: level === "municipio",
     cooperative: props.cooperative ?? false,
+    basemap: props.initialBasemap,
     createEngine: props.createEngine,
     onEngine: props.onEngine,
   });
-  const controls = usePanelMapControls(engine, props.onBasemapChange);
+  const controls = usePanelMapControls(
+    engine,
+    props.onBasemapChange,
+    props.initialBasemap,
+  );
   const { features, states } = geodata;
   const tooltip = usePanelMapTooltip({ ...props, engine, features, states });
 
