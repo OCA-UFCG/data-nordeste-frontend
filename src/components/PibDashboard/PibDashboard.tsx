@@ -42,7 +42,6 @@ import {
   type TerritorialFilters,
 } from "@/features/panels/territorialFilters";
 import {
-  describeTerritorialAreaPlace,
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
@@ -122,9 +121,9 @@ export const PibDashboard = ({
     data,
     selection,
     place: describeTerritorialPlace(data),
-    mapPlace: describeTerritorialAreaPlace(data),
     states,
     onRetry: retry,
+    onFiltersChange: request,
     onSelectYear: (ano: number) => request({ ...selection, ano }),
     onShowSectorYear: (ano: number) => {
       request({ ...selection, ano });
