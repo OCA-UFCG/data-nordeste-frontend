@@ -29,6 +29,7 @@ import {
 } from "@/features/panelMap/featureLevel";
 import type { PanelIndicator } from "@/features/panelMap/geodataTypes";
 import { hoverLevelFor } from "@/features/panelMap/hoverLevel";
+import type { MapTooltipDetails } from "@/features/panelMap/mapTooltip";
 import type { MapLevel, MapRecorte } from "@/features/panelMap/mapRecorte";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 import type {
@@ -70,6 +71,11 @@ export type PanelMapProps = {
   // do estado, não a soma dos %). Sem ele, a soma do `v<ano>` dos municípios
   // do estado que estão na área.
   stateValues?: ReadonlyMap<string, number>;
+
+  // Linhas extras do tooltip, entre o nome e o valor (aridez: % de cada classe
+  // por município e por estado). Chaves: `code` IBGE e sigla. Sem ele, só o
+  // nome, o valor e a posição.
+  tooltipDetails?: MapTooltipDetails;
 
   // Legenda da aridez: quantas feições por valor de classe da paleta.
   classCounts?: ReadonlyMap<number, number>;

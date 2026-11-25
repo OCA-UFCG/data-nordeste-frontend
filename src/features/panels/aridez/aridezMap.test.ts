@@ -4,6 +4,7 @@ import {
   aridezMapValues,
   aridezPredominantClasses,
   aridezStateShares,
+  aridezTooltipDetails,
 } from "@/features/panels/aridez/aridezMap";
 import type { AridezMunicipio } from "@/features/panels/aridez/aridezPanel";
 
@@ -117,5 +118,43 @@ describe("aridezStateShares", () => {
     expect(aridezStateShares([town("1", 0, 0, 0, 0, "RN")]).has("RN")).toBe(
       false,
     );
+  });
+});
+
+describe("aridezTooltipDetails", () => {
+  it("lists the share of each class of the municipality, in class order", () => {
+    const { feature } = aridezTooltipDetails([town("1", 10, 20, 10, 60)]);
+
+    expect(feature.get("1")).toEqual([
+      "Percentual de área árida: 10,00%",
+      "Percentual de área semiárida: 20,00%",
+      "Percentual de área subúmida seca: 10,00%",
+      "Percentual de área úmida: 60,00%",
+    ]);
+  });
+
+  it("leaves out a class without area", () => {
+    const { feature } = aridezTooltipDetails([town("2", 0, 0, 0, 100)]);
+
+    expect(feature.get("2")).toEqual(["Percentual de área úmida: 100,00%"]);
+  });
+
+  it("gives a municipality without classified area no lines", () => {
+    const { feature } = aridezTooltipDetails([town("3", 0, 0, 0, 0)]);
+
+    expect(feature.get("3")).toEqual([]);
+  });
+
+  it("gives each state the class shares of its summed areas, not the mean", () => {
+    // PE: semiárido (100 + 0) de (100 + 900) = 10%. A média seria 50%.
+    const { state } = aridezTooltipDetails([
+      town("1", 0, 100, 0, 0, "PE"),
+      town("2", 0, 0, 0, 900, "PE"),
+    ]);
+
+    expect(state.get("PE")).toEqual([
+      "Percentual de área semiárida: 10,00%",
+      "Percentual de área úmida: 90,00%",
+    ]);
   });
 });

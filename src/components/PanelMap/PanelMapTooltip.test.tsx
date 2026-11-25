@@ -10,6 +10,7 @@ const tooltip = (
   overrides: Partial<PanelMapTooltipState> = {},
 ): PanelMapTooltipState => ({
   title: "Aroazes (PI)",
+  details: [],
   value: "População: 5.369",
   rank: "1.511º de 1.794",
   x: 10,

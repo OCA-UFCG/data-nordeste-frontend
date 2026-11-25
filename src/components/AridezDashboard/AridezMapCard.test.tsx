@@ -151,6 +151,18 @@ describe("AridezMapCard", () => {
     expect(lastProps().recorte).toEqual({ uf: ["PB"], mun: [] });
   });
 
+  it("gives the map the % of each class per municipality and per state", () => {
+    render(ui());
+
+    const details = lastProps().tooltipDetails;
+
+    expect(details?.feature.get("B")).toEqual([
+      "Percentual de área semiárida: 80,00%",
+      "Percentual de área subúmida seca: 20,00%",
+    ]);
+    expect(details?.state.has("PB")).toBe(true);
+  });
+
   it("gives the map the ASD share of every municipality of the area", () => {
     render(ui());
 

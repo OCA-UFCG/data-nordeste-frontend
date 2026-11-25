@@ -23,6 +23,7 @@ import {
   aridezMapValues,
   aridezPredominantClasses,
   aridezStateShares,
+  aridezTooltipDetails,
 } from "@/features/panels/aridez/aridezMap";
 import type { AridezPanelData } from "@/features/panels/aridez/aridezPanel";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
@@ -32,7 +33,7 @@ import { areaLabel } from "@/features/panels/territorialOptions";
 // classes fica abaixo da caixa.
 const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 
-// O número do tooltip (o do município e, só com a área, o do estado), as contagens da legenda e o destaque das classes saem
+// O número do tooltip e as linhas por classe (o do município e, só com a área, o do estado), as contagens da legenda e o destaque das classes saem
 // de todos os municípios da área (`data.mapa`): só mudam com Área e Ano, não
 // com o zoom.
 // O cartaz de download: "Mapa do Índice de aridez - {lugar}".
@@ -54,6 +55,10 @@ const useAridezMapProps = (
     () => aridezPredominantClasses(data.mapa),
     [data.mapa],
   );
+  const tooltipDetails = useMemo(
+    () => aridezTooltipDetails(data.mapa),
+    [data.mapa],
+  );
 
   return {
     ...usePanelMapFilters(selection, onFiltersChange),
@@ -66,6 +71,7 @@ const useAridezMapProps = (
     stateValues,
     classCounts,
     classOf,
+    tooltipDetails,
   };
 };
 

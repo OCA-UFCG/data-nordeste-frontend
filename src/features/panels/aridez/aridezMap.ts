@@ -1,10 +1,16 @@
+import type { MapTooltipDetails } from "@/features/panelMap/mapTooltip";
 import {
-  asdArea,
+  ARIDEZ_CLASSES,
+  type AridezAreas,
+  type AridezClassKey,
   asdShare,
   classifiedArea,
+  classShares,
+  EMPTY_ARIDEZ_AREAS,
   rankAridezClasses,
 } from "@/features/panels/aridez/aridezClasses";
 import type { AridezMunicipio } from "@/features/panels/aridez/aridezPanel";
+import { formatSharePercent } from "@/features/panels/aridez/aridezFormat";
 
 /**
  * Número do tooltip e do ranking do mapa: o % da área classificada de cada
@@ -63,22 +69,47 @@ export const aridezClassCounts = (
   return counts;
 };
 
-type StateAreas = { asd: number; classified: number };
+// O tooltip concorda em gênero com "área" ("Percentual de área semiárida").
+const CLASS_ADJECTIVES: Record<AridezClassKey, string> = {
+  arido: "árida",
+  semiarido: "semiárida",
+  subumido: "subúmida seca",
+  umido: "úmida",
+};
 
+const addAreas = (total: AridezAreas, areas: AridezAreas): AridezAreas => {
+  const sum = { ...total };
+
+  for (const { key } of ARIDEZ_CLASSES) sum[key] += areas[key];
+
+  return sum;
+};
+
+// Área de cada classe somada por UF; a soma das classes (não a média dos %)
+// é o que faz a razão do estado.
 const sumStateAreas = (
   municipios: readonly AridezMunicipio[],
-): Map<string, StateAreas> => {
-  const byState = new Map<string, StateAreas>();
+): Map<string, AridezAreas> => {
+  const byState = new Map<string, AridezAreas>();
 
   for (const { uf, areas } of municipios) {
-    const sum = byState.get(uf) ?? { asd: 0, classified: 0 };
+    const sum = byState.get(uf) ?? { ...EMPTY_ARIDEZ_AREAS };
 
-    sum.asd += asdArea(areas);
-    sum.classified += classifiedArea(areas);
-    byState.set(uf, sum);
+    byState.set(uf, addAreas(sum, areas));
   }
 
   return byState;
+};
+
+// Uma linha por classe com área, na ordem das classes: "Percentual de área
+// semiárida: 90,00%". Classe sem área fica de fora.
+const classShareLines = (areas: AridezAreas): string[] => {
+  const shares = classShares(areas);
+
+  return ARIDEZ_CLASSES.filter(({ key }) => shares[key] > 0).map(
+    ({ key }) =>
+      `Percentual de área ${CLASS_ADJECTIVES[key]}: ${formatSharePercent(shares[key])}`,
+  );
 };
 
 /**
@@ -95,9 +126,32 @@ export const aridezStateShares = (
 ): Map<string, number> => {
   const shares = new Map<string, number>();
 
-  for (const [uf, { asd, classified }] of sumStateAreas(municipios)) {
-    if (classified > 0) shares.set(uf, (asd / classified) * 100);
+  for (const [uf, areas] of sumStateAreas(municipios)) {
+    if (classifiedArea(areas) > 0) shares.set(uf, asdShare(areas));
   }
 
   return shares;
+};
+
+/**
+ * Linhas extras do tooltip do mapa de aridez: o % de cada classe da área do
+ * município (por `cdMun`) e do estado (por UF, com as áreas somadas). Classe
+ * sem área não aparece.
+ *
+ * @example aridezTooltipDetails(municipios).feature.get("2611101") // ["Percentual de área semiárida: 90,00%", "Percentual de área úmida: 10,00%"]
+ */
+export const aridezTooltipDetails = (
+  municipios: readonly AridezMunicipio[],
+): MapTooltipDetails => {
+  const feature = new Map<string, string[]>(
+    municipios.map(({ cdMun, areas }) => [cdMun, classShareLines(areas)]),
+  );
+  const state = new Map<string, string[]>(
+    [...sumStateAreas(municipios)].map(([uf, areas]) => [
+      uf,
+      classShareLines(areas),
+    ]),
+  );
+
+  return { feature, state };
 };
