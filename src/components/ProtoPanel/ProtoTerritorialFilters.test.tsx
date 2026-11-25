@@ -84,4 +84,28 @@ describe("ProtoTerritorialFilters single choice", () => {
       mun: ["2507507"],
     });
   });
+
+  it("picks the area with the same searchable combobox as the state", () => {
+    vi.useFakeTimers();
+    const onChange = renderBar();
+
+    pick(/^Área de interesse/, "Semiárido");
+
+    expect(onChange).toHaveBeenCalledExactlyOnceWith({
+      ...DATA.filters,
+      area: "semiarido",
+    });
+  });
+
+  it("never leaves the area empty", () => {
+    vi.useFakeTimers();
+    const onChange = renderBar();
+
+    pick(/^Área de interesse/, "Nordeste");
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole("button", { name: "Limpar seleção" }),
+    ).not.toBeInTheDocument();
+  });
 });
