@@ -19,6 +19,16 @@ export type ProtoCardMenuContextValue = {
   poster?: MapPosterBase;
 };
 
+// De onde o "Baixar imagem" tira o desenho: o `<svg>` do gráfico
+// (useSvgChart), o canvas do mapa ou um SVG montado a partir dos dados (os
+// indicadores).
+export type ProtoCardImage = {
+  getSource: () => ChartImageSource | null;
+
+  // O cartaz do mapa: sem ele (gráficos em SVG), a imagem sai como antes.
+  getPoster?: () => MapPosterData | null;
+};
+
 export const ProtoCardMenuContext =
   createContext<ProtoCardMenuContextValue | null>(null);
 
@@ -41,7 +51,8 @@ export const useSvgChart = () => {
  * Menu ⋯ de um card do painel. Com `chart` (um `useSvgChart()` ou o motor do
  * mapa), oferece baixar a imagem;
  * os cards em HTML (ranking, barras de sexo e cor) só compartilham e abrem o
- * catálogo. `catalog={false}`: o dado não tem página no catálogo (Gini, no
+ * catálogo. Os indicadores (big numbers) também são HTML, mas passam um
+ * `chart` que redesenha o número em SVG (buildStatImage). `catalog={false}`: o dado não tem página no catálogo (Gini, no
  * protótipo).
  *
  * @example <ProtoCardMenu title="Índice de Gini" catalog={false} />
@@ -52,12 +63,7 @@ export const ProtoCardMenu = ({
   catalog = true,
 }: {
   title: string;
-  chart?: {
-    getSource: () => ChartImageSource | null;
-
-    // O cartaz do mapa: sem ele (gráficos em SVG), a imagem sai como antes.
-    getPoster?: () => MapPosterData | null;
-  };
+  chart?: ProtoCardImage;
   catalog?: boolean;
 }) => {
   const context = useContext(ProtoCardMenuContext);

@@ -55,7 +55,8 @@ export const layoutChartImage = ({
   };
 };
 
-export const escapeXml = (text: string) =>
+// Texto de títulos, fontes e valores dentro do SVG; também usado em statImage e no cartaz do mapa.
+export const escapeXml = (text: string): string =>
   text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

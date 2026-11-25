@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { ProtoCardMenuContext } from "@/components/ProtoPanel/ProtoCardMenu";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
@@ -49,29 +49,53 @@ describe("ProtoStatCards loading skeleton", () => {
   });
 });
 
+const MENU = {
+  share: { path: "/demo/perfil-demografico", chips: [] },
+  catalogHref: null,
+  imageSource: "IBGE",
+};
+
+const renderBigNumber = (state: "ok" | "error") =>
+  render(
+    <ProtoCardMenuContext.Provider value={MENU}>
+      <ProtoStatCards
+        label="Números"
+        cells={[{ icon: "users", label: "População residente", value: "1" }]}
+        state={state}
+        onRetry={() => {}}
+        variant="hero"
+      />
+    </ProtoCardMenuContext.Provider>,
+  );
+
 describe("ProtoStatCards menu", () => {
   beforeEach(stubPanelBrowserApis);
 
   it("gives every big number the ⋮ menu, titled by its label", () => {
-    const menu = {
-      share: { path: "/demo/perfil-demografico", chips: [] },
-      catalogHref: null,
-      imageSource: "IBGE",
-    };
-    const { getByRole } = render(
-      <ProtoCardMenuContext.Provider value={menu}>
-        <ProtoStatCards
-          label="Números"
-          cells={[{ icon: "users", label: "População residente", value: "1" }]}
-          state="ok"
-          onRetry={() => {}}
-          variant="hero"
-        />
-      </ProtoCardMenuContext.Provider>,
-    );
+    const { getByRole } = renderBigNumber("ok");
 
     expect(
       getByRole("button", { name: "Mais opções: População residente" }),
     ).toBeTruthy();
+  });
+
+  it("offers the image download on a loaded big number", () => {
+    const { getByRole } = renderBigNumber("ok");
+
+    fireEvent.click(
+      getByRole("button", { name: "Mais opções: População residente" }),
+    );
+
+    expect(getByRole("button", { name: "Baixar imagem" })).toBeTruthy();
+  });
+
+  it("has no image to download when the big number failed to load", () => {
+    const { getByRole, queryByRole } = renderBigNumber("error");
+
+    fireEvent.click(
+      getByRole("button", { name: "Mais opções: População residente" }),
+    );
+
+    expect(queryByRole("button", { name: "Baixar imagem" })).toBeNull();
   });
 });

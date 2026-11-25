@@ -5,7 +5,10 @@ import {
   type ProtoCardState,
   ProtoSkeleton,
 } from "@/components/ProtoPanel/ProtoCard";
-import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
+import {
+  ProtoCardMenu,
+  type ProtoCardImage,
+} from "@/components/ProtoPanel/ProtoCardMenu";
 import {
   ProtoIcon,
   type ProtoIconName,
@@ -21,6 +24,8 @@ import {
   CarouselItem,
   useCarousel,
 } from "@/components/ui/carousel";
+import { buildStatImage } from "@/features/panels/statImage";
+import { svgMarkupSource } from "@/lib/chartImage";
 import { cn } from "@/lib/utils";
 
 // Variação do mesmo número: a seta verde ou vermelha ao lado da variação.
@@ -53,14 +58,22 @@ const cellClass = (hero: boolean) => (hero ? HERO_CELL_CLASS : ROW_CELL_CLASS);
 const DEFAULT_ICON_CLASS =
   "bg-(--proto-accent-soft) text-(--proto-accent-strong)";
 
+// "Baixar imagem" do indicador: o card é HTML, então o número é redesenhado
+// em SVG a partir da célula. Só no card carregado; com erro não há o que baixar.
+const statCardImage = (cell: ProtoStatCell): ProtoCardImage => ({
+  getSource: () => svgMarkupSource(buildStatImage(cell)),
+});
+
 const CellTop = ({
   icon,
   label,
   iconClassName,
+  image,
 }: {
   icon: ProtoIconName;
   label: string;
   iconClassName: string;
+  image?: ProtoCardImage;
 }) => (
   <div className="flex min-h-[34px] items-center gap-2.5">
     {/* cn: o painel pode trocar o canto do chip (o PIB usa um círculo). */}
@@ -76,7 +89,7 @@ const CellTop = ({
       {label}
     </div>
     <div className="-mt-1.5 -mr-2 ml-auto flex-none self-start">
-      <ProtoCardMenu title={label} />
+      <ProtoCardMenu title={label} chart={image} />
     </div>
   </div>
 );
@@ -219,6 +232,7 @@ const Cell = ({
         icon={cell.icon}
         label={cell.label}
         iconClassName={iconClassName}
+        image={statCardImage(cell)}
       />
       <CellValue cell={cell} hero={hero} />
     </div>
