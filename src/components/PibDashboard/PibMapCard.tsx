@@ -12,7 +12,7 @@ import type { PibCardProps } from "@/components/PibDashboard/pibCardProps";
 import { PibInfoParagraphs } from "@/components/PibDashboard/PibInfoParagraphs";
 import {
   PIB_CARD_SOURCE,
-  PIB_INFO,
+  PIB_MAP_INFO,
   PIB_MAP_TITLE,
 } from "@/components/PibDashboard/pibTexts";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
@@ -89,7 +89,7 @@ export const PibMapCard = ({
       actions={
         <PanelMapCardActions
           title={PIB_MAP_TITLE}
-          info={<PibInfoParagraphs paragraphs={PIB_INFO} />}
+          info={<PibInfoParagraphs paragraphs={PIB_MAP_INFO} />}
           imageSource={card.imageSource}
           engine={card.engine}
           poster={panelMapPosterInput(mapProps, card.geodata, POSTER_TEXTS)}

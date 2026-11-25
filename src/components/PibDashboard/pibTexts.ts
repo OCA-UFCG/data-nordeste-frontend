@@ -35,8 +35,15 @@ const PIB_CURRENT_PRICES_NOTE: PibInfoParagraph = {
   rest: "Obs.: Os valores do PIB são apresentados a preços correntes de cada ano. A evolução nominal incorpora tanto variações na produção quanto nos preços.",
 };
 
-// ⓘ do mapa: o texto da equipe de conteúdo inteiro.
-export const PIB_INFO: readonly PibInfoParagraph[] = [
+// ⓘ do mapa: só o PIB e a Obs.
+export const PIB_MAP_INFO: readonly PibInfoParagraph[] = [
+  PIB_DEFINITION,
+  PIB_CURRENT_PRICES_NOTE,
+];
+
+// ⓘ do gráfico de linha, que traz o PIB e o PIB per capita: o texto da equipe
+// de conteúdo inteiro.
+export const PIB_LINE_INFO: readonly PibInfoParagraph[] = [
   PIB_DEFINITION,
   PIB_PER_CAPITA_DEFINITION,
   PIB_CURRENT_PRICES_NOTE,
@@ -64,7 +71,6 @@ export const PIB_ATIVIDADE_UNIT = "Percentual do PIB (%)";
 
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
-  line: "PIB no eixo da esquerda e PIB per capita no eixo da direita, cada um na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
   vab: `${PIB_VAB_TERM} por setor representa o quanto cada setor da economia contribui para a geração de riqueza, ou seja, para o Produto Interno Bruto (PIB).`,
 } as const;
 

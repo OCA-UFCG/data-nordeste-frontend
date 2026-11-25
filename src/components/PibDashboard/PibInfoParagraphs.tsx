@@ -3,7 +3,7 @@ import type { PibInfoParagraph } from "@/components/PibDashboard/pibTexts";
 /**
  * Corpo do ⓘ: um parágrafo por item, com o termo definido em negrito.
  *
- * @example <ProtoCardInfo title="Mapa" text={<PibInfoParagraphs paragraphs={PIB_INFO} />} />
+ * @example <ProtoCardInfo title="Mapa" text={<PibInfoParagraphs paragraphs={PIB_MAP_INFO} />} />
  */
 export const PibInfoParagraphs = ({
   paragraphs,

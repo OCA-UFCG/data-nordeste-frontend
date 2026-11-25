@@ -825,11 +825,10 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     level, `.qgz` classes as delivered; `PibMapCard`), not the prototype's
     state-only SVG. Title "PIB por município" (`PIB_MAP_TITLE`, content
     team review, PR #413; "total" dropped in the later standardization of
-    "PIB total" to "PIB"). Its ⓘ (`PIB_INFO`, rendered by
-    `PibInfoParagraphs` with the terms in bold) is the content team's text
-    verbatim: the PIB and PIB per capita definitions and the "Obs."; the same
-    text is on the big numbers' ⓘ. How the map filters is no longer
-    explained there.
+    "PIB total" to "PIB"). Its ⓘ (`PIB_MAP_INFO`, rendered by
+    `PibInfoParagraphs` with the term in bold) keeps only the content team's
+    PIB definition and the "Obs." verbatim (the map is of the PIB, not of
+    the per capita). How the map filters is no longer explained there.
     #413 also built a municipal map on the old canvas stack
     (`ProtoMunicipalMap`, `pibMunicipios`, a `GROUP BY cd_mun` query in
     `loadPibPanel`); the merge kept the MapLibre card and dropped those.
@@ -853,7 +852,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     the ⓘ text `PIB_CARD_INFO.vab` with "Valor Adicionado Bruto (VAB)" in bold.
   - Line card (content team review): title "Dinâmica temporal do PIB e
     do PIB per capita" (`PIB_LINE_TITLE`, also the SVG label and the image
-    title). Each Y axis has a title with its unit drawn inside the SVG, so the
+    title). Its ⓘ (`PIB_LINE_INFO`) is the content team's text verbatim: PIB and
+    PIB per capita definitions and the "Obs.". Each Y axis has a title with its unit drawn inside the SVG, so the
     download keeps it ("PIB (R$ bilhões)" top left, "PIB per capita (R$
     mil)" top right), plain pt-BR ticks in that unit, and the axis line, ticks
     and title in the series color (text in the darker `*Ink` for AA). No

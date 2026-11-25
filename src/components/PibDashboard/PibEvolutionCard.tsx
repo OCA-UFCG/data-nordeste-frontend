@@ -5,8 +5,9 @@ import {
   PibLineChart,
   PibLineChartSkeleton,
 } from "@/components/PibDashboard/PibLineChart";
+import { PibInfoParagraphs } from "@/components/PibDashboard/PibInfoParagraphs";
 import {
-  PIB_CARD_INFO,
+  PIB_LINE_INFO,
   PIB_LINE_TITLE,
 } from "@/components/PibDashboard/pibTexts";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
@@ -44,7 +45,10 @@ export const PibEvolutionCard = ({
       skeleton={<PibLineChartSkeleton />}
       actions={
         <>
-          <ProtoCardInfo title={PIB_LINE_TITLE} text={PIB_CARD_INFO.line} />
+          <ProtoCardInfo
+            title={PIB_LINE_TITLE}
+            text={<PibInfoParagraphs paragraphs={PIB_LINE_INFO} />}
+          />
           <ProtoCardMenu title={PIB_LINE_TITLE} chart={chart} />
         </>
       }
