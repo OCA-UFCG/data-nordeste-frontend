@@ -70,7 +70,7 @@ const FloatingButton = ({
   updated,
   onClick,
 }: {
-  buttonRef: RefObject<HTMLButtonElement | null>;
+  buttonRef: RefObject<HTMLButtonElement>;
   open: boolean;
   controls: string;
   updated: boolean;
