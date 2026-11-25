@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { IDH_CARD_INFO } from "@/components/IdhDashboard/idhCardTexts";
 import { IDH_COLORS } from "@/components/IdhDashboard/idhColors";
+import { IDH_INDICATOR_INFO } from "@/components/IdhDashboard/idhIndicatorInfo";
 import {
   PROTO_CARD_CLASS,
   ProtoCard,
@@ -29,20 +30,43 @@ import { withYear } from "@/features/panels/territorialFilters";
 type GroupVisao = "sexo" | "cor";
 
 // Ordem do protótipo. Gini não tem página no catálogo (o item fica desativado).
+// O ⓘ usa o mesmo texto do indicador na visão geral (revisão de 25/11/2026).
 const METRIC_CARDS: readonly {
   metric: IdhGroupMetric;
   title: string;
   catalog: boolean;
+  info: ReactNode;
 }[] = [
-  { metric: "idh", title: "IDH", catalog: true },
-  { metric: "rendaPerCapita", title: "Renda per capita", catalog: true },
-  { metric: "gini", title: "Índice de Gini", catalog: false },
+  { metric: "idh", title: "IDH", catalog: true, info: IDH_INDICATOR_INFO.idh },
+  {
+    metric: "rendaPerCapita",
+    title: "Renda per capita",
+    catalog: true,
+    info: IDH_INDICATOR_INFO.renda,
+  },
+  {
+    metric: "gini",
+    title: "Índice de Gini",
+    catalog: false,
+    info: IDH_INDICATOR_INFO.gini,
+  },
   {
     metric: "rendimento",
     title: "Rendimento médio dos ocupados",
     catalog: true,
+    info: IDH_INDICATOR_INFO.rend,
   },
 ];
+
+// O que o indicador mede e, depois, como ler as barras desta aba. `mt-2`
+// porque o texto do IDH e o do Gini terminam em lista, e o espaçamento do ⓘ
+// só separa parágrafo de parágrafo.
+const groupCardInfo = (info: ReactNode) => (
+  <>
+    {info}
+    <p className="mt-2">{IDH_CARD_INFO.groups}</p>
+  </>
+);
 
 // `--sa` e `--sb` do protótipo: o primeiro grupo roxo, o segundo azul.
 const GROUP_COLORS = [IDH_COLORS.accentStrong, IDH_COLORS.groupSecond];
@@ -109,6 +133,7 @@ const GroupCard = ({
   title,
   metric,
   catalog,
+  info,
   visao,
   data,
   state,
@@ -135,7 +160,7 @@ const GroupCard = ({
       onRetry={onRetry}
       actions={
         <>
-          <ProtoCardInfo title={title} text={IDH_CARD_INFO.groups} />
+          <ProtoCardInfo title={title} text={groupCardInfo(info)} />
           <ProtoCardMenu title={title} catalog={catalog} />
         </>
       }
