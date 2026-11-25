@@ -25,9 +25,10 @@ class IntersectionObserverFake {
 
 // O embla e o "Saiba mais" consultam media queries; nenhuma casa no jsdom.
 class MediaQueryListFake {
-  matches = false;
-
-  constructor(readonly media: string) {}
+  constructor(
+    readonly media: string,
+    readonly matches = false,
+  ) {}
 
   addEventListener() {}
 
@@ -50,4 +51,18 @@ export const stubPanelBrowserApis = () => {
 
   // A barra de abas do IDH rola até a aba aberta; o jsdom não tem `Element.scrollTo`.
   Element.prototype.scrollTo = () => {};
+};
+
+/**
+ * Faz o jsdom responder como celular: casa só `(max-width: 700px)`, o corte de
+ * celular dos painéis. Chamar depois de `stubPanelBrowserApis`.
+ *
+ * @example stubPanelBrowserApis(); stubPhoneMedia();
+ */
+export const stubPhoneMedia = () => {
+  vi.stubGlobal(
+    "matchMedia",
+    (media: string) =>
+      new MediaQueryListFake(media, media === "(max-width: 700px)"),
+  );
 };
