@@ -3,16 +3,20 @@
 import { createContext, useContext, useRef } from "react";
 import { CardMenu } from "@/components/ProtoPanel/menu/CardMenu";
 import type { CardShare } from "@/components/ProtoPanel/menu/CardShareScreen";
+import type { MapPosterData } from "@/features/panels/mapPosterData";
+import type { MapPosterBase } from "@/features/panels/mapPosterBuild";
 import { type ChartImageSource, svgImageSource } from "@/lib/chartImage";
 
 // O que é igual em todos os cards do painel: o link com os filtros, o catálogo
 // do macrotema e a fonte que vai na imagem baixada. A fonte é do painel (IDH,
-// perfil), por isso vem no contexto e não aqui.
+// perfil), por isso vem no contexto e não aqui. `poster`: o que o painel dá ao
+// cartaz de download dos seus mapas (os cards sem mapa não o usam).
 export type ProtoCardMenuContextValue = {
   share: CardShare;
   catalogHref: string | null;
   imageSource: string;
   bareSheet?: boolean;
+  poster?: MapPosterBase;
 };
 
 export const ProtoCardMenuContext =
@@ -48,7 +52,12 @@ export const ProtoCardMenu = ({
   catalog = true,
 }: {
   title: string;
-  chart?: { getSource: () => ChartImageSource | null };
+  chart?: {
+    getSource: () => ChartImageSource | null;
+
+    // O cartaz do mapa: sem ele (gráficos em SVG), a imagem sai como antes.
+    getPoster?: () => MapPosterData | null;
+  };
   catalog?: boolean;
 }) => {
   const context = useContext(ProtoCardMenuContext);
@@ -63,7 +72,11 @@ export const ProtoCardMenu = ({
       bareSheet={context.bareSheet}
       image={
         chart
-          ? { getSource: chart.getSource, source: context.imageSource }
+          ? {
+              getSource: chart.getSource,
+              getPoster: chart.getPoster,
+              source: context.imageSource,
+            }
           : undefined
       }
     />

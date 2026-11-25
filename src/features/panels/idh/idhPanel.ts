@@ -321,6 +321,22 @@ export const describeIdhShareChips = (
 };
 
 /**
+ * Os chips de filtros do cartaz de download do mapa: o IDH é só do Nordeste,
+ * então a Área é fixa e o Município sempre "Todos" (como nos outros painéis).
+ *
+ * @example describeIdhPosterChips(panel) // ["Ano: 2021", "Área: Nordeste", "Estado: Pernambuco", "Município: Todos"]
+ */
+export const describeIdhPosterChips = ({
+  filters,
+  ufs,
+}: Pick<IdhPanelData, "filters" | "ufs">): string[] => [
+  ...(filters.ano === NO_YEAR ? [] : [`Ano: ${filters.ano}`]),
+  "Área: Nordeste",
+  `Estado: ${ufs.find((item) => item.sigla === filters.uf)?.nome ?? "Todos"}`,
+  "Município: Todos",
+];
+
+/**
  * Nome curto do lugar filtrado: o estado, ou "Nordeste" para a média.
  *
  * @example idhPlaceName(panel) // "Pernambuco"

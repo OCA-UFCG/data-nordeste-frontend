@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { formatPanelUpdatedAt } from "@/features/panels/panelUpdatedAt";
 import { getCatalogHref } from "@/components/Panel/texts/PanelTexts";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
 import { PibPageFrame } from "@/components/PibDashboard/PibPageFrame";
@@ -76,6 +77,8 @@ export default async function PibDemoPage({
           data={panel ?? emptyPibPanel(filters)}
           failed={!panel}
           catalogHref={getCatalogHref(macroTheme)}
+          macroTheme={macroTheme}
+          updatedAt={formatPanelUpdatedAt(content?.panel.date)}
         />
       </PibPageFrame>
       {content ? <RelatedPanelsSection items={content.relatedItems} /> : null}

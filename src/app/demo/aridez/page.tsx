@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { formatPanelUpdatedAt } from "@/features/panels/panelUpdatedAt";
 import { AridezDashboard } from "@/components/AridezDashboard/AridezDashboard";
 import {
   ARIDEZ_LEAD,
@@ -91,6 +92,8 @@ export default async function AridezDemoPage({
         data={panel ?? emptyAridezPanel(filters)}
         failed={!panel}
         catalogHref={getCatalogHref(macroTheme)}
+        macroTheme={macroTheme}
+        updatedAt={formatPanelUpdatedAt(content?.panel.date)}
       />
       <ProtoSaibaMais
         tone="aridez"

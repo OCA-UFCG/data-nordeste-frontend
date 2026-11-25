@@ -1,6 +1,10 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import type { FeatureCollection } from "geojson";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PanelMapProps } from "@/components/PanelMap/PanelMap";
+import { PanelMapEngineFake } from "@/components/PanelMap/panelMapEngineFake";
+import { STYLES_FIXTURE } from "@/components/PanelMap/panelMapFixtures";
+import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
 import { PibMapCard } from "@/components/PibDashboard/PibMapCard";
 import { PIB_CARD_SOURCE } from "@/components/PibDashboard/pibTexts";
 import {
@@ -11,6 +15,8 @@ import type { MapRecorte } from "@/features/panelMap/mapRecorte";
 import { territorialToRecorte } from "@/features/panelMap/panelMapAdapters";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 import { formatPibReais } from "@/features/panels/pib/pibFormat";
+import type { MapPosterBase } from "@/features/panels/mapPosterBuild";
+import * as chartImage from "@/lib/chartImage";
 
 // O mapa é MapLibre (canvas); o dublê só guarda as props de cada montagem.
 const panelMapRenders = vi.hoisted(() => [] as PanelMapProps[]);
@@ -43,14 +49,50 @@ const MENU: ProtoCardMenuContextValue = {
   imageSource: PIB_CARD_SOURCE,
 };
 
+// O que o painel (PibDashboard) dá ao cartaz de download no contexto do menu.
+const POSTER_BASE: MapPosterBase = {
+  panelName: "Painel de Economia e Renda",
+  icon: "usd",
+  accent: "#e5640f",
+  updatedAt: "11/2026",
+  place: "Paraíba",
+  chips: [
+    "Ano: 2021",
+    "Área: Semiárido",
+    "Estado: Paraíba",
+    "Município: Todos",
+  ],
+};
+
+const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
+const GEODATA: ReadyGeodata = {
+  status: "ready",
+  styles: STYLES_FIXTURE,
+  manifest: {
+    generatedAt: "",
+    years: { pib: [2021], demografia: [], idh: [] },
+    aridez: {
+      years: [],
+      bounds: [
+        [0, 0],
+        [1, 1],
+      ],
+    },
+  },
+  features: EMPTY,
+  states: EMPTY,
+  areas: EMPTY,
+};
+
 const lastProps = (): PanelMapProps =>
   panelMapRenders[panelMapRenders.length - 1];
 
 const renderCard = (
   onFiltersChange: (filters: TerritorialFilters) => void = vi.fn(),
+  menu: ProtoCardMenuContextValue = MENU,
 ) =>
   render(
-    <ProtoCardMenuContext.Provider value={MENU}>
+    <ProtoCardMenuContext.Provider value={menu}>
       <PibMapCard
         selection={SELECTION}
         onFiltersChange={onFiltersChange}
@@ -161,6 +203,99 @@ describe("PibMapCard", () => {
         `${PIB_CARD_SOURCE} · Basemap: © OpenStreetMap contributors`,
       ),
     ).toBeInTheDocument();
+  });
+
+  describe("poster download", () => {
+    const openImageScreen = async () => {
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "Mais opções: PIB total por município",
+        }),
+      );
+      fireEvent.click(
+        await screen.findByRole("button", { name: "Baixar imagem" }),
+      );
+    };
+    const download = () =>
+      fireEvent.click(
+        screen.getAllByRole("button", { name: "Baixar imagem" }).at(-1)!,
+      );
+    const mountMap = () =>
+      act(() => {
+        lastProps().onEngine?.(new PanelMapEngineFake());
+        lastProps().onGeodata?.(GEODATA);
+      });
+
+    it("downloads the poster with the panel base and the card input", async () => {
+      const spy = vi
+        .spyOn(chartImage, "downloadChartImage")
+        .mockResolvedValue();
+
+      renderCard(vi.fn(), { ...MENU, poster: POSTER_BASE });
+      mountMap();
+      await openImageScreen();
+      expect(screen.getByLabelText("Incluir cabeçalho e rodapé")).toBeChecked();
+      download();
+
+      const options = spy.mock.calls[0][1];
+
+      expect(options.poster).toMatchObject({
+        panelName: "Painel de Economia e Renda",
+        title: "Mapa do PIB - Paraíba",
+        subtitle: "PIB total por município - 2021",
+        source: PIB_CARD_SOURCE,
+        updatedAt: "11/2026",
+      });
+      expect(options.poster?.legend.map((item) => item.label)).toEqual([
+        "≤ R$ 500 Mi",
+        "> R$ 500 Mi",
+      ]);
+    });
+
+    it("downloads without the poster when the header and footer are off", async () => {
+      const spy = vi
+        .spyOn(chartImage, "downloadChartImage")
+        .mockResolvedValue();
+
+      renderCard(vi.fn(), { ...MENU, poster: POSTER_BASE });
+      mountMap();
+      await openImageScreen();
+      fireEvent.click(screen.getByLabelText("Incluir cabeçalho e rodapé"));
+      download();
+
+      expect(spy.mock.calls[0][1]).toMatchObject({ framed: false });
+      expect(spy.mock.calls[0][1].poster).toBeUndefined();
+    });
+
+    it("keeps the title-and-source image when the panel gives no poster base", async () => {
+      const spy = vi
+        .spyOn(chartImage, "downloadChartImage")
+        .mockResolvedValue();
+
+      renderCard();
+      mountMap();
+      await openImageScreen();
+      expect(screen.getByLabelText("Incluir título e fonte")).toBeChecked();
+      download();
+
+      expect(spy.mock.calls[0][1].poster).toBeUndefined();
+    });
+
+    it("still downloads while the geodata has not arrived", async () => {
+      const spy = vi
+        .spyOn(chartImage, "downloadChartImage")
+        .mockResolvedValue();
+
+      renderCard(vi.fn(), { ...MENU, poster: POSTER_BASE });
+      act(() => lastProps().onEngine?.(new PanelMapEngineFake()));
+      await openImageScreen();
+      download();
+
+      expect(spy.mock.calls[0][1].poster).toMatchObject({
+        legend: [],
+        inset: null,
+      });
+    });
   });
 
   // O PanelMap só enquadra no fitTo: a altura não pode seguir a coluna dos

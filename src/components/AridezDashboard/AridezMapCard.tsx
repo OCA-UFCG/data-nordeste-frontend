@@ -10,6 +10,7 @@ import {
 } from "@/components/AridezDashboard/aridezTexts";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
+import { panelMapPosterInput } from "@/components/PanelMap/panelMapPoster";
 import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
 import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
 import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
@@ -34,6 +35,13 @@ const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 // O número do tooltip (o do município e, só com a área, o do estado), as contagens da legenda e o destaque das classes saem
 // de todos os municípios da área (`data.mapa`): só mudam com Área e Ano, não
 // com o zoom.
+// O cartaz de download: "Mapa do Índice de aridez - {lugar}".
+const POSTER_TEXTS = {
+  name: "Índice de aridez",
+  subtitle: "Classe de aridez por município",
+  source: ARIDEZ_CARD_SOURCE,
+};
+
 const useAridezMapProps = (
   data: AridezPanelData,
   selection: TerritorialFilters,
@@ -110,6 +118,7 @@ export const AridezMapCard = ({
           info={ARIDEZ_CARD_INFO.map}
           imageSource={card.imageSource}
           engine={card.engine}
+          poster={panelMapPosterInput(mapProps, card.geodata, POSTER_TEXTS)}
           disabled={state === "loading" || state === "error"}
           onOpenFullscreen={() => setFullscreen(true)}
         />

@@ -1,4 +1,13 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import type { FeatureCollection } from "geojson";
+import { PanelMapEngineFake } from "@/components/PanelMap/panelMapEngineFake";
+import {
+  MANIFEST_FIXTURE,
+  STYLES_FIXTURE,
+} from "@/components/PanelMap/panelMapFixtures";
+import type { ReadyGeodata } from "@/components/PanelMap/useGeodata";
+import type { MapPosterBase } from "@/features/panels/mapPosterBuild";
+import * as chartImage from "@/lib/chartImage";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AridezMapCard } from "@/components/AridezDashboard/AridezMapCard";
 import { ARIDEZ_CARD_SOURCE } from "@/components/AridezDashboard/aridezTexts";
@@ -70,10 +79,31 @@ const DATA: AridezPanelData = {
   mapa: MAPA,
 };
 
+// O que o painel dá ao cartaz de download no contexto do menu.
+const POSTER_BASE: MapPosterBase = {
+  panelName: "Painel de Teste",
+  icon: "usd",
+  accent: "#e5640f",
+  updatedAt: "11/2026",
+  place: "Paraíba",
+  chips: ["Ano: 2021"],
+};
+
+const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
+const GEODATA: ReadyGeodata = {
+  status: "ready",
+  styles: STYLES_FIXTURE,
+  manifest: MANIFEST_FIXTURE,
+  features: EMPTY,
+  states: EMPTY,
+  areas: EMPTY,
+};
+
 const MENU: ProtoCardMenuContextValue = {
   share: { path: "/demo/aridez", chips: [] },
   catalogHref: null,
   imageSource: ARIDEZ_CARD_SOURCE,
+  poster: POSTER_BASE,
 };
 
 const lastProps = (): PanelMapProps =>
@@ -281,5 +311,41 @@ describe("AridezMapCard", () => {
         `${ARIDEZ_CARD_SOURCE} · Basemap: Esri, Maxar, Earthstar Geographics`,
       ),
     ).toBeInTheDocument();
+  });
+});
+
+describe("AridezMapCard poster download", () => {
+  beforeEach(() => vi.stubGlobal("matchMedia", DESKTOP_MEDIA));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("downloads the poster with this panel's title, subtitle, source and legend", async () => {
+    const spy = vi.spyOn(chartImage, "downloadChartImage").mockResolvedValue();
+
+    render(ui());
+    act(() => {
+      lastProps().onEngine?.(new PanelMapEngineFake());
+      lastProps().onGeodata?.(GEODATA);
+    });
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Mais opções: Índice de aridez por município",
+      }),
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Baixar imagem" }),
+    );
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Baixar imagem" }).at(-1)!,
+    );
+
+    expect(spy.mock.calls[0][1].poster).toMatchObject({
+      panelName: POSTER_BASE.panelName,
+      title: "Mapa do Índice de aridez - Paraíba",
+      subtitle: "Classe de aridez por município - 2021",
+      source: ARIDEZ_CARD_SOURCE,
+    });
+    expect(
+      spy.mock.calls[0][1].poster?.legend.map((item) => item.label),
+    ).toEqual(["Árido", "Semiárido"]);
   });
 });

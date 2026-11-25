@@ -6,6 +6,7 @@ import { PERFIL_CARD_SOURCE } from "@/components/DemografiaDashboard/perfilTexts
 import { DataTable } from "@/components/Panel/cards/DataTable";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
+import { panelMapPosterInput } from "@/components/PanelMap/panelMapPoster";
 import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
 import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
 import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
@@ -21,6 +22,13 @@ import {
 } from "@/features/panels/territorialFilters";
 
 const TITLE = "Porte populacional";
+
+// O cartaz de download: "Mapa do Porte populacional - {lugar}".
+const POSTER_TEXTS = {
+  name: TITLE,
+  subtitle: "Municípios por porte populacional",
+  source: PERFIL_CARD_SOURCE,
+};
 const INFO = (
   <>
     <p>
@@ -124,6 +132,7 @@ export const PerfilPorteMapCard = ({
           info={INFO}
           imageSource={card.imageSource}
           engine={card.engine}
+          poster={panelMapPosterInput(mapProps, card.geodata, POSTER_TEXTS)}
           disabled={state !== "ok"}
           onOpenFullscreen={() => mapView.setFullscreen(true)}
         />

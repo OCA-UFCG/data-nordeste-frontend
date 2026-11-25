@@ -8,6 +8,7 @@ import {
 import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
+import { panelMapPosterInput } from "@/components/PanelMap/panelMapPoster";
 import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
 import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
 import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
@@ -29,6 +30,13 @@ import type { IdhFilters } from "@/features/panels/idh/idhPanel";
 import { withYear } from "@/features/panels/territorialFilters";
 
 const TITLE = "Mapa do IDH por estado";
+
+// O cartaz de download: "Mapa do IDH - {lugar}".
+const POSTER_TEXTS = {
+  name: "IDH",
+  subtitle: "Faixas de desenvolvimento humano",
+  source: IDH_CARD_SOURCE,
+};
 
 // Altura fixa: o mapa preenche o card ao lado do ranking sem depender da
 // proporção da malha.
@@ -100,6 +108,7 @@ export const IdhMapCard = ({
           info={IDH_CARD_INFO.map}
           imageSource={card.imageSource}
           engine={card.engine}
+          poster={panelMapPosterInput(mapProps, card.geodata, POSTER_TEXTS)}
           disabled={state !== "ok"}
           onOpenFullscreen={() => setFullscreen(true)}
         />

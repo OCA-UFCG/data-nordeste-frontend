@@ -137,6 +137,14 @@ const PATHS_24: Record<string, ReactNode> = {
 export type ProtoIconName = keyof typeof PATHS_24;
 
 /**
+ * Os traços de um ícone como elementos React, para quem precisa deles fora do
+ * `<ProtoIcon>` (o cartaz de download monta o SVG como texto).
+ *
+ * @example protoIconNode("usd")
+ */
+export const protoIconNode = (name: ProtoIconName): ReactNode => PATHS_24[name];
+
+/**
  * Ícone do protótipo. `size` em px; `stroke`, a espessura do traço.
  *
  * @example <ProtoIcon name="info" size={20} stroke={1.8} />

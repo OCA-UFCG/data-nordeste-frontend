@@ -11,11 +11,7 @@ import {
 
 import { previewOnMouse } from "@/components/Panel/pointer";
 
-import {
-  countByClass,
-  type LegendChip as LegendChipData,
-  paletteChips,
-} from "@/features/panelMap/classCounts";
+import type { LegendChip as LegendChipData } from "@/features/panelMap/classCounts";
 import {
   activeChip,
   type ChipHighlightAction,
@@ -30,7 +26,7 @@ import type {
   GeodataStyles,
   PanelIndicator,
 } from "@/features/panelMap/geodataTypes";
-import { featureProps, featuresInArea } from "@/features/panelMap/mapSelection";
+import { legendChips } from "@/features/panelMap/legendChips";
 import { formatNumber } from "@/features/panels/format";
 import type { TerritorialArea } from "@/features/panels/territorialFilters";
 import type { PanelMapEngine } from "@/lib/panelMapEngine";
@@ -133,19 +129,6 @@ type PanelMapLegendProps = {
 
 const LEGEND_HINT =
   "Passe o mouse, toque ou leve o foco a uma classe para destacá-la no mapa.";
-
-type ChipInputs = Omit<PanelMapLegendProps, "classOf" | "engine">;
-
-function legendChips(props: ChipInputs): LegendChipData[] {
-  const { styles, features, indicator, area, ano } = props;
-
-  if (indicator === "aridez") {
-    return paletteChips(styles.aridez, props.classCounts);
-  }
-  const inArea = featuresInArea(featureProps(features), indicator, area);
-
-  return countByClass(inArea, styles.indicators[indicator].classes, ano);
-}
 
 // PERF: a contagem percorre ~1.800 municípios; só muda com feições, área e ano.
 function useLegendChips(props: PanelMapLegendProps): LegendChipData[] {

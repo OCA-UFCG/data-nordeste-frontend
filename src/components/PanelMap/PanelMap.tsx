@@ -79,6 +79,10 @@ export type PanelMapProps = {
   classOf?: ReadonlyMap<string, number>;
   onEngine?: (engine: PanelMapEngine | null) => void;
 
+  // Os geodados prontos (e `null` ao desmontar): o card os usa na legenda e no
+  // mini-mapa do cartaz de download.
+  onGeodata?: (geodata: ReadyGeodata | null) => void;
+
   // O usuário trocou o basemap (o card ajusta o crédito da imagem baixada).
   onBasemapChange?: (kind: BasemapKind) => void;
 
@@ -173,11 +177,26 @@ function usePanelMapStage(
   return { containerRef, engine, controls, tooltip, failed };
 }
 
+// WARNING: `onGeodata` precisa ter identidade estável (um `setState`); uma
+// função nova a cada render refaria o efeito sem fim.
+function useReportGeodata(
+  geodata: ReadyGeodata,
+  onGeodata: PanelMapProps["onGeodata"],
+) {
+  useEffect(() => {
+    onGeodata?.(geodata);
+
+    return () => onGeodata?.(null);
+  }, [geodata, onGeodata]);
+}
+
 const PanelMapStage = ({
   geodata,
   ...props
 }: PanelMapProps & { geodata: ReadyGeodata }) => {
   const level = featureLevelFor(props.indicator);
+
+  useReportGeodata(geodata, props.onGeodata);
   const stage = usePanelMapStage(props, geodata, level);
   const { containerRef, engine, controls, tooltip } = stage;
 

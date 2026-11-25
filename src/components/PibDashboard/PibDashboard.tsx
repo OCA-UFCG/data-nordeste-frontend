@@ -7,6 +7,7 @@ import { PibEmptyLayout, PibGrids } from "@/components/PibDashboard/PibLayout";
 import { PIB_CARD_SOURCE } from "@/components/PibDashboard/pibTexts";
 import {
   PIB_ICON,
+  PIB_MACROTHEME,
   PIB_SHORT_TITLE,
   PIB_SOURCE,
 } from "@/components/PibDashboard/pibTheme";
@@ -15,6 +16,10 @@ import {
   ProtoCardMenuContext,
   type ProtoCardMenuContextValue,
 } from "@/components/ProtoPanel/ProtoCardMenu";
+import {
+  buildPosterBase,
+  type PosterPanelInfo,
+} from "@/components/ProtoPanel/posterBase";
 import {
   BUTTON,
   PROTO_TEXT,
@@ -26,6 +31,7 @@ import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
 import { usePendingFilters } from "@/components/ProtoPanel/usePendingFilters";
 import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
+import { posterPlace } from "@/features/panels/mapPosterBuild";
 import {
   type PibCardStates,
   resolvePibCardStates,
@@ -64,6 +70,7 @@ const useCardMenuValue = (
   data: PibPanelData,
   pathname: string,
   catalogHref: string | null,
+  { macroTheme = PIB_MACROTHEME, updatedAt }: PosterPanelInfo,
 ): ProtoCardMenuContextValue =>
   useMemo(
     () => ({
@@ -74,8 +81,16 @@ const useCardMenuValue = (
       catalogHref,
       imageSource: PIB_CARD_SOURCE,
       bareSheet: true,
+      poster: buildPosterBase({
+        macroTheme,
+        icon: PIB_ICON,
+        tone: "pib",
+        updatedAt,
+        place: posterPlace(data),
+        chips: describeTerritorialShareChips(data),
+      }),
     }),
-    [data, pathname, catalogHref],
+    [data, pathname, catalogHref, macroTheme, updatedAt],
   );
 
 /**
@@ -85,14 +100,19 @@ const useCardMenuValue = (
  * aviso e o mapa. `loading`: a página ainda carrega (`loading.tsx`) e todos
  * os cards mostram o esqueleto.
  *
- * @example <PibDashboard data={panel} catalogHref="/catalog?category=economia-e-renda" />
+ * `macroTheme` e `updatedAt` ("MM/AAAA") vão no cabeçalho e no rodapé da imagem
+ * baixada do mapa.
+ *
+ * @example <PibDashboard data={panel} catalogHref="/catalog?category=economia-e-renda" macroTheme="Economia e Renda" updatedAt="11/2026" />
  */
 export const PibDashboard = ({
   data,
   failed = false,
   loading = false,
   catalogHref,
-}: {
+  macroTheme,
+  updatedAt,
+}: PosterPanelInfo & {
   data: PibPanelData;
   failed?: boolean;
   loading?: boolean;
@@ -102,7 +122,10 @@ export const PibDashboard = ({
     usePanelNavigation(buildPibSearch);
   const { retrying, retry } = useProtoRetry();
   const sticky = useProtoSticky();
-  const cardMenu = useCardMenuValue(data, pathname, catalogHref);
+  const cardMenu = useCardMenuValue(data, pathname, catalogHref, {
+    macroTheme,
+    updatedAt,
+  });
   const yearField = usePibYearField();
 
   // Como no IDH: a seleção mostra o filtro pedido na hora, e só o card cujo

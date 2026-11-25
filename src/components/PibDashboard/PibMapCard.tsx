@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
+import { panelMapPosterInput } from "@/components/PanelMap/panelMapPoster";
 import { PanelMapSkeleton } from "@/components/PanelMap/PanelMapSkeleton";
 import { PANEL_MAP_HINT } from "@/components/PanelMap/panelMapTexts";
 import { usePanelMapCard } from "@/components/PanelMap/usePanelMapCard";
@@ -25,6 +26,13 @@ import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 // centro e zoom. A coluna muda de altura com o ano (aviso sem VAB) e o
 // município, com o mapa montado: ele ficaria cortado ou folgado sem reenquadrar.
 const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
+
+// O cartaz de download: "Mapa do PIB - {lugar}" e "PIB total por município - {ano}".
+const POSTER_TEXTS = {
+  name: "PIB",
+  subtitle: PIB_MAP_TITLE,
+  source: PIB_CARD_SOURCE,
+};
 
 const usePibMapProps = (
   selection: TerritorialFilters,
@@ -84,6 +92,7 @@ export const PibMapCard = ({
           info={<PibInfoParagraphs paragraphs={PIB_MAP_INFO} />}
           imageSource={card.imageSource}
           engine={card.engine}
+          poster={panelMapPosterInput(mapProps, card.geodata, POSTER_TEXTS)}
           disabled={state === "loading" || state === "error"}
           onOpenFullscreen={() => setFullscreen(true)}
         />

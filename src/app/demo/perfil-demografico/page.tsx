@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { formatPanelUpdatedAt } from "@/features/panels/panelUpdatedAt";
 import { DemografiaDashboard } from "@/components/DemografiaDashboard/DemografiaDashboard";
 import {
   DEMOGRAFIA_MACROTHEME,
@@ -96,6 +97,8 @@ export default async function PerfilDemograficoDemoPage({
         years={years}
         failed={!panel}
         catalogHref={getCatalogHref(macroTheme)}
+        macroTheme={macroTheme}
+        updatedAt={formatPanelUpdatedAt(content?.panel.date)}
       />
       <ProtoSaibaMais
         tone="perfil"
