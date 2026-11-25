@@ -8,6 +8,12 @@ export const PERFIL_LEAD =
 // Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const PERFIL_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
+// Nota do ⓘ dos cards que comparam municípios entre censos (porte, dinâmica
+// populacional e população por município), com a redação da revisão de
+// conteúdo dos painéis. Uma cópia só: os três cards mudam juntos.
+export const PERFIL_DESMEMBRAMENTO_NOTE =
+  "Alguns municípios foram criados a partir do desmembramento de outros, o que explica a ausência de dados individualizados para esses municípios em censos demográficos anteriores à sua criação. Essas alterações territoriais devem ser consideradas na análise e na comparação dos dados populacionais ao longo do tempo.";
+
 export const PERFIL_SAIBA_MAIS_TITLE = "Saiba mais";
 
 export const PERFIL_SAIBA_MAIS_SUMMARY =
