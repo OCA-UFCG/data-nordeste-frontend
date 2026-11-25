@@ -46,4 +46,28 @@ describe("usePanelMapCard", () => {
     expect(result.current.engine).toBe(engine);
     expect(result.current.mapBinding.cooperative).toBe(true);
   });
+
+  // A tela cheia monta outro mapa a cada abertura: ele nasce no basemap que o
+  // card mostra, não no Padrão.
+  it("abre a tela cheia no basemap ativo do card", () => {
+    const { result } = renderHook(() => usePanelMapCard(SOURCE));
+
+    expect(result.current.fullscreenBinding.basemap).toBe("padrao");
+    act(() => result.current.mapBinding.onBasemapChange("satelite"));
+
+    expect(result.current.fullscreenBinding.basemap).toBe("satelite");
+  });
+
+  // O mapa do card fica montado atrás da tela cheia: a troca feita nela
+  // chega ao card (botão, motor e crédito da imagem baixada).
+  it("leva para o card o basemap trocado na tela cheia", () => {
+    const { result } = renderHook(() => usePanelMapCard(SOURCE));
+
+    act(() => result.current.fullscreenBinding.onBasemapChange("satelite"));
+
+    expect(result.current.mapBinding.basemap).toBe("satelite");
+    expect(result.current.imageSource).toBe(
+      `${SOURCE} · Basemap: Esri, Maxar, Earthstar Geographics`,
+    );
+  });
 });

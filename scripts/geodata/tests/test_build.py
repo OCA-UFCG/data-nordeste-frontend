@@ -121,14 +121,29 @@ class AridezClipTest(unittest.TestCase):
     def test_clip_size_keeps_extent_on_finer_grid(self):
         self.assertEqual(build.clip_size(self.BOUNDS), (1630, 1910))
 
+    def test_mercator_size_keeps_square_pixels(self):
+        # Mesma largura da grade fina; altura pelo vão em Mercator (≈ 1,02 × o vão em graus aqui).
+        self.assertEqual(build.mercator_size(self.BOUNDS), (1630, 1953))
+
     def test_clip_command_cuts_by_area_polygon(self):
-        cmd = build.aridez_clip_command(Path("f.tif"), Path("t/areas.geojson"), "caatinga", Path("c.tif"))
+        cmd = build.aridez_clip_command(Path("f.tif"), Path("t/areas.geojson"), "caatinga", self.BOUNDS, Path("c.tif"))
         self.assertEqual(cmd[0], "gdalwarp")
         cut = cmd.index("-cutline")
         self.assertEqual(cmd[cut + 1 : cut + 4], ["t/areas.geojson", "-cwhere", "area = 'caatinga'"])
         self.assertEqual(cmd[cmd.index("-dstnodata") + 1], "255")
         self.assertNotIn("-crop_to_cutline", cmd)
         self.assertEqual(cmd[-2:], ["f.tif", "c.tif"])
+
+    def test_clip_command_reprojects_to_web_mercator_on_same_extent(self):
+        # O MapLibre estica a imagem linearmente em Web Mercator entre os cantos;
+        # em lat/lon a imagem desce até ~17 km no meio do Nordeste.
+        cmd = build.aridez_clip_command(Path("f.tif"), Path("t/areas.geojson"), "caatinga", self.BOUNDS, Path("c.tif"))
+        self.assertEqual(cmd[cmd.index("-t_srs") + 1], "EPSG:3857")
+        te = cmd.index("-te")
+        self.assertEqual(cmd[te + 1 : te + 5], ["-48.6999985", "-20.1999985", "-32.3999985", "-1.0999985"])
+        self.assertEqual(cmd[cmd.index("-te_srs") + 1], "EPSG:4674")
+        self.assertEqual(cmd[cmd.index("-ts") + 1 : cmd.index("-ts") + 3], ["1630", "1953"])
+        self.assertNotIn("-tr", cmd)
 
     def test_upsample_command_repeats_pixels_on_finer_grid(self):
         cmd = build.aridez_upsample_command(Path("a.tif"), self.BOUNDS, Path("f.tif"))

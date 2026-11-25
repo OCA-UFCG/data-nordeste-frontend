@@ -83,7 +83,13 @@ export const PibMapCard = ({
           title={PIB_MAP_TITLE}
           subtitle={subtitle}
           hint={PANEL_MAP_HINT}
-          renderStage={(frame) => <PanelMap {...mapProps} className={frame} />}
+          renderStage={(frame) => (
+            <PanelMap
+              {...mapProps}
+              {...card.fullscreenBinding}
+              className={frame}
+            />
+          )}
         />
       }
       actions={
