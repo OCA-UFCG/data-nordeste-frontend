@@ -55,12 +55,14 @@ const MENU = {
   imageSource: "IBGE",
 };
 
-const renderBigNumber = (state: "ok" | "error") =>
+const renderBigNumber = (state: "ok" | "error", info?: string) =>
   render(
     <ProtoCardMenuContext.Provider value={MENU}>
       <ProtoStatCards
         label="Números"
-        cells={[{ icon: "users", label: "População residente", value: "1" }]}
+        cells={[
+          { icon: "users", label: "População residente", value: "1", info },
+        ]}
         state={state}
         onRetry={() => {}}
         variant="hero"
@@ -97,5 +99,29 @@ describe("ProtoStatCards menu", () => {
     );
 
     expect(queryByRole("button", { name: "Baixar imagem" })).toBeNull();
+  });
+});
+
+describe("ProtoStatCards info", () => {
+  beforeEach(stubPanelBrowserApis);
+
+  it("shows the ⓘ with the indicator text when the cell has one", () => {
+    const { getByRole } = renderBigNumber("ok", "Quantas pessoas moram ali.");
+
+    fireEvent.click(getByRole("button", { name: "Sobre este gráfico" }));
+
+    expect(getByRole("dialog")).toHaveTextContent("Quantas pessoas moram ali.");
+  });
+
+  it("keeps the ⓘ when the big number failed to load", () => {
+    const { getByRole } = renderBigNumber("error", "Texto.");
+
+    expect(getByRole("button", { name: "Sobre este gráfico" })).toBeTruthy();
+  });
+
+  it("has no ⓘ when the cell has no text", () => {
+    const { queryByRole } = renderBigNumber("ok");
+
+    expect(queryByRole("button", { name: "Sobre este gráfico" })).toBeNull();
   });
 });

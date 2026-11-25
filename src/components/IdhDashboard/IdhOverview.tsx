@@ -3,10 +3,8 @@
 import { IdhBigNumbers } from "@/components/IdhDashboard/IdhBigNumbers";
 import { IdhLineChart } from "@/components/IdhDashboard/IdhLineChart";
 import { IdhMapCard } from "@/components/IdhDashboard/IdhMapCard";
-import {
-  idhEvolutionInfo,
-  IDH_CARD_INFO,
-} from "@/components/IdhDashboard/idhCardTexts";
+import { IDH_CARD_INFO } from "@/components/IdhDashboard/idhCardTexts";
+import { IDH_SERIE_INFO } from "@/components/IdhDashboard/idhIndicatorInfo";
 import { IdhRankingBars } from "@/components/IdhDashboard/IdhRanking";
 import {
   ProtoCard,
@@ -33,7 +31,6 @@ type CardStatus = { state: ProtoCardState; onRetry: () => void };
 type CardProps = CardStatus & {
   data: IdhPanelData;
   selection: IdhFilters;
-  updatedAt?: string;
 };
 
 type OverviewProps = Omit<CardProps, "state"> & {
@@ -44,13 +41,12 @@ type OverviewProps = Omit<CardProps, "state"> & {
 };
 
 const EVOLUTION_TITLE =
-  "Evolução anual do IDH e do IDH ajustado à desigualdade";
+  "Dinâmica anual do IDH e do IDH ajustado à desigualdade";
 const RANKING_TITLE = "Ranking do IDH por estado";
 
 const EvolutionCard = ({
   data,
   selection,
-  updatedAt,
   onSelectYear,
   ...status
 }: CardProps & { onSelectYear: (ano: number) => void }) => {
@@ -59,17 +55,13 @@ const EvolutionCard = ({
   return (
     <ProtoCard
       {...status}
-      updatedAt={updatedAt}
       title={EVOLUTION_TITLE}
-      mobileTitle="Evolução anual do IDH"
+      mobileTitle="Dinâmica anual do IDH"
       subtitle={describeIdhSerie(data)}
       kind="line"
       actions={
         <>
-          <ProtoCardInfo
-            title={EVOLUTION_TITLE}
-            text={idhEvolutionInfo(data.yearRange)}
-          />
+          <ProtoCardInfo title={EVOLUTION_TITLE} text={IDH_SERIE_INFO} />
           <ProtoCardMenu title={EVOLUTION_TITLE} chart={chart} />
         </>
       }
@@ -87,19 +79,14 @@ const EvolutionCard = ({
 const RankingCard = ({
   data,
   selection,
-  updatedAt,
   onSelectUf,
   ...status
 }: CardProps & { onSelectUf: (uf: string) => void }) => (
   <ProtoCard
     {...status}
-    updatedAt={updatedAt}
     title={RANKING_TITLE}
     mobileTitle="Comparação entre os estados"
-    subtitle={withYear(
-      "Do maior para o menor · barras de 0 a 1",
-      data.filters.ano,
-    )}
+    subtitle={withYear("Índice varia de 0 a 1", data.filters.ano)}
     mobileSubtitle={withYear("IDH por estado", data.filters.ano)}
     kind="rank"
     bodyClassName="flex flex-col"

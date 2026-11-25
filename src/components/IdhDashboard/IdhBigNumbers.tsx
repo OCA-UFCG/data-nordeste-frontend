@@ -1,5 +1,6 @@
 "use client";
 
+import { IDH_INDICATOR_INFO } from "@/components/IdhDashboard/idhIndicatorInfo";
 import type { ProtoCardState } from "@/components/ProtoPanel/ProtoCard";
 import {
   ProtoStatCards,
@@ -23,26 +24,31 @@ const bigNumbers = (data: IdhPanelData): ProtoStatCell[] => {
       label: "IDH",
       value: show(formatIdhCard, "idh"),
       caption: describeIdhClass(data),
+      info: IDH_INDICATOR_INFO.idh,
     },
     {
       icon: "idhad",
       label: "IDH ajustado à desigualdade",
       value: show(formatIdhCard, "idhAjustado"),
+      info: IDH_INDICATOR_INFO.idhad,
     },
     {
       icon: "gini",
       label: "Índice de Gini",
       value: show(formatIdhCard, "gini"),
+      info: IDH_INDICATOR_INFO.gini,
     },
     {
       icon: "renda",
       label: "Renda domiciliar per capita",
       value: show(formatRenda, "rendaPerCapita"),
+      info: IDH_INDICATOR_INFO.renda,
     },
     {
       icon: "rend",
       label: "Rendimento médio dos ocupados",
       value: show(formatRenda, "rendimento"),
+      info: IDH_INDICATOR_INFO.rend,
     },
   ];
 };

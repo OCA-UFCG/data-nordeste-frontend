@@ -51,6 +51,22 @@ export const defaultIdhFilters = (range: YearRange): IdhFilters => ({
   visao: DEFAULT_IDH_VISAO,
 });
 
+// IMPORTANT: no /demo/idh não há "Todos". O IDH de um conjunto de estados não
+// é a média dos IDHs (revisão do painel, 25/11/2026), então a demo sempre tem
+// um estado e abre em Pernambuco. O /demo/idh-powerbi segue o Power BI atual e
+// mantém a média; por isso o `uf` continua opcional em `IdhFilters`.
+export const IDH_DEFAULT_UF = "PE";
+
+/**
+ * Garante um estado nos filtros: o pedido, senão o de `fallback`, senão PE.
+ *
+ * @example withIdhUf({ ano: 2021, visao: "geral" }) // { ano: 2021, visao: "geral", uf: "PE" }
+ */
+export const withIdhUf = (
+  filters: IdhFilters,
+  fallback: string = IDH_DEFAULT_UF,
+): IdhFilters => ({ ...filters, uf: filters.uf ?? fallback });
+
 const isVisao = (value?: string): value is IdhVisao =>
   IDH_VISOES.some((visao) => visao.key === value);
 
@@ -249,13 +265,22 @@ const loadGroups = async (
   }));
 };
 
+/**
+ * Consulta o painel. Um `uf` fora dos dados cai para `fallbackUf` (a demo
+ * passa PE); sem fallback, cai para a média dos estados, como no Power BI.
+ *
+ * @example await loadIdhPanel(queryDataDb, { ano: 2021, visao: "geral", uf: "SP" }, range, "PE") // filters.uf === "PE"
+ */
 export const loadIdhPanel = async (
   query: SqlQuery,
   requested: IdhFilters,
   yearRange: YearRange,
+  fallbackUf?: string,
 ): Promise<IdhPanelData> => {
   const ufs = await loadUfs(query);
-  const uf = ufs.find((item) => item.sigla === requested.uf)?.sigla;
+  const known = (sigla?: string) =>
+    ufs.find((item) => item.sigla === sigla)?.sigla;
+  const uf = known(requested.uf) ?? known(fallbackUf);
   const filters: IdhFilters = uf
     ? { ...requested, uf }
     : { ano: requested.ano, visao: requested.visao };

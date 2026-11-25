@@ -41,6 +41,8 @@ export type ProtoStatCell = {
   value: string | null;
   caption?: string;
   pill?: ProtoStatPill | null;
+
+  // Texto do ⓘ ao lado do ⋮: o que o indicador mede (revisão do IDH, 25/11).
   info?: ReactNode;
 };
 

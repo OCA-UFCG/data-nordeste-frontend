@@ -23,8 +23,10 @@ import { buildMetadata } from "@/config/seo";
 import { loadIdhPanelContent } from "@/features/panels/idh/idhContent";
 import {
   emptyIdhPanel,
+  IDH_DEFAULT_UF,
   loadIdhPanel,
   parseIdhFilters,
+  withIdhUf,
   type IdhFilters,
 } from "@/features/panels/idh/idhPanel";
 import { formatPanelUpdatedAt } from "@/features/panels/panelUpdatedAt";
@@ -50,7 +52,7 @@ export const dynamic = "force-dynamic";
 
 const loadPanel = async (filters: IdhFilters, range: YearRange) => {
   try {
-    return await loadIdhPanel(queryDataDb, filters, range);
+    return await loadIdhPanel(queryDataDb, filters, range, IDH_DEFAULT_UF);
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -70,6 +72,8 @@ const loadPanel = async (filters: IdhFilters, range: YearRange) => {
 // do IDH e somem a descrição e os relacionados; sem o banco, os cards mostram o
 // erro com "Tentar de novo" em vez de derrubar a página, também quando só o
 // intervalo de anos falha (então não há ano a oferecer).
+// IMPORTANT: sem "Todos": sem `uf` na URL, a página abre em Pernambuco (ver
+// `IDH_DEFAULT_UF`).
 // IMPORTANT: o título fica constante. O `title` da entrada "panels" é a chave
 // da consulta ("idh"), não um texto para exibir (ver `createPanelEntryReader`).
 export default async function IdhDemoPage({
@@ -79,7 +83,7 @@ export default async function IdhDemoPage({
 }) {
   const range = await tryLoadIdhYearRange(queryDataDb);
   const years = range ?? NO_IDH_YEARS;
-  const filters = parseIdhFilters(await searchParams, years);
+  const filters = withIdhUf(parseIdhFilters(await searchParams, years));
   const [panel, content] = await Promise.all([
     range ? loadPanel(filters, range) : null,
     loadIdhPanelContent(),

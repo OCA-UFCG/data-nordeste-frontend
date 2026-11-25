@@ -10,6 +10,7 @@ import {
   idhPlaceName,
   loadIdhPanel,
   parseIdhFilters,
+  withIdhUf,
 } from "@/features/panels/idh/idhPanel";
 import { NO_YEAR } from "@/features/panels/territorialFilters";
 
@@ -151,6 +152,20 @@ describe("loadIdhPanel", () => {
 
     expect(panel.filters).toEqual({ ano: 2021, visao: "cor" });
     expect(idhPlaceName(panel)).toBe("Nordeste");
+  });
+
+  // Regressão (revisão de 25/11/2026): o /demo/idh não tem média dos estados.
+  it("falls back to the given UF instead of the average when the UF is not in the data", async () => {
+    const db = new IdhDatabaseFake();
+    const panel = await loadIdhPanel(
+      db.query,
+      { ano: 2021, visao: "geral", uf: "SP" },
+      RANGE,
+      "PE",
+    );
+
+    expect(panel.filters).toEqual({ ano: 2021, visao: "geral", uf: "PE" });
+    expect(db.callFor("AVG(idh_ad)").params).toEqual(["PE"]);
   });
 });
 
@@ -312,6 +327,19 @@ describe("parseIdhFilters and buildIdhSearch", () => {
     expect(buildIdhSearch({ ano: 2021, visao: "geral" }, range)).toBe(
       "?ano=2021",
     );
+  });
+});
+
+describe("withIdhUf", () => {
+  // Regressão (revisão de 25/11/2026): sem estado na URL, a demo abre em PE.
+  it("defaults to Pernambuco and keeps a chosen state", () => {
+    expect(withIdhUf({ ano: 2021, visao: "geral" })).toEqual({
+      ano: 2021,
+      visao: "geral",
+      uf: "PE",
+    });
+    expect(withIdhUf({ ano: 2021, visao: "geral" }, "BA").uf).toBe("BA");
+    expect(withIdhUf({ ano: 2021, visao: "geral", uf: "CE" }).uf).toBe("CE");
   });
 });
 

@@ -122,13 +122,15 @@ describe("IdhDashboard", () => {
     navigation.current.isPending = true;
     rerender(dashboard(GERAL));
 
-    expect(cardBody(/^Evolução anual/)).toHaveAttribute("aria-busy", "true");
-    expect(cardBody(/^Mapa do IDH/)).toHaveAttribute("aria-busy", "false");
+    expect(cardBody(/^Dinâmica anual/)).toHaveAttribute("aria-busy", "true");
+    expect(cardBody(/^IDH por estado/)).toHaveAttribute("aria-busy", "false");
     expect(cardBody(/^Ranking do IDH/)).toHaveAttribute("aria-busy", "false");
     expect(rankingState("Pernambuco")).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("undoes the pending state on a second click before the server answers", () => {
+  // Regressão (revisão de 25/11/2026): sem média dos estados, o segundo
+  // clique no estado o mantém em vez de voltar para "Todos".
+  it("keeps the state on a second click, since there is no average to go back to", () => {
     const { rerender } = render(dashboard(GERAL));
 
     fireEvent.click(rankingState("Pernambuco"));
@@ -136,7 +138,18 @@ describe("IdhDashboard", () => {
     rerender(dashboard(GERAL));
     fireEvent.click(rankingState("Pernambuco"));
 
-    expect(navigation.current.lastRequest).toEqual(GERAL);
+    expect(navigation.current.lastRequest).toEqual({ ...GERAL, uf: "PE" });
+  });
+
+  it("offers only states in the Estado filter, with no 'Todos'", () => {
+    render(dashboard({ ...GERAL, uf: "CE" }));
+
+    const [estado] = screen.getAllByLabelText("Estado");
+
+    expect(estado).toHaveValue("CE");
+    expect(
+      within(estado).queryByRole("option", { name: "Todos" }),
+    ).not.toBeInTheDocument();
   });
 
   it("starts the next filter from the pending one, not the loaded one", () => {
@@ -189,8 +202,10 @@ describe("IdhDashboard", () => {
     expect(screen.queryByText(IDH_CARD_SOURCE)).toBeNull();
   });
 
-  it("shows the Contentful date in the card footers, and nothing without it", () => {
-    const { rerender } = render(
+  // Revisão do painel (25/11/2026): os cards não terminam mais em
+  // "Atualizado em"; a data do Contentful fica só no cartaz do mapa.
+  it("leaves the Contentful date out of the card footers", () => {
+    render(
       <IdhDashboard
         data={idhPanelFixture(GERAL)}
         catalogHref="/catalog"
@@ -198,12 +213,16 @@ describe("IdhDashboard", () => {
       />,
     );
 
-    expect(screen.getAllByText("Atualizado em 10/2026").length).toBeGreaterThan(
-      0,
-    );
-    rerender(dashboard(GERAL));
-
     expect(screen.queryByText(/Atualizado em/)).toBeNull();
+  });
+
+  it("titles the yearly series card as Dinâmica, not Evolução", () => {
+    render(dashboard(GERAL));
+
+    expect(
+      screen.getByRole("heading", { name: /^Dinâmica anual do IDH/ }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Evolução anual/)).toBeNull();
   });
 
   // Regressão (revisão da PR #411): sem o intervalo de anos, o resumo do

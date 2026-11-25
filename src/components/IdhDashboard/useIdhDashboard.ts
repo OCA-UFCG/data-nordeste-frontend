@@ -7,6 +7,7 @@ import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { resolveIdhCardStates } from "@/features/panels/idh/idhCardState";
 import {
   defaultIdhFilters,
+  withIdhUf,
   type IdhFilters,
   type IdhPanelData,
   type IdhVisao,
@@ -47,22 +48,22 @@ const useIdhTabSelection = (
 
 // Ações dos cards e da barra de filtros. Filtrar leva a aba aberta para a URL:
 // é ela que o servidor devolve em `data.filters.visao`.
+// INTENTIONAL: nenhuma ação tira o estado (não há média dos estados, ver
+// `IDH_DEFAULT_UF`): clicar de novo no estado o mantém, e afastar o mapa até o
+// Nordeste conserva o estado escolhido.
 const useIdhFilterActions = (
   selection: IdhFilters,
   tab: IdhVisao,
   range: YearRange,
   request: (filters: IdhFilters) => void,
 ) => {
-  const changeFilters = (next: IdhFilters) => request({ ...next, visao: tab });
+  const changeFilters = (next: IdhFilters) =>
+    request({ ...withIdhUf(next, selection.uf), visao: tab });
 
   return {
     changeFilters,
-    reset: () => changeFilters(defaultIdhFilters(range)),
-    selectUf: (uf: string) =>
-      changeFilters({
-        ...selection,
-        uf: selection.uf === uf ? undefined : uf,
-      }),
+    reset: () => changeFilters(withIdhUf(defaultIdhFilters(range))),
+    selectUf: (uf: string) => changeFilters({ ...selection, uf }),
     selectYear: (ano: number) => changeFilters({ ...selection, ano }),
   };
 };
