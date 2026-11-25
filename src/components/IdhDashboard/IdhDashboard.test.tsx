@@ -128,7 +128,9 @@ describe("IdhDashboard", () => {
     expect(rankingState("Pernambuco")).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("undoes the pending state on a second click before the server answers", () => {
+  // Regressão (revisão de 25/11/2026): sem média dos estados, o segundo
+  // clique no estado o mantém em vez de voltar para "Todos".
+  it("keeps the state on a second click, since there is no average to go back to", () => {
     const { rerender } = render(dashboard(GERAL));
 
     fireEvent.click(rankingState("Pernambuco"));
@@ -136,7 +138,18 @@ describe("IdhDashboard", () => {
     rerender(dashboard(GERAL));
     fireEvent.click(rankingState("Pernambuco"));
 
-    expect(navigation.current.lastRequest).toEqual(GERAL);
+    expect(navigation.current.lastRequest).toEqual({ ...GERAL, uf: "PE" });
+  });
+
+  it("offers only states in the Estado filter, with no 'Todos'", () => {
+    render(dashboard({ ...GERAL, uf: "CE" }));
+
+    const [estado] = screen.getAllByLabelText("Estado");
+
+    expect(estado).toHaveValue("CE");
+    expect(
+      within(estado).queryByRole("option", { name: "Todos" }),
+    ).not.toBeInTheDocument();
   });
 
   it("starts the next filter from the pending one, not the loaded one", () => {

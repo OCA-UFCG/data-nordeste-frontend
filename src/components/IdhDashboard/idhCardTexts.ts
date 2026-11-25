@@ -22,12 +22,12 @@ export const IDH_MAP_LABEL = "Mapa do IDH por estado do Nordeste";
 /**
  * ⓘ do card de evolução; o período vem do intervalo de anos do banco.
  *
- * @example idhEvolutionInfo({ first: 2012, last: 2021 }) // "Média dos estados do Nordeste ou, ..., de 2012 a 2021. ..."
+ * @example idhEvolutionInfo({ first: 2012, last: 2021 }) // "A série do estado escolhido no filtro, de 2012 a 2021. ..."
  */
 export const idhEvolutionInfo = (range: YearRange): string => {
   const period = listYears(range).length
     ? `, de ${range.first} a ${range.last}`
     : "";
 
-  return `Média dos estados do Nordeste ou, com um estado no filtro, a série desse estado${period}. O IDH ajustado à desigualdade desconta as diferenças entre grupos da população. Clique em um ponto para escolher o ano.`;
+  return `A série do estado escolhido no filtro${period}. O IDH ajustado à desigualdade desconta as diferenças entre grupos da população. Clique em um ponto para escolher o ano.`;
 };
