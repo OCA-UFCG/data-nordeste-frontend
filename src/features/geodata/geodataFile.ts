@@ -58,6 +58,21 @@ export function geodataEtag(size: number, mtimeMs: number): string {
   return `"${size}-${Math.trunc(mtimeMs)}"`;
 }
 
+/**
+ * Se o `If-None-Match` do cliente aceita o `etag` atual. WHY: o Nginx na frente
+ * enfraquece o ETag ao comprimir (`W/"..."`) e o cliente pode mandar vários
+ * validadores; a comparação de GET é fraca e por lista.
+ * Example: `etagMatches('W/"10-1", "9-2"', '"10-1"')` is `true`.
+ */
+export function etagMatches(ifNoneMatch: string | null, etag: string): boolean {
+  if (!ifNoneMatch) return false;
+  if (ifNoneMatch.trim() === "*") return true;
+
+  return ifNoneMatch
+    .split(",")
+    .some((candidate) => candidate.trim().replace(/^W\//, "") === etag);
+}
+
 function acceptsGzip(acceptEncoding: string | null): boolean {
   if (!acceptEncoding) return false;
 
@@ -84,9 +99,4 @@ export function shouldGzip(
   if (!contentType.includes("json")) return false;
 
   return acceptsGzip(acceptEncoding);
-}
-
-/** In-process cache key for a gzipped file. Example: `"/g/a.json|\"10-1700000000000\""`. */
-export function gzipCacheKey(absolutePath: string, etag: string): string {
-  return `${absolutePath}|${etag}`;
 }

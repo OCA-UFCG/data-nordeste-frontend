@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  etagMatches,
   geodataEtag,
-  gzipCacheKey,
   resolveGeodataFile,
   shouldGzip,
 } from "./geodataFile";
@@ -77,12 +77,15 @@ describe("shouldGzip", () => {
   });
 });
 
-describe("gzipCacheKey", () => {
-  it("changes with the file path or the etag", () => {
-    const key = gzipCacheKey("/g/a.json", '"1-1"');
+describe("etagMatches", () => {
+  it("matches a strong, weak or listed validator", () => {
+    expect(etagMatches('"10-1"', '"10-1"')).toBe(true);
+    expect(etagMatches('W/"10-1"', '"10-1"')).toBe(true);
+    expect(etagMatches('"9-2", W/"10-1"', '"10-1"')).toBe(true);
+  });
 
-    expect(key).not.toBe(gzipCacheKey("/g/b.json", '"1-1"'));
-    expect(key).not.toBe(gzipCacheKey("/g/a.json", '"1-2"'));
-    expect(key).toBe(gzipCacheKey("/g/a.json", '"1-1"'));
+  it("does not match another validator or a missing header", () => {
+    expect(etagMatches('"9-2"', '"10-1"')).toBe(false);
+    expect(etagMatches(null, '"10-1"')).toBe(false);
   });
 });

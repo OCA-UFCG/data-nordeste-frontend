@@ -3,8 +3,8 @@ import { promisify } from "node:util";
 import { gzip } from "node:zlib";
 import { NextResponse, type NextRequest } from "next/server";
 import {
+  etagMatches,
   geodataEtag,
-  gzipCacheKey,
   resolveGeodataFile,
   shouldGzip,
   type GeodataFile,
@@ -15,9 +15,9 @@ const gzipAsync = promisify(gzip);
 
 // PERF: `next start` does not compress route handler responses (pib.geojson is
 // ~4.5 MB raw, ~1.3 MB gzipped). The files only change when the directory is
-// regenerated, so each one is compressed once per process; the etag in the key
-// retires the entry when that happens.
-const gzipCache = new Map<string, Buffer>();
+// regenerated, so each one is compressed once per process. One entry per path:
+// a new etag replaces the stale copy instead of accumulating next to it.
+const gzipCache = new Map<string, { etag: string; body: Buffer }>();
 
 type GeodataContext = { params: Promise<{ path: string[] }> };
 
@@ -42,12 +42,11 @@ async function statFile(absolutePath: string) {
 }
 
 async function gzippedBody(absolutePath: string, etag: string) {
-  const key = gzipCacheKey(absolutePath, etag);
-  const cached = gzipCache.get(key);
-  if (cached) return cached;
+  const cached = gzipCache.get(absolutePath);
+  if (cached?.etag === etag) return cached.body;
 
   const compressed = await gzipAsync(await readFile(absolutePath));
-  gzipCache.set(key, compressed);
+  gzipCache.set(absolutePath, { etag, body: compressed });
 
   return compressed;
 }
@@ -57,18 +56,33 @@ const BASE_HEADERS = {
   "Vary": "Accept-Encoding",
 };
 
+// WHY: o arquivo pode sumir entre o stat e a leitura (regeração do diretório).
+async function readBody(file: GeodataFile, etag: string, compress: boolean) {
+  try {
+    return compress
+      ? await gzippedBody(file.absolutePath, etag)
+      : await readFile(file.absolutePath);
+  } catch {
+    return null;
+  }
+}
+
 async function fileResponse(
   request: NextRequest,
   file: GeodataFile,
   etag: string,
+  segments: string[],
 ) {
   const compress = shouldGzip(
     file.contentType,
     request.headers.get("Accept-Encoding"),
   );
-  const body = compress
-    ? await gzippedBody(file.absolutePath, etag)
-    : await readFile(file.absolutePath);
+  const body = await readBody(file, etag, compress);
+  if (!body) {
+    logMissing(segments, "read_failed");
+
+    return jsonError(`Geodata file "${segments.join("/")}" not found.`, 404);
+  }
 
   return new NextResponse(new Uint8Array(body), {
     headers: {
@@ -93,14 +107,14 @@ async function serveFile(
   }
 
   const etag = geodataEtag(info.size, info.mtimeMs);
-  if (request.headers.get("If-None-Match") === etag) {
+  if (etagMatches(request.headers.get("If-None-Match"), etag)) {
     return new NextResponse(null, {
       status: 304,
       headers: { ...BASE_HEADERS, ETag: etag },
     });
   }
 
-  return fileResponse(request, file, etag);
+  return fileResponse(request, file, etag, segments);
 }
 
 /**
