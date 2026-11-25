@@ -2,6 +2,7 @@
 
 import { type Ref, useState } from "react";
 import type { PerfilCardProps } from "@/components/DemografiaDashboard/perfilCardProps";
+import { PERFIL_DESMEMBRAMENTO_NOTE } from "@/components/DemografiaDashboard/perfilTexts";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import {
@@ -37,13 +38,7 @@ const censosText = (serie: PerfilCardProps["data"]["serie"]) => {
 const infoText = (serie: PerfilCardProps["data"]["serie"]) => (
   <>
     <p>{censosText(serie)}</p>
-    <p>
-      Alguns municípios foram criados a partir do desmembramento de outros, o
-      que explica a ausência de dados individualizados para esses municípios em
-      censos demográficos anteriores à sua criação. Essas alterações
-      territoriais devem ser consideradas na análise e na comparação dos dados
-      populacionais ao longo do tempo.
-    </p>
+    <p>{PERFIL_DESMEMBRAMENTO_NOTE}</p>
   </>
 );
 

@@ -2,8 +2,10 @@
 
 import { memo, useMemo } from "react";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
+import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
 import type { PerfilCardProps } from "@/components/DemografiaDashboard/perfilCardProps";
+import { PERFIL_DESMEMBRAMENTO_NOTE } from "@/components/DemografiaDashboard/perfilTexts";
 import {
   populacaoPorMunicipio,
   type MunicipioPoint,
@@ -75,7 +77,12 @@ export const PerfilMunicipiosCard = (props: PerfilCardProps) => {
       state={props.state}
       onRetry={props.onRetry}
       bodyClassName="flex min-h-0 flex-col"
-      actions={<ProtoCardMenu title={TITLE} />}
+      actions={
+        <>
+          <ProtoCardInfo title={TITLE} text={PERFIL_DESMEMBRAMENTO_NOTE} />
+          <ProtoCardMenu title={TITLE} />
+        </>
+      }
     >
       <MunicipiosList items={items} />
     </ProtoCard>

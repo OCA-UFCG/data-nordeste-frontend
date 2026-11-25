@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from "react";
 import type { PerfilCardProps } from "@/components/DemografiaDashboard/perfilCardProps";
-import { PERFIL_CARD_SOURCE } from "@/components/DemografiaDashboard/perfilTexts";
+import {
+  PERFIL_CARD_SOURCE,
+  PERFIL_DESMEMBRAMENTO_NOTE,
+} from "@/components/DemografiaDashboard/perfilTexts";
 import { DataTable } from "@/components/Panel/cards/DataTable";
 import { PanelMap, type PanelMapProps } from "@/components/PanelMap/PanelMap";
 import { PanelMapCardActions } from "@/components/PanelMap/PanelMapCardActions";
@@ -40,11 +43,7 @@ const INFO = (
       <li>Grande porte, acima de 100 mil habitantes.</li>
     </ul>
     <p className="mt-2">
-      <b>Obs.:</b> Alguns municípios foram criados a partir do desmembramento de
-      outros, o que explica a ausência de dados individualizados para esses
-      municípios em censos demográficos anteriores à sua criação. Essas
-      alterações territoriais devem ser consideradas na análise e na comparação
-      dos dados populacionais ao longo do tempo.
+      <b>Obs.:</b> {PERFIL_DESMEMBRAMENTO_NOTE}
     </p>
   </>
 );
