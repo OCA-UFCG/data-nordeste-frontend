@@ -24,8 +24,6 @@ export const DEMOGRAFIA_YEAR_RANGE: YearRange = {
   available: [2022, 2010, 2000],
 };
 
-export const DEMOGRAFIA_MAX_PLACES = 100;
-
 export type DemografiaPorte = ChoroplethBucket & { texto: string };
 
 // IMPORTANT: limites do `porte_mun` da view relatorios_auto.vw_perfil_populacional_municipal,

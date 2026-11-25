@@ -30,9 +30,6 @@ export const ARIDEZ_YEAR_RANGE: YearRange = {
 // Ano de comparação do "Veja mais" (o protótipo escreve "1990").
 export const ARIDEZ_BASE_YEAR = 1991;
 
-// Limita o tamanho da URL e do array do `= ANY($n)`, como nos outros painéis.
-export const ARIDEZ_MAX_PLACES = 100;
-
 // `uf`: a sigla do estado; o mapa soma as áreas por estado no hover por estado.
 export type AridezMunicipio = {
   cdMun: string;

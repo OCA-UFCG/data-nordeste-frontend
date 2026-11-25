@@ -16,9 +16,6 @@ import {
 
 export const PIB_YEAR_RANGE: YearRange = { first: 2010, last: 2023 };
 
-// Limita o tamanho da URL e do array do `= ANY($n)`.
-export const PIB_MAX_PLACES = 100;
-
 export type PibYearPoint = { ano: number; pib: number; perCapita: number };
 
 export type PibPanelData = TerritorialSelection & {

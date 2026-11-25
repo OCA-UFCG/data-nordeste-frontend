@@ -20,7 +20,6 @@ import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedP
 import { buildMetadata } from "@/config/seo";
 import { loadAridezPanelContent } from "@/features/panels/aridez/aridezContent";
 import {
-  ARIDEZ_MAX_PLACES,
   ARIDEZ_YEAR_RANGE,
   emptyAridezPanel,
   loadAridezPanel,
@@ -71,7 +70,6 @@ export default async function AridezDemoPage({
   const filters = parseTerritorialFilters(
     await searchParams,
     ARIDEZ_YEAR_RANGE,
-    ARIDEZ_MAX_PLACES,
   );
   const [panel, content] = await Promise.all([
     loadPanel(filters),

@@ -29,10 +29,7 @@ import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import { buildDemografiaAnalise } from "@/features/panels/demografia/demografiaAnalise";
-import {
-  DEMOGRAFIA_MAX_PLACES,
-  type DemografiaPanelData,
-} from "@/features/panels/demografia/demografiaPanel";
+import { type DemografiaPanelData } from "@/features/panels/demografia/demografiaPanel";
 import {
   describeDefaultPlaceLabel,
   describeTerritorialPlace,
@@ -134,7 +131,6 @@ export const DemografiaDashboard = ({
         brandInBar
         data={{ ...data, filters: selection }}
         years={listYears(years)}
-        maxPlaces={DEMOGRAFIA_MAX_PLACES}
         onChange={request}
         onClear={reset}
         isDefault={isDefaultTerritorialFilters(selection, years)}

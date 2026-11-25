@@ -30,7 +30,6 @@ import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import { buildAridezAnalise } from "@/features/panels/aridez/aridezAnalise";
 import { resolveAridezCardStates } from "@/features/panels/aridez/aridezCardState";
 import {
-  ARIDEZ_MAX_PLACES,
   ARIDEZ_YEAR_RANGE,
   type AridezPanelData,
 } from "@/features/panels/aridez/aridezPanel";
@@ -132,7 +131,6 @@ export const AridezDashboard = ({
         brandInBar
         data={{ ...data, filters: selection }}
         years={YEARS}
-        maxPlaces={ARIDEZ_MAX_PLACES}
         onChange={request}
         onClear={reset}
         isDefault={isDefaultTerritorialFilters(selection, ARIDEZ_YEAR_RANGE)}

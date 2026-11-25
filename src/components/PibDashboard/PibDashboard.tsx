@@ -31,7 +31,6 @@ import {
   resolvePibCardStates,
 } from "@/features/panels/pib/pibCardState";
 import {
-  PIB_MAX_PLACES,
   PIB_YEAR_RANGE,
   type PibPanelData,
 } from "@/features/panels/pib/pibPanel";
@@ -144,7 +143,6 @@ export const PibDashboard = ({
         onSheetOpenChange={yearField.setSheetOpen}
         data={{ ...data, filters: selection }}
         years={YEARS}
-        maxPlaces={PIB_MAX_PLACES}
         onChange={request}
         onClear={reset}
         isDefault={isDefaultTerritorialFilters(selection, PIB_YEAR_RANGE)}

@@ -27,7 +27,6 @@ import { useTerritorialNavigation } from "@/components/Panel/filters/useTerritor
 import { PanelPage } from "@/components/Panel/layout/PanelPage";
 import { getBucket } from "@/features/panels/choropleth";
 import {
-  DEMOGRAFIA_MAX_PLACES,
   DEMOGRAFIA_PORTES,
   DEMOGRAFIA_YEAR_RANGE,
   populacaoPorMunicipio,
@@ -132,7 +131,7 @@ export const DemografiaDashboard = ({
           years={YEARS}
           onChange={applyFilters}
           multiple
-          maxPlaces={DEMOGRAFIA_MAX_PLACES}
+          single
         />
       </PanelFilters>
       <SelectionSummary summary={summary} isPending={isPending} />

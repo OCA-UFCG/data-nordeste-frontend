@@ -20,7 +20,6 @@ import { RelatedPanelsSection } from "@/components/RelatedPanelsSection/RelatedP
 import { buildMetadata } from "@/config/seo";
 import { loadDemografiaPanelContent } from "@/features/panels/demografia/demografiaContent";
 import {
-  DEMOGRAFIA_MAX_PLACES,
   emptyDemografiaPanel,
   loadDemografiaPanel,
 } from "@/features/panels/demografia/demografiaPanel";
@@ -75,11 +74,7 @@ export default async function PerfilDemograficoDemoPage({
 }) {
   const range = await tryLoadDemografiaYearRange(queryDataDb);
   const years = range ?? NO_DEMOGRAFIA_YEARS;
-  const filters = parseTerritorialFilters(
-    await searchParams,
-    years,
-    DEMOGRAFIA_MAX_PLACES,
-  );
+  const filters = parseTerritorialFilters(await searchParams, years);
   const [panel, content] = await Promise.all([
     range ? loadPanel(filters) : null,
     loadDemografiaPanelContent(),

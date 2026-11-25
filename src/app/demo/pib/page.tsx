@@ -10,7 +10,6 @@ import { loadPibPanelContent } from "@/features/panels/pib/pibContent";
 import {
   emptyPibPanel,
   loadPibPanel,
-  PIB_MAX_PLACES,
   PIB_YEAR_RANGE,
 } from "@/features/panels/pib/pibPanel";
 import {
@@ -59,11 +58,7 @@ export default async function PibDemoPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const filters = parseTerritorialFilters(
-    await searchParams,
-    PIB_YEAR_RANGE,
-    PIB_MAX_PLACES,
-  );
+  const filters = parseTerritorialFilters(await searchParams, PIB_YEAR_RANGE);
   const [panel, content] = await Promise.all([
     loadPanel(filters),
     loadPibPanelContent(),
