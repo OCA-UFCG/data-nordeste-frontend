@@ -261,7 +261,7 @@ const LineSvg = ({
       viewBox={`0 0 ${width} ${height}`}
       height={height}
       role="group"
-      aria-label={`Evolução anual do IDH e do IDH ajustado à desigualdade, ${years[0]?.year} a ${years[years.length - 1]?.year}`}
+      aria-label={`Dinâmica anual do IDH e do IDH ajustado à desigualdade, ${years[0]?.year} a ${years[years.length - 1]?.year}`}
       fontFamily={PROTO_CHART_FONT}
       className="block w-full touch-pan-y overflow-visible [font-variant-numeric:tabular-nums]"
     >
