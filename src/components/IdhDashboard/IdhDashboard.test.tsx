@@ -123,7 +123,7 @@ describe("IdhDashboard", () => {
     rerender(dashboard(GERAL));
 
     expect(cardBody(/^Dinâmica anual/)).toHaveAttribute("aria-busy", "true");
-    expect(cardBody(/^Mapa do IDH/)).toHaveAttribute("aria-busy", "false");
+    expect(cardBody(/^IDH por estado/)).toHaveAttribute("aria-busy", "false");
     expect(cardBody(/^Ranking do IDH/)).toHaveAttribute("aria-busy", "false");
     expect(rankingState("Pernambuco")).toHaveAttribute("aria-pressed", "true");
   });

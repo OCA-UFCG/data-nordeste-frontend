@@ -159,7 +159,7 @@ describe("IdhOverview", () => {
     render(overview(allIdhCards("ok")));
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Mais opções: Mapa do IDH por estado",
+        name: "Mais opções: IDH por estado",
       }),
     );
     fireEvent.click(
