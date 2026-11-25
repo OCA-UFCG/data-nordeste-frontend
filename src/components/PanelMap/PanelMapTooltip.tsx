@@ -194,8 +194,10 @@ export const PanelMapTooltip = ({ tooltip }: PanelMapTooltipProps) => {
       style={{ left, top }}
     >
       <p className="text-[13px] leading-5 text-grey-700">{tooltip.title}</p>
-      {tooltip.details.map((line) => (
-        <p key={line} className="text-[13px] leading-5 text-grey-700">
+      {/* INTENTIONAL: chave pelo índice. As linhas vêm prontas do painel e
+          podem repetir texto; a lista é fixa enquanto o hover não muda. */}
+      {tooltip.details.map((line, index) => (
+        <p key={index} className="text-[13px] leading-5 text-grey-700">
           {line}
         </p>
       ))}
