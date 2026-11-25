@@ -77,6 +77,7 @@ export const ProtoSheet = ({
         <DialogOverlay className={SCRIM_CLASS} />
         <DialogUnstyledContent
           aria-describedby={undefined}
+          data-proto-sheet=""
           {...returnFocus}
           style={protoToneStyle(tone)}
           className={`${SHEET_CLASS} ${bare ? "pt-2" : "pt-0"}`}
