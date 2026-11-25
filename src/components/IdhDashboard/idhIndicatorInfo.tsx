@@ -90,6 +90,20 @@ const RENDIMENTO_INFO = (
 );
 
 /**
+ * ⓘ do card da série anual: o que são o IDH e o IDHAD, as duas linhas do
+ * gráfico, e como escolher o ano (revisão do painel, 25/11/2026).
+ *
+ * @example <ProtoCardInfo title={EVOLUTION_TITLE} text={IDH_SERIE_INFO} />
+ */
+export const IDH_SERIE_INFO = (
+  <>
+    {IDH_INFO}
+    {IDHAD_INFO}
+    <p>Clique em um ponto para escolher um ano.</p>
+  </>
+);
+
+/**
  * Texto do ⓘ de cada indicador do topo da visão geral do IDH.
  *
  * @example <ProtoCardInfo title="IDH" text={IDH_INDICATOR_INFO.idh} />

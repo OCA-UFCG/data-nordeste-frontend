@@ -3,10 +3,8 @@
 import { IdhBigNumbers } from "@/components/IdhDashboard/IdhBigNumbers";
 import { IdhLineChart } from "@/components/IdhDashboard/IdhLineChart";
 import { IdhMapCard } from "@/components/IdhDashboard/IdhMapCard";
-import {
-  idhEvolutionInfo,
-  IDH_CARD_INFO,
-} from "@/components/IdhDashboard/idhCardTexts";
+import { IDH_CARD_INFO } from "@/components/IdhDashboard/idhCardTexts";
+import { IDH_SERIE_INFO } from "@/components/IdhDashboard/idhIndicatorInfo";
 import { IdhRankingBars } from "@/components/IdhDashboard/IdhRanking";
 import {
   ProtoCard,
@@ -63,10 +61,7 @@ const EvolutionCard = ({
       kind="line"
       actions={
         <>
-          <ProtoCardInfo
-            title={EVOLUTION_TITLE}
-            text={idhEvolutionInfo(data.yearRange)}
-          />
+          <ProtoCardInfo title={EVOLUTION_TITLE} text={IDH_SERIE_INFO} />
           <ProtoCardMenu title={EVOLUTION_TITLE} chart={chart} />
         </>
       }

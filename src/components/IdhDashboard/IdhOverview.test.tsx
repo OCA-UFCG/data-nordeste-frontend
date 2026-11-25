@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
 import {
@@ -186,5 +186,25 @@ describe("IdhOverview", () => {
     rerender(overview(allIdhCards("loading")));
 
     expect(screen.getByRole("dialog")).toBe(dialog);
+  });
+
+  // Revisão do painel (25/11/2026): o ⓘ da série anual explica o IDH e o
+  // IDHAD, as duas linhas do gráfico, e como escolher o ano.
+  it("explains IDH and IDHAD in the ⓘ of the yearly series card", () => {
+    render(overview(allIdhCards("ok")));
+
+    const card = screen
+      .getByRole("heading", { name: /anual do IDH e do IDH ajustado/ })
+      .closest<HTMLElement>("section, article, [class*='rounded']");
+
+    fireEvent.click(
+      within(card!).getByRole("button", { name: "Sobre este gráfico" }),
+    );
+
+    const info = screen.getByRole("dialog");
+
+    expect(info).toHaveTextContent("Programa das Nações Unidas");
+    expect(info).toHaveTextContent("IDH ajustado à desigualdade (IDHAD)");
+    expect(info).toHaveTextContent("Clique em um ponto para escolher um ano.");
   });
 });
