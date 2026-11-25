@@ -34,7 +34,7 @@ type PibLineSeries = {
 const SERIES: readonly PibLineSeries[] = [
   {
     key: "pib",
-    shortLabel: "PIB total",
+    shortLabel: "PIB",
     color: PIB_COLORS.total,
     ink: PIB_COLORS.totalInk,
     pick: (point) => point.pib,
@@ -50,7 +50,7 @@ const SERIES: readonly PibLineSeries[] = [
 
 const AXIS_FONT_SIZE = "11.5";
 
-// Título do eixo: "PIB total (R$ bilhões)".
+// Título do eixo: "PIB (R$ bilhões)".
 const seriesTitle = (series: PibLineSeries, unit: PibBarUnit) =>
   `${series.shortLabel} (R$ ${unit.label})`;
 

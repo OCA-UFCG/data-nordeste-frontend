@@ -41,6 +41,7 @@ export const PibPageFrame = ({
       title={PIB_SAIBA_MAIS_TITLE}
       summary={PIB_SAIBA_MAIS_SUMMARY}
       paragraphs={[...PIB_SAIBA_MAIS_PARAGRAPHS]}
+      alwaysOpen
       themeHref={getMacroThemeHref(macroTheme)}
     />
   </>

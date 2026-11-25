@@ -74,7 +74,7 @@ export const PibBars = ({
   formatTick: (value: number) => string;
 }) => (
   <>
-    <ul className="mt-1 flex flex-col gap-1">
+    <ul className="mt-1 flex flex-1 flex-col justify-around gap-1">
       {rows.map((row) => (
         <BarRow
           key={row.label}

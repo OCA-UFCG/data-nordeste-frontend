@@ -50,7 +50,7 @@ const NORDESTE = [
 const chartSvg = () =>
   within(
     screen.getByRole("group", {
-      name: /^Dinâmica temporal do PIB total e do PIB per capita/,
+      name: /^Dinâmica temporal do PIB e do PIB per capita/,
     }),
   );
 
@@ -66,7 +66,7 @@ describe("PibLineChart", () => {
     render(<PibLineChart serie={NORDESTE} ano={2023} onSelectYear={vi.fn()} />);
     const svg = chartSvg();
 
-    expect(svg.getByText("PIB total (R$ bilhões)")).toBeTruthy();
+    expect(svg.getByText("PIB (R$ bilhões)")).toBeTruthy();
     expect(svg.getByText("PIB per capita (R$ mil)")).toBeTruthy();
     expect(svg.getByText("1.600")).toBeTruthy();
     expect(svg.getByText("40")).toBeTruthy();
@@ -79,7 +79,7 @@ describe("PibLineChart", () => {
     render(<PibLineChart serie={NORDESTE} ano={2023} onSelectYear={vi.fn()} />);
     const svg = chartSvg();
     const titles = [
-      svg.getByText("PIB total (R$ bilhões)"),
+      svg.getByText("PIB (R$ bilhões)"),
       svg.getByText("PIB per capita (R$ mil)"),
     ];
     const values = [
@@ -104,6 +104,6 @@ describe("PibLineChart", () => {
   it("shows no series legend", () => {
     render(<PibLineChart serie={NORDESTE} ano={2023} onSelectYear={vi.fn()} />);
 
-    expect(screen.queryByRole("button", { name: /PIB total/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /PIB/ })).toBeNull();
   });
 });

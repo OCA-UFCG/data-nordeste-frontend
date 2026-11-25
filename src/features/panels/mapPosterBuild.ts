@@ -81,7 +81,7 @@ const withPosterYear = (text: string, ano: number) =>
 /**
  * Os dados do cartaz de download de um card com mapa.
  *
- * @example buildMapPoster(base, { name: "PIB", subtitle: "PIB total por município", source: PIB_CARD_SOURCE, indicator: "pib", area: "nordeste", ano: 2021, recorte, geodata }).title // "Mapa do PIB - Nordeste"
+ * @example buildMapPoster(base, { name: "PIB", subtitle: "PIB por município", source: PIB_CARD_SOURCE, indicator: "pib", area: "nordeste", ano: 2021, recorte, geodata }).title // "Mapa do PIB - Nordeste"
  */
 export const buildMapPoster = (
   base: MapPosterBase,

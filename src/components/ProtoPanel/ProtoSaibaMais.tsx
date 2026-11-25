@@ -90,7 +90,8 @@ const Glossary = ({ items }: { items: ProtoGlossary }) => (
 /**
  * "Saiba mais" de um painel (`.more` do protótipo): resumo, "Ler mais" com o
  * glossário (quando há) e, no celular, uma sanfona fechada que abre pelo
- * cabeçalho. O `tone` vai no `style` da seção, porque a página é do servidor.
+ * cabeçalho. Com `alwaysOpen`, os parágrafos ficam sempre visíveis e não há
+ * "Ler mais". O `tone` vai no `style` da seção, porque a página é do servidor.
  *
  * @example <ProtoSaibaMais tone="idh" title="Saiba mais" summary="…" paragraphs={["…"]} glossary={[["IDH", "…"]]} themeHref="/macrothemes/desenvolvimento-social" />
  */
@@ -99,6 +100,7 @@ export const ProtoSaibaMais = ({
   summary,
   paragraphs,
   glossary,
+  alwaysOpen = false,
   themeHref,
   tone,
 }: {
@@ -106,6 +108,7 @@ export const ProtoSaibaMais = ({
   summary: string;
   paragraphs: string[];
   glossary?: ProtoGlossary;
+  alwaysOpen?: boolean;
   themeHref: string | null;
   tone: ProtoTone;
 }) => {
@@ -159,19 +162,21 @@ export const ProtoSaibaMais = ({
           <p className="mt-3 text-sm leading-6 max-[700px]:mt-2">{summary}</p>
           <MoreText
             id={moreId}
-            expanded={expanded}
+            expanded={alwaysOpen || expanded}
             paragraphs={paragraphs}
             glossary={glossary}
           />
-          <button
-            type="button"
-            aria-expanded={expanded}
-            aria-controls={moreId}
-            onClick={() => setExpanded(!expanded)}
-            className="mt-2 py-1.5 text-sm font-semibold text-green-900 underline underline-offset-3"
-          >
-            {expanded ? "Ler menos" : "Ler mais"}
-          </button>
+          {alwaysOpen ? null : (
+            <button
+              type="button"
+              aria-expanded={expanded}
+              aria-controls={moreId}
+              onClick={() => setExpanded(!expanded)}
+              className="mt-2 py-1.5 text-sm font-semibold text-green-900 underline underline-offset-3"
+            >
+              {expanded ? "Ler menos" : "Ler mais"}
+            </button>
+          )}
           {themeHref ? (
             <div className="hidden max-[700px]:block">
               <ThemeLink href={themeHref} className="mt-3" />

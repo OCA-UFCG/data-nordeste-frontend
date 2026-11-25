@@ -5,8 +5,9 @@ import {
   PibLineChart,
   PibLineChartSkeleton,
 } from "@/components/PibDashboard/PibLineChart";
+import { PibInfoParagraphs } from "@/components/PibDashboard/PibInfoParagraphs";
 import {
-  PIB_CARD_INFO,
+  PIB_LINE_INFO,
   PIB_LINE_TITLE,
 } from "@/components/PibDashboard/pibTexts";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
@@ -18,8 +19,8 @@ import {
 import { pibLineSubtitle } from "@/features/panels/pib/pibLineChart";
 
 /**
- * Card "Dinâmica temporal do PIB total e do PIB per capita": a série do território em linha, com o PIB
- * total e o per capita. `ano`: o ano pedido, destacado na hora.
+ * Card "Dinâmica temporal do PIB e do PIB per capita": a série do território em linha, com o PIB
+ * e o per capita. `ano`: o ano pedido, destacado na hora.
  *
  * @example <PibEvolutionCard data={panel} place="Nordeste" state="ok" ano={2021} onRetry={retry} onSelectYear={pickYear} />
  */
@@ -44,7 +45,10 @@ export const PibEvolutionCard = ({
       skeleton={<PibLineChartSkeleton />}
       actions={
         <>
-          <ProtoCardInfo title={PIB_LINE_TITLE} text={PIB_CARD_INFO.line} />
+          <ProtoCardInfo
+            title={PIB_LINE_TITLE}
+            text={<PibInfoParagraphs paragraphs={PIB_LINE_INFO} />}
+          />
           <ProtoCardMenu title={PIB_LINE_TITLE} chart={chart} />
         </>
       }

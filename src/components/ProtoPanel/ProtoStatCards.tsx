@@ -94,7 +94,7 @@ const CellTop = ({
     <div className="min-w-0 text-[13px] leading-[17px] font-medium">
       {label}
     </div>
-    <div className="-mt-1.5 -mr-2 ml-auto flex flex-none self-start">
+    <div className="-mt-1.5 -mr-2 ml-auto flex flex-none items-center self-start">
       {info ? <ProtoCardInfo title={label} text={info} /> : null}
       <ProtoCardMenu title={label} chart={image} />
     </div>

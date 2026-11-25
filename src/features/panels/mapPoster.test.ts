@@ -30,7 +30,7 @@ const DATA: MapPosterData = {
   icon: "usd",
   accent: "#e5640f",
   title: "Mapa do PIB - Nordeste",
-  subtitle: "PIB total por município - 2021",
+  subtitle: "PIB por município - 2021",
   chips: ["Ano: 2021", "Área: Nordeste", "Estado: Todos", "Município: Todos"],
   legend: [
     { color: "#fde6c8", label: "< R$ 50 Bi" },
@@ -61,7 +61,7 @@ describe("buildMapPosterSvg", () => {
     [
       "Painel de Economia e Renda",
       "Mapa do PIB - Nordeste",
-      "PIB total por município - 2021",
+      "PIB por município - 2021",
       "Filtros aplicados",
       "Ano: 2021",
       "Município: Todos",
