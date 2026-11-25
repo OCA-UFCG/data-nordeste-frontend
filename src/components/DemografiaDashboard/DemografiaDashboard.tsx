@@ -8,6 +8,7 @@ import {
 } from "@/components/DemografiaDashboard/PerfilLayout";
 import {
   DEMOGRAFIA_BAR_TITLE,
+  DEMOGRAFIA_MACROTHEME,
   DEMOGRAFIA_SOURCE,
 } from "@/components/DemografiaDashboard/demografiaTheme";
 import { usePorteMapView } from "@/components/DemografiaDashboard/PerfilPorteMapCard";
@@ -16,6 +17,10 @@ import {
   ProtoCardMenuContext,
   type ProtoCardMenuContextValue,
 } from "@/components/ProtoPanel/ProtoCardMenu";
+import {
+  buildPosterBase,
+  type PosterPanelInfo,
+} from "@/components/ProtoPanel/posterBase";
 import {
   BUTTON,
   PROTO_TEXT,
@@ -29,17 +34,14 @@ import { useProtoRetry } from "@/components/ProtoPanel/useProtoRetry";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import { usePanelNavigation } from "@/components/Panel/filters/useTerritorialNavigation";
 import { buildDemografiaAnalise } from "@/features/panels/demografia/demografiaAnalise";
-import {
-  DEMOGRAFIA_MAX_PLACES,
-  type DemografiaPanelData,
-} from "@/features/panels/demografia/demografiaPanel";
+import { type DemografiaPanelData } from "@/features/panels/demografia/demografiaPanel";
 import {
   describeDefaultPlaceLabel,
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
-  toggleTerritorialUf,
 } from "@/features/panels/territorialPlace";
+import { posterPlace } from "@/features/panels/mapPosterBuild";
 import { resolvePerfilCardStates } from "@/features/panels/demografia/perfilCardState";
 import { findPerfilPopulacao } from "@/features/panels/demografia/perfilPopulacao";
 import {
@@ -59,6 +61,7 @@ const useCardMenuValue = (
   search: string,
   pathname: string,
   catalogHref: string | null,
+  { macroTheme = DEMOGRAFIA_MACROTHEME, updatedAt }: PosterPanelInfo,
 ): ProtoCardMenuContextValue =>
   useMemo(
     () => ({
@@ -68,8 +71,16 @@ const useCardMenuValue = (
       },
       catalogHref,
       imageSource: PERFIL_CARD_SOURCE,
+      poster: buildPosterBase({
+        macroTheme,
+        icon: "users",
+        tone: "perfil",
+        updatedAt,
+        place: posterPlace(data),
+        chips: describeTerritorialShareChips(data),
+      }),
     }),
-    [data, search, pathname, catalogHref],
+    [data, search, pathname, catalogHref, macroTheme, updatedAt],
   );
 
 /**
@@ -78,14 +89,19 @@ const useCardMenuValue = (
  * censos do banco. `failed`: a consulta falhou e os cards mostram o erro com
  * "Tentar de novo". Sem população no ano escolhido, mostra o aviso e o mapa.
  *
- * @example <DemografiaDashboard data={panel} years={range} catalogHref="/catalog?category=demografia" />
+ * `macroTheme` e `updatedAt` ("MM/AAAA") vão no cabeçalho e no rodapé da imagem
+ * baixada do mapa.
+ *
+ * @example <DemografiaDashboard data={panel} years={range} catalogHref="/catalog?category=demografia" macroTheme="Demografia" updatedAt="11/2026" />
  */
 export const DemografiaDashboard = ({
   data,
   years,
   failed = false,
   catalogHref,
-}: {
+  macroTheme,
+  updatedAt,
+}: PosterPanelInfo & {
   data: DemografiaPanelData;
   years: YearRange;
   failed?: boolean;
@@ -101,6 +117,7 @@ export const DemografiaDashboard = ({
     buildSearch(data.filters),
     pathname,
     catalogHref,
+    { macroTheme, updatedAt },
   );
   const mapView = usePorteMapView();
 
@@ -123,8 +140,7 @@ export const DemografiaDashboard = ({
       data.filters,
     ),
     onRetry: retry,
-    onSelectUf: (uf: string) =>
-      request(toggleTerritorialUf(selection, uf, DEMOGRAFIA_MAX_PLACES)),
+    onFiltersChange: request,
     onReset: reset,
   };
   const showEmpty = !failed && findPerfilPopulacao(data) === null;
@@ -136,7 +152,6 @@ export const DemografiaDashboard = ({
         brandInBar
         data={{ ...data, filters: selection }}
         years={listYears(years)}
-        maxPlaces={DEMOGRAFIA_MAX_PLACES}
         onChange={request}
         onClear={reset}
         isDefault={isDefaultTerritorialFilters(selection, years)}

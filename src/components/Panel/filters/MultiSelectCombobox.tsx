@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { normalizeSearchText } from "@/features/search/search";
+import { cn } from "@/lib/utils";
 
 // Dentro de um Dialog (gaveta do celular), o popover precisa ser modal para a lista rolar.
 export const InsideDialogContext = createContext(false);
@@ -108,6 +109,30 @@ const OptionCheckbox = ({
   </label>
 );
 
+// Escolha única: sem checkbox. A opção marcada ganha fundo e negrito; clicar
+// nela de novo limpa (`aria-pressed` anuncia o estado).
+const OptionButton = ({
+  option,
+  checked,
+  onToggle,
+}: {
+  option: SelectOption;
+  checked: boolean;
+  onToggle: (value: string) => void;
+}) => (
+  <button
+    type="button"
+    aria-pressed={checked}
+    onClick={() => onToggle(option.value)}
+    className={cn(
+      "flex min-h-11 w-full cursor-pointer items-center rounded px-2 text-left text-base text-grey-1100 hover:bg-green-neutro focus-visible:outline-2 focus-visible:outline-green-800",
+      checked && "bg-green-neutro font-semibold",
+    )}
+  >
+    {option.label}
+  </button>
+);
+
 const RenderedCountNotice = ({ total }: { total: number }) =>
   total > MAX_RENDERED ? (
     <p className="px-2 py-3 text-sm text-grey-900">
@@ -120,6 +145,7 @@ type OptionListProps = {
   options: SelectOption[];
   checked: string[];
   full: boolean;
+  single?: boolean;
   onToggle: (value: string) => void;
 };
 
@@ -129,21 +155,31 @@ const OptionList = ({
   options,
   checked,
   full,
+  single,
   onToggle,
 }: OptionListProps) => (
   <div role="group" aria-label={label} className="max-h-72 overflow-y-auto">
     {options.length === 0 && (
       <p className="px-2 py-3 text-base text-grey-900">Nenhum resultado</p>
     )}
-    {limitOptions(options, checked).map((option) => (
-      <OptionCheckbox
-        key={option.value}
-        option={option}
-        checked={checked.includes(option.value)}
-        disabled={full && !checked.includes(option.value)}
-        onToggle={onToggle}
-      />
-    ))}
+    {limitOptions(options, checked).map((option) =>
+      single ? (
+        <OptionButton
+          key={option.value}
+          option={option}
+          checked={checked.includes(option.value)}
+          onToggle={onToggle}
+        />
+      ) : (
+        <OptionCheckbox
+          key={option.value}
+          option={option}
+          checked={checked.includes(option.value)}
+          disabled={full && !checked.includes(option.value)}
+          onToggle={onToggle}
+        />
+      ),
+    )}
     <RenderedCountNotice total={options.length} />
   </div>
 );
@@ -165,25 +201,30 @@ const LimitNotice = ({
 );
 
 // Marca e desmarca na hora; a navegação sai agrupada (useDebouncedApply).
+// `single`: marcar outra opção troca a escolhida, e marcar a escolhida limpa.
 const useComboboxSelection = (
   values: string[],
   onChange: (values: string[]) => void,
   max?: number,
+  single?: boolean,
 ) => {
   const [selected, setSelected] = useSelection(values);
   const { schedule, flush } = useDebouncedApply(onChange);
-  const full = max !== undefined && selected.length >= max;
+  const full = !single && max !== undefined && selected.length >= max;
 
   const update = (next: string[]) => {
     setSelected(next);
     schedule(next);
   };
-  const toggle = (value: string) =>
+  const toggle = (value: string) => {
+    if (single) return update(selected.includes(value) ? [] : [value]);
+
     update(
       selected.includes(value)
         ? selected.filter((item) => item !== value)
         : [...selected, value],
     );
+  };
 
   return { selected, full, update, toggle, flush };
 };
@@ -258,6 +299,9 @@ type MultiSelectComboboxProps = ComboboxLook & {
   options: SelectOption[];
   onChange: (values: string[]) => void;
   max?: number;
+
+  // Uma escolha só, com o mesmo visual (o painel do protótipo).
+  single?: boolean;
 };
 
 // Abrir ou fechar zera a busca; fechar aplica na hora o que estava pendente.
@@ -276,7 +320,7 @@ const usePopoverState = (flush: () => void) => {
 
 type ComboboxPanelProps = Pick<
   MultiSelectComboboxProps,
-  "label" | "plural" | "options" | "max"
+  "label" | "plural" | "options" | "max" | "single"
 > & {
   selection: ReturnType<typeof useComboboxSelection>;
   search: string;
@@ -301,6 +345,7 @@ const ComboboxPanel = (props: ComboboxPanelProps) => {
         options={visible}
         checked={selection.selected}
         full={selection.full}
+        single={props.single}
         onToggle={selection.toggle}
       />
       <LimitNotice
@@ -319,6 +364,7 @@ const ComboboxPanel = (props: ComboboxPanelProps) => {
  * Filtro com busca e várias escolhas (o Ctrl+clique do Power BI). Cada marcação
  * vale na hora; cliques seguidos viram uma navegação só.
  *
+ * `single`: só uma opção por vez; `max` não vale nele.
  * `max`: acima dele o servidor corta a seleção sem avisar; aqui as opções não
  * marcadas travam e aparece o aviso. Sem `max`, não há limite.
  *
@@ -330,6 +376,7 @@ export const MultiSelectCombobox = (props: MultiSelectComboboxProps) => {
     props.values,
     props.onChange,
     props.max,
+    props.single,
   );
   const popover = usePopoverState(selection.flush);
   const labelId = `${props.id}-label`;
@@ -361,6 +408,7 @@ export const MultiSelectCombobox = (props: MultiSelectComboboxProps) => {
           plural={props.plural}
           options={props.options}
           max={props.max}
+          single={props.single}
           selection={selection}
           search={popover.search}
           onSearch={popover.setSearch}

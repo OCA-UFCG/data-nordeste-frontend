@@ -9,10 +9,14 @@ export const ARIDEZ_LEAD =
 export const ARIDEZ_CARD_SOURCE =
   "Fonte: XAVIER et al. (2019) · Observatório da Caatinga e Desertificação";
 
+export const ARIDEZ_MAP_TITLE = "Índice de aridez por município";
+
+export const ARIDEZ_MAP_MOBILE_TITLE = "Aridez por município";
+
 export const ARIDEZ_CARD_INFO = {
   classes:
     "Área do território em cada classe do índice de aridez. Quanto menor o índice, mais seco é o clima: árido, semiárido, subúmido seco e úmido, em ordem crescente de disponibilidade hídrica.",
-  map: "Cada estado recebe a cor da faixa de % da sua área considerada suscetível à desertificação (classes árido, semiárido e subúmido seco, índice abaixo de 0,65). Clique em um estado para usá-lo como filtro do painel.",
+  map: "O mapa mostra o raster do índice de aridez da década do ano escolhido (1991 usa 1990, 2001 usa 2000 e assim por diante), com as classes árido, semiárido, subúmido seco e úmido. Passe o mouse sobre um estado (ou, com um estado escolhido, sobre um município) para ver o % da sua área na área de interesse que é suscetível à desertificação (classes árido, semiárido e subúmido seco, índice abaixo de 0,65) e a posição dele no ranking da área. Aproximar o mapa ou clicar nele filtra o painel: o primeiro clique escolhe o estado e o seguinte, um município desse estado (clicar de novo no município escolhido volta ao estado, e clicar fora do estado escolhido volta à área); a legenda conta os municípios em que cada classe predomina.",
   municipios:
     "Para cada município, a divisão da sua área entre as classes do índice de aridez, em %. Passe o mouse sobre um trecho da barra para ver a área em km².",
 } as const;

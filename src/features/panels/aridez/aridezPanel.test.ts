@@ -46,20 +46,17 @@ class AridezDatabaseFake {
         ...classRow(ano === 2021 ? "800" : "700", "200"),
       }));
     }
-    if (sql.includes("GROUP BY sigla_uf")) {
-      return [
-        { sigla_uf: "PE ", estado_uf: "Pernambuco", ...classRow("75", "25") },
-      ];
-    }
     if (sql.includes("GROUP BY cd_mun")) {
       return [
         {
           cd_mun: "2611101",
+          sigla_uf: "PE",
           municipio_uf: "Petrolina (PE)",
           ...classRow("4560", "0"),
         },
         {
           cd_mun: "2611606",
+          sigla_uf: "PE",
           municipio_uf: "Recife (PE)",
           ...classRow("0", "0"),
         },
@@ -94,16 +91,39 @@ describe("loadAridezPanel", () => {
     expect(db.callFor("GROUP BY ano").sql).toContain("semiarido = 'Sim'");
   });
 
-  it("maps states with their ASD share and trims the code", async () => {
+  it("loads the whole-area municipalities for the map ignoring state and municipality", async () => {
+    const db = new AridezDatabaseFake();
+    const panel = await loadAridezPanel(db.query, {
+      ano: 2021,
+      area: "nordeste",
+      uf: ["PE"],
+      mun: ["2611101"],
+    });
+    const municipalQueries = db.calls.filter(({ sql }) =>
+      sql.includes("GROUP BY cd_mun"),
+    );
+
+    expect(municipalQueries).toHaveLength(2);
+    expect(
+      municipalQueries.map(({ params }) => JSON.stringify(params)),
+    ).toEqual([
+      expect.stringContaining("2611101"),
+      expect.not.stringContaining("2611101"),
+    ]);
+    expect(panel.mapa.map(({ cdMun }) => cdMun)).toEqual(["2611101"]);
+  });
+
+  it("reuses the municipal query for the map when no state or municipality is chosen", async () => {
     const db = new AridezDatabaseFake();
     const panel = await loadAridezPanel(db.query, {
       ano: 2021,
       area: "nordeste",
     });
 
-    expect(panel.estados).toEqual([
-      expect.objectContaining({ code: "PE", name: "Pernambuco", value: 75 }),
-    ]);
+    expect(
+      db.calls.filter(({ sql }) => sql.includes("GROUP BY cd_mun")),
+    ).toHaveLength(1);
+    expect(panel.mapa).toBe(panel.porMunicipio);
   });
 
   it("drops municipalities without classified area", async () => {
@@ -116,6 +136,20 @@ describe("loadAridezPanel", () => {
     expect(panel.porMunicipio.map(({ nome }) => nome)).toEqual([
       "Petrolina (PE)",
     ]);
+  });
+
+  // O hover por estado do mapa soma as áreas dos municípios de cada estado.
+  it("keeps each municipality's state", async () => {
+    const db = new AridezDatabaseFake();
+    const panel = await loadAridezPanel(db.query, {
+      ano: 2021,
+      area: "nordeste",
+    });
+
+    expect(panel.mapa.map(({ cdMun, uf }) => [cdMun, uf])).toEqual([
+      ["2611101", "PE"],
+    ]);
+    expect(db.callFor("GROUP BY cd_mun").sql).toContain("sigla_uf");
   });
 
   it("returns null areas for a year the view does not have", async () => {
@@ -131,8 +165,8 @@ describe("loadAridezPanel", () => {
   it("starts empty for the failure fallback", () => {
     expect(emptyAridezPanel({ ano: 2021, area: "nordeste" })).toMatchObject({
       areas: null,
-      estados: [],
       porMunicipio: [],
+      mapa: [],
     });
   });
 });

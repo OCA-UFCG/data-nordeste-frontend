@@ -7,7 +7,10 @@ import { IdhGroupView } from "@/components/IdhDashboard/IdhGroupView";
 import { IdhNextViewButton } from "@/components/IdhDashboard/IdhNextViewButton";
 import { IdhOverview } from "@/components/IdhDashboard/IdhOverview";
 import { IdhViewBar } from "@/components/IdhDashboard/IdhViewTabs";
-import { IDH_CARD_SOURCE } from "@/components/IdhDashboard/idhTheme";
+import {
+  IDH_CARD_SOURCE,
+  IDH_MACROTHEME,
+} from "@/components/IdhDashboard/idhTheme";
 import {
   type IdhDashboardModel,
   useIdhDashboard,
@@ -16,6 +19,7 @@ import {
   ProtoCardMenuContext,
   type ProtoCardMenuContextValue,
 } from "@/components/ProtoPanel/ProtoCardMenu";
+import { buildPosterBase } from "@/components/ProtoPanel/posterBase";
 import {
   BUTTON,
   PROTO_TEXT,
@@ -26,7 +30,9 @@ import { ProtoToneContext } from "@/components/ProtoPanel/protoTone";
 import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import {
   buildIdhSearch,
+  describeIdhPosterChips,
   describeIdhShareChips,
+  idhPlaceName,
   IDH_VISOES,
   type IdhPanelData,
   type IdhVisao,
@@ -40,6 +46,9 @@ const PANEL_SOURCE =
 // `.layout` e `.panel` do protótipo: as margens do `.wrap` e 32/24/20 px no topo.
 const LAYOUT_CLASS = `${PROTO_TEXT} ${WRAP} pt-8 pb-10 max-[1100px]:pt-6 max-[700px]:pt-5 max-[700px]:pb-8`;
 
+// Do que a page servidor sabe: o macrotema e a data "MM/AAAA" do cartaz do mapa.
+type PosterInfo = { macroTheme?: string; updatedAt?: string };
+
 // O link de compartilhar leva a aba aberta, não a da carga da página: trocar de
 // aba só muda a URL com replaceState, sem novos `data.filters`.
 const useCardMenuValue = (
@@ -47,6 +56,7 @@ const useCardMenuValue = (
   tab: IdhVisao,
   pathname: string,
   catalogHref: string | null,
+  { macroTheme = IDH_MACROTHEME, updatedAt }: PosterInfo,
 ): ProtoCardMenuContextValue =>
   useMemo(
     () => ({
@@ -56,8 +66,16 @@ const useCardMenuValue = (
       },
       catalogHref,
       imageSource: IDH_CARD_SOURCE,
+      poster: buildPosterBase({
+        macroTheme,
+        icon: "idh",
+        tone: "idh",
+        updatedAt,
+        place: idhPlaceName(data),
+        chips: describeIdhPosterChips(data),
+      }),
     }),
-    [data, tab, pathname, catalogHref],
+    [data, tab, pathname, catalogHref, macroTheme, updatedAt],
   );
 
 const useIdhTabIds = () => {
@@ -83,6 +101,7 @@ const IdhGeneralView = ({ data, dashboard, updatedAt }: ViewProps) => (
     onRetry={dashboard.retry}
     onSelectUf={dashboard.actions.selectUf}
     onSelectYear={dashboard.actions.selectYear}
+    onFiltersChange={dashboard.actions.changeFilters}
   />
 );
 
@@ -108,7 +127,11 @@ const visaoLabel = (tab: IdhVisao) =>
 
 type IdhStickyBars = ReturnType<typeof useProtoSticky>;
 
-type PanelProps = ViewProps & { ids: IdhTabIds; catalogHref: string | null };
+type PanelProps = ViewProps & {
+  ids: IdhTabIds;
+  catalogHref: string | null;
+  macroTheme?: string;
+};
 
 const tabsOf = ({ ids, dashboard }: PanelProps) => ({
   panelId: ids.panel,
@@ -171,10 +194,14 @@ const IdhCardsWithMenu = ({
   data,
   dashboard,
   catalogHref,
+  macroTheme,
   updatedAt,
 }: PanelProps) => {
   const { tab, pathname } = dashboard;
-  const cardMenu = useCardMenuValue(data, tab, pathname, catalogHref);
+  const cardMenu = useCardMenuValue(data, tab, pathname, catalogHref, {
+    macroTheme,
+    updatedAt,
+  });
 
   return (
     <ProtoCardMenuContext.Provider value={cardMenu}>
@@ -197,6 +224,7 @@ type IdhDashboardProps = {
   data: IdhPanelData;
   failed?: boolean;
   catalogHref: string | null;
+  macroTheme?: string;
   updatedAt?: string;
 };
 
@@ -204,7 +232,8 @@ type IdhDashboardProps = {
  * Painel de IDH no formato do protótipo: barra de abas, barra de filtros e o
  * conteúdo da visão, com a fonte e o catálogo abaixo. `failed`:
  * a consulta falhou e os cards mostram o erro com "Tentar de novo".
- * `updatedAt`: "MM/AAAA" do rodapé dos cards; sem ele, o rótulo some.
+ * `updatedAt`: "MM/AAAA" do rodapé dos cards e do cartaz do mapa; sem ele, o
+ * rótulo some. `macroTheme`: o nome do painel no cartaz do mapa.
  *
  * @example <IdhDashboard data={panel} catalogHref="/catalog?category=desenvolvimento-social" />
  */
@@ -214,8 +243,8 @@ export const IdhDashboard = (props: IdhDashboardProps) => {
   const layoutRef = useRef<HTMLDivElement>(null);
   const reveal = () => sticky.reveal(layoutRef.current);
   const dashboard = useIdhDashboard(props.data, !!props.failed, reveal);
-  const { data, catalogHref, updatedAt } = props;
-  const panel = { data, catalogHref, dashboard, ids, updatedAt };
+  const { data, catalogHref, macroTheme, updatedAt } = props;
+  const panel = { data, catalogHref, dashboard, ids, macroTheme, updatedAt };
 
   return (
     <ProtoToneContext.Provider value="idh">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { formatPanelUpdatedAt } from "@/features/panels/panelUpdatedAt";
 import { getCatalogHref } from "@/components/Panel/texts/PanelTexts";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
 import { PibPageFrame } from "@/components/PibDashboard/PibPageFrame";
@@ -10,7 +11,6 @@ import { loadPibPanelContent } from "@/features/panels/pib/pibContent";
 import {
   emptyPibPanel,
   loadPibPanel,
-  PIB_MAX_PLACES,
   PIB_YEAR_RANGE,
 } from "@/features/panels/pib/pibPanel";
 import {
@@ -59,11 +59,7 @@ export default async function PibDemoPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const filters = parseTerritorialFilters(
-    await searchParams,
-    PIB_YEAR_RANGE,
-    PIB_MAX_PLACES,
-  );
+  const filters = parseTerritorialFilters(await searchParams, PIB_YEAR_RANGE);
   const [panel, content] = await Promise.all([
     loadPanel(filters),
     loadPibPanelContent(),
@@ -81,6 +77,8 @@ export default async function PibDemoPage({
           data={panel ?? emptyPibPanel(filters)}
           failed={!panel}
           catalogHref={getCatalogHref(macroTheme)}
+          macroTheme={macroTheme}
+          updatedAt={formatPanelUpdatedAt(content?.panel.date)}
         />
       </PibPageFrame>
       {content ? <RelatedPanelsSection items={content.relatedItems} /> : null}

@@ -14,6 +14,16 @@ const parse = (params: Record<string, string | string[]>, maxPlaces = 1) =>
   parseTerritorialFilters(params, RANGE, maxPlaces);
 
 describe("parseTerritorialFilters", () => {
+  it("keeps a single state and municipality when no limit is given", () => {
+    const filters = parseTerritorialFilters(
+      { uf: ["PE", "PB"], mun: ["2611606", "2507507"] },
+      RANGE,
+    );
+
+    expect(filters.uf).toEqual(["PE"]);
+    expect(filters.mun).toEqual(["2611606"]);
+  });
+
   it("defaults to the latest year in the Nordeste", () => {
     expect(parse({})).toEqual(DEFAULTS);
   });
