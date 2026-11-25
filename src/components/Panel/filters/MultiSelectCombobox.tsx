@@ -200,13 +200,18 @@ const LimitNotice = ({
   </p>
 );
 
+type SelectionRules = Pick<
+  MultiSelectComboboxProps,
+  "max" | "single" | "required"
+>;
+
 // Marca e desmarca na hora; a navegação sai agrupada (useDebouncedApply).
-// `single`: marcar outra opção troca a escolhida, e marcar a escolhida limpa.
+// `single`: marcar outra opção troca a escolhida, e marcar a escolhida limpa
+// (exceto com `required`, em que ela continua marcada).
 const useComboboxSelection = (
   values: string[],
   onChange: (values: string[]) => void,
-  max?: number,
-  single?: boolean,
+  { max, single, required }: SelectionRules,
 ) => {
   const [selected, setSelected] = useSelection(values);
   const { schedule, flush } = useDebouncedApply(onChange);
@@ -217,6 +222,7 @@ const useComboboxSelection = (
     schedule(next);
   };
   const toggle = (value: string) => {
+    if (single && required && selected.includes(value)) return;
     if (single) return update(selected.includes(value) ? [] : [value]);
 
     update(
@@ -302,6 +308,9 @@ type MultiSelectComboboxProps = ComboboxLook & {
 
   // Uma escolha só, com o mesmo visual (o painel do protótipo).
   single?: boolean;
+
+  // Nunca fica vazio (ex.: Área de interesse): some o "Limpar seleção".
+  required?: boolean;
 };
 
 // Abrir ou fechar zera a busca; fechar aplica na hora o que estava pendente.
@@ -320,7 +329,7 @@ const usePopoverState = (flush: () => void) => {
 
 type ComboboxPanelProps = Pick<
   MultiSelectComboboxProps,
-  "label" | "plural" | "options" | "max" | "single"
+  "label" | "plural" | "options" | "max" | "single" | "required"
 > & {
   selection: ReturnType<typeof useComboboxSelection>;
   search: string;
@@ -353,7 +362,7 @@ const ComboboxPanel = (props: ComboboxPanelProps) => {
         max={props.max}
         plural={props.plural}
       />
-      {selection.selected.length > 0 && (
+      {!props.required && selection.selected.length > 0 && (
         <ClearSelectionButton onClear={() => selection.update([])} />
       )}
     </PopoverContent>
@@ -365,6 +374,7 @@ const ComboboxPanel = (props: ComboboxPanelProps) => {
  * vale na hora; cliques seguidos viram uma navegação só.
  *
  * `single`: só uma opção por vez; `max` não vale nele.
+ * `required` (com `single`): a opção marcada não desmarca e não há "Limpar seleção".
  * `max`: acima dele o servidor corta a seleção sem avisar; aqui as opções não
  * marcadas travam e aparece o aviso. Sem `max`, não há limite.
  *
@@ -372,12 +382,7 @@ const ComboboxPanel = (props: ComboboxPanelProps) => {
  */
 export const MultiSelectCombobox = (props: MultiSelectComboboxProps) => {
   const insideDialog = useContext(InsideDialogContext);
-  const selection = useComboboxSelection(
-    props.values,
-    props.onChange,
-    props.max,
-    props.single,
-  );
+  const selection = useComboboxSelection(props.values, props.onChange, props);
   const popover = usePopoverState(selection.flush);
   const labelId = `${props.id}-label`;
   const summary = summarize(selection.selected, props.options, props.plural);
@@ -409,6 +414,7 @@ export const MultiSelectCombobox = (props: MultiSelectComboboxProps) => {
           options={props.options}
           max={props.max}
           single={props.single}
+          required={props.required}
           selection={selection}
           search={popover.search}
           onSearch={popover.setSearch}

@@ -98,6 +98,30 @@ describe("TerritorialSelects", () => {
       });
     });
 
+    it("uses the same combobox for the area and clears state and municipality", () => {
+      vi.useFakeTimers();
+      const onChange = renderSelects(true, vi.fn(), true);
+
+      pick(/^Área de interesse/, "Semiárido");
+
+      expect(onChange).toHaveBeenCalledExactlyOnceWith({
+        ano: 2021,
+        area: "semiarido",
+      });
+    });
+
+    it("never leaves the area empty", () => {
+      vi.useFakeTimers();
+      const onChange = renderSelects(true, vi.fn(), true);
+
+      pick(/^Área de interesse/, "Nordeste");
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(
+        screen.queryByRole("button", { name: "Limpar seleção" }),
+      ).not.toBeInTheDocument();
+    });
+
     it("replaces the municipality and keeps the state", () => {
       vi.useFakeTimers();
       const onChange = renderSelects(true, vi.fn(), true);
