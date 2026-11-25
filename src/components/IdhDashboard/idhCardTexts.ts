@@ -1,8 +1,3 @@
-import {
-  listYears,
-  type YearRange,
-} from "@/features/panels/territorialFilters";
-
 // Textos dos cards do painel de IDH: o ⓘ de cada card.
 // Textos que dizem respeito ao IDH ficam aqui, não nos componentes do painel.
 
@@ -18,16 +13,3 @@ export const IDH_CARD_INFO = {
 
 // Rótulo do mapa para leitores de tela (o título do card é `MAP_TITLE`).
 export const IDH_MAP_LABEL = "Mapa do IDH por estado do Nordeste";
-
-/**
- * ⓘ do card de evolução; o período vem do intervalo de anos do banco.
- *
- * @example idhEvolutionInfo({ first: 2012, last: 2021 }) // "A série do estado escolhido no filtro, de 2012 a 2021. ..."
- */
-export const idhEvolutionInfo = (range: YearRange): string => {
-  const period = listYears(range).length
-    ? `, de ${range.first} a ${range.last}`
-    : "";
-
-  return `A série do estado escolhido no filtro${period}. O IDH ajustado à desigualdade desconta as diferenças entre grupos da população. Clique em um ponto para escolher o ano.`;
-};
