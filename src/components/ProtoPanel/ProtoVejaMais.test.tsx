@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   stubPanelBrowserApis,
   stubPhoneMedia,
@@ -66,6 +66,24 @@ describe("ProtoVejaMais", () => {
     // `data-state` é do diálogo do Radix (a folha); o cartão não o tem.
     expect(sheet.getAttribute("data-state")).toBe("open");
     expect(sheet.textContent).toContain(FOOTNOTE);
+  });
+
+  it("ao abrir o cartão rola até a barra de filtros grudar", () => {
+    const bar = document.createElement("div");
+
+    bar.setAttribute("data-proto-filter-bar", "");
+    bar.style.top = "84px";
+    bar.getBoundingClientRect = () => ({ top: 452 }) as DOMRect;
+    document.body.append(bar);
+    const scrollBy = vi.fn();
+
+    vi.stubGlobal("scrollBy", scrollBy);
+    render(<ProtoVejaMais analysis={analysis("Semiárido.")} state="ok" />);
+
+    fireEvent.click(toggle());
+
+    expect(scrollBy).toHaveBeenCalledWith({ top: 368, behavior: "smooth" });
+    bar.remove();
   });
 
   it("marca o texto que mudou com o cartão fechado e limpa ao abrir", () => {

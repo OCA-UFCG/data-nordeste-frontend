@@ -11,6 +11,7 @@ import {
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 import { ProtoSheet } from "@/components/ProtoPanel/ProtoSheet";
 import { FOCUS_RING } from "@/components/ProtoPanel/protoStyles";
+import { protoScrollBehavior } from "@/components/ProtoPanel/useProtoSticky";
 import {
   AnalysisText,
   analysisKey,
@@ -47,6 +48,19 @@ const useCloseOnEscape = (active: boolean, close: () => void) => {
 
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [active, close]);
+};
+
+// INTENTIONAL: com a página no topo, o cartão cobria Município e "Limpar
+// filtros" (André, 24/11/2026). Ao abrir, rola só o bastante para a barra de
+// filtros grudar sob o cabeçalho; o cartão cabe abaixo dela.
+const stickFilterBar = () => {
+  const bar = document.querySelector<HTMLElement>("[data-proto-filter-bar]");
+
+  if (!bar) return;
+  const gap =
+    bar.getBoundingClientRect().top - parseFloat(getComputedStyle(bar).top);
+
+  if (gap > 1) window.scrollBy({ top: gap, behavior: protoScrollBehavior() });
 };
 
 // Ponto e brilho: o que mudou desde a última vez que o texto foi aberto ou
@@ -159,7 +173,9 @@ export const ProtoVejaMais = ({
   const toggle = () => {
     news.markSeen();
     if (open) return setMode("closed");
-    setMode(window.matchMedia(PHONE_QUERY).matches ? "sheet" : "card");
+    if (window.matchMedia(PHONE_QUERY).matches) return setMode("sheet");
+    stickFilterBar();
+    setMode("card");
   };
 
   const close = () => {
