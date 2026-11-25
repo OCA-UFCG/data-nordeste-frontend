@@ -252,10 +252,10 @@ const PanelMapStage = ({
  * carrega os geodados, pinta o indicador com as classes do `.qgz` e transforma
  * o zoom do usuário no recorte territorial do painel. Na aridez, o raster da
  * década é a camada principal e as feições são só contornos, com os números
- * do painel (`values`, `classCounts`). Sem geodados no ambiente, mostra um
- * aviso no lugar do mapa e o card continua de pé.
+ * do painel (`values`, `classCounts`, `tooltipDetails`). Sem geodados no
+ * ambiente, mostra um aviso no lugar do mapa e o card continua de pé.
  *
- * @example <PanelMap indicator="aridez" ano={2021} area="semiarido" recorte={recorte} deepest="municipio" onRecorteChange={apply} values={asdPorMunicipio} classCounts={predominantes} formatValue={formatPercent} valueLabel="Área suscetível" label="Mapa do índice de aridez" />
+ * @example <PanelMap indicator="aridez" ano={2021} area="semiarido" recorte={recorte} deepest="municipio" onRecorteChange={apply} values={asdPorMunicipio} classCounts={predominantes} tooltipDetails={linhasPorClasse} formatValue={formatPercent} valueLabel="Percentual de área suscetível à desertificação" label="Mapa do índice de aridez" />
  * @example <PanelMap indicator="pib" ano={2023} area="nordeste" recorte={recorte} deepest="municipio" onRecorteChange={apply} formatValue={formatPibReais} valueLabel="PIB" label="Mapa do PIB por município" />
  */
 export const PanelMap = (props: PanelMapProps) => {

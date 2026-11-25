@@ -177,7 +177,8 @@ type PanelMapTooltipProps = { tooltip: PanelMapTooltipState | null };
 
 /**
  * Cartão branco junto do ponteiro, dentro do mapa, no estilo dos tooltips dos
- * painéis: nome, "<indicador>: <valor>" e posição no ranking. `pointer-events-none`
+ * painéis: nome, as linhas extras do painel (`details`; na aridez, o % de cada
+ * classe), "<indicador>: <valor>" e posição no ranking. `pointer-events-none`
  * para não roubar o hover das feições.
  *
  * @example <PanelMapTooltip tooltip={tooltip} />

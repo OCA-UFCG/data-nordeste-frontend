@@ -77,10 +77,11 @@ const useAridezMapProps = (
 };
 
 /**
- * Card "Índice de aridez por município": o raster do índice da década do ano
- * escolhido, com a legenda das classes e o % de ASD de cada município no
- * tooltip. Aproximar ou clicar no mapa troca Estado e Município no filtro do
- * painel, pelo mesmo caminho da barra de filtros.
+ * Card "Índice de aridez": o raster do índice da década do ano escolhido, com
+ * a legenda das classes e, no tooltip, o % de cada classe e o % de ASD do
+ * município (ou do estado, só com a área). Aproximar ou clicar no mapa troca
+ * Estado e Município no filtro do painel, pelo mesmo caminho da barra de
+ * filtros.
  *
  * @example <AridezMapCard data={panel} selection={filters} onFiltersChange={request} state="ok" onRetry={retry} />
  */
