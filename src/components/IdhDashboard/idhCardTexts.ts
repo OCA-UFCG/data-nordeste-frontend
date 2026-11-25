@@ -20,7 +20,7 @@ export const IDH_CARD_INFO = {
 export const IDH_MAP_LABEL = "Mapa do IDH por estado do Nordeste";
 
 /**
- * ⓘ do card de evolução; o período vem do intervalo de anos do banco.
+ * ⓘ do card de dinâmica; o período vem do intervalo de anos do banco.
  *
  * @example idhEvolutionInfo({ first: 2012, last: 2021 }) // "A série do estado escolhido no filtro, de 2012 a 2021. ..."
  */
