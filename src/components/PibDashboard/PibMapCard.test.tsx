@@ -120,7 +120,7 @@ describe("PibMapCard", () => {
       ano: 2021,
       area: "semiarido",
       deepest: "municipio",
-      label: "Mapa do PIB total por município",
+      label: "Mapa do PIB por município",
       formatValue: formatPibReais,
       valueLabel: "PIB",
     });
@@ -139,9 +139,9 @@ describe("PibMapCard", () => {
     renderCard();
 
     expect(
-      screen.getByRole("heading", { name: "PIB total por município" }),
+      screen.getByRole("heading", { name: "PIB por município" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/^PIB total · .+ · 2021$/)).toBeInTheDocument();
+    expect(screen.getByText(/^PIB · .+ · 2021$/)).toBeInTheDocument();
   });
 
   it("turns a state zoom into the panel filters, dropping empty municipalities", () => {
@@ -191,7 +191,7 @@ describe("PibMapCard", () => {
     renderCard();
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Mais opções: PIB total por município",
+        name: "Mais opções: PIB por município",
       }),
     );
     fireEvent.click(
@@ -209,7 +209,7 @@ describe("PibMapCard", () => {
     const openImageScreen = async () => {
       fireEvent.click(
         screen.getByRole("button", {
-          name: "Mais opções: PIB total por município",
+          name: "Mais opções: PIB por município",
         }),
       );
       fireEvent.click(
@@ -242,7 +242,7 @@ describe("PibMapCard", () => {
       expect(options.poster).toMatchObject({
         panelName: "Painel de Economia e Renda",
         title: "Mapa do PIB - Paraíba",
-        subtitle: "PIB total por município - 2021",
+        subtitle: "PIB por município - 2021",
         source: PIB_CARD_SOURCE,
         updatedAt: "11/2026",
       });
@@ -309,7 +309,7 @@ describe("PibMapCard", () => {
     expect(frame).not.toContain("flex-1");
   });
 
-  it("explains how the map filters and the PIB terms in the info balloon", async () => {
+  it("explains only the PIB term and the Obs. in the info balloon", async () => {
     renderCard();
 
     fireEvent.click(screen.getByRole("button", { name: "Sobre este gráfico" }));
@@ -317,11 +317,8 @@ describe("PibMapCard", () => {
     const paragraphs = term.closest("p")?.parentElement?.querySelectorAll("p");
 
     expect(term.tagName).toBe("B");
-    expect(screen.getByText("PIB per capita").tagName).toBe("B");
-    expect(paragraphs).toHaveLength(4);
-    expect(paragraphs?.[0].textContent).toMatch(
-      /o primeiro clique escolhe o estado/,
-    );
-    expect(paragraphs?.[0].textContent).toMatch(/legenda/);
+    expect(screen.queryByText("PIB per capita")).toBeNull();
+    expect(paragraphs).toHaveLength(2);
+    expect(paragraphs?.[1].textContent).toMatch(/^Obs\.: /);
   });
 });

@@ -20,7 +20,7 @@ export type MapPosterInset = {
  * do ícone; o desenho (SVG, rasterizado em PNG) fica em
  * `features/panels/mapPoster.ts`.
  *
- * @example { panelName: "Painel de Economia e Renda", icon: "usd", accent: "#e5640f", title: "Mapa do PIB - Nordeste", subtitle: "PIB total por município - 2021", chips: ["Ano: 2021", "Área: Nordeste", "Estado: Todos", "Município: Todos"], legend: [{ color: "#fdd0a2", label: "R$ 50 – 100 Bi" }], inset: null, source: "Fonte: IBGE · Data Nordeste", updatedAt: "11/2026" }
+ * @example { panelName: "Painel de Economia e Renda", icon: "usd", accent: "#e5640f", title: "Mapa do PIB - Nordeste", subtitle: "PIB por município - 2021", chips: ["Ano: 2021", "Área: Nordeste", "Estado: Todos", "Município: Todos"], legend: [{ color: "#fdd0a2", label: "R$ 50 – 100 Bi" }], inset: null, source: "Fonte: IBGE · Data Nordeste", updatedAt: "11/2026" }
  */
 export type MapPosterData = {
   panelName: string;

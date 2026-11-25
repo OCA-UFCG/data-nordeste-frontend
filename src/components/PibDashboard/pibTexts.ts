@@ -9,11 +9,10 @@ export const PIB_LEAD =
 export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
 // Título do card da linha, também no rótulo do SVG e na imagem baixada.
-export const PIB_LINE_TITLE =
-  "Dinâmica temporal do PIB total e do PIB per capita";
+export const PIB_LINE_TITLE = "Dinâmica temporal do PIB e do PIB per capita";
 
 // Título do card do mapa, também no subtítulo da tela cheia e no rótulo.
-export const PIB_MAP_TITLE = "PIB total por município";
+export const PIB_MAP_TITLE = "PIB por município";
 
 // Trecho do ⓘ do VAB que o card destaca em negrito.
 export const PIB_VAB_TERM = "Valor Adicionado Bruto (VAB)";
@@ -22,23 +21,29 @@ export const PIB_VAB_TERM = "Valor Adicionado Bruto (VAB)";
 // negrito no card) separado do resto.
 export type PibInfoParagraph = { term?: string; rest: string };
 
-// O primeiro parágrafo é nosso: diz como o mapa MapLibre filtra o painel. Os
-// outros são da equipe de conteúdo, sem mudança.
+const PIB_DEFINITION: PibInfoParagraph = {
+  term: "Produto Interno Bruto (PIB)",
+  rest: " é a soma de todos os bens e serviços finais produzidos em um país, estado ou município durante um determinado período.",
+};
+
+const PIB_PER_CAPITA_DEFINITION: PibInfoParagraph = {
+  term: "PIB per capita",
+  rest: " indica a produção econômica média por habitante. É obtido dividindo-se o PIB total pela população do município. Em 2023, foi usada a população do Censo Demográfico de 2022, segundo nota do Instituto Brasileiro de Geografia e Estatística (IBGE).",
+};
+
+const PIB_CURRENT_PRICES_NOTE: PibInfoParagraph = {
+  rest: "Obs.: Os valores do PIB são apresentados a preços correntes de cada ano. A evolução nominal incorpora tanto variações na produção quanto nos preços.",
+};
+
 export const PIB_MAP_INFO: readonly PibInfoParagraph[] = [
-  {
-    rest: "Cada município recebe a cor da faixa do seu PIB total. Aproxime o mapa ou clique nele para filtrar o painel: o primeiro clique escolhe o estado e o seguinte, um município desse estado; clicar de novo no município escolhido volta ao estado, e clicar fora do estado escolhido volta à área de interesse. Passe o mouse sobre uma faixa da legenda para destacar os municípios dela no mapa.",
-  },
-  {
-    term: "Produto Interno Bruto (PIB)",
-    rest: " é a soma de todos os bens e serviços finais produzidos em um país, estado ou município durante um determinado período.",
-  },
-  {
-    term: "PIB per capita",
-    rest: " indica a produção econômica média por habitante. É obtido dividindo-se o PIB total pela população do município. Em 2023, foi usada a população do Censo Demográfico de 2022, segundo nota do Instituto Brasileiro de Geografia e Estatística (IBGE).",
-  },
-  {
-    rest: "Obs.: Os valores do PIB são apresentados a preços correntes de cada ano. A evolução nominal incorpora tanto variações na produção quanto nos preços.",
-  },
+  PIB_DEFINITION,
+  PIB_CURRENT_PRICES_NOTE,
+];
+
+export const PIB_BIG_NUMBERS_INFO: readonly PibInfoParagraph[] = [
+  PIB_DEFINITION,
+  PIB_PER_CAPITA_DEFINITION,
+  PIB_CURRENT_PRICES_NOTE,
 ];
 
 export const PIB_ATIVIDADE_INFO: readonly PibInfoParagraph[] = [
@@ -56,7 +61,7 @@ export const PIB_ATIVIDADE_UNIT = "Percentual do PIB (%)";
 
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
-  line: "PIB total no eixo da esquerda e PIB per capita no eixo da direita, cada um na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
+  line: "PIB no eixo da esquerda e PIB per capita no eixo da direita, cada um na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
   vab: `${PIB_VAB_TERM} por setor representa o quanto cada setor da economia contribui para a geração de riqueza, ou seja, para o Produto Interno Bruto (PIB).`,
 } as const;
 

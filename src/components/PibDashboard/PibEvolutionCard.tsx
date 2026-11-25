@@ -18,8 +18,8 @@ import {
 import { pibLineSubtitle } from "@/features/panels/pib/pibLineChart";
 
 /**
- * Card "Dinâmica temporal do PIB total e do PIB per capita": a série do território em linha, com o PIB
- * total e o per capita. `ano`: o ano pedido, destacado na hora.
+ * Card "Dinâmica temporal do PIB e do PIB per capita": a série do território em linha, com o PIB
+ * e o per capita. `ano`: o ano pedido, destacado na hora.
  *
  * @example <PibEvolutionCard data={panel} place="Nordeste" state="ok" ano={2021} onRetry={retry} onSelectYear={pickYear} />
  */

@@ -77,7 +77,7 @@ const BASE: MapPosterBase = {
 
 const PIB_INPUT: MapPosterCardInput = {
   name: "PIB",
-  subtitle: "PIB total por município",
+  subtitle: "PIB por município",
   source: "Fonte: IBGE · Data Nordeste",
   indicator: "pib",
   area: "nordeste",
@@ -133,7 +133,7 @@ describe("buildMapPoster", () => {
       icon: "usd",
       accent: "#e5640f",
       title: "Mapa do PIB - Nordeste",
-      subtitle: "PIB total por município - 2021",
+      subtitle: "PIB por município - 2021",
       chips: BASE.chips,
       source: "Fonte: IBGE · Data Nordeste",
       updatedAt: "11/2026",
@@ -157,7 +157,7 @@ describe("buildMapPoster", () => {
   it("leaves the year out of the subtitle when the panel has none", () => {
     const poster = buildMapPoster(BASE, { ...PIB_INPUT, ano: NO_YEAR });
 
-    expect(poster.subtitle).toBe("PIB total por município");
+    expect(poster.subtitle).toBe("PIB por município");
   });
 
   it("omits the date when the panel has none", () => {

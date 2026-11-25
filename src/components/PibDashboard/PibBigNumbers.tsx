@@ -1,5 +1,7 @@
 "use client";
 
+import { PibInfoParagraphs } from "@/components/PibDashboard/PibInfoParagraphs";
+import { PIB_BIG_NUMBERS_INFO } from "@/components/PibDashboard/pibTexts";
 import type { ProtoCardState } from "@/components/ProtoPanel/ProtoCard";
 import {
   ProtoStatCards,
@@ -33,6 +35,7 @@ const pibBigNumbers = (data: PibPanelData): ProtoStatCell[] => {
     caption,
     value: cell.value === null ? null : formatPibReais(cell.value),
     pill: cell.pill,
+    info: <PibInfoParagraphs paragraphs={PIB_BIG_NUMBERS_INFO} />,
   }));
 };
 

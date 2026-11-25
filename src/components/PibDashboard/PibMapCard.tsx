@@ -27,7 +27,7 @@ import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 // município, com o mapa montado: ele ficaria cortado ou folgado sem reenquadrar.
 const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 
-// O cartaz de download: "Mapa do PIB - {lugar}" e "PIB total por município - {ano}".
+// O cartaz de download: "Mapa do PIB - {lugar}" e "PIB por município - {ano}".
 const POSTER_TEXTS = {
   name: "PIB",
   subtitle: PIB_MAP_TITLE,
@@ -47,8 +47,8 @@ const usePibMapProps = (
 });
 
 /**
- * Card "PIB total por município": cada município na cor da faixa do seu PIB
- * total. Aproximar ou clicar no mapa troca Estado e Município no filtro do
+ * Card "PIB por município": cada município na cor da faixa do seu PIB.
+ * Aproximar ou clicar no mapa troca Estado e Município no filtro do
  * painel, pelo mesmo caminho da barra de filtros.
  *
  * @example <PibMapCard selection={filters} onFiltersChange={request} state="ok" onRetry={retry} />
@@ -65,7 +65,7 @@ export const PibMapCard = ({
   const card = usePanelMapCard(PIB_CARD_SOURCE);
   const [fullscreen, setFullscreen] = useState(false);
   const mapProps = usePibMapProps(selection, onFiltersChange);
-  const subtitle = `PIB total · ${areaLabel(selection.area)} · ${selection.ano}`;
+  const subtitle = `PIB · ${areaLabel(selection.area)} · ${selection.ano}`;
 
   return (
     <ProtoCard

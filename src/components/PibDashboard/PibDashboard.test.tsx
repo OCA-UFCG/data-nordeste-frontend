@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PibDashboard } from "@/components/PibDashboard/PibDashboard";
 import { PIB_CARD_SOURCE } from "@/components/PibDashboard/pibTexts";
@@ -103,6 +103,15 @@ describe("PibDashboard", () => {
     expect(yearSelect().scrollIntoView).toHaveBeenCalled();
     expect(document.activeElement).toBe(yearSelect());
     vi.useRealTimers();
+  });
+
+  it("gives each big number an ⓘ with the PIB definitions", () => {
+    render(<PibDashboard data={PANEL} catalogHref="/catalog" />);
+
+    const group = screen.getByRole("region", { name: "Números do PIB" });
+    expect(
+      within(group).getAllByRole("button", { name: "Sobre este gráfico" }),
+    ).toHaveLength(2);
   });
 
   it("lists the series years without VAB in the sector notice", () => {

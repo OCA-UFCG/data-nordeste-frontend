@@ -225,7 +225,7 @@ const yearShown = (
 const PIB_MAX_UNIT = 1e9;
 
 /**
- * Unidade de cada eixo do gráfico de linha: o PIB total em bilhões (ou
+ * Unidade de cada eixo do gráfico de linha: o PIB em bilhões (ou
  * menos, se a série não chega a R$ 1 bi) e o per capita sempre em R$ mil.
  *
  * @example pibLineUnits(serie).pib // { divisor: 1e9, label: "bilhões" }
@@ -241,7 +241,7 @@ export const pibLineUnits = (
 
 /**
  * Geometria do gráfico "Dinâmica temporal do PIB": duas linhas, cada uma com o
- * seu eixo (PIB total à esquerda, per capita à direita), com as medidas do
+ * seu eixo (PIB à esquerda, per capita à direita), com as medidas do
  * protótipo. `serie` precisa de ao menos um ano.
  *
  * `selectedIndex` -1: o ano filtrado não está na série, e nenhum ano fica

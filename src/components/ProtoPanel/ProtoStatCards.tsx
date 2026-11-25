@@ -1,10 +1,11 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useState } from "react";
 import {
   type ProtoCardState,
   ProtoSkeleton,
 } from "@/components/ProtoPanel/ProtoCard";
+import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import {
   ProtoCardMenu,
   type ProtoCardImage,
@@ -40,6 +41,7 @@ export type ProtoStatCell = {
   value: string | null;
   caption?: string;
   pill?: ProtoStatPill | null;
+  info?: ReactNode;
 };
 
 // `row`: a faixa de cinco indicadores do IDH. `hero`: o número de destaque do
@@ -69,11 +71,13 @@ const CellTop = ({
   label,
   iconClassName,
   image,
+  info,
 }: {
   icon: ProtoIconName;
   label: string;
   iconClassName: string;
   image?: ProtoCardImage;
+  info?: ReactNode;
 }) => (
   <div className="flex min-h-[34px] items-center gap-2.5">
     {/* cn: o painel pode trocar o canto do chip (o PIB usa um círculo). */}
@@ -88,7 +92,8 @@ const CellTop = ({
     <div className="min-w-0 text-[13px] leading-[17px] font-medium">
       {label}
     </div>
-    <div className="-mt-1.5 -mr-2 ml-auto flex-none self-start">
+    <div className="-mt-1.5 -mr-2 ml-auto flex flex-none items-center self-start">
+      {info ? <ProtoCardInfo title={label} text={info} /> : null}
       <ProtoCardMenu title={label} chart={image} />
     </div>
   </div>
@@ -162,6 +167,7 @@ const CellError = ({
       icon={cell.icon}
       label={cell.label}
       iconClassName={iconClassName}
+      info={cell.info}
     />
     <div className="mt-auto pt-2.5 text-sm leading-5 font-medium">
       Não foi possível carregar.{" "}
@@ -233,6 +239,7 @@ const Cell = ({
         label={cell.label}
         iconClassName={iconClassName}
         image={statCardImage(cell)}
+        info={cell.info}
       />
       <CellValue cell={cell} hero={hero} />
     </div>

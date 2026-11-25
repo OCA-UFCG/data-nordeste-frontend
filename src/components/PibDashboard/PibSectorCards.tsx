@@ -110,6 +110,7 @@ const SectorCard = ({
     title={title}
     subtitle={`${place} · ${data.filters.ano} · ${unit}`}
     kind="rank"
+    bodyClassName="flex flex-col"
     skeleton={SECTOR_SKELETON}
     actions={
       <>

@@ -823,11 +823,12 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
 - Deliberate deviations from the prototype:
   - The map is the shared MapLibre `PanelMap` (indicator "pib", municipal
     level, `.qgz` classes as delivered; `PibMapCard`), not the prototype's
-    state-only SVG. Title "PIB total por município" (`PIB_MAP_TITLE`, content
-    team review, PR #413). Its ⓘ (`PIB_MAP_INFO`, rendered by
-    `PibInfoParagraphs` with the terms in bold) opens with how the map filters
-    (zoom or click, first click picks the state and the next a municipality,
-    clicking it again goes up a level, legend hover highlights a class), then the content team's PIB and per capita definitions verbatim.
+    state-only SVG. Title "PIB por município" (`PIB_MAP_TITLE`, content
+    team review, PR #413; "total" dropped in the later standardization of
+    "PIB total" to "PIB"). Its ⓘ (`PIB_MAP_INFO`, rendered by
+    `PibInfoParagraphs` with the term in bold) keeps only the content team's
+    PIB definition and the "Obs." verbatim: the per capita definition lives in
+    the big numbers' ⓘ and how the map filters is no longer explained there.
     #413 also built a municipal map on the old canvas stack
     (`ProtoMunicipalMap`, `pibMunicipios`, a `GROUP BY cd_mun` query in
     `loadPibPanel`); the merge kept the MapLibre card and dropped those.
@@ -849,10 +850,10 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   - VAB card (content team review): subtitle unit with the label abbreviation
     ("R$ milhões (Mi)", `formatPibUnit`), footer "VAB total: R$ 304,20 Mi", and
     the ⓘ text `PIB_CARD_INFO.vab` with "Valor Adicionado Bruto (VAB)" in bold.
-  - Line card (content team review): title "Dinâmica temporal do PIB total e
+  - Line card (content team review): title "Dinâmica temporal do PIB e
     do PIB per capita" (`PIB_LINE_TITLE`, also the SVG label and the image
     title). Each Y axis has a title with its unit drawn inside the SVG, so the
-    download keeps it ("PIB total (R$ bilhões)" top left, "PIB per capita (R$
+    download keeps it ("PIB (R$ bilhões)" top left, "PIB per capita (R$
     mil)" top right), plain pt-BR ticks in that unit, and the axis line, ticks
     and title in the series color (text in the darker `*Ink` for AA). No
     series legend: the axis titles name the series. `point.pib` and `point.perCapita` are in
@@ -873,8 +874,9 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
     like any other state because the map is municipal; the old "no shape in
     the nine-state map" hint (`describeStatesOffMap`) is gone, and so is the
     helper.
-  - "Saiba mais" keeps the Power BI definitions (PIB, per capita, VAB,
-    participação) as the glossary; the prototype has only the paragraphs.
+  - "Saiba mais" has no glossary and no "Ler mais" (content team review): the
+    summary and the paragraphs are always visible (`alwaysOpen` on
+    `ProtoSaibaMais`; the IDH keeps its "Ler mais" with the glossary).
 - Image download exists for the line (SVG) and the map (from the
   MapLibre engine, with the active basemap's credit in the source); the sector bars are
   HTML.
@@ -901,6 +903,8 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   says "Primeiro ano da série" only on the first year; with a zero previous
   year there is no pill. The arrow colour uses the shared `yearChangeTone`
   (was `perfilChangeTone`).
+  Each of the two cells has an ⓘ (`ProtoStatCell.info`, `PIB_BIG_NUMBERS_INFO`)
+  with the content team's PIB and per capita definitions and the "Obs.".
 - Local setup: the tunnel command is not in any repository; ask the team.
   The Gamma database conventionally sits on local port 5434.
 
