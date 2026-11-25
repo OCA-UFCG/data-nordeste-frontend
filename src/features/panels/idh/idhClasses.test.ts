@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildIdhLegend,
   describeIdhClass,
   idhClassFor,
   rankIdhStates,
@@ -58,34 +57,5 @@ describe("describeIdhClass", () => {
 
   it("stays empty for the Northeast average", () => {
     expect(describeIdhClass(panelData())).toBeUndefined();
-  });
-});
-
-describe("buildIdhLegend", () => {
-  it("counts the states in each PNUD class", () => {
-    const legend = buildIdhLegend([
-      { code: "CE", name: "Ceará", uf: "CE", value: 0.734 },
-      { code: "MA", name: "Maranhão", uf: "MA", value: 0.676 },
-      { code: "RN", name: "Rio Grande do Norte", uf: "RN", value: 0.728 },
-    ]);
-
-    expect(legend.map(({ label, count }) => [label, count])).toEqual([
-      ["Muito baixo", 0],
-      ["Baixo", 0],
-      ["Médio", 1],
-      ["Alto", 2],
-      ["Muito alto", 0],
-    ]);
-    expect(legend[3].range).toBe("0,700–0,799");
-  });
-
-  it("derives every legend range from the map buckets", () => {
-    expect(buildIdhLegend([]).map(({ range }) => range)).toEqual([
-      "< 0,500",
-      "0,500–0,599",
-      "0,600–0,699",
-      "0,700–0,799",
-      "≥ 0,800",
-    ]);
   });
 });

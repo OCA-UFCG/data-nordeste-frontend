@@ -1,4 +1,7 @@
-import type { PointerEvent } from "react";
+import {
+  previewOnMouse,
+  type PreviewHandler,
+} from "@/components/Panel/pointer";
 import type {
   ChartPoint,
   ValueFormatter,
@@ -34,15 +37,6 @@ const BarRow = ({
     </span>
   </>
 );
-
-export type PreviewHandler = (label: string | null) => void;
-
-// Só com mouse: no toque, o pointerenter vem junto do toque e o clique já fixa.
-export const previewOnMouse =
-  (onPreview: PreviewHandler | undefined, label: string | null) =>
-  (event: PointerEvent<HTMLElement>) => {
-    if (event.pointerType === "mouse") onPreview?.(label);
-  };
 
 // Com `onSelect`, cada linha vira um botão de alternar (o filtro cruzado do
 // Power BI); `onPreview` recebe a linha sob o mouse e null ao sair da lista.

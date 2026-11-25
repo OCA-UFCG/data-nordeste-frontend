@@ -8,6 +8,7 @@ import {
 } from "@/components/AridezDashboard/AridezLayout";
 import { ARIDEZ_CARD_SOURCE } from "@/components/AridezDashboard/aridezTexts";
 import {
+  ARIDEZ_MACROTHEME,
   ARIDEZ_SOURCE,
   ARIDEZ_TITLE,
 } from "@/components/AridezDashboard/aridezTheme";
@@ -16,6 +17,10 @@ import {
   ProtoCardMenuContext,
   type ProtoCardMenuContextValue,
 } from "@/components/ProtoPanel/ProtoCardMenu";
+import {
+  buildPosterBase,
+  type PosterPanelInfo,
+} from "@/components/ProtoPanel/posterBase";
 import {
   BUTTON,
   PROTO_TEXT,
@@ -30,7 +35,6 @@ import { useProtoSticky } from "@/components/ProtoPanel/useProtoSticky";
 import { buildAridezAnalise } from "@/features/panels/aridez/aridezAnalise";
 import { resolveAridezCardStates } from "@/features/panels/aridez/aridezCardState";
 import {
-  ARIDEZ_MAX_PLACES,
   ARIDEZ_YEAR_RANGE,
   type AridezPanelData,
 } from "@/features/panels/aridez/aridezPanel";
@@ -45,8 +49,8 @@ import {
   describeTerritorialPlace,
   describeTerritorialShareChips,
   isDefaultTerritorialFilters,
-  selectOnlyTerritorialUf,
 } from "@/features/panels/territorialPlace";
+import { posterPlace } from "@/features/panels/mapPosterBuild";
 import { cn } from "@/lib/utils";
 
 const YEARS = listYears(ARIDEZ_YEAR_RANGE);
@@ -59,6 +63,7 @@ const useCardMenuValue = (
   data: AridezPanelData,
   pathname: string,
   catalogHref: string | null,
+  { macroTheme = ARIDEZ_MACROTHEME, updatedAt }: PosterPanelInfo,
 ): ProtoCardMenuContextValue =>
   useMemo(
     () => ({
@@ -68,8 +73,16 @@ const useCardMenuValue = (
       },
       catalogHref,
       imageSource: ARIDEZ_CARD_SOURCE,
+      poster: buildPosterBase({
+        macroTheme,
+        icon: "aridez",
+        tone: "aridez",
+        updatedAt,
+        place: posterPlace(data),
+        chips: describeTerritorialShareChips(data),
+      }),
     }),
-    [data, pathname, catalogHref],
+    [data, pathname, catalogHref, macroTheme, updatedAt],
   );
 
 // Texto do "Veja mais": o lugar curto vai na frase, o completo no rodapé.
@@ -90,13 +103,18 @@ const buildAnalise = (data: AridezPanelData) =>
  * cards mostram o erro com "Tentar de novo". Sem área classificada no
  * território e ano, mostra o aviso e o mapa.
  *
- * @example <AridezDashboard data={panel} catalogHref="/catalog?category=meio-ambiente" />
+ * `macroTheme` e `updatedAt` ("MM/AAAA") vão no cabeçalho e no rodapé da imagem
+ * baixada do mapa.
+ *
+ * @example <AridezDashboard data={panel} catalogHref="/catalog?category=meio-ambiente" macroTheme="Meio Ambiente" updatedAt="11/2026" />
  */
 export const AridezDashboard = ({
   data,
   failed = false,
   catalogHref,
-}: {
+  macroTheme,
+  updatedAt,
+}: PosterPanelInfo & {
   data: AridezPanelData;
   failed?: boolean;
   catalogHref: string | null;
@@ -105,7 +123,10 @@ export const AridezDashboard = ({
     usePanelNavigation(buildAridezSearch);
   const { retrying, retry } = useProtoRetry();
   const sticky = useProtoSticky();
-  const cardMenu = useCardMenuValue(data, pathname, catalogHref);
+  const cardMenu = useCardMenuValue(data, pathname, catalogHref, {
+    macroTheme,
+    updatedAt,
+  });
   const { pending, selection, request } = usePendingFilters(
     data.filters,
     applyFilters,
@@ -122,7 +143,7 @@ export const AridezDashboard = ({
     place: describeTerritorialPlace(data),
     states,
     onRetry: retry,
-    onSelectUf: (uf: string) => request(selectOnlyTerritorialUf(selection, uf)),
+    onFiltersChange: request,
   };
   const showEmpty = !failed && !data.areas;
 
@@ -133,7 +154,6 @@ export const AridezDashboard = ({
         brandInBar
         data={{ ...data, filters: selection }}
         years={YEARS}
-        maxPlaces={ARIDEZ_MAX_PLACES}
         onChange={request}
         onClear={reset}
         isDefault={isDefaultTerritorialFilters(selection, ARIDEZ_YEAR_RANGE)}

@@ -8,11 +8,15 @@ import {
   MenuStatus,
 } from "@/components/ProtoPanel/menu/CardMenuParts";
 import type { ChartImageFormat } from "@/features/panels/chartImage";
+import type { MapPosterData } from "@/features/panels/mapPosterData";
 import { type ChartImageSource, downloadChartImage } from "@/lib/chartImage";
 
 // `getSource`: o gráfico na tela, ou null se ele ainda não foi desenhado.
+// `getPoster`: o cartaz do mapa (cabeçalho, filtros, legenda e rodapé); sem ele
+// a imagem leva só título e fonte.
 export type CardImage = {
   getSource: () => ChartImageSource | null;
+  getPoster?: () => MapPosterData | null;
   source: string;
 };
 
@@ -80,7 +84,15 @@ const useChartDownload = (title: string, image: CardImage) => {
 
     if (!source) return setState("failed");
     setState("busy");
-    downloadChartImage(source, { format, title, source: image.source, framed })
+    const poster = framed ? image.getPoster?.() ?? undefined : undefined;
+
+    downloadChartImage(source, {
+      format,
+      title,
+      source: image.source,
+      framed,
+      poster,
+    })
       .then(() => setState("done"))
       .catch(() => setState("failed"));
   };
@@ -119,7 +131,9 @@ export const CardImageScreen = ({
           onChange={(event) => setFramed(event.target.checked)}
           className="size-[18px] accent-green-800"
         />
-        Incluir título e fonte
+        {image.getPoster
+          ? "Incluir cabeçalho e rodapé"
+          : "Incluir título e fonte"}
       </label>
       <button
         type="button"

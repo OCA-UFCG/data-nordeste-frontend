@@ -27,7 +27,7 @@ import {
   parseIdhFilters,
   type IdhFilters,
 } from "@/features/panels/idh/idhPanel";
-import { formatIdhUpdatedAt } from "@/features/panels/idh/idhUpdatedAt";
+import { formatPanelUpdatedAt } from "@/features/panels/panelUpdatedAt";
 import {
   NO_IDH_YEARS,
   tryLoadIdhYearRange,
@@ -99,8 +99,9 @@ export default async function IdhDemoPage({
       <IdhDashboard
         data={panel ?? emptyIdhPanel(filters, years)}
         failed={!panel}
-        updatedAt={formatIdhUpdatedAt(content?.panel.date)}
+        updatedAt={formatPanelUpdatedAt(content?.panel.date)}
         catalogHref={getCatalogHref(macroTheme)}
+        macroTheme={macroTheme}
       />
       {content ? <PanelDescriptionSection panel={content.panel} /> : null}
       <ProtoSaibaMais

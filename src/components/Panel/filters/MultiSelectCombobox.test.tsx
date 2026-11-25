@@ -25,6 +25,7 @@ const renderCombobox = (
   values: string[] = [],
   onChange = vi.fn(),
   max?: number,
+  single?: boolean,
 ) => {
   render(
     <MultiSelectCombobox
@@ -35,6 +36,7 @@ const renderCombobox = (
       options={OPTIONS}
       onChange={onChange}
       max={max}
+      single={single}
     />,
   );
 
@@ -46,6 +48,10 @@ const open = () =>
 
 const check = (name: string) =>
   fireEvent.click(screen.getByRole("checkbox", { name }));
+
+// Escolha única: as opções são botões, sem checkbox.
+const pick = (name: string) =>
+  fireEvent.click(screen.getByRole("button", { name }));
 
 describe("MultiSelectCombobox", () => {
   afterEach(() => vi.useRealTimers());
@@ -167,5 +173,52 @@ describe("MultiSelectCombobox", () => {
       screen.getByRole("checkbox", { name: "Caruaru (PE)" }),
     ).toBeEnabled();
     expect(screen.queryByText(/Máximo de/)).not.toBeInTheDocument();
+  });
+
+  describe("single choice", () => {
+    it("replaces the selection when another option is picked", () => {
+      vi.useFakeTimers();
+      const onChange = renderCombobox(["2611606"], vi.fn(), undefined, true);
+
+      open();
+      pick("João Pessoa (PB)");
+      act(() => vi.advanceTimersByTime(500));
+
+      expect(onChange).toHaveBeenCalledExactlyOnceWith(["2507507"]);
+    });
+
+    it("clears the selection when the chosen option is clicked again", () => {
+      vi.useFakeTimers();
+      const onChange = renderCombobox(["2611606"], vi.fn(), undefined, true);
+
+      open();
+      pick("Recife (PE)");
+      act(() => vi.advanceTimersByTime(500));
+
+      expect(onChange).toHaveBeenCalledExactlyOnceWith([]);
+    });
+
+    it("never locks the other options, even with a maximum of one", () => {
+      renderCombobox(["2611606"], vi.fn(), 1, true);
+      open();
+
+      expect(
+        screen.getByRole("button", { name: "Caruaru (PE)" }),
+      ).toBeEnabled();
+      expect(screen.queryByRole("status")).toBeEmptyDOMElement();
+    });
+
+    it("shows no checkbox and marks only the chosen option", () => {
+      renderCombobox(["2611606"], vi.fn(), undefined, true);
+      open();
+
+      expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Recife (PE)" }),
+      ).toHaveAttribute("aria-pressed", "true");
+      expect(
+        screen.getByRole("button", { name: "João Pessoa (PB)" }),
+      ).toHaveAttribute("aria-pressed", "false");
+    });
   });
 });

@@ -58,11 +58,11 @@ type TerritorialSelectsProps = {
   municipios: MunicipalityOption[];
   onChange: (next: TerritorialFilters) => void;
 
-  // Estado e Município com busca e várias escolhas (PIB). Sem ele, selects nativos.
+  // Estado e Município com busca (PIB). Sem ele, selects nativos.
   multiple?: boolean;
 
-  // Quantos estados e quantos municípios cabem na multisseleção (o limite do servidor).
-  maxPlaces?: number;
+  // Com `multiple`: uma escolha só, com o mesmo visual (versões Power BI).
+  single?: boolean;
 };
 
 export type PlaceFilterProps = {
@@ -70,6 +70,9 @@ export type PlaceFilterProps = {
   label: string;
   plural: string;
   multiple?: boolean;
+
+  // Com `multiple`: a multisseleção aceita só uma opção (painéis do protótipo).
+  single?: boolean;
   max?: number;
   values?: string[];
   options: SelectOption[];
@@ -113,7 +116,7 @@ export const TerritorialSelects = ({
   municipios,
   onChange,
   multiple,
-  maxPlaces,
+  single,
 }: TerritorialSelectsProps) => {
   const id = useId();
   const { ano, area } = filters;
@@ -137,17 +140,19 @@ export const TerritorialSelects = ({
         options={[...TERRITORIAL_AREAS]}
         onChange={(value) => onChange({ ano, area: value as TerritorialArea })}
       />
-      {/* Select único troca a UF e zera o município; na multisseleção os municípios
-          ficam e o servidor descarta os que saíram das UFs escolhidas. */}
+      {/* Escolha única (select nativo ou `single`) troca a UF e zera o município;
+          na multisseleção os municípios ficam e o servidor descarta os que saíram
+          das UFs escolhidas. */}
       <PlaceFilter
         id={`${id}-uf`}
         label="Estado"
         plural="estados"
         multiple={multiple}
+        single={single}
         values={filters.uf}
         options={ufs.map((uf) => ({ value: uf.sigla, label: uf.nome }))}
         onChange={(uf) =>
-          onChange(multiple ? { ...filters, uf } : { ano, area, uf })
+          onChange(multiple && !single ? { ...filters, uf } : { ano, area, uf })
         }
       />
       <PlaceFilter
@@ -155,7 +160,7 @@ export const TerritorialSelects = ({
         label="Município"
         plural="municípios"
         multiple={multiple}
-        max={maxPlaces}
+        single={single}
         values={filters.mun}
         options={municipios.map((mun) => ({
           value: mun.cdMun,

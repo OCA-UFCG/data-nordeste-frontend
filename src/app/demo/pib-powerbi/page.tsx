@@ -11,7 +11,6 @@ import {
 import { buildMetadata } from "@/config/seo";
 import {
   loadPibPanel,
-  PIB_MAX_PLACES,
   PIB_YEAR_RANGE,
 } from "@/features/panels/pib/pibPowerBiPanel";
 import { loadPibPanelContent } from "@/features/panels/pib/pibContent";
@@ -71,11 +70,7 @@ export default async function PibPowerBiDemoPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const filters = parseTerritorialFilters(
-    await searchParams,
-    PIB_YEAR_RANGE,
-    PIB_MAX_PLACES,
-  );
+  const filters = parseTerritorialFilters(await searchParams, PIB_YEAR_RANGE);
   const [panel, content] = await Promise.all([
     loadPanel(filters),
     loadPibPanelContent(),
