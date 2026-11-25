@@ -271,7 +271,7 @@ export const AridezClassCard = ({
     <ProtoCard
       {...status}
       title={TITLE}
-      subtitle={`${place} · ${data.filters.ano} · área por classe`}
+      subtitle={`${place} · ${data.filters.ano} · área por classe de índice de aridez`}
       kind="line"
       bodyClassName="flex flex-col"
       actions={

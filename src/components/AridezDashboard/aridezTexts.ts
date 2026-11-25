@@ -9,9 +9,9 @@ export const ARIDEZ_LEAD =
 export const ARIDEZ_CARD_SOURCE =
   "Fonte: XAVIER et al. (2019) · Observatório da Caatinga e Desertificação";
 
-export const ARIDEZ_MAP_TITLE = "Índice de aridez por município";
+export const ARIDEZ_MAP_TITLE = "Índice de aridez";
 
-export const ARIDEZ_MAP_MOBILE_TITLE = "Aridez por município";
+export const ARIDEZ_MAP_MOBILE_TITLE = "Índice de aridez";
 
 export const ARIDEZ_CARD_INFO = {
   classes:

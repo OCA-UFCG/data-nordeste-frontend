@@ -65,7 +65,7 @@ describe("buildAridezAnalise", () => {
 
   it("writes the filters in the footnote and is null without classified area", () => {
     expect(buildAridezAnalise(input)?.footnote).toBe(
-      "Texto gerado conforme os filtros: Nordeste · Pernambuco · 2021.",
+      "Texto gerado conforme os filtros aplicados: Nordeste · Pernambuco · 2021.",
     );
     expect(
       buildAridezAnalise({ ...input, areas: EMPTY_ARIDEZ_AREAS }),

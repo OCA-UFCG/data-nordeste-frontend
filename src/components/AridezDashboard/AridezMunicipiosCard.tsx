@@ -178,7 +178,7 @@ export const AridezMunicipiosCard = ({
       {...status}
       title={TITLE}
       mobileTitle={MOBILE_TITLE}
-      subtitle={`${place} · ${data.filters.ano} · % da área do município`}
+      subtitle={`${place} · ${data.filters.ano} · percentual da área por classe de índice de aridez`}
       kind="rank"
       actions={
         <>

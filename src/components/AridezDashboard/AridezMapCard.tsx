@@ -40,7 +40,7 @@ const MAP_BOX_CLASS = "h-[480px] rounded-[8px] max-[1000px]:h-[400px]";
 // O cartaz de download: "Mapa do Índice de aridez - {lugar}".
 const POSTER_TEXTS = {
   name: "Índice de aridez",
-  subtitle: "Classe de aridez por município",
+  subtitle: "Índice de aridez",
   source: ARIDEZ_CARD_SOURCE,
 };
 
@@ -66,7 +66,7 @@ const useAridezMapProps = (
     indicator: "aridez",
     deepest: "municipio",
     formatValue: formatSharePercent,
-    valueLabel: "Área suscetível",
+    valueLabel: "Percentual de área suscetível à desertificação",
     label: ARIDEZ_MAP_TITLE,
     values,
     stateValues,
@@ -97,7 +97,7 @@ export const AridezMapCard = ({
   const card = usePanelMapCard(ARIDEZ_CARD_SOURCE);
   const [fullscreen, setFullscreen] = useState(false);
   const mapProps = useAridezMapProps(data, selection, onFiltersChange);
-  const subtitle = `Classe de aridez · ${areaLabel(selection.area)} · ${selection.ano}`;
+  const subtitle = `Índice de aridez · ${areaLabel(selection.area)} · ${selection.ano}`;
 
   return (
     <ProtoCard
