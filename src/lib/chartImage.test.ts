@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { downloadChartImage } from "@/lib/chartImage";
+import { buildStatImage } from "@/features/panels/statImage";
+import { downloadChartImage, svgMarkupSource } from "@/lib/chartImage";
 
 class SvgChartFake {
   readonly getDataURL = () => "data:image/svg+xml;base64,AAA";
@@ -54,5 +55,33 @@ describe("downloadChartImage", () => {
     );
 
     expect(decodeURIComponent(download.anchor.href)).not.toContain("<text");
+  });
+});
+
+describe("svgMarkupSource", () => {
+  it("downloads a big number, drawn as SVG, framed by its label", async () => {
+    const download = new AnchorDownloadFake();
+    const markup = buildStatImage({ value: "54,6 mi", caption: "em 2022" });
+
+    await downloadChartImage(
+      svgMarkupSource(markup),
+      {
+        format: "svg",
+        title: "População residente",
+        source: "Fonte: IBGE",
+        framed: true,
+      },
+      download.deps,
+    );
+    const svg = decodeURIComponent(download.anchor.href.split(",")[1]);
+
+    expect(download.anchor.download).toBe("populacao-residente.svg");
+    expect(svg).toContain("População residente");
+    expect(svg).toContain(`width="${markup.width}"`);
+
+    // O número vai como imagem interna: o `href` tem o SVG dele codificado.
+    const inner = /href="([^"]+)"/.exec(svg)?.[1] ?? "";
+
+    expect(decodeURIComponent(inner)).toContain(">54,6 mi</text>");
   });
 });

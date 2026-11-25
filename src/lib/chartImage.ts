@@ -7,6 +7,7 @@ import {
   type ChartImageFrame,
   type ChartImageLayout,
 } from "@/features/panels/chartImage";
+import type { StatImageMarkup } from "@/features/panels/statImage";
 import { browserDownloadDeps, downloadFile } from "@/lib/download";
 
 // O que a exportação precisa do gráfico: a imagem (data URL) e o tamanho na
@@ -116,6 +117,18 @@ const renderPng = async (chartUrl: string, frame: ChartImageFrame) => {
 
 const svgDataUrl = (svg: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
+/**
+ * Fonte de imagem a partir de um SVG montado em texto, para cards que na tela
+ * são HTML (os indicadores, via buildStatImage).
+ *
+ * @example await downloadChartImage(svgMarkupSource(buildStatImage(cell)), options)
+ */
+export const svgMarkupSource = (markup: StatImageMarkup): ChartImageSource => ({
+  getWidth: () => markup.width,
+  getHeight: () => markup.height,
+  getDataURL: () => svgDataUrl(markup.svg),
+});
 
 /**
  * Baixa a imagem de um gráfico, com título e fonte opcionais, em PNG (o SVG

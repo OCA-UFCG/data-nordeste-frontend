@@ -3,7 +3,7 @@
 import { createContext, useContext, useRef } from "react";
 import { CardMenu } from "@/components/ProtoPanel/menu/CardMenu";
 import type { CardShare } from "@/components/ProtoPanel/menu/CardShareScreen";
-import { svgImageSource } from "@/lib/chartImage";
+import { type ChartImageSource, svgImageSource } from "@/lib/chartImage";
 
 // O que é igual em todos os cards do painel: o link com os filtros, o catálogo
 // do macrotema e a fonte que vai na imagem baixada. A fonte é do painel (IDH,
@@ -14,6 +14,10 @@ export type ProtoCardMenuContextValue = {
   imageSource: string;
   bareSheet?: boolean;
 };
+
+// De onde o "Baixar imagem" tira o desenho: o `<svg>` do gráfico
+// (useSvgChart) ou um SVG montado a partir dos dados (os indicadores).
+export type ProtoCardImage = { getSource: () => ChartImageSource | null };
 
 export const ProtoCardMenuContext =
   createContext<ProtoCardMenuContextValue | null>(null);
@@ -36,7 +40,8 @@ export const useSvgChart = () => {
 /**
  * Menu ⋯ de um card do painel. Com `chart`, oferece baixar a imagem;
  * os cards em HTML (ranking, barras de sexo e cor) só compartilham e abrem o
- * catálogo. `catalog={false}`: o dado não tem página no catálogo (Gini, no
+ * catálogo. Os indicadores (big numbers) também são HTML, mas passam um
+ * `chart` que redesenha o número em SVG (buildStatImage). `catalog={false}`: o dado não tem página no catálogo (Gini, no
  * protótipo).
  *
  * @example <ProtoCardMenu title="Índice de Gini" catalog={false} />
@@ -47,7 +52,7 @@ export const ProtoCardMenu = ({
   catalog = true,
 }: {
   title: string;
-  chart?: ReturnType<typeof useSvgChart>;
+  chart?: ProtoCardImage;
   catalog?: boolean;
 }) => {
   const context = useContext(ProtoCardMenuContext);
