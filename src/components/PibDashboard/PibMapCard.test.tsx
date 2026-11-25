@@ -112,6 +112,17 @@ describe("PibMapCard", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
+  it("opens the fullscreen map on the card's active basemap", () => {
+    renderCard();
+    act(() => lastProps().onBasemapChange?.("satelite"));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Abrir mapa em tela cheia" }),
+    );
+
+    const fullscreen = panelMapRenders.filter((props) => !props.onEngine);
+    expect(fullscreen.at(-1)?.basemap).toBe("satelite");
+  });
+
   it("renders the municipal PIB map for the requested area, year and selection", () => {
     renderCard();
 

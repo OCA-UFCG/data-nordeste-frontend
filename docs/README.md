@@ -277,7 +277,13 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   `gdal_translate -r nearest` repeats each 0.1° pixel on a 0.01° grid (same
   extent, so `manifest.aridez.bounds` holds; no class value changes), then
   `gdalwarp -cutline` with that area's polygon leaves the outside as nodata
-  (transparent after `gdaldem color-relief`). The cutline is the unsimplified
+  (transparent after `gdaldem color-relief`). The same `gdalwarp` reprojects to
+  Web Mercator (`-t_srs EPSG:3857 -te <bounds> -te_srs EPSG:4674 -ts`): the
+  MapLibre `image` source only takes the 4 corners in lon/lat and stretches the
+  image linearly in Mercator, so a lat/lon PNG drew up to ~17 km (0.15°) south
+  of its real place in the middle of the Nordeste (~10 km in RN). `-te` keeps
+  the exact extent (the manifest bounds still hold) and `-ts` instead of `-tr`
+  stops GDAL from rounding the edge. The cutline is the unsimplified
   area polygons in a temp file: the simplified `areas.geojson` has degenerate
   rings that gdalwarp rejects ("Cutline polygon is invalid"). Without the
   finer grid the edge would follow the 0.1° source pixels, since gdalwarp
@@ -526,7 +532,12 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   (`usePanelMapCard` + `panelMapImageSource`: "© OpenStreetMap contributors"
   for the Padrão, "Esri, Maxar, Earthstar Geographics" for the satellite); on
   screen, card and fullscreen credit it in MapLibre's attribution control
-  (the fullscreen footer has no source since PR #413). The OpenStreetMap tile
+  (the fullscreen footer has no source since PR #413). The fullscreen map is
+  a new `PanelMap` on each opening. Card and fullscreen share one basemap,
+  held by `usePanelMapCard` and passed as the controlled `basemap` prop
+  (`mapBinding` and `fullscreenBinding`): fullscreen opens on the card's
+  basemap (the engine is created on it, so the Padrão never flashes) and a
+  switch made in fullscreen is still there when it closes. The OpenStreetMap tile
   server is a shared volunteer service under the
   [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/):
   fair use only, and heavy traffic would need another tile provider. The
