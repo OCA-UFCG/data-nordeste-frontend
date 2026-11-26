@@ -259,7 +259,7 @@ const CAROUSEL_LAYOUT = {
       breakpoints: { "(min-width: 1100px)": { active: false } },
     },
     track:
-      "-ml-3 min-[1100px]:ml-0 min-[1100px]:grid min-[1100px]:grid-cols-5 min-[1100px]:gap-4",
+      "-ml-3 min-[1100px]:ml-0 min-[1100px]:grid min-[1100px]:grid-cols-5 min-[1100px]:gap-6",
     item: "basis-1/3 pl-3 max-[700px]:basis-full min-[1100px]:basis-auto min-[1100px]:pl-0",
     controls: "min-[1100px]:hidden",
   },
@@ -269,7 +269,7 @@ const CAROUSEL_LAYOUT = {
       breakpoints: { "(min-width: 701px)": { active: false } },
     },
     track:
-      "-ml-3 min-[701px]:ml-0 min-[701px]:grid min-[701px]:grid-cols-2 min-[701px]:gap-4",
+      "-ml-3 min-[701px]:ml-0 min-[701px]:grid min-[701px]:grid-cols-2 min-[701px]:gap-6",
     item: "basis-full pl-3 min-[701px]:basis-auto min-[701px]:pl-0",
     controls: "min-[701px]:hidden",
   },

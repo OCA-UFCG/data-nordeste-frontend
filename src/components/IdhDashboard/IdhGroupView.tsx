@@ -11,6 +11,7 @@ import {
 } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
 import { ProtoCardMenu } from "@/components/ProtoPanel/ProtoCardMenu";
+import { PROTO_GAP } from "@/components/ProtoPanel/protoStyles";
 import { formatNumber } from "@/features/panels/format";
 import {
   compareIdhGroups,
@@ -207,7 +208,7 @@ export const IdhGroupView = ({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 max-[760px]:grid-cols-1">
+    <div className={`grid grid-cols-2 max-[760px]:grid-cols-1 ${PROTO_GAP}`}>
       {METRIC_CARDS.map((card) => (
         <GroupCard
           key={card.metric}

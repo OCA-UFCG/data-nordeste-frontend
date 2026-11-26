@@ -7,7 +7,7 @@ import {
   PibVabCard,
 } from "@/components/PibDashboard/PibSectorCards";
 import { ProtoCardNotice } from "@/components/ProtoPanel/ProtoCard";
-import { CARD_SHADOW } from "@/components/ProtoPanel/protoStyles";
+import { CARD_SHADOW, PROTO_GAP } from "@/components/ProtoPanel/protoStyles";
 import type { PibCardStates } from "@/features/panels/pib/pibCardState";
 import { PIB_YEAR_RANGE } from "@/features/panels/pib/pibPanel";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
@@ -33,10 +33,8 @@ export type PibLayoutProps = Omit<PibCardProps, "state"> & {
 // `.pgrid` do protótipo: o mapa e, ao lado, a coluna dos dois cards de setor,
 // que dividem a altura. O mapa tem altura fixa (ver `PibMapCard`). Abaixo de
 // 1000 px vira uma coluna só.
-const BOTTOM_GRID =
-  "grid grid-cols-2 items-stretch gap-6 max-[1000px]:grid-cols-1 max-[1000px]:gap-4";
-const SECTOR_COLUMN =
-  "flex min-w-0 flex-col gap-6 max-[1000px]:gap-4 [&>*]:flex-1";
+const BOTTOM_GRID = `grid grid-cols-2 items-stretch max-[1000px]:grid-cols-1 ${PROTO_GAP}`;
+const SECTOR_COLUMN = `flex min-w-0 flex-col [&>*]:flex-1 ${PROTO_GAP}`;
 
 /**
  * Grade do painel do PIB (`.pib-stack` do protótipo): números de destaque, a
@@ -53,7 +51,7 @@ export const PibGrids = ({
   onPickYear,
   ...card
 }: Omit<PibLayoutProps, "onReset">) => (
-  <div className="flex flex-col gap-4">
+  <div className={`flex flex-col ${PROTO_GAP}`}>
     <PibBigNumbers
       data={card.data}
       state={states.bigNumbers}
@@ -103,7 +101,7 @@ export const PibEmptyLayout = ({
   onReset,
   ...card
 }: PibLayoutProps) => (
-  <div className="flex flex-col gap-4">
+  <div className={`flex flex-col ${PROTO_GAP}`}>
     <article
       className={`flex min-w-0 flex-col rounded-[8px] border border-grey-300 bg-white px-5 py-4 ${CARD_SHADOW} max-[700px]:p-4`}
     >

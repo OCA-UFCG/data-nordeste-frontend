@@ -15,6 +15,7 @@ import {
   ProtoCardMenu,
   useSvgChart,
 } from "@/components/ProtoPanel/ProtoCardMenu";
+import { PROTO_GAP } from "@/components/ProtoPanel/protoStyles";
 import type { IdhCardStates } from "@/features/panels/idh/idhCardState";
 import { rankIdhStates } from "@/features/panels/idh/idhClasses";
 import {
@@ -121,7 +122,7 @@ export const IdhOverview = ({
   onFiltersChange,
   ...props
 }: OverviewProps) => (
-  <div className="flex flex-col gap-4">
+  <div className={`flex flex-col ${PROTO_GAP}`}>
     <IdhBigNumbers
       data={props.data}
       state={states.bigNumbers}
@@ -132,7 +133,9 @@ export const IdhOverview = ({
       state={states.evolution}
       onSelectYear={onSelectYear}
     />
-    <div className="grid grid-cols-2 items-stretch gap-6 max-[1000px]:grid-cols-1 max-[1000px]:gap-4">
+    <div
+      className={`grid grid-cols-2 items-stretch max-[1000px]:grid-cols-1 ${PROTO_GAP}`}
+    >
       <IdhMapCard
         {...props}
         state={states.map}

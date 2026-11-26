@@ -81,6 +81,10 @@ export const PROTO_INK_STRONG = "#1b1a1c";
 export const FOCUS_RING =
   "focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-(--proto-accent)";
 
+// Espaço entre os cards do painel: 24 px fixo, 16 px só no celular (revisão
+// de 26/11/2026; antes cada painel misturava 16 e 24 px).
+export const PROTO_GAP = "gap-6 max-[700px]:gap-4";
+
 // `.wrap`: 80 px de margem, 32 px até 1100 px e 16 px no celular.
 export const WRAP =
   "mx-auto w-full max-w-[1440px] px-20 max-[1100px]:px-8 max-[700px]:px-4";

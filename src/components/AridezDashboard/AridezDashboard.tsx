@@ -163,13 +163,16 @@ export const AridezDashboard = ({
       />
       <div
         style={protoToneStyle("aridez")}
-        className={`${PROTO_TEXT} mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-20 pt-8 pb-10 max-[1100px]:px-8 max-[1100px]:pt-6 max-[700px]:px-4 max-[700px]:pt-5 max-[700px]:pb-8`}
+        className={`${PROTO_TEXT} mx-auto flex w-full max-w-[1440px] px-20 pt-8 pb-10 max-[1100px]:px-8 max-[1100px]:pt-6 max-[700px]:px-4 max-[700px]:pt-5 max-[700px]:pb-8`}
       >
+        {/* Mesmo espaço até os cards que no Perfil: 24 px, 16 no celular. */}
         {showEmpty ? null : (
-          <ProtoVejaMais
-            analysis={buildAnalise(data)}
-            state={states.bigNumbers}
-          />
+          <div className="mb-6 max-[700px]:mb-4">
+            <ProtoVejaMais
+              analysis={buildAnalise(data)}
+              state={states.bigNumbers}
+            />
+          </div>
         )}
         <ProtoCardMenuContext.Provider value={cardMenu}>
           {showEmpty ? (
@@ -178,10 +181,10 @@ export const AridezDashboard = ({
             <AridezGrids {...layout} />
           )}
         </ProtoCardMenuContext.Provider>
-        <p className="text-xs leading-4 text-grey-1100">{ARIDEZ_SOURCE}</p>
+        <p className="mt-4 text-xs leading-4 text-grey-1100">{ARIDEZ_SOURCE}</p>
         <Link
           href={catalogHref ?? "/catalog"}
-          className={cn(BUTTON, "flex w-full")}
+          className={cn(BUTTON, "mt-4 flex w-full")}
         >
           Acessar o catálogo de dados
         </Link>
