@@ -11,12 +11,12 @@ vi.mock("next/navigation", () => ({
 describe("DemoLayout", () => {
   afterEach(() => vi.unstubAllEnvs());
 
-  it("responde 404 sem a flag (beta e prod)", () => {
+  it("responde 404 sem a flag (prod)", () => {
     vi.stubEnv("DEMOS_HABILITADAS", "");
     expect(() => DemoLayout({ children: "demo" })).toThrow("notFound");
   });
 
-  it("mostra a demo com a flag (gamma)", () => {
+  it("mostra a demo com a flag (gamma e beta)", () => {
     vi.stubEnv("DEMOS_HABILITADAS", "1");
     expect(DemoLayout({ children: "demo" })).toBe("demo");
   });
