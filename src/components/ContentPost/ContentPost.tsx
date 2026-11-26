@@ -7,7 +7,7 @@ import { Icon } from "@/components/Icon/Icon";
 
 const CARD_CLASS_NAME =
   "group flex flex-col overflow-hidden rounded-lg w-full bg-white border border-[#EFEFEF] shadow-md h-full";
-const LINKED_CARD_CLASS_NAME = `${CARD_CLASS_NAME} hover:bg-grey-100 hover:border-grey-300 cursor-pointer transition duration-300`;
+export const LINKED_CARD_CLASS_NAME = `${CARD_CLASS_NAME} hover:bg-grey-100 hover:border-grey-300 cursor-pointer transition duration-300`;
 
 const ContentPost = ({ content }: { content: IPublication }) => {
   const destination = resolvePostHref(content);
@@ -35,12 +35,15 @@ const ContentPost = ({ content }: { content: IPublication }) => {
   );
 };
 
-const PostCardBody = ({
+/** `label` replaces the post type and date in the grey strip (e.g. "Painel experimental"). */
+export const PostCardBody = ({
   content,
   actionLabel,
+  label,
 }: {
   content: IPublication;
   actionLabel: string;
+  label?: string;
 }) => {
   const { title, thumb, date, type } = content;
   const formattedDate = date ? new Date(date).toLocaleDateString("pt-BR") : "";
@@ -60,11 +63,13 @@ const PostCardBody = ({
       <div className="flex flex-col grow-1 justify-between">
         <div className="flex flex-row justify-between items-center bg-[#DCDBDC] px-4 py-1">
           <p className="font-semibold text-xs text-[#0F172A] leading-4">
-            {POST_TYPE_LABELS[type]}
+            {label ?? POST_TYPE_LABELS[type]}
           </p>
-          <p className="text-[#595557] text-[10px] leading-3">
-            {formattedDate}
-          </p>
+          {!label && (
+            <p className="text-[#595557] text-[10px] leading-3">
+              {formattedDate}
+            </p>
+          )}
         </div>
 
         <div className="py-3 px-4 flex gap-4 justify-between h-full items-center box-border bg-[#F8F7F8]">

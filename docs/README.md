@@ -600,6 +600,25 @@ Fixes from the October 2026 responsiveness study (P1 and P2).
   back (`-mx-2 px-2`). Without that, the first and last cards sat on the
   `overflow-hidden` edge and lost their shadow.
 
+## Experimental Catalog (`/demo`)
+
+- **What:** `src/app/demo/page.tsx` lists the demos under "Experimental"
+  (header button after "Relatório"). Today: PIB, IDH, Perfil demográfico and
+  Aridez; FNE and the `-powerbi` variants stay out of the catalog.
+- **Gate:** the page sits under `src/app/demo/layout.tsx`, so it answers 404
+  without `DEMOS_HABILITADAS=1`. The header button is a client component and
+  cannot read that runtime variable; it shows when `NEXT_PUBLIC_APP_ENV` is
+  `beta` (gamma and beta builds), in `src/features/navigation/experimentalLink.ts`.
+  Turning the demos on in an environment means both together.
+- **Cards:** the `ContentPost` card body (`PostCardBody` with
+  `label="Painel experimental"`, no date) over the Contentful post of the
+  original panel, found by its `link` (`/data-panel/<id>`) in
+  `src/features/experimental/panels.ts`. The card links to `/demo/<route>` in
+  the same tab. A demo whose post is missing is left out; a Contentful failure
+  shows the page with no cards and logs `experimental_panels_contentful_failed`.
+- **Header width:** with the extra item, the desktop menu at 1440 px ends about
+  60 px past the content's right edge (still inside the viewport).
+
 ## FNE Panel Demo (`/demo/fne`)
 
 - Rebuilds the ArcGIS Experience of the `fundo_financiamento` panel (the only

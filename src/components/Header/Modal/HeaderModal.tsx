@@ -24,11 +24,14 @@ import { isHrefActive, sortContentByDesiredOrder } from "@/utils/functions";
 import { cn } from "@/lib/utils";
 import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { withReportsNavigation } from "@/features/navigation/reportLink";
+import { withExperimentalNavigation } from "@/features/navigation/experimentalLink";
 
 const HeaderModal = ({ content }: { content: ISection[] }) => {
   const pathname = usePathname();
   const category = useSearchParams().get("category");
-  const navigationSections = withReportsNavigation(content);
+  const navigationSections = withExperimentalNavigation(
+    withReportsNavigation(content),
+  );
   const [open, setOpen] = useState(false);
 
   return (
