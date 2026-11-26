@@ -7,7 +7,7 @@ import {
 } from "@/components/PibDashboard/PibLineChart";
 import {
   PIB_CARD_INFO,
-  PIB_LINE_TITLE,
+  PIB_LINE_TITLES,
 } from "@/components/PibDashboard/pibTexts";
 import { ProtoCard } from "@/components/ProtoPanel/ProtoCard";
 import { ProtoCardInfo } from "@/components/ProtoPanel/ProtoCardInfo";
@@ -15,27 +15,42 @@ import {
   ProtoCardMenu,
   useSvgChart,
 } from "@/components/ProtoPanel/ProtoCardMenu";
-import { pibLineSubtitle } from "@/features/panels/pib/pibLineChart";
+import {
+  type PibLineKey,
+  pibLineSubtitle,
+} from "@/features/panels/pib/pibLineChart";
+
+const INFO: Record<PibLineKey, string> = {
+  pib: PIB_CARD_INFO.linePib,
+  perCapita: PIB_CARD_INFO.linePerCapita,
+};
 
 /**
- * Card "Dinâmica temporal do PIB total e do PIB per capita": a série do território em linha, com o PIB
- * total e o per capita. `ano`: o ano pedido, destacado na hora.
+ * Card de linha de uma série do PIB (`seriesKey`): "Dinâmica temporal do PIB
+ * total" ou "do PIB per capita", cada um com o seu eixo. `ano`: o ano
+ * pedido, destacado na hora.
  *
- * @example <PibEvolutionCard data={panel} place="Nordeste" state="ok" ano={2021} onRetry={retry} onSelectYear={pickYear} />
+ * @example <PibEvolutionCard seriesKey="pib" data={panel} place="Nordeste" state="ok" ano={2021} onRetry={retry} onSelectYear={pickYear} />
  */
 export const PibEvolutionCard = ({
+  seriesKey,
   data,
   place,
   ano,
   onSelectYear,
   ...status
-}: PibCardProps & { ano: number; onSelectYear: (ano: number) => void }) => {
+}: PibCardProps & {
+  seriesKey: PibLineKey;
+  ano: number;
+  onSelectYear: (ano: number) => void;
+}) => {
   const chart = useSvgChart();
+  const title = PIB_LINE_TITLES[seriesKey];
 
   return (
     <ProtoCard
       {...status}
-      title={PIB_LINE_TITLE}
+      title={title}
       subtitle={pibLineSubtitle(
         place,
         data.serie.map((point) => point.ano),
@@ -44,12 +59,13 @@ export const PibEvolutionCard = ({
       skeleton={<PibLineChartSkeleton />}
       actions={
         <>
-          <ProtoCardInfo title={PIB_LINE_TITLE} text={PIB_CARD_INFO.line} />
-          <ProtoCardMenu title={PIB_LINE_TITLE} chart={chart} />
+          <ProtoCardInfo title={title} text={INFO[seriesKey]} />
+          <ProtoCardMenu title={title} chart={chart} />
         </>
       }
     >
       <PibLineChart
+        seriesKey={seriesKey}
         serie={data.serie}
         ano={ano}
         onSelectYear={onSelectYear}

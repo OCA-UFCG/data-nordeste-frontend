@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPibLineGeometry,
-  PIB_LINE_MARKER_SPACE,
+  PIB_LINE_TITLE_Y,
   pibLineSubtitle,
   pibLineUnits,
 } from "@/features/panels/pib/pibLineChart";
@@ -23,140 +23,130 @@ const SERIE: PibYearPoint[] = PIB_BILLIONS.map((pib, index) => ({
   perCapita: PER_CAPITA[index],
 }));
 
+// "2023" em negrito a 11,5 px mede 30 px; com folga.
+const YEAR_WIDTH = 32;
+
+const geometryOf = (
+  key: "pib" | "perCapita",
+  width = 600,
+  selectedIndex = 13,
+) => buildPibLineGeometry({ width, serie: SERIE, key, selectedIndex });
+
 describe("buildPibLineGeometry", () => {
-  it("uses the prototype frame and one round axis per series", () => {
-    const geometry = buildPibLineGeometry({
-      width: 820,
-      serie: SERIE,
-      selectedIndex: 13,
-    });
+  it("draws the total on its own round axis from zero, in billions", () => {
+    const geometry = geometryOf("pib");
 
     expect(geometry.height).toBe(360);
-    expect(geometry.margin).toEqual({
-      left: 72,
-      right: 72,
-      top: 44,
-      bottom: 34,
-    });
-    expect(geometry.ticks.map((tick) => tick.pib)).toEqual([
+    expect(geometry.ticks.map((tick) => tick.value)).toEqual([
       0, 4e11, 8e11, 1.2e12, 1.6e12,
     ]);
-    expect(geometry.ticks.map((tick) => tick.perCapita)).toEqual([
-      0, 10000, 20000, 30000, 40000,
+    expect(geometry.ticks[0].y).toBe(360 - geometry.margin.bottom);
+    expect(geometry.ticks[4].y).toBe(geometry.margin.top);
+  });
+
+  // O motivo de separar os gráficos: com eixo próprio, o per capita ocupa a
+  // altura toda em vez de ficar achatado sob a escala do PIB total.
+  it("gives the per capita its own axis in thousands, filling the height", () => {
+    const geometry = geometryOf("perCapita");
+    const top = Math.min(...geometry.points.map((point) => point.y));
+
+    expect(geometry.ticks.map((tick) => tick.value)).toEqual([
+      0, 8000, 16000, 24000, 32000,
     ]);
-    expect(geometry.ticks[0].y).toBe(326);
-    expect(geometry.ticks[4].y).toBe(44);
+    expect(top - geometry.margin.top).toBeLessThan(60);
+  });
+
+  it("sizes the left margin by the longest tick label", () => {
+    // "1.600" (5 caracteres) no PIB total, "32" no per capita.
+    expect(geometryOf("pib").margin.left).toBe(49);
+    expect(geometryOf("perCapita").margin.left).toBe(25);
   });
 
   it("spreads the years from the left to the right margin", () => {
-    const geometry = buildPibLineGeometry({
-      width: 820,
-      serie: SERIE,
-      selectedIndex: 13,
-    });
+    const geometry = geometryOf("pib");
 
-    expect(geometry.years[0].x).toBe(72);
-    expect(geometry.years[13].x).toBe(748);
-    expect(geometry.selectedX).toBe(748);
+    expect(geometry.years[0].x).toBe(geometry.margin.left);
+    expect(geometry.years[13].x).toBe(600 - geometry.margin.right);
+    expect(geometry.selectedX).toBe(geometry.years[13].x);
     expect(geometry.years.every((year) => year.show)).toBe(true);
     expect(geometry.years[13].selected).toBe(true);
   });
 
-  it("keeps the per capita line below the total thanks to its headroom", () => {
-    const { points } = buildPibLineGeometry({
-      width: 820,
-      serie: SERIE,
-      selectedIndex: 13,
-    });
+  it("labels a late year above the point, ending left of it", () => {
+    const { label, points } = geometryOf("pib");
 
-    expect(points.perCapita[13].y).toBeGreaterThan(points.pib[13].y);
-  });
-
-  it("labels the higher series above and the lower one below, left of a late year", () => {
-    const { labels, points } = buildPibLineGeometry({
-      width: 820,
-      serie: SERIE,
-      selectedIndex: 13,
-    });
-
-    expect(labels?.pib).toMatchObject({
+    expect(label).toMatchObject({
       anchor: "end",
-      x: points.pib[13].x - 4,
-      y: points.pib[13].y - 12,
+      x: points[13].x - 4,
+      y: points[13].y - 12,
+      value: SERIE[13].pib,
     });
-    expect(labels?.perCapita.y).toBe(points.perCapita[13].y + 36);
   });
 
-  it("centres the labels of an earlier year without crossing the left axis", () => {
-    const { labels, points } = buildPibLineGeometry({
-      width: 820,
-      serie: SERIE,
-      selectedIndex: 0,
-    });
+  it("centres the label of an earlier year without crossing the left axis", () => {
+    const geometry = geometryOf("pib", 600, 0);
 
-    expect(labels?.pib).toMatchObject({ anchor: "middle", x: 72 + 44 });
-    expect(labels?.perCapita.y).toBe(points.perCapita[0].y + 22);
+    expect(geometry.label).toMatchObject({
+      anchor: "middle",
+      x: geometry.margin.left + 44,
+    });
   });
 
-  it.each([820, 560])(
-    "keeps the axis titles above the value label of the top point at %i px",
-    (width) => {
-      // Altura de maiúscula do rótulo (13 px) com o contorno branco, e o
-      // descendente do "(" no título (12 px).
-      const LABEL_TOP = 12;
-      const TITLE_DESCENT = 4;
-      const geometry = buildPibLineGeometry({
-        width,
-        serie: [
-          { ano: 2022, pib: 8e11, perCapita: 1e4 },
-          { ano: 2023, pib: 1.6e12, perCapita: 1.1e4 },
-        ],
-        selectedIndex: 1,
-      });
-      const label = geometry.labels?.pib;
-
-      expect(label?.y).toBe(geometry.margin.top - 12);
-      expect((label?.y ?? 0) - LABEL_TOP).toBeGreaterThan(
-        geometry.titles.pib.y + TITLE_DESCENT,
-      );
-    },
-  );
-
-  it("shrinks below 560 px and shows one year in four", () => {
+  it("keeps the axis title above the value label of the top point", () => {
+    // Altura de maiúscula do rótulo (13 px) com o contorno branco.
+    const LABEL_TOP = 12;
+    const TITLE_DESCENT = 4;
     const geometry = buildPibLineGeometry({
-      width: 340,
-      serie: SERIE,
-      selectedIndex: 13,
+      width: 600,
+      serie: [
+        { ano: 2022, pib: 8e11, perCapita: 1e4 },
+        { ano: 2023, pib: 1.6e12, perCapita: 1.1e4 },
+      ],
+      key: "pib",
+      selectedIndex: 1,
     });
+
+    expect(geometry.label?.y).toBe(geometry.margin.top - 12);
+    expect((geometry.label?.y ?? 0) - LABEL_TOP).toBeGreaterThan(
+      PIB_LINE_TITLE_Y + TITLE_DESCENT,
+    );
+  });
+
+  it("shrinks below 560 px and skips years that would touch, keeping the last", () => {
+    const geometry = geometryOf("pib", 340);
+    const shown = geometry.years.filter((year) => year.show);
 
     expect(geometry.narrow).toBe(true);
     expect(geometry.height).toBe(320);
-    expect(
-      geometry.years.filter((year) => year.show).map((year) => year.year),
-    ).toEqual([2011, 2015, 2019, 2023]);
-  });
-
-  it("shows the selected year at narrow width, hiding a neighbour it would touch", () => {
-    const geometry = buildPibLineGeometry({
-      width: 300,
-      serie: SERIE,
-      selectedIndex: 12,
-    });
-    const shown = geometry.years.filter((year) => year.show);
-
-    expect(shown.map((year) => year.year)).toEqual([2011, 2015, 2019, 2022]);
+    expect(shown.length).toBeLessThan(14);
+    expect(shown[shown.length - 1].year).toBe(2023);
     shown.slice(1).forEach((year, index) => {
       expect(year.x - shown[index].x).toBeGreaterThanOrEqual(YEAR_WIDTH);
     });
+  });
+
+  it("shows the selected year at narrow width, hiding a neighbour it would touch", () => {
+    const shown = geometryOf("pib", 300, 12).years.filter((year) => year.show);
+
+    expect(shown.map((year) => year.year)).toContain(2022);
+    shown.slice(1).forEach((year, index) => {
+      expect(year.x - shown[index].x).toBeGreaterThanOrEqual(YEAR_WIDTH);
+    });
+  });
+
+  it("keeps the last year label inside the SVG", () => {
+    const { years, width } = geometryOf("perCapita", 300);
+
+    expect(years[13].x + YEAR_WIDTH / 2).toBeLessThanOrEqual(width);
   });
 
   it("never draws narrower than 300 px and centres a single year", () => {
     const geometry = buildPibLineGeometry({
       width: 120,
       serie: [SERIE[0]],
+      key: "pib",
       selectedIndex: 0,
     });
-
     const { left, right } = geometry.margin;
 
     expect(geometry.width).toBe(300);
@@ -164,116 +154,33 @@ describe("buildPibLineGeometry", () => {
   });
 
   it("highlights no year when the filtered one is missing from the series", () => {
-    const geometry = buildPibLineGeometry({
-      width: 820,
-      serie: SERIE,
-      selectedIndex: -1,
-    });
+    const geometry = geometryOf("pib", 600, -1);
 
     expect(geometry.selectedX).toBeNull();
-    expect(geometry.labels).toBeNull();
+    expect(geometry.label).toBeNull();
     expect(geometry.years.some((year) => year.selected)).toBe(false);
   });
 
   it("rejects a selected index outside the series", () => {
-    expect(() =>
-      buildPibLineGeometry({ width: 820, serie: SERIE, selectedIndex: 14 }),
-    ).toThrow("selectedIndex 14 for a series of 14 years");
-  });
-});
-
-// Larguras medidas em Inter (PROTO_CHART_FONT) com folga: título 12 px
-// semibold até 128 px ("PIB per capita (R$ mil)"), valor 13 px bold até
-// 88 px ("R$ 999,99 Mil"), dígito do eixo até 0,65 em em 11,5 px, "2023" em
-// bold 30 px. Aqui por caractere (~20% acima do medido: 0,46 em no título e
-// 0,52 em no valor), para valer com qualquer texto.
-const TITLE_CHAR = 0.55 * 12;
-const VALUE_CHAR = 0.6 * 13;
-const TICK_CHAR = 0.65 * 11.5;
-const YEAR_WIDTH = 32;
-const LONGEST_TITLE = "PIB per capita (R$ mil)".length;
-const LONGEST_VALUE = "R$ 999,99 Mil".length;
-
-// Fonte de 11,5 px: altura de maiúscula ~8,5 px acima da linha de base.
-const TICK_CAP = 9;
-
-describe("buildPibLineGeometry at narrow width", () => {
-  const geometryAt300 = (serie: PibYearPoint[]) =>
-    buildPibLineGeometry({ width: 300, serie, selectedIndex: 13 });
-
-  it("moves the selected values to a two-row header instead of the lines", () => {
-    const geometry = geometryAt300(SERIE);
-
-    expect(geometry.labels).toBeNull();
-    expect(geometry.readouts).toEqual({
-      pib: { x: 300, y: geometry.titles.pib.y, value: SERIE[13].pib },
-      perCapita: {
-        x: 300,
-        y: geometry.titles.perCapita.y,
-        value: SERIE[13].perCapita,
-      },
-    });
-  });
-
-  it("fits title and value on each header row without touching at 300 px", () => {
-    const { titles, readouts } = geometryAt300(SERIE);
-
-    for (const key of ["pib", "perCapita"] as const) {
-      const titleEnd = titles[key].x + LONGEST_TITLE * TITLE_CHAR;
-      const valueStart = (readouts?.[key].x ?? 0) - LONGEST_VALUE * VALUE_CHAR;
-
-      expect(titles[key].x).toBeGreaterThanOrEqual(PIB_LINE_MARKER_SPACE);
-      expect(valueStart - titleEnd).toBeGreaterThanOrEqual(4);
-      expect(readouts?.[key].x).toBeLessThanOrEqual(300);
-    }
-  });
-
-  it("stacks the header rows above the plot and its top tick", () => {
-    const { titles, margin } = geometryAt300(SERIE);
-    const DESCENT = 4;
-    const ROW_HEIGHT = 15;
-
-    expect(titles.perCapita.y - titles.pib.y).toBeGreaterThanOrEqual(
-      ROW_HEIGHT,
-    );
-
-    // Ponto escolhido (raio 6) no topo do eixo e rótulo da marca de cima.
-    expect(margin.top - 6).toBeGreaterThan(titles.perCapita.y + DESCENT);
-    expect(margin.top + 4 - TICK_CAP).toBeGreaterThan(
-      titles.perCapita.y + DESCENT,
+    expect(() => geometryOf("pib", 600, 14)).toThrow(
+      "selectedIndex 14 for a series of 14 years",
     );
   });
 
-  it.each([
-    ["Nordeste", SERIE, "1.600", "40"],
-    [
-      "a small municipality",
-      SERIE.map((point) => ({ ...point, pib: point.pib / 1e4 })),
-      "160",
-      "40",
-    ],
-  ])(
-    "keeps the tick labels of %s inside the SVG and wider plot than before",
-    (_, serie, pibTick, perCapitaTick) => {
-      const { margin, width } = geometryAt300(serie);
-      const TICK_OFFSET = 8;
+  it("spans four units instead of printing 0 on every tick for an all-zero series", () => {
+    const serie = [
+      { ano: 2022, pib: 0, perCapita: 0 },
+      { ano: 2023, pib: 0, perCapita: 0 },
+    ];
+    const ticksOf = (key: "pib" | "perCapita") =>
+      buildPibLineGeometry({ width: 600, serie, key, selectedIndex: 1 }).ticks;
 
-      expect(
-        margin.left - TICK_OFFSET - pibTick.length * TICK_CHAR,
-      ).toBeGreaterThanOrEqual(0);
-      expect(
-        width - margin.right + TICK_OFFSET + perCapitaTick.length * TICK_CHAR,
-      ).toBeLessThanOrEqual(width);
-
-      // Antes: 56 + 52 px de margem.
-      expect(margin.left + margin.right).toBeLessThan(56 + 52 - 20);
-    },
-  );
-
-  it("keeps the last year label inside the SVG", () => {
-    const { years, width } = geometryAt300(SERIE);
-
-    expect(years[13].x + YEAR_WIDTH / 2).toBeLessThanOrEqual(width);
+    expect(ticksOf("pib").map((tick) => tick.value)).toEqual([
+      0, 1e3, 2e3, 3e3, 4e3,
+    ]);
+    expect(ticksOf("perCapita").map((tick) => tick.value)).toEqual([
+      0, 1e3, 2e3, 3e3, 4e3,
+    ]);
   });
 });
 
@@ -283,25 +190,6 @@ describe("pibLineSubtitle", () => {
       "Nordeste · Piauí · 2010 a 2023",
     );
     expect(pibLineSubtitle("Piauí", [])).toBe("Piauí");
-  });
-});
-
-describe("buildPibLineGeometry with an all-zero series", () => {
-  it("spans four units on each axis instead of printing 0 on every tick", () => {
-    const serie = [
-      { ano: 2022, pib: 0, perCapita: 0 },
-      { ano: 2023, pib: 0, perCapita: 0 },
-    ];
-    const { ticks } = buildPibLineGeometry({
-      width: 820,
-      serie,
-      selectedIndex: 1,
-    });
-
-    expect(ticks.map((tick) => tick.pib)).toEqual([0, 1e3, 2e3, 3e3, 4e3]);
-    expect(ticks.map((tick) => tick.perCapita)).toEqual([
-      0, 1e3, 2e3, 3e3, 4e3,
-    ]);
   });
 });
 

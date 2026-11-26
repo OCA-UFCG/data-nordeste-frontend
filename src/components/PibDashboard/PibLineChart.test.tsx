@@ -16,7 +16,8 @@ const SERIE = [
 ];
 
 const heightAt = (width: number) =>
-  buildPibLineGeometry({ width, serie: SERIE, selectedIndex: 1 }).height;
+  buildPibLineGeometry({ width, serie: SERIE, key: "pib", selectedIndex: 1 })
+    .height;
 
 describe("PIB_LINE_HEIGHT_CLASS", () => {
   it("matches the SVG frame height on both sides of the narrow width", () => {
@@ -47,12 +48,7 @@ const NORDESTE = [
   { ano: 2023, pib: 1.513e12, perCapita: 27682 },
 ];
 
-const chartSvg = () =>
-  within(
-    screen.getByRole("group", {
-      name: /^Dinâmica temporal do PIB total e do PIB per capita/,
-    }),
-  );
+const chartSvg = (name: RegExp) => within(screen.getByRole("group", { name }));
 
 describe("PibLineChart", () => {
   beforeEach(() => {
@@ -62,48 +58,36 @@ describe("PibLineChart", () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
-  it("names each axis with its unit and writes plain ticks in it", () => {
-    render(<PibLineChart serie={NORDESTE} ano={2023} onSelectYear={vi.fn()} />);
-    const svg = chartSvg();
-
-    expect(svg.getByText("PIB total (R$ bilhões)")).toBeTruthy();
-    expect(svg.getByText("PIB per capita (R$ mil)")).toBeTruthy();
-    expect(svg.getByText("1.600")).toBeTruthy();
-    expect(svg.getByText("40")).toBeTruthy();
-    expect(svg.queryAllByText(/^R\$ [\d.,]+ (Bi|Tri|Mil)$/)).toHaveLength(2);
-  });
-
-  // A 306 px os títulos lado a lado (~250 px) passariam da borda, e os
-  // valores sobre as linhas cobriam a outra série.
-  it("stacks the axis titles with the selected values in a header on a phone", () => {
-    render(<PibLineChart serie={NORDESTE} ano={2023} onSelectYear={vi.fn()} />);
-    const svg = chartSvg();
-    const titles = [
-      svg.getByText("PIB total (R$ bilhões)"),
-      svg.getByText("PIB per capita (R$ mil)"),
-    ];
-    const values = [
-      svg.getByText("R$ 1,51 Tri"),
-      svg.getByText("R$ 27,68 Mil"),
-    ];
-
-    expect(titles.map((title) => title.getAttribute("x"))).toEqual([
-      "18",
-      "18",
-    ]);
-    expect(titles.map((title) => title.getAttribute("y"))).toEqual(
-      values.map((value) => value.getAttribute("y")),
+  it("draws only the total, with its unit above a plain axis", () => {
+    render(
+      <PibLineChart
+        seriesKey="pib"
+        serie={NORDESTE}
+        ano={2023}
+        onSelectYear={vi.fn()}
+      />,
     );
-    values.forEach((value) => {
-      expect(value.getAttribute("x")).toBe("306");
-      expect(value.getAttribute("text-anchor")).toBe("end");
-    });
+    const svg = chartSvg(/^Dinâmica temporal do PIB total, 2022 a 2023$/);
+
+    expect(svg.getByText("R$ bilhões")).toBeTruthy();
+    expect(svg.getByText("1.600")).toBeTruthy();
+    expect(svg.getByText("R$ 1,51 Tri")).toBeTruthy();
+    expect(svg.queryByText("R$ 27,68 Mil")).toBeNull();
   });
 
-  // Os títulos dos eixos já nomeiam as séries.
-  it("shows no series legend", () => {
-    render(<PibLineChart serie={NORDESTE} ano={2023} onSelectYear={vi.fn()} />);
+  it("draws only the per capita, in thousands", () => {
+    render(
+      <PibLineChart
+        seriesKey="perCapita"
+        serie={NORDESTE}
+        ano={2023}
+        onSelectYear={vi.fn()}
+      />,
+    );
+    const svg = chartSvg(/^Dinâmica temporal do PIB per capita, /);
 
-    expect(screen.queryByRole("button", { name: /PIB total/ })).toBeNull();
+    expect(svg.getByText("R$ mil")).toBeTruthy();
+    expect(svg.getByText("R$ 27,68 Mil")).toBeTruthy();
+    expect(svg.queryByText("R$ 1,51 Tri")).toBeNull();
   });
 });

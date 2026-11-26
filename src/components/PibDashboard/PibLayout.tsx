@@ -30,10 +30,10 @@ export type PibLayoutProps = Omit<PibCardProps, "state"> & {
   onReset: () => void;
 };
 
-// `.pgrid` do protótipo: o mapa e, ao lado, a coluna dos dois cards de setor,
-// que dividem a altura. O mapa tem altura fixa (ver `PibMapCard`). Abaixo de
-// 1000 px vira uma coluna só.
-const BOTTOM_GRID = `grid grid-cols-2 items-stretch max-[1000px]:grid-cols-1 ${PROTO_GAP}`;
+// Duas colunas que viram uma abaixo de 1000 px: as linhas do PIB total e do
+// per capita, e (`.pgrid` do protótipo) o mapa com a coluna dos dois cards
+// de setor, que dividem a altura. O mapa tem altura fixa (ver `PibMapCard`).
+const PAIR_GRID = `grid grid-cols-2 items-stretch max-[1000px]:grid-cols-1 ${PROTO_GAP}`;
 const SECTOR_COLUMN = `flex min-w-0 flex-col [&>*]:flex-1 ${PROTO_GAP}`;
 
 /**
@@ -57,13 +57,19 @@ export const PibGrids = ({
       state={states.bigNumbers}
       onRetry={card.onRetry}
     />
-    <PibEvolutionCard
-      {...card}
-      state={states.evolution}
-      ano={selection.ano}
-      onSelectYear={onSelectYear}
-    />
-    <div className={BOTTOM_GRID}>
+    <div className={PAIR_GRID}>
+      {(["pib", "perCapita"] as const).map((seriesKey) => (
+        <PibEvolutionCard
+          key={seriesKey}
+          {...card}
+          seriesKey={seriesKey}
+          state={states.evolution}
+          ano={selection.ano}
+          onSelectYear={onSelectYear}
+        />
+      ))}
+    </div>
+    <div className={PAIR_GRID}>
       <PibMapCard
         selection={selection}
         onFiltersChange={onFiltersChange}

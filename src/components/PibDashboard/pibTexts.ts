@@ -8,9 +8,12 @@ export const PIB_LEAD =
 // Fonte da imagem baixada; na página, ela fica só na seção "Fonte dos dados".
 export const PIB_CARD_SOURCE = "Fonte: IBGE · Data Nordeste";
 
-// Título do card da linha, também no rótulo do SVG e na imagem baixada.
-export const PIB_LINE_TITLE =
-  "Dinâmica temporal do PIB total e do PIB per capita";
+// Títulos dos dois cards de linha, também no rótulo do SVG e na imagem
+// baixada. Eram um card só até 26/11/2026; ver `pibLineChart.ts`.
+export const PIB_LINE_TITLES = {
+  pib: "Dinâmica temporal do PIB total",
+  perCapita: "Dinâmica temporal do PIB per capita",
+} as const;
 
 // Título do card do mapa, também no subtítulo da tela cheia e no rótulo.
 export const PIB_MAP_TITLE = "PIB total por município";
@@ -56,7 +59,10 @@ export const PIB_ATIVIDADE_UNIT = "Percentual do PIB (%)";
 
 // Textos do ⓘ de cada card, do protótipo.
 export const PIB_CARD_INFO = {
-  line: "PIB total no eixo da esquerda e PIB per capita no eixo da direita, cada um na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
+  linePib:
+    "Evolução anual do PIB total, na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
+  linePerCapita:
+    "Evolução anual do PIB per capita (PIB dividido pela população), na unidade escrita acima do eixo. Clique em um ponto para mudar o ano.",
   vab: `${PIB_VAB_TERM} por setor representa o quanto cada setor da economia contribui para a geração de riqueza, ou seja, para o Produto Interno Bruto (PIB).`,
 } as const;
 
