@@ -1,4 +1,5 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { createRef } from "react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { MultiSelectCombobox } from "@/components/Panel/filters/MultiSelectCombobox";
 
@@ -219,6 +220,40 @@ describe("MultiSelectCombobox", () => {
       expect(
         screen.getByRole("button", { name: "João Pessoa (PB)" }),
       ).toHaveAttribute("aria-pressed", "false");
+    });
+
+    // Regressão (26/11/2026): o Ano virou combobox e a marcada no topo
+    // embaralhava os anos. Subir a marcada só vale quando a lista é cortada.
+    it("keeps the original order when every option fits", () => {
+      renderCombobox(["2604106"], vi.fn(), undefined, true);
+      open();
+      const labels = within(screen.getByRole("group", { name: "Município" }))
+        .getAllByRole("button")
+        .map((button) => button.textContent);
+
+      expect(labels).toEqual(OPTIONS.map((option) => option.label));
+    });
+
+    it("hands the trigger button to `triggerRef`", () => {
+      const triggerRef = createRef<HTMLButtonElement>();
+
+      render(
+        <MultiSelectCombobox
+          id="ano"
+          label="Ano"
+          plural="anos"
+          single
+          required
+          values={["2023"]}
+          options={[{ value: "2023", label: "2023" }]}
+          onChange={vi.fn()}
+          triggerRef={triggerRef}
+        />,
+      );
+
+      expect(triggerRef.current).toBe(
+        screen.getByRole("button", { name: /^Ano/ }),
+      );
     });
   });
 });

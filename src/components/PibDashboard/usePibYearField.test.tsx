@@ -14,7 +14,7 @@ class MediaFake {
 const PHONE = "(max-width: 700px)";
 
 const renderWithSelect = () => {
-  const select = document.createElement("select");
+  const select = document.createElement("button");
 
   select.scrollIntoView = vi.fn();
   document.body.append(select);

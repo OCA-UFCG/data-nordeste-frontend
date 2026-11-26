@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import {
   createContext,
+  type Ref,
   useContext,
   useEffect,
   useMemo,
@@ -46,7 +47,10 @@ const filterOptions = (options: SelectOption[], search: string) => {
 };
 
 // PERF: ~1.800 municípios; marcadas primeiro, o resto aparece pela busca.
+// Se tudo cabe, a ordem original fica (anos em sequência, estados em ordem
+// alfabética): subir a marcada só serve para ela não ficar fora do corte.
 const limitOptions = (options: SelectOption[], checked: string[]) => {
+  if (options.length <= MAX_RENDERED) return options;
   const marked = options.filter((option) => checked.includes(option.value));
   const others = options.filter((option) => !checked.includes(option.value));
 
@@ -243,24 +247,32 @@ const useComboboxSelection = (
 const TRIGGER_CLASS =
   "flex h-11 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-grey-300 bg-white px-3 text-left text-base text-grey-1100 focus:outline-2 focus:outline-green-800";
 
+// `asChild` com um <button> nosso: no React 18 o `PopoverTrigger` do shadcn
+// (função sem forwardRef) não repassa a `ref`, e o PIB precisa dela.
 const ComboboxTrigger = ({
   id,
   labelId,
   summary,
   className,
+  triggerRef,
 }: {
   id: string;
   labelId: string;
   summary: string;
   className?: string;
+  triggerRef?: Ref<HTMLButtonElement>;
 }) => (
-  <PopoverTrigger
-    id={id}
-    aria-labelledby={`${labelId} ${id}`}
-    className={className ?? TRIGGER_CLASS}
-  >
-    <span className="truncate">{summary}</span>
-    <ChevronDown aria-hidden className="size-4 shrink-0" />
+  <PopoverTrigger asChild>
+    <button
+      ref={triggerRef}
+      type="button"
+      id={id}
+      aria-labelledby={`${labelId} ${id}`}
+      className={className ?? TRIGGER_CLASS}
+    >
+      <span className="truncate">{summary}</span>
+      <ChevronDown aria-hidden className="size-4 shrink-0" />
+    </button>
   </PopoverTrigger>
 );
 
@@ -315,6 +327,9 @@ type MultiSelectComboboxProps = ComboboxLook & {
 
   // Nunca fica vazio (ex.: Área de interesse): some o "Limpar seleção".
   required?: boolean;
+
+  // O botão que abre a lista (o PIB foca e faz piscar o Ano por ele).
+  triggerRef?: Ref<HTMLButtonElement>;
 };
 
 // Abrir ou fechar zera a busca; fechar aplica na hora o que estava pendente.
@@ -417,6 +432,7 @@ export const MultiSelectCombobox = (props: MultiSelectComboboxProps) => {
           labelId={labelId}
           summary={summary}
           className={props.triggerClassName}
+          triggerRef={props.triggerRef}
         />
         <ComboboxPanel
           label={props.label}
