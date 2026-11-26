@@ -1,5 +1,6 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { chooseComboboxOption } from "@/components/Panel/filters/comboboxTestHelpers";
 import { AridezDashboard } from "@/components/AridezDashboard/AridezDashboard";
 import { aridezBigNumbers } from "@/components/AridezDashboard/AridezBigNumbers";
 import { ARIDEZ_CARD_SOURCE } from "@/components/AridezDashboard/aridezTexts";
@@ -103,9 +104,7 @@ describe("AridezDashboard", () => {
     render(<AridezDashboard data={PANEL} catalogHref="/catalog" />);
     const mounted = screen.getByTestId("panel-map");
 
-    fireEvent.change(screen.getByLabelText("Ano"), {
-      target: { value: "2011" },
-    });
+    chooseComboboxOption(screen.getByLabelText("Ano"), "2011");
 
     expect(replace).toHaveBeenCalledWith(
       expect.stringContaining("ano=2011"),

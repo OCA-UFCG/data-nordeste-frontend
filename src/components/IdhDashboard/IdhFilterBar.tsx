@@ -1,14 +1,15 @@
 "use client";
 
-import type { Ref } from "react";
+import { type Ref, useId } from "react";
+import {
+  type ComboboxLook,
+  MultiSelectCombobox,
+} from "@/components/Panel/filters/MultiSelectCombobox";
 import {
   ProtoFilterBar,
   type ProtoFilterBarBrand,
 } from "@/components/ProtoPanel/ProtoFilterBar";
-import {
-  ProtoSelectField,
-  protoSelectClass,
-} from "@/components/ProtoPanel/ProtoSelectField";
+import { protoFieldLook } from "@/components/ProtoPanel/ProtoSelectField";
 import { cn } from "@/lib/utils";
 import { listYears, withYear } from "@/features/panels/territorialFilters";
 import {
@@ -20,19 +21,34 @@ import {
 
 const BRAND: ProtoFilterBarBrand = { icon: "idh", title: "IDH" };
 
-// `.fb .fb-in>.fl`: Estado e Ano dividem a barra; até 900 px o select aperta a
+// `.fb .fb-in>.fl`: Estado e Ano dividem a barra; até 900 px o botão aperta a
 // folga da seta.
 const BAR_FIELD_CLASS = "max-w-none min-w-0 max-[900px]:[&>div>svg]:right-2";
-const BAR_SELECT_CLASS = "max-[900px]:pr-7 max-[900px]:pl-2.5";
+const BAR_TRIGGER_CLASS = "max-[900px]:px-2.5";
 
 // Sem a opção "Todos": o IDH não se tira pela média dos estados (ver
 // `IDH_DEFAULT_UF`).
-// `selection`: os filtros pedidos, que os selects mostram já antes de o
+// `selection`: os filtros pedidos, que os campos mostram já antes de o
 // servidor responder (e de onde parte o próximo filtro).
 type FilterProps = {
   data: IdhPanelData;
   selection: IdhFilters;
   onChange: (filters: IdhFilters) => void;
+};
+
+// Estado e Ano no padrão de escolha única com busca dos outros painéis
+// (eram selects nativos até 26/11/2026). Os dois são obrigatórios: sem
+// "Limpar seleção" e sem desmarcar.
+const fieldLook = (wide?: boolean): ComboboxLook => {
+  const look = protoFieldLook(wide, !wide);
+
+  return wide
+    ? look
+    : {
+        ...look,
+        fieldClassName: cn(look.fieldClassName, BAR_FIELD_CLASS),
+        triggerClassName: cn(look.triggerClassName, BAR_TRIGGER_CLASS),
+      };
 };
 
 const FilterFields = ({
@@ -41,49 +57,38 @@ const FilterFields = ({
   onChange,
   wide,
 }: FilterProps & { wide?: boolean }) => {
+  const id = useId();
   const ufs = [...data.ufs].sort((a, b) => a.nome.localeCompare(b.nome, "pt"));
   const years = [...listYears(data.yearRange)].reverse();
-  const selectClass = cn(protoSelectClass(wide), !wide && BAR_SELECT_CLASS);
-  const field = wide ? { wide } : { fluid: true, className: BAR_FIELD_CLASS };
+  const look = fieldLook(wide);
 
   return (
     <>
-      <ProtoSelectField label="Estado" {...field}>
-        {(id) => (
-          <select
-            id={id}
-            value={selection.uf ?? IDH_DEFAULT_UF}
-            onChange={(event) =>
-              onChange({ ...selection, uf: event.target.value })
-            }
-            className={selectClass}
-          >
-            {ufs.map((uf) => (
-              <option key={uf.sigla} value={uf.sigla}>
-                {uf.nome}
-              </option>
-            ))}
-          </select>
-        )}
-      </ProtoSelectField>
-      <ProtoSelectField label="Ano" {...field}>
-        {(id) => (
-          <select
-            id={id}
-            value={selection.ano}
-            onChange={(event) =>
-              onChange({ ...selection, ano: Number(event.target.value) })
-            }
-            className={selectClass}
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        )}
-      </ProtoSelectField>
+      <MultiSelectCombobox
+        id={`${id}-uf`}
+        label="Estado"
+        plural="estados"
+        single
+        required
+        values={[selection.uf ?? IDH_DEFAULT_UF]}
+        options={ufs.map((uf) => ({ value: uf.sigla, label: uf.nome }))}
+        onChange={([uf]) => onChange({ ...selection, uf })}
+        {...look}
+      />
+      <MultiSelectCombobox
+        id={`${id}-ano`}
+        label="Ano"
+        plural="anos"
+        single
+        required
+        values={[String(selection.ano)]}
+        options={years.map((year) => ({
+          value: String(year),
+          label: String(year),
+        }))}
+        onChange={([ano]) => onChange({ ...selection, ano: Number(ano) })}
+        {...look}
+      />
     </>
   );
 };

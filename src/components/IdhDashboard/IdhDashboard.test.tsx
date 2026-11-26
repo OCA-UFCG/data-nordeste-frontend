@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IdhDashboard } from "@/components/IdhDashboard/IdhDashboard";
 import { idhPanelFixture } from "@/components/IdhDashboard/idhTestFixtures";
@@ -9,6 +9,10 @@ import {
   type IdhFilters,
 } from "@/features/panels/idh/idhPanel";
 import { NO_IDH_YEARS } from "@/features/panels/idh/idhYearRange";
+import {
+  chooseComboboxOption,
+  comboboxOptions,
+} from "@/components/Panel/filters/comboboxTestHelpers";
 import { stubPanelBrowserApis } from "@/components/ProtoPanel/protoBrowserFakes";
 import type { PanelMapProps } from "@/components/PanelMap/PanelMap";
 
@@ -146,10 +150,8 @@ describe("IdhDashboard", () => {
 
     const [estado] = screen.getAllByLabelText("Estado");
 
-    expect(estado).toHaveValue("CE");
-    expect(
-      within(estado).queryByRole("option", { name: "Todos" }),
-    ).not.toBeInTheDocument();
+    expect(estado).toHaveTextContent("Ceará");
+    expect(comboboxOptions(estado, "Estado")).not.toContain("Todos");
   });
 
   it("starts the next filter from the pending one, not the loaded one", () => {
@@ -158,9 +160,7 @@ describe("IdhDashboard", () => {
     fireEvent.click(rankingState("Pernambuco"));
     navigation.current.isPending = true;
     rerender(dashboard(GERAL));
-    fireEvent.change(screen.getAllByLabelText("Ano")[0], {
-      target: { value: "2020" },
-    });
+    chooseComboboxOption(screen.getAllByLabelText("Ano")[0], "2020");
 
     expect(navigation.current.lastRequest).toEqual({
       ano: 2020,
@@ -188,9 +188,7 @@ describe("IdhDashboard", () => {
     };
 
     render(<IdhDashboard data={data} catalogHref="/catalog" />);
-    const years = within(screen.getAllByLabelText("Ano")[0])
-      .getAllByRole("option")
-      .map((option) => option.textContent);
+    const years = comboboxOptions(screen.getAllByLabelText("Ano")[0], "Ano");
 
     expect(years).toEqual(["2018", "2019", "2020", "2021", "2022", "2023"]);
   });
