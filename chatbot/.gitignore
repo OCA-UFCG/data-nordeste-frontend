@@ -3,5 +3,7 @@ node_modules/
 dados/
 # Conversas da página (perguntas de quem usou) e saídas brutas da avaliação.
 conversas/
+# Pacotes baixados do gamma (scripts/baixar-conversas.sh): têm o nome de quem perguntou.
+conversas-gamma/
 resultados/
 .env

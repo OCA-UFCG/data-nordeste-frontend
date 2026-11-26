@@ -1,0 +1,74 @@
+name: Exportar conversas do assistente (gamma)
+
+# As conversas do assistente de dados existem só na VM do gamma
+# (/home/ubuntu/datane-chat/conversas, montada no contêiner do chat). Este
+# workflow roda no runner do gamma, empacota a pasta e a entrega como artifact,
+# para acompanhar o uso sem precisar entrar na VM.
+#
+# IMPORTANT: o repositório é público e qualquer conta logada no GitHub baixa os
+# artifacts dele. As conversas têm o nome de quem perguntou e comentários
+# livres, então o pacote sai da VM já criptografado para as chaves públicas de
+# .github/conversas-gamma/*.asc, e nenhum conteúdo vai para o log. Nunca
+# commitar as conversas nem subir o pacote sem criptografia.
+#
+# Rodar: Actions → este workflow → Run workflow (depois de estar na main), ou
+# um tag `conversas-*`, que vale de qualquer commit que tenha este arquivo:
+#   git tag conversas-2026-11-25 && git push origin conversas-2026-11-25
+# Baixar e abrir: chatbot/scripts/baixar-conversas.sh (ver "Gamma" no README).
+on:
+  workflow_dispatch:
+  push:
+    tags: ["conversas-*"]
+  schedule:
+    # 23h50 em Fortaleza: o dia inteiro de conversas, todo dia.
+    - cron: "50 2 * * *"
+
+permissions:
+  contents: read
+
+concurrency: exportar-conversas-gamma
+
+jobs:
+  exportar:
+    runs-on: [self-hosted, datane-gamma-lsd-runner]
+    env:
+      ORIGEM: /home/ubuntu/datane-chat/conversas
+      PACOTE: conversas-gamma.tar.gz.gpg
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/conversas-gamma
+
+      - name: Empacotar e criptografar
+        run: |
+          set -euo pipefail
+          command -v gpg >/dev/null || { echo "gpg não encontrado no runner do gamma; esperado gnupg >= 2.1.14."; exit 1; }
+          sudo -n test -d "$ORIGEM" || { echo "Pasta \"$ORIGEM\" não existe na VM; esperada a pasta montada em /app/conversas pelo deploy-chat-gamma."; exit 1; }
+
+          destinatarios=()
+          for chave in .github/conversas-gamma/*.asc; do destinatarios+=(--recipient-file "$chave"); done
+          [ ${#destinatarios[@]} -gt 0 ] || { echo "Nenhuma chave pública em .github/conversas-gamma/*.asc."; exit 1; }
+
+          # Chaveiro temporário: nada fica no gpg do usuário do runner.
+          export GNUPGHOME="$(mktemp -d)"
+          trap 'rm -rf "$GNUPGHOME"' EXIT
+
+          # O tar vai direto para o gpg: o pacote sem criptografia nunca toca o disco.
+          sudo -n tar -C "$(dirname "$ORIGEM")" -czf - "$(basename "$ORIGEM")" \
+            | gpg --batch --yes --trust-model always --compress-algo none \
+                "${destinatarios[@]}" --encrypt --output "$PACOTE"
+
+          echo "conversas: $(sudo -n find "$ORIGEM" -name '*.jsonl' | wc -l) arquivos; pacote: $(du -h "$PACOTE" | cut -f1)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: conversas-gamma-${{ github.run_id }}
+          path: ${{ env.PACOTE }}
+          retention-days: 7
+          if-no-files-found: error
+
+      # Runner self-hosted: o workspace persiste entre execuções.
+      - name: Apagar o pacote do workspace
+        if: always()
+        run: rm -f "$PACOTE"

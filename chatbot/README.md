@@ -217,6 +217,16 @@ só o Haiku. O nginx de entrada encaminha
 - **Atualizar o tabelão:** gerar e conferir aqui (`npm run tabelao`,
   `npm run conferir`), copiar `dados/` para a VM com `rsync` e reiniciar o
   contêiner (`sudo docker restart datane-chat-gamma`).
+- **Conversas:** ficam só na VM. Para ler sem entrar nela, o workflow
+  `.github/workflows/exportar-conversas-gamma.yml` roda no runner do gamma
+  todo dia às 23h50, à mão (Actions → Run workflow) ou com um tag `conversas-*`
+  (`git tag conversas-2026-11-25 && git push origin conversas-2026-11-25`). Ele
+  empacota a pasta e sobe como artifact (7 dias) **criptografado** para as
+  chaves públicas de `.github/conversas-gamma/*.asc`: o repositório é público e
+  as conversas têm o nome de quem perguntou. Baixar e abrir:
+  `scripts/baixar-conversas.sh` (precisa do `gh` logado e da chave privada no
+  gpg), que extrai em `conversas-gamma/<data>/`, fora do git. Dar acesso a mais
+  alguém: commitar a chave pública dela (`gpg --armor --export <id>`) nessa pasta.
 - **Gasto:** os limites do modo equipe (100 perguntas por pessoa por dia, US$ 5
   por dia, US$ 50 por mês) valem para este contêiner. O limite da conta no
   Console da Anthropic vale para a chave toda.
