@@ -72,8 +72,13 @@ jobs:
           sudo docker run \
             --name ${{ vars.CONTAINER_NAME_BETA }} \
             --restart unless-stopped \
+            --add-host=host.docker.internal:host-gateway \
             -e AUTOMATIC_REPORT_API_URL="${{ vars.AUTOMATIC_REPORT_API_URL_BETA }}" \
             -e NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL="${{ vars.NEXT_PUBLIC_AUTOMATIC_REPORT_API_URL }}" \
+            -e DATA_DB_URL="${{ secrets.DATA_DB_URL_BETA }}" \
+            -e DEMOS_HABILITADAS=1 \
+            -v /opt/datane/geodata:/geodata:ro \
+            -e GEODATA_DIR=/geodata \
             -e CONTENT_CACHE_PASSWORD="${{ secrets.CONTENT_CACHE_PASSWORD }}" \
             -p ${{ vars.HOST_PORT_BETA }}:${{ vars.CONTAINER_PORT }} \
             -d \

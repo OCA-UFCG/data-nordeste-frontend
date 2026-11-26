@@ -67,8 +67,8 @@ jobs:
       # IMPORTANT: /opt/datane/geodata (montado em /geodata, somente leitura) NAO
       # vem do build: e preenchido a mao por scripts/geodata (download + build) e
       # rsync para a VM, como descrito em docs/README.md ("Panel Maps (MapLibre)").
-      # Sem esse diretorio os mapas dos paineis ficam sem dados. So o gamma monta;
-      # beta e prod nao tem os geodados.
+      # Sem esse diretorio os mapas dos paineis ficam sem dados. Gamma e beta
+      # montam; prod nao tem os geodados.
       - name: Run new container
         run: |
           sudo docker run \

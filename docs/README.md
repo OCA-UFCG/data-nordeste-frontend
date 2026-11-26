@@ -317,14 +317,17 @@ Design: `docs/superpowers/specs/2026-11-23-mapa-paineis-design.md`.
   `build.py` runs them and writes the files. Tests:
   `python3 -m unittest discover -s scripts/geodata/tests -v`.
 
-- **Where it runs: gamma only, for now.** The VM keeps the directory at
-  `/opt/datane/geodata`; `.github/workflows/deploy-gamma.yml` mounts it with
-  `-v /opt/datane/geodata:/geodata:ro -e GEODATA_DIR=/geodata`. Beta and
-  production do not mount it. To publish new data:
+- **Where it runs: gamma and beta.** Each VM keeps the directory at
+  `/opt/datane/geodata`; `.github/workflows/deploy-gamma.yml` and
+  `deploy-beta.yml` mount it with
+  `-v /opt/datane/geodata:/geodata:ro -e GEODATA_DIR=/geodata`, next to
+  `DEMOS_HABILITADAS=1` and `DATA_DB_URL` (secrets `DATA_DB_URL_GAMMA` /
+  `DATA_DB_URL_BETA`). Production mounts none of them. To publish new data,
+  repeat on each VM:
 
   ```bash
   sudo mkdir -p /opt/datane/geodata            # once, on the VM
-  rsync -av --delete "$OUT/" <gamma-host>:/opt/datane/geodata/
+  rsync -av --delete "$OUT/" <gamma-or-beta-host>:/opt/datane/geodata/
   ls /opt/datane/geodata/vector                # the five GeoJSON files
   ```
 
