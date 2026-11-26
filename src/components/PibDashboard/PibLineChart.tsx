@@ -1,7 +1,7 @@
 "use client";
 
 import { type Ref, useMemo } from "react";
-import { PIB_LINE_TITLE } from "@/components/PibDashboard/pibTexts";
+import { PIB_LINE_TITLES } from "@/components/PibDashboard/pibTexts";
 import { PIB_COLORS } from "@/components/PibDashboard/pibTheme";
 import {
   type LineYearHandlers,
@@ -16,6 +16,7 @@ import { formatPibAxis, formatPibReais } from "@/features/panels/pib/pibFormat";
 import type { PibBarUnit } from "@/features/panels/pib/pibBars";
 import {
   buildPibLineGeometry,
+  PIB_LINE_TITLE_Y,
   type PibLineGeometry,
   type PibLineKey,
   pibLineUnits,
@@ -24,37 +25,28 @@ import type { PibYearPoint } from "@/features/panels/pib/pibPanel";
 import { linePath } from "@/features/panels/svgPath";
 
 type PibLineSeries = {
-  key: PibLineKey;
   shortLabel: string;
   color: string;
   ink: string;
   pick: (point: PibYearPoint) => number;
 };
 
-const SERIES: readonly PibLineSeries[] = [
-  {
-    key: "pib",
+const SERIES: Record<PibLineKey, PibLineSeries> = {
+  pib: {
     shortLabel: "PIB total",
     color: PIB_COLORS.total,
     ink: PIB_COLORS.totalInk,
     pick: (point) => point.pib,
   },
-  {
-    key: "perCapita",
+  perCapita: {
     shortLabel: "PIB per capita",
     color: PIB_COLORS.perCapita,
     ink: PIB_COLORS.perCapitaInk,
     pick: (point) => point.perCapita,
   },
-];
+};
 
 const AXIS_FONT_SIZE = "11.5";
-
-// Título do eixo: "PIB total (R$ bilhões)".
-const seriesTitle = (series: PibLineSeries, unit: PibBarUnit) =>
-  `${series.shortLabel} (R$ ${unit.label})`;
-
-type Units = Record<PibLineKey, PibBarUnit>;
 
 // Altura do gráfico e do esqueleto: PIB_LINE_HEIGHT acima de PIB_LINE_NARROW_WIDTH.
 export const PIB_LINE_HEIGHT_CLASS = "min-h-[320px] @[560px]:min-h-[360px]";
@@ -63,7 +55,7 @@ const Gridlines = ({ geometry }: { geometry: PibLineGeometry }) => (
   <>
     {geometry.ticks.map((tick) => (
       <line
-        key={tick.pib}
+        key={tick.value}
         x1={geometry.margin.left}
         x2={geometry.width - geometry.margin.right}
         y1={tick.y}
@@ -75,42 +67,8 @@ const Gridlines = ({ geometry }: { geometry: PibLineGeometry }) => (
   </>
 );
 
-// Traço com ponto antes do título no cabeçalho do celular: diz qual linha é
-// de qual eixo, já que os títulos saem da ponta de cada eixo.
-const SeriesMarker = ({ series, y }: { series: PibLineSeries; y: number }) => (
-  <g stroke={series.color} strokeWidth="2.6" strokeLinecap="round">
-    <line x1="1.5" x2="12.5" y1={y - 4} y2={y - 4} />
-    <circle cx="7" cy={y - 4} r="2.5" fill={PIB_COLORS.paper} strokeWidth="2" />
-  </g>
-);
-
-// Valor do ano escolhido no cabeçalho do celular, no lugar do rótulo sobre a
-// linha (que lá cobria a outra série).
-const Readout = ({
-  geometry,
-  series,
-}: {
-  geometry: PibLineGeometry;
-  series: PibLineSeries;
-}) => {
-  const readout = geometry.readouts?.[series.key];
-
-  return readout ? (
-    <text
-      x={readout.x}
-      y={readout.y}
-      textAnchor="end"
-      fontSize="13"
-      fontWeight="700"
-      fill={series.ink}
-    >
-      {formatPibReais(readout.value)}
-    </text>
-  ) : null;
-};
-
-// Título, marcas e linha de um eixo, na cor da série (texto na tinta escura,
-// que passa o contraste AA no branco).
+// Unidade acima do eixo ("R$ bilhões"): a série já está no título do card.
+// Texto na tinta escura da série, que passa o contraste AA no branco.
 const ValueAxis = ({
   geometry,
   series,
@@ -120,38 +78,28 @@ const ValueAxis = ({
   series: PibLineSeries;
   unit: PibBarUnit;
 }) => {
-  const { width, height, margin } = geometry;
-  const left = series.key === "pib";
-  const axisX = left ? margin.left : width - margin.right;
-  const title = geometry.titles[series.key];
+  const { height, margin } = geometry;
 
   return (
     <g fill={series.ink} fontSize={AXIS_FONT_SIZE}>
-      {geometry.narrow ? <SeriesMarker series={series} y={title.y} /> : null}
-      <text
-        x={title.x}
-        y={title.y}
-        textAnchor={title.anchor}
-        fontSize="12"
-        fontWeight="600"
-      >
-        {seriesTitle(series, unit)}
+      <text x={0} y={PIB_LINE_TITLE_Y} fontSize="12" fontWeight="600">
+        {`R$ ${unit.label}`}
       </text>
       <line
-        x1={axisX}
-        x2={axisX}
+        x1={margin.left}
+        x2={margin.left}
         y1={margin.top}
         y2={height - margin.bottom}
         stroke={series.color}
       />
       {geometry.ticks.map((tick) => (
         <text
-          key={tick.pib}
-          x={left ? axisX - 8 : axisX + 8}
+          key={tick.value}
+          x={margin.left - 8}
           y={tick.y + 4}
-          textAnchor={left ? "end" : "start"}
+          textAnchor="end"
         >
-          {formatPibAxis(left ? tick.pib : tick.perCapita, unit)}
+          {formatPibAxis(tick.value, unit)}
         </text>
       ))}
     </g>
@@ -189,6 +137,33 @@ const YearAxis = ({ geometry }: { geometry: PibLineGeometry }) => (
   </>
 );
 
+const ValueLabel = ({
+  geometry,
+  series,
+}: {
+  geometry: PibLineGeometry;
+  series: PibLineSeries;
+}) => {
+  const { label } = geometry;
+
+  return label ? (
+    <text
+      x={label.x}
+      y={label.y}
+      textAnchor={label.anchor}
+      fontSize="13"
+      fontWeight="700"
+      fill={series.ink}
+      stroke={PIB_COLORS.paper}
+      strokeWidth="4"
+      strokeLinejoin="round"
+      paintOrder="stroke"
+    >
+      {formatPibReais(label.value)}
+    </text>
+  ) : null;
+};
+
 const Line = ({
   geometry,
   series,
@@ -197,70 +172,53 @@ const Line = ({
   geometry: PibLineGeometry;
   series: PibLineSeries;
   selectedIndex: number;
-}) => {
-  const points = geometry.points[series.key];
-  const label = geometry.labels?.[series.key];
+}) => (
+  <g>
+    <path
+      d={linePath(geometry.points)}
+      fill="none"
+      stroke={series.color}
+      strokeWidth="2.6"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    />
+    {geometry.points.map((point, index) => {
+      const selected = index === selectedIndex;
 
-  return (
-    <g>
-      <path
-        d={linePath(points)}
-        fill="none"
-        stroke={series.color}
-        strokeWidth="2.6"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      {points.map((point, index) => {
-        const selected = index === selectedIndex;
-
-        return (
-          <circle
-            key={index}
-            cx={point.x.toFixed(1)}
-            cy={point.y.toFixed(1)}
-            r={selected ? 6 : geometry.narrow ? 2.5 : 3.2}
-            fill={selected ? series.color : PIB_COLORS.paper}
-            stroke={selected ? PIB_COLORS.paper : series.color}
-            strokeWidth={selected ? 2.4 : 2}
-          />
-        );
-      })}
-      {label ? (
-        <text
-          x={label.x}
-          y={label.y}
-          textAnchor={label.anchor}
-          fontSize="13"
-          fontWeight="700"
-          fill={series.ink}
-          stroke={PIB_COLORS.paper}
-          strokeWidth="4"
-          strokeLinejoin="round"
-          paintOrder="stroke"
-        >
-          {formatPibReais(label.value)}
-        </text>
-      ) : null}
-    </g>
-  );
-};
+      return (
+        <circle
+          key={index}
+          cx={point.x.toFixed(1)}
+          cy={point.y.toFixed(1)}
+          r={selected ? 6 : geometry.narrow ? 2.5 : 3.2}
+          fill={selected ? series.color : PIB_COLORS.paper}
+          stroke={selected ? PIB_COLORS.paper : series.color}
+          strokeWidth={selected ? 2.4 : 2}
+        />
+      );
+    })}
+    <ValueLabel geometry={geometry} series={series} />
+  </g>
+);
 
 const LineSvg = ({
   geometry,
+  seriesKey,
   svgRef,
   selectedIndex,
   ano,
-  units,
+  unit,
   ...handlers
 }: LineYearHandlers & {
   geometry: PibLineGeometry;
+  seriesKey: PibLineKey;
   svgRef?: Ref<SVGSVGElement>;
-  units: Units;
+  unit: PibBarUnit;
   selectedIndex: number;
   ano: number;
 }) => {
   const { width, height, years } = geometry;
+  const series = SERIES[seriesKey];
 
   return (
     <svg
@@ -268,31 +226,14 @@ const LineSvg = ({
       viewBox={`0 0 ${width} ${height}`}
       height={height}
       role="group"
-      aria-label={`${PIB_LINE_TITLE}, ${years[0]?.year} a ${years[years.length - 1]?.year}`}
+      aria-label={`${PIB_LINE_TITLES[seriesKey]}, ${years[0]?.year} a ${years[years.length - 1]?.year}`}
       fontFamily={PROTO_CHART_FONT}
       className="block w-full touch-pan-y overflow-visible [font-variant-numeric:tabular-nums]"
     >
       <Gridlines geometry={geometry} />
       <YearAxis geometry={geometry} />
-      {SERIES.map((series) => (
-        <ValueAxis
-          key={series.key}
-          geometry={geometry}
-          series={series}
-          unit={units[series.key]}
-        />
-      ))}
-      {SERIES.map((series) => (
-        <Readout key={series.key} geometry={geometry} series={series} />
-      ))}
-      {SERIES.map((series) => (
-        <Line
-          key={series.key}
-          geometry={geometry}
-          series={series}
-          selectedIndex={selectedIndex}
-        />
-      ))}
+      <ValueAxis geometry={geometry} series={series} unit={unit} />
+      <Line geometry={geometry} series={series} selectedIndex={selectedIndex} />
       <ProtoYearSlider
         frame={geometry}
         years={years.map((year) => year.year)}
@@ -304,26 +245,21 @@ const LineSvg = ({
   );
 };
 
-const tooltipRows = (point: PibYearPoint) =>
-  SERIES.map((series) => ({
-    color: series.color,
-    label: series.shortLabel,
-    value: formatPibReais(series.pick(point)),
-  }));
-
 /**
- * Gráfico "Dinâmica temporal do PIB" (`#lineBox` do protótipo), em SVG: PIB
- * total e per capita, cada um com o seu eixo, título e unidade, sem legenda.
- * Clique num ponto ou use as setas para escolher o ano.
+ * Gráfico de linha de uma série do PIB (`seriesKey`: o PIB total ou o per
+ * capita), em SVG, com eixo próprio a partir de zero. Clique num ponto ou use
+ * as setas para escolher o ano.
  *
- * @example <PibLineChart serie={panel.serie} ano={2023} onSelectYear={pick} svgRef={chart.ref} />
+ * @example <PibLineChart seriesKey="perCapita" serie={panel.serie} ano={2023} onSelectYear={pick} svgRef={chart.ref} />
  */
 export const PibLineChart = ({
+  seriesKey,
   serie,
   ano,
   onSelectYear,
   svgRef,
 }: {
+  seriesKey: PibLineKey;
   serie: PibYearPoint[];
   ano: number;
   onSelectYear: (ano: number) => void;
@@ -331,7 +267,10 @@ export const PibLineChart = ({
 }) => {
   const { ref: boxRef, width: boxWidth } = useElementWidth();
   const years = useMemo(() => serie.map((point) => point.ano), [serie]);
-  const units = useMemo(() => pibLineUnits(serie), [serie]);
+  const unit = useMemo(
+    () => pibLineUnits(serie)[seriesKey],
+    [serie, seriesKey],
+  );
   const { selectedIndex, hover, handlers } = useLineYear({
     years,
     ano,
@@ -343,11 +282,17 @@ export const PibLineChart = ({
   const geometry = useMemo(
     () =>
       boxWidth && serie.length
-        ? buildPibLineGeometry({ width: boxWidth, serie, selectedIndex })
+        ? buildPibLineGeometry({
+            width: boxWidth,
+            serie,
+            key: seriesKey,
+            selectedIndex,
+          })
         : null,
-    [boxWidth, serie, selectedIndex],
+    [boxWidth, serie, seriesKey, selectedIndex],
   );
   const hoverPoint = hover && serie.find((point) => point.ano === hover.ano);
+  const series = SERIES[seriesKey];
 
   return (
     <>
@@ -357,10 +302,11 @@ export const PibLineChart = ({
           {geometry ? (
             <LineSvg
               geometry={geometry}
+              seriesKey={seriesKey}
               svgRef={svgRef}
               selectedIndex={selectedIndex}
               ano={ano}
-              units={units}
+              unit={unit}
               {...handlers}
             />
           ) : null}
@@ -373,7 +319,13 @@ export const PibLineChart = ({
         <ProtoTooltip
           at={hover}
           title={String(hoverPoint.ano)}
-          rows={tooltipRows(hoverPoint)}
+          rows={[
+            {
+              color: series.color,
+              label: series.shortLabel,
+              value: formatPibReais(series.pick(hoverPoint)),
+            },
+          ]}
         />
       ) : null}
     </>
