@@ -18,11 +18,14 @@ import { SearchBar } from "@/components/SearchBar/SearchBar";
 import { useExploreNavigation } from "@/features/explore/navigation";
 import { setExploreSearchFocusOwner } from "@/features/explore/searchFocus";
 import { withReportsNavigation } from "@/features/navigation/reportLink";
+import { withExperimentalNavigation } from "@/features/navigation/experimentalLink";
 import { useMergedExploreSearch } from "./useMergedExploreSearch";
 
 const Header = ({ content }: { content: ISection[] }) => {
   const pathname = usePathname();
-  const navigationSections = withReportsNavigation(content);
+  const navigationSections = withExperimentalNavigation(
+    withReportsNavigation(content),
+  );
   const headerRef = useRef<HTMLDivElement>(null);
   const { replaceQuery } = useExploreNavigation();
   const mergedExploreSearch = useMergedExploreSearch(
