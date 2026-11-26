@@ -7,6 +7,7 @@ import {
   PROTO_CARD_CLASS,
   ProtoCardNotice,
 } from "@/components/ProtoPanel/ProtoCard";
+import { PROTO_GAP } from "@/components/ProtoPanel/protoStyles";
 import type { AridezCardStates } from "@/features/panels/aridez/aridezCardState";
 import { ARIDEZ_YEAR_RANGE } from "@/features/panels/aridez/aridezPanel";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
@@ -22,8 +23,7 @@ type AridezLayoutProps = Omit<AridezCardProps, "state"> & {
   onReset: () => void;
 };
 
-const BOTTOM_GRID =
-  "grid grid-cols-2 items-stretch gap-6 max-[1000px]:grid-cols-1 max-[1000px]:gap-4";
+const BOTTOM_GRID = `grid grid-cols-2 items-stretch max-[1000px]:grid-cols-1 ${PROTO_GAP}`;
 
 const MapCard = ({
   selection,
@@ -51,7 +51,7 @@ export const AridezGrids = ({
   states,
   ...props
 }: Omit<AridezLayoutProps, "onReset">) => (
-  <div className="flex flex-col gap-4">
+  <div className={`flex flex-col ${PROTO_GAP}`}>
     <AridezBigNumbers
       data={props.data}
       state={states.bigNumbers}
@@ -72,7 +72,7 @@ export const AridezGrids = ({
  * @example <AridezEmptyLayout data={panel} selection={filters} place="Recife (PE)" states={states} onRetry={retry} onFiltersChange={request} onReset={reset} />
  */
 export const AridezEmptyLayout = ({ onReset, ...props }: AridezLayoutProps) => (
-  <div className="flex flex-col gap-4">
+  <div className={`flex flex-col ${PROTO_GAP}`}>
     <article className={PROTO_CARD_CLASS}>
       <ProtoCardNotice
         tone="warn"

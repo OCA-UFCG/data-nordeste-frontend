@@ -14,6 +14,7 @@ import {
   PROTO_CARD_CLASS,
   ProtoCardNotice,
 } from "@/components/ProtoPanel/ProtoCard";
+import { PROTO_GAP } from "@/components/ProtoPanel/protoStyles";
 import type { PerfilCardStates } from "@/features/panels/demografia/perfilCardState";
 import type { TerritorialFilters } from "@/features/panels/territorialFilters";
 
@@ -48,12 +49,10 @@ const Slot = ({
 
 // `.dg` do protótipo: número de destaque, mapa, municípios, sexo e pirâmide.
 // Abaixo de 1000 px vira uma coluna só, na ordem que o protótipo usa no celular.
-const TOP_GRID =
-  "grid grid-cols-[360px_minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)_auto] gap-4 items-stretch [grid-template-areas:'bn_map'_'mun_map'_'sex_age'] max-[1000px]:flex max-[1000px]:flex-col";
+const TOP_GRID = `grid grid-cols-[360px_minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)_auto] ${PROTO_GAP} items-stretch [grid-template-areas:'bn_map'_'mun_map'_'sex_age'] max-[1000px]:flex max-[1000px]:flex-col`;
 
 // `.dg2` do protótipo: série temporal e cor ou raça, lado a lado.
-const BOTTOM_GRID =
-  "mt-4 grid grid-cols-2 gap-4 max-[1000px]:flex max-[1000px]:flex-col";
+const BOTTOM_GRID = `mt-6 grid grid-cols-2 max-[1000px]:flex max-[1000px]:flex-col max-[700px]:mt-4 ${PROTO_GAP}`;
 
 /**
  * Grade do perfil demográfico (`.dg` e `.dg2` do protótipo): os seis cards
