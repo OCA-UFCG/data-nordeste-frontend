@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type MouseEvent, useId, useState } from "react";
+import { useId, useState } from "react";
 import { ProtoIcon } from "@/components/ProtoPanel/ProtoIcon";
 import {
   BUTTON_GHOST,
@@ -13,8 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 
 export type ProtoGlossary = readonly (readonly [string, string])[];
-
-const PHONE_QUERY = "(max-width: 700px)";
 
 const ThemeLink = ({
   href,
@@ -88,9 +86,8 @@ const Glossary = ({ items }: { items: ProtoGlossary }) => (
 );
 
 /**
- * "Saiba mais" de um painel (`.more` do protótipo): resumo, "Ler mais" com o
- * glossário (quando há) e, no celular, uma sanfona fechada que abre pelo
- * cabeçalho. O `tone` vai no `style` da seção, porque a página é do servidor.
+ * "Saiba mais" de um painel (`.more` do protótipo): resumo e "Ler mais" com o
+ * glossário (quando há). O `tone` vai no `style` da seção, porque a página é do servidor.
  *
  * @example <ProtoSaibaMais tone="idh" title="Saiba mais" summary="…" paragraphs={["…"]} glossary={[["IDH", "…"]]} themeHref="/macrothemes/desenvolvimento-social" />
  */
@@ -109,17 +106,8 @@ export const ProtoSaibaMais = ({
   themeHref: string | null;
   tone: ProtoTone;
 }) => {
-  const bodyId = useId();
   const moreId = useId();
   const [expanded, setExpanded] = useState(false);
-  const [open, setOpen] = useState(false);
-
-  // No celular, tocar no cabeçalho (fora do link) abre e fecha a seção.
-  const toggleOnPhone = (event: MouseEvent<HTMLDivElement>) => {
-    if (!window.matchMedia(PHONE_QUERY).matches) return;
-    if ((event.target as Element).closest("a")) return;
-    setOpen(!open);
-  };
 
   return (
     <section
@@ -127,10 +115,7 @@ export const ProtoSaibaMais = ({
       className={`${PROTO_TEXT} w-full bg-grey-200 py-8 max-[700px]:py-4`}
     >
       <div className={WRAP}>
-        <div
-          onClick={toggleOnPhone}
-          className="flex items-center justify-between gap-6 max-[700px]:cursor-pointer"
-        >
+        <div className="flex items-center justify-between gap-6">
           <h2 className="text-[28px] leading-9 font-semibold max-[700px]:text-xl max-[700px]:leading-7">
             {title}
           </h2>
@@ -140,22 +125,8 @@ export const ProtoSaibaMais = ({
               className="min-h-9 px-3 py-1 text-xs max-[700px]:hidden"
             />
           ) : null}
-          <button
-            type="button"
-            aria-expanded={open}
-            aria-controls={bodyId}
-            aria-label="Expandir Saiba mais"
-            className="hidden size-8 place-items-center max-[700px]:grid"
-          >
-            <ProtoIcon
-              name="chevronDown"
-              size={22}
-              stroke={2.4}
-              className={`transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
-            />
-          </button>
         </div>
-        <div id={bodyId} className={open ? "" : "max-[700px]:hidden"}>
+        <div>
           <p className="mt-3 text-sm leading-6 max-[700px]:mt-2">{summary}</p>
           <MoreText
             id={moreId}
@@ -168,7 +139,7 @@ export const ProtoSaibaMais = ({
             aria-expanded={expanded}
             aria-controls={moreId}
             onClick={() => setExpanded(!expanded)}
-            className="mt-2 py-1.5 text-sm font-semibold text-green-900 underline underline-offset-3"
+            className="mt-2 cursor-pointer py-1.5 text-sm font-semibold text-green-900 underline underline-offset-3"
           >
             {expanded ? "Ler menos" : "Ler mais"}
           </button>
