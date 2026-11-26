@@ -101,8 +101,10 @@ export const ProtoCover = ({
       <h1 className="mt-4 text-[40px] leading-[48px] font-bold tracking-[-0.01em] max-[700px]:mt-3 max-[700px]:text-2xl max-[700px]:leading-8">
         {title}
       </h1>
-      {/* 1136 px: os 120ch do protótipo na Inter dele (a do site tem outro "0"). */}
-      <p className="mt-5 max-w-[1136px] text-[15px] leading-6 max-[700px]:mt-2 max-[700px]:text-sm max-[700px]:leading-[21px]">
+      {/* INTENTIONAL: sem max-w. O texto vai até a borda direita do selo
+          "Atualizado em" (fim do WRAP); o limite de 1136 px do protótipo
+          (120ch) quebrava a linha antes da coluna do selo (revisão 26/11/2026). */}
+      <p className="mt-5 text-[15px] leading-6 max-[700px]:mt-2 max-[700px]:text-sm max-[700px]:leading-[21px]">
         {lead}
       </p>
     </div>
