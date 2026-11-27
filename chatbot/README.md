@@ -162,7 +162,7 @@ a avaliação.
 
 Variáveis: `DATANE_CHAT_PORTA`, `DATANE_CHAT_MOTOR` (`claude` ou `api`),
 `DATANE_CHAT_MODELOS`, `DATANE_CHAT_ESFORCO`, `DATANE_CHAT_CONFERIR=0`,
-`DATANE_CHAT_REVISAR=0`.
+`DATANE_CHAT_REVISAR=0`, `DATANE_AQUECER_MIN` (de quanto em quanto tempo o servidor relê o tabelão para mantê-lo no cache de disco; padrão 30, 0 desliga: no gamma, com o arquivo fora do cache, uma consulta levou 61 s em vez de 46 ms).
 
 ### Modo equipe (gamma)
 

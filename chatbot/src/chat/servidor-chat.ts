@@ -34,6 +34,7 @@ import { fileURLToPath } from "node:url";
 import { dadosDoMapa, GERADO_EM, TABELAO } from "../ferramentas/index.ts";
 import { criarPortao, type Quem } from "./equipe.ts";
 import { criarLimites } from "./limites.ts";
+import { manterNoCache } from "./aquecer.ts";
 import { criarMotorApi } from "./motor-api.ts";
 import { criarDisponibilidade } from "./disponibilidade.ts";
 import { criarMotorClaude } from "./motor-claude.ts";
@@ -457,5 +458,6 @@ servidor.listen(PORTA, HOST, () => {
   if (portao) console.log(`Limites: ${l.porPessoa} perguntas por pessoa por dia; US$ ${l.tetoDia} por dia; US$ ${l.tetoMes} por mês (gasto no mês até agora: US$ ${l.gastoMes.toFixed(2)}).`);
   console.log(`Tabelão: ${TABELAO} (gerado em ${GERADO_EM.slice(0, 10)})`);
   console.log(`Conversas gravadas em ${CONVERSAS}`);
+  manterNoCache(TABELAO, Number(process.env.DATANE_AQUECER_MIN ?? 30));
   if (!existsSync(MALHA)) console.log("Sem dados/malha-municipios.json: os mapas não aparecem (npm run malha).");
 });
