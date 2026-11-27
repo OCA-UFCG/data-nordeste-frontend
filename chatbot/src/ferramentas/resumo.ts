@@ -15,6 +15,13 @@ const num1 = (v: number) => {
 // No ranking e no mapa não vai a média simples dos itens: no datane o estado e
 // o recorte têm valor próprio (razão das somas), e o modelo citava a média dos
 // municípios como se fosse o valor do estado.
+/**
+ * Mesmo valor, sem o resíduo da conta em ponto flutuante: no tabelão, 4
+ * municípios da Paraíba tinham 100,00000000000001% da área em seca e 56 tinham
+ * 100%, e o resumo dizia "maior 100 (4 com esse valor)" (gamma, 25/11/2026).
+ */
+const iguais = (a: number, b: number) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+
 export function resumoCalculado(
   tipo: "serie" | "ranking",
   pontos: Array<{ rotulo: string; valor: number }>,
@@ -26,7 +33,7 @@ export function resumoCalculado(
   const min = Math.min(...vs);
   const media = vs.reduce((a, b) => a + b, 0) / vs.length;
   const onde = (v: number) => {
-    const r = pontos.filter((p) => p.valor === v).map((p) => p.rotulo);
+    const r = pontos.filter((p) => iguais(p.valor, v)).map((p) => p.rotulo);
     // A contagem vai por extenso: com "a, b, c e mais 60", o Haiku contou 5 (rodada v2, SC02).
     return r.length > 3
       ? `${r.length} com esse valor: ${r.slice(0, 3).join(", ")} e mais ${r.length - 3}`
@@ -43,7 +50,7 @@ export function resumoCalculado(
       ordenados.length % 2
         ? ordenados[meio]
         : (ordenados[meio - 1] + ordenados[meio]) / 2;
-    const zeros = vs.filter((v) => v === 0).length;
+    const zeros = vs.filter((v) => iguais(v, 0)).length;
     linhas.push(
       `- mediana ${num1(mediana)}${zeros ? `; ${zeros} com valor 0` : ""}.`,
     );
@@ -54,7 +61,7 @@ export function resumoCalculado(
   const penultimo = pontos.at(-2)!;
   const d = ultimo.valor - primeiro.valor;
   linhas.push(
-    `- Do primeiro ao último: ${num1(primeiro.valor)} (${primeiro.rotulo}) → ${num1(ultimo.valor)} (${ultimo.rotulo}), ${d === 0 ? "sem mudança" : `${d > 0 ? "alta" : "queda"} de ${num1(Math.abs(d))}`}. Do penúltimo (${penultimo.rotulo}, ${num1(penultimo.valor)}) ao último: ${ultimo.valor === penultimo.valor ? "igual" : `${ultimo.valor > penultimo.valor ? "alta" : "queda"} de ${num1(Math.abs(ultimo.valor - penultimo.valor))}`}.`,
+    `- Do primeiro ao último: ${num1(primeiro.valor)} (${primeiro.rotulo}) → ${num1(ultimo.valor)} (${ultimo.rotulo}), ${iguais(primeiro.valor, ultimo.valor) ? "sem mudança" : `${d > 0 ? "alta" : "queda"} de ${num1(Math.abs(d))}`}. Do penúltimo (${penultimo.rotulo}, ${num1(penultimo.valor)}) ao último: ${iguais(ultimo.valor, penultimo.valor) ? "igual" : `${ultimo.valor > penultimo.valor ? "alta" : "queda"} de ${num1(Math.abs(ultimo.valor - penultimo.valor))}`}.`,
   );
   // "Quanto cresceu?" pede a variação em %. Só quando o valor não é ele mesmo
   // uma porcentagem: em "% da área", "caiu 50%" se confunde com 50 pontos.
