@@ -32,7 +32,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { dadosDoMapa, GERADO_EM, TABELAO } from "../ferramentas/index.ts";
-import { criarPortao } from "./equipe.ts";
+import { criarPortao, type Quem } from "./equipe.ts";
 import { criarLimites } from "./limites.ts";
 import { criarMotorApi } from "./motor-api.ts";
 import { criarDisponibilidade } from "./disponibilidade.ts";
@@ -82,7 +82,8 @@ motor.aquecer?.(MODELOS[0]);
 // pessoa: o id do navegador no modo equipe (equipe.ts); null no modo local.
 type Conversa = { id: string; modelo: string; arquivo: string; pessoa: string | null; turno?: Turno; turnos: number };
 
-type RegistroInicio = { tipo: "inicio"; id: string; modelo: string; pessoa?: string; em: string };
+// nome: o que a pessoa digitou na tela da senha (equipe.ts); não identifica, só registra.
+type RegistroInicio = { tipo: "inicio"; id: string; modelo: string; pessoa?: string; nome?: string; em: string };
 type RegistroTurno = {
   tipo: "turno";
   turno: number;
@@ -149,12 +150,13 @@ function conversaDe(id: string, pessoa: string | null): Conversa | null {
   return c && (!portao || c.pessoa === pessoa) ? c : null;
 }
 
-function novaConversa(modelo: string, pessoa: string | null): Conversa {
+function novaConversa(modelo: string, quem: Quem | null): Conversa {
+  const pessoa = quem?.id ?? null;
   const id = randomUUID().slice(0, 8);
   const carimbo = new Date().toLocaleString("sv-SE", { timeZone: "America/Fortaleza" }).replace(" ", "T").replaceAll(":", "-");
   const c: Conversa = { id, modelo, arquivo: path.join(CONVERSAS, `${carimbo}_${id}.jsonl`), pessoa, turnos: 0 };
   conversas.set(id, c);
-  gravar(c, { tipo: "inicio", id, modelo, modelo_id: motor.modelos[modelo], motor: motor.nome, pessoa: pessoa ?? undefined });
+  gravar(c, { tipo: "inicio", id, modelo, modelo_id: motor.modelos[modelo], motor: motor.nome, pessoa: pessoa ?? undefined, nome: quem?.nome ?? undefined });
 
   return c;
 }
@@ -325,7 +327,8 @@ function conversaParaAPagina(id: string, pessoa: string | null) {
   };
 }
 
-function responderMensagem(res: http.ServerResponse, corpo: Record<string, unknown>, pessoa: string | null) {
+function responderMensagem(res: http.ServerResponse, corpo: Record<string, unknown>, quem: Quem | null) {
+  const pessoa = quem?.id ?? null;
   const texto = String(corpo.texto ?? "").trim();
   if (!texto) return json(res, 400, { erro: "pergunta vazia" });
   if (texto.length > PERGUNTA_MAX) return json(res, 400, { erro: `a pergunta passou de ${PERGUNTA_MAX} caracteres; resuma e tente de novo` });
@@ -335,7 +338,7 @@ function responderMensagem(res: http.ServerResponse, corpo: Record<string, unkno
   const recusa = limites.recusa(pessoa);
   if (recusa) return json(res, 429, { erro: recusa });
   const modelo = MODELOS.includes(String(corpo.modelo)) ? String(corpo.modelo) : MODELOS[0];
-  const c = corpo.conversa ? conversaDe(String(corpo.conversa), pessoa) : novaConversa(modelo, pessoa);
+  const c = corpo.conversa ? conversaDe(String(corpo.conversa), pessoa) : novaConversa(modelo, quem);
   if (!c) return json(res, 404, { erro: "conversa não encontrada" });
   if (c.turno) return json(res, 409, { erro: "a conversa ainda está respondendo" });
   if (c.turnos >= TURNOS_MAX) return json(res, 400, { erro: `esta conversa chegou a ${TURNOS_MAX} perguntas; comece uma nova` });
@@ -379,9 +382,11 @@ async function atender(req: http.IncomingMessage, res: http.ServerResponse) {
   const url = new URL(req.url ?? "/", "http://chat");
   // Só a própria página pode mandar perguntas: outro site aberto no navegador não gasta a cota.
   if (req.method === "POST" && !origemPermitida(req)) return json(res, 403, { erro: "origem não permitida" });
-  const pessoa = portao?.pessoa(req.headers.cookie) ?? null;
+  const quem = portao?.quem(req.headers.cookie) ?? null;
+  const pessoa = quem?.id ?? null;
   if (portao && req.method === "POST" && url.pathname === "/api/entrar") {
-    const r = portao.entrar(String((await lerCorpo(req)).senha ?? ""), req.headers["x-forwarded-proto"] === "https");
+    const corpo = await lerCorpo(req);
+    const r = portao.entrar(String(corpo.senha ?? ""), req.headers["x-forwarded-proto"] === "https", corpo.nome);
     if (!r.ok) return json(res, 401, { erro: r.erro });
     res.writeHead(200, { "content-type": "application/json; charset=utf-8", "set-cookie": r.cookie });
 
@@ -413,7 +418,7 @@ async function atender(req: http.IncomingMessage, res: http.ServerResponse) {
 
     return json(res, "erro" in mapa ? 404 : 200, mapa);
   }
-  if (req.method === "POST" && url.pathname === "/api/mensagem") return responderMensagem(res, await lerCorpo(req), pessoa);
+  if (req.method === "POST" && url.pathname === "/api/mensagem") return responderMensagem(res, await lerCorpo(req), quem);
   if (req.method === "POST" && url.pathname === "/api/parar") {
     const c = conversaDe(String((await lerCorpo(req)).conversa), pessoa);
     if (c?.turno) motor.parar(c.id);

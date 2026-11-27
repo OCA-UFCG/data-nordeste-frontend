@@ -70,9 +70,11 @@
       <form id="form" autocomplete="on">
         <img src="logo-dne.svg" alt="Data Nordeste" width="99" height="47" />
         <h1>Assistente de dados</h1>
-        <p>Versão de teste para a equipe. Digite a senha que você recebeu.</p>
+        <p>Versão de teste para a equipe. Digite a senha que você recebeu. Seu nome, se escrever, fica gravado junto com as suas perguntas.</p>
+        <label for="nome" class="visualmente-oculto">Seu nome (opcional)</label>
+        <input id="nome" name="nome" type="text" autocomplete="name" maxlength="80" placeholder="Seu nome (opcional)" autofocus />
         <label for="senha" class="visualmente-oculto">Senha</label>
-        <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="Senha" required autofocus />
+        <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="Senha" required />
         <button type="submit">Entrar</button>
         <p class="erro" id="erro" role="alert"></p>
       </form>
@@ -89,7 +91,7 @@
           const resp = await fetch("api/entrar", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ senha: form.senha.value }),
+            body: JSON.stringify({ nome: form.nome.value, senha: form.senha.value }),
           });
           if (resp.ok) return location.reload();
           erro.textContent = (await resp.json().catch(() => ({}))).erro ?? `Erro ${resp.status}.`;

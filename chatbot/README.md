@@ -169,7 +169,10 @@ Variáveis: `DATANE_CHAT_PORTA`, `DATANE_CHAT_MOTOR` (`claude` ou `api`),
 Com `DATANE_CHAT_SENHA`, a página pede a senha compartilhada antes de abrir
 (`src/chat/equipe.ts`). Quem acerta recebe um cookie assinado de 30 dias com
 um id aleatório do navegador: cada pessoa vê só as próprias conversas, e o id
-fica gravado na linha `inicio` (sem nome nem e-mail). Trocar a senha desloga
+fica gravado na linha `inicio`. A mesma tela pede "Seu nome (opcional)": o que
+a pessoa digitar vai no cookie e na linha `inicio` (campo `nome`), sem
+conferência, só para saber quem perguntou; quem já tinha entrado antes disso
+continua sem nome até entrar de novo. Trocar a senha desloga
 todos. Trinta senhas erradas no mesmo minuto, somadas de todos, fecham a
 tela de senha até o minuto passar; quem já entrou não é afetado. A conta é
 global de propósito: no gamma, o proxy da frente não repassa o IP de quem

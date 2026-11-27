@@ -6,7 +6,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { criarPortao } from "../chat/equipe.ts";
+import { createHmac, createHash } from "node:crypto";
+import { criarPortao, limparNome } from "../chat/equipe.ts";
 import { criarLimites } from "../chat/limites.ts";
 
 const cookieDoSetCookie = (setCookie: string) => setCookie.split(";")[0];
@@ -18,6 +19,40 @@ test("senha certa dá um cookie que identifica o navegador; errada não", () => 
   assert.ok(r.ok);
   assert.match(r.cookie, /HttpOnly; SameSite=Lax; Path=\/; Max-Age=2592000; Secure$/);
   assert.match(String(portao.pessoa(cookieDoSetCookie(r.cookie))), /^[0-9a-f]{8}$/);
+});
+
+test("o nome digitado na entrada volta junto com o id; sem nome, nome é null", () => {
+  const portao = criarPortao("teste-123")!;
+  const comNome = portao.entrar("teste-123", false, "  Maria\n da  Silva ");
+  const semNome = portao.entrar("teste-123", false, "   ");
+  assert.ok(comNome.ok && semNome.ok);
+  assert.deepEqual(portao.quem(cookieDoSetCookie(comNome.cookie))?.nome, "Maria da Silva");
+  assert.equal(portao.quem(cookieDoSetCookie(semNome.cookie))?.nome, null);
+  assert.match(String(portao.pessoa(cookieDoSetCookie(comNome.cookie))), /^[0-9a-f]{8}$/);
+});
+
+test("trocar o nome no cookie invalida a assinatura", () => {
+  const portao = criarPortao("teste-123")!;
+  const r = portao.entrar("teste-123", false, "Maria");
+  assert.ok(r.ok);
+  const [id, expira, , assinatura] = cookieDoSetCookie(r.cookie).split("=")[1].split(".");
+  const outroNome = Buffer.from("João").toString("base64url");
+  assert.equal(portao.quem(`datane_chat=${id}.${expira}.${outroNome}.${assinatura}`), null);
+});
+
+test("cookie de antes do nome (3 partes) continua valendo, sem nome", () => {
+  const portao = criarPortao("teste-123")!;
+  const chave = createHash("sha256").update("datane-chat:teste-123").digest();
+  const valor = `abcd1234.${Date.now() + 60_000}`;
+  const antigo = `datane_chat=${valor}.${createHmac("sha256", chave).update(valor).digest("base64url")}`;
+  assert.deepEqual(portao.quem(antigo), { id: "abcd1234", nome: null });
+});
+
+test("limparNome deixa uma linha só, sem controle, com até 80 caracteres", () => {
+  assert.equal(limparNome("Ana\u0000\u202e Paula\t"), "Ana Paula");
+  assert.equal(limparNome(undefined), "");
+  assert.equal(limparNome(42), "42");
+  assert.equal(Array.from(limparNome("é".repeat(200))).length, 80);
 });
 
 test("cookie adulterado, de outra senha ou vencido não vale", () => {
