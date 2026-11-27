@@ -10,6 +10,7 @@ import { z } from "zod";
 import { db, tabela } from "./banco.ts";
 import { semAcento } from "../texto.ts";
 import type { Ferramenta } from "./tipos.ts";
+import { NOMES_ANTIGOS, type NomeAntigo } from "./nomes-antigos.ts";
 
 const UFS = new Set("AC AL AM AP BA CE DF ES GO MA MG MS MT PA PB PE PI PR RJ RN RO RR RS SC SE SP TO".split(" "));
 const soLetras = (texto: string) => semAcento(texto).replace(/ /g, "");
@@ -70,6 +71,10 @@ const NOMES_COM_DOIS_SENTIDOS: Record<string, string> = {
     "\nATENÇÃO: \"norte de Minas\" tem dois sentidos. (1) A mesorregião antiga do IBGE, que quase coincide com a região intermediária de Montes Claros (rgint_3102, 85 municípios). (2) A parte de Minas Gerais na área da Sudene (MG_SUDENE, 249 municípios, que inclui também os vales do Jequitinhonha e do Mucuri). Use o que a pergunta indica (quem fala da Sudene quer o 2) e diga na resposta qual usou e quantos municípios tem.",
 };
 NOMES_COM_DOIS_SENTIDOS.nortemineiro = NOMES_COM_DOIS_SENTIDOS.nortedeminas;
+// "Seridó" é o nome antigo de São Vicente do Seridó (PB, até 2013), mas quase
+// sempre a pessoa fala da região do Seridó (RN e PB), que não é recorte dos dados.
+NOMES_COM_DOIS_SENTIDOS.serido =
+  '\nATENÇÃO: "Seridó" tem dois sentidos. (1) A região do Seridó, no RN e na PB, que não é um recorte do Data Nordeste: se a pessoa fala da região, diga isso e ofereça municípios ou a região imediata de Caicó, deixando claro que não é a mesma coisa. (2) O nome antigo de São Vicente do Seridó (PB), trocado em 2013 (IBGE). Use o município só se a pessoa falar dele.';
 
 const ORDEM_DOS_TIPOS = ["municipio", "estado", "estado_parcial", "recorte", "regiao_intermediaria", "regiao_imediata", "pais"];
 
@@ -84,6 +89,7 @@ function todos() {
       soLetras(t.nome_sem_acento.replace(/^regiao (intermediaria|imediata) de /, "").replace(/ parte na area.*$/, "")),
       ...(t.nomes_alternativos ?? "").split(";").filter(Boolean).map(soLetras),
       ...(APELIDOS[t.codigo] ?? []).map(soLetras),
+      ...NOMES_ANTIGOS.filter((n) => n.codigo === t.codigo).map((n) => soLetras(n.antigo)),
       ...(t.tipo === "estado" ? [t.codigo.toLowerCase()] : []),
     ],
   }));
@@ -131,6 +137,22 @@ function aviso(linhas: Territorio[]): string {
   return "";
 }
 
+/**
+ * Aviso de que a pessoa usou o nome antigo de um município da resposta. Sem
+ * ele, o modelo via "Joca Claudino" na busca por "Santarém" e podia achar que
+ * era outro lugar.
+ */
+function avisoDeNomeAntigo(nome: string, linhas: Territorio[]): string {
+  const chave = soLetras(separarUf(nome).nome);
+  const trocas = NOMES_ANTIGOS.filter((n: NomeAntigo) => soLetras(n.antigo) === chave);
+
+  return trocas
+    .map((n) => ({ n, t: linhas.find((l) => l.codigo === n.codigo) }))
+    .filter((x) => x.t)
+    .map(({ n, t }) => `\nATENÇÃO: "${n.antigo}" é o nome antigo de ${t!.nome} (${t!.uf}), trocado em ${n.ano} (IBGE). É o mesmo município: use o nome atual e diga isso na resposta.`)
+    .join("");
+}
+
 /** A busca da ferramenta (exportada para os testes). */
 export function buscarTerritorios(nome: string, uf?: string): string {
   const naUf = (t: Territorio, sigla?: string) => !sigla || t.uf === sigla.toUpperCase();
@@ -152,7 +174,7 @@ export function buscarTerritorios(nome: string, uf?: string): string {
   if (!linhas.length) return porNomeParecido(nome, uf);
   const doisSentidos = NOMES_COM_DOIS_SENTIDOS[soLetras(separarUf(nome).nome)];
 
-  return `Busca por ${modo}:\n${tabela(COLUNAS, linhas)}${doisSentidos ?? aviso(linhas)}`;
+  return `Busca por ${modo}:\n${tabela(COLUNAS, linhas)}${doisSentidos ?? avisoDeNomeAntigo(nome, linhas) + aviso(linhas)}`;
 }
 
 export const buscarTerritorio: Ferramenta = {

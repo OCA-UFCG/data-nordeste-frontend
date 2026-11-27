@@ -189,6 +189,23 @@ export function notasDeMetas(sql: string, linhas: Linhas): string[] {
   return [`Metas de cobertura do PNI das vacinas desta saída: ${lista}. Compare cada vacina com a sua meta.`];
 }
 
+/**
+ * As classes do Monitor de Secas vêm arredondadas para o modelo; somá-las dá
+ * um total com erro de arredondamento. No Ceará em agosto de 2026, 83,9 + 3,9
+ * virou "87,8% em seca", e o certo é 87,9% (rodada c17-v1, TR02). Os totais
+ * já existem prontos.
+ */
+const TOTAIS_DE_SECA = ["area_em_seca", "area_seca_moderada_ou_pior", "area_seca_grave_ou_pior"];
+
+export function notasDeClassesDeSeca(sql: string): string[] {
+  const ids = indicadoresNoSql(sql);
+  if (!ids.includes("monitor_secas") || ids.some((id) => TOTAIS_DE_SECA.includes(id))) return [];
+
+  return [
+    `Nota: para o total da área em seca, em seca moderada ou pior, ou em seca grave ou pior, não some as classes desta saída (vêm arredondadas e a soma erra por 0,1): consulte ${TOTAIS_DE_SECA.join(", ")}, que trazem o total pronto.`,
+  ];
+}
+
 /** Todos os avisos de uma consulta que trouxe linhas. */
 export function notasDaConsulta(sql: string, colunas: string[], linhas: Linhas, truncadoPorLimit: boolean): string {
   const notas = [
@@ -197,6 +214,7 @@ export function notasDaConsulta(sql: string, colunas: string[], linhas: Linhas, 
     ...notasDosRecortes(sql),
     ...notasDoResultado(sql, colunas, linhas),
     ...notasDeMetas(sql, linhas),
+    ...notasDeClassesDeSeca(sql),
     ...notasDeRankingDeTaxa(sql),
     ...notasDeRessalvas(sql),
   ];
