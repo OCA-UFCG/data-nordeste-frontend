@@ -1,3 +1,5 @@
+import { ehNumero, type Linhas } from "./banco.ts";
+
 /**
  * O resumo de uma série ou de um ranking, calculado aqui (copiado do chat do
  * SEDES). O modelo copia estes números em vez de achar de olho o maior, o
@@ -103,4 +105,37 @@ export function resumoCalculado(
     );
   }
   return linhas.join("\n");
+}
+
+/** Os rótulos das linhas com o maior ou o menor valor da coluna (empates juntos). */
+function quemTem(linhas: Linhas, rotulo: string, coluna: string, alvo: number): string {
+  return linhas
+    .filter((l) => iguais(l[coluna] as number, alvo))
+    .map((l) => String(l[rotulo]))
+    .join(", ");
+}
+
+/**
+ * Tabela larga (um lugar por linha, um indicador por coluna): quem tem o maior
+ * e o menor valor de cada coluna. Nas capitais (gamma, 25/11/2026), o Haiku
+ * achou de cabeça "Teresina tem o menor PIB por habitante" com Salvador mais
+ * baixo na própria tabela, e a revisão deixou passar. Só nomes, sem números:
+ * os valores já estão na tabela, com as casas certas.
+ *
+ *   extremosPorColuna(["rotulo", "pib", "idhm"], linhas)
+ *   // "Maior e menor de cada coluna (...):\n- pib: maior Recife; menor Salvador\n- idhm: ..."
+ */
+export function extremosPorColuna(colunas: string[], linhas: Linhas): string {
+  if (linhas.length < 3) return "";
+  const rotulo = colunas.find((c) => linhas.every((l) => typeof l[c] === "string"));
+  if (!rotulo || new Set(linhas.map((l) => l[rotulo])).size < linhas.length) return "";
+  const numericas = colunas.filter((c) => c !== rotulo && linhas.every((l) => ehNumero(l[c])));
+  if (numericas.length < 2) return "";
+  const extremos = numericas.map((c) => {
+    const vs = linhas.map((l) => l[c] as number);
+
+    return `- ${c}: maior ${quemTem(linhas, rotulo, c, Math.max(...vs))}; menor ${quemTem(linhas, rotulo, c, Math.min(...vs))}`;
+  });
+
+  return [`Maior e menor de cada coluna, entre as ${linhas.length} linhas desta saída (calculado; use isto para "o maior" e "o menor", não ache de olho):`, ...extremos].join("\n");
 }

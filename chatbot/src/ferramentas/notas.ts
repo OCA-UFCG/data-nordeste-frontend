@@ -8,7 +8,7 @@
 import { CATALOGO, IDS, SO_INDICE, dimensoesDe, indicadoresNoSql, metasDasVacinas, sobreOsIndicadores } from "./catalogo.ts";
 import { distancia } from "./territorio.ts";
 import { CONSULTAS, INDICADORES, type Dimensao, type Indicador } from "../tabelao/indicadores.ts";
-import { ehNumero, type Linhas } from "./banco.ts";
+import { db, ehNumero, type Linhas } from "./banco.ts";
 
 /**
  * Dimensões que têm a linha 'total' em cada indicador: as que o catálogo soma
@@ -206,6 +206,90 @@ export function notasDeClassesDeSeca(sql: string): string[] {
   ];
 }
 
+/**
+ * O período mais recente que vale como "o dado mais recente": o último ano
+ * fechado nos anuais (o ano em curso é parcial e as projeções, como 2030 e
+ * 2050 da escassez hídrica, não contam) e o último mês nos mensais.
+ * Ex.: mortalidade_infantil → "2025"; cobertura_vacinal (até 2026) → "2025".
+ */
+function periodoMaisRecente(i: (typeof CATALOGO)[number]): string {
+  if (i.periodicidade !== "anual") return i.ultimo_periodo;
+  const fechados = i.periodos.split(", ").filter((p) => /^\d{4}$/.test(p) && p < ANO_EM_CURSO);
+
+  return fechados.at(-1) ?? i.ultimo_periodo;
+}
+const MAIS_RECENTE = new Map(CATALOGO.map((i) => [i.id, periodoMaisRecente(i)]));
+
+const FILTRO = String.raw`(=\s*'[^']+'|in\s*\([^)]*\))`;
+const literais = (trecho: string) => (trecho.match(/'[^']+'/g) ?? []).map((x) => x.slice(1, -1));
+
+/**
+ * Os períodos que a consulta pediu de cada indicador: os pares
+ * "indicador = 'x' AND periodo = 'y'" (ou IN) e, com um indicador só, todos os
+ * filtros de periodo.
+ * Ex.: "(v.indicador='idhm' AND v.periodo='2010') OR (v.indicador='pib' AND v.periodo IN ('2010','2023'))"
+ *   → [{ id: "idhm", periodos: ["2010"] }, { id: "pib", periodos: ["2010", "2023"] }]
+ */
+export function periodosPorIndicador(sql: string): Array<{ id: string; periodos: string[] }> {
+  const pares = [...sql.matchAll(new RegExp(String.raw`\bindicador\s*${FILTRO}\s+and\s+(?:\w+\.)?periodo\s*${FILTRO}`, "gi"))];
+  if (pares.length) return pares.flatMap((m) => literais(m[1]).map((id) => ({ id, periodos: literais(m[2]) })));
+  const ids = indicadoresNoSql(sql);
+  const periodos = [...sql.matchAll(new RegExp(String.raw`\bperiodo\s*${FILTRO}`, "gi"))].flatMap((m) => literais(m[1]));
+
+  return ids.length === 1 && periodos.length ? [{ id: ids[0], periodos }] : [];
+}
+
+/**
+ * Consulta de um ano antigo quando há um mais recente. Nas conversas do gamma
+ * de 25/11/2026, o Haiku usou 2024 como "o último ano" da mortalidade infantil
+ * em 4 respostas, com 2025 no tabelão; em Itabuna contra Ilhéus isso inverteu
+ * a conclusão (em 2025, Ilhéus tem a taxa mais alta). Os exemplos do prompt e
+ * do esquema usavam 2024.
+ */
+export function notasDeAnoAntigo(sql: string): string[] {
+  // Junta os pares do mesmo indicador: numa conta entre 2010 e 2022, com
+  // a.periodo='2010' e b.periodo='2022', o 2010 sozinho dava aviso falso.
+  const pedidos = new Map<string, string[]>();
+  for (const { id, periodos } of periodosPorIndicador(sql)) pedidos.set(id, [...(pedidos.get(id) ?? []), ...periodos]);
+  const antigos = [...pedidos].flatMap(([id, periodos]) => {
+    const recente = MAIS_RECENTE.get(id);
+    const consultado = [...periodos].sort().at(-1)!;
+
+    return recente && consultado < recente ? [`${id} vai até ${recente} (a consulta pegou até ${consultado})`] : [];
+  });
+  if (!antigos.length) return [];
+
+  return [
+    `Nota: há dado mais recente do que o consultado: ${antigos.join("; ")}. Se a pessoa pediu esse ano, siga com ele. Se não pediu ano (quer "o dado atual", "nos últimos anos", um retrato do lugar), consulte de novo com o mais recente antes de responder e não chame o ano antigo de "último disponível".`,
+  ];
+}
+
+/**
+ * O nome de cada código de território escrito na consulta. O Haiku escreve
+ * códigos IBGE de memória e erra: para as capitais, pôs '2402600' como Natal,
+ * que é Ceará-Mirim (gamma, 25/11/2026, e de novo na rodada c19-v2a). Ele só
+ * percebeu quando o nome apareceu na saída. Com a lista, o erro fica à vista
+ * mesmo quando a consulta não traz a coluna nome.
+ */
+const NOME_DO_CODIGO = new Map(
+  (db.prepare("SELECT codigo, nome, uf, tipo FROM territorios").all() as Array<{ codigo: string; nome: string; uf: string | null; tipo: string }>).map((t) => [
+    t.codigo,
+    t.tipo === "municipio" && t.uf ? `${t.nome} (${t.uf})` : t.nome,
+  ]),
+);
+const CODIGOS_POR_NOTA = 12;
+
+export function notasDosCodigos(sql: string): string[] {
+  const codigos = [...new Set((sql.match(/'(\d{7}|rgi_\d{6}|rgint_\d{4})'/g) ?? []).map((c) => c.slice(1, -1)))];
+  if (!codigos.length) return [];
+  const nomes = codigos.slice(0, CODIGOS_POR_NOTA).map((c) => `${c} = ${NOME_DO_CODIGO.get(c) ?? "código que não existe"}`);
+  const mais = codigos.length > CODIGOS_POR_NOTA ? ` e mais ${codigos.length - CODIGOS_POR_NOTA}` : "";
+
+  return [
+    `Nota: territórios pelos códigos desta consulta: ${nomes.join("; ")}${mais}. Confira se são os lugares da pergunta; se algum não for, ache o código certo com buscar_territorio e consulte de novo.`,
+  ];
+}
+
 /** Todos os avisos de uma consulta que trouxe linhas. */
 export function notasDaConsulta(sql: string, colunas: string[], linhas: Linhas, truncadoPorLimit: boolean): string {
   const notas = [
@@ -217,6 +301,8 @@ export function notasDaConsulta(sql: string, colunas: string[], linhas: Linhas, 
     ...notasDeClassesDeSeca(sql),
     ...notasDeRankingDeTaxa(sql),
     ...notasDeRessalvas(sql),
+    ...notasDeAnoAntigo(sql),
+    ...notasDosCodigos(sql),
   ];
   const parciais = indicadoresNoSql(sql).filter((id) => COM_ANO_PARCIAL.has(id));
   if (parciais.length && sql.includes(`'${ANO_EM_CURSO}'`) || (parciais.length && linhas.some((l) => Object.values(l).includes(ANO_EM_CURSO))))
@@ -233,7 +319,7 @@ export function notasDaConsulta(sql: string, colunas: string[], linhas: Linhas, 
 
 /** Por que uma consulta sem linhas pode ter vindo vazia. */
 export function notasDeConsultaVazia(sql: string): string {
-  const notas = [...notasDeIdsDesconhecidos(sql)];
+  const notas = [...notasDeIdsDesconhecidos(sql), ...notasDosCodigos(sql)];
   const municipais = indicadoresNoSql(sql).filter((id) => MUNICIPAIS.has(id));
   if (municipais.length)
     notas.push(

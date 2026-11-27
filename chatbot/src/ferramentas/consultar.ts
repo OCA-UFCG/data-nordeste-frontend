@@ -9,7 +9,7 @@ import { db, ehNumero, RODAPE, tabela, type Linhas } from "./banco.ts";
 import { ESQUEMA } from "./esquema.ts";
 import { corrigirColunasInventadas, dicaDoErro, notasDaConsulta, notasDeConsultaVazia } from "./notas.ts";
 import { CATALOGO, indicadoresNoSql } from "./catalogo.ts";
-import { resumoCalculado } from "./resumo.ts";
+import { extremosPorColuna, resumoCalculado } from "./resumo.ts";
 import { executarSql, LIMITE_LINHAS, PRAZO_SQL_MS, validarSql } from "./sql.ts";
 import type { Ferramenta } from "./tipos.ts";
 
@@ -243,7 +243,8 @@ async function consultar({ sql, grafico }: { sql: string; grafico?: Grafico }): 
   if (grafico?.tipo === "mapa") return saidaDoMapa(final, r.colunas, r.linhas, notas);
   const aviso = (r.truncado ? `\n(Mostrando só as primeiras ${LIMITE_LINHAS} linhas; refine a consulta.)` : "") + notas;
   if (grafico) return saidaDoGrafico(final, grafico, r.colunas, r.linhas, aviso);
-  const resumo = resumoSemGrafico(r.colunas, r.linhas);
+  // Tabela larga (um lugar por linha, vários indicadores): maior e menor de cada coluna.
+  const resumo = resumoSemGrafico(r.colunas, r.linhas) || extremosPorColuna(r.colunas, r.linhas);
 
   // Sem grafico, a coluna rotulo não pode abrir a saída: a página desenharia
   // um gráfico que o modelo não pediu (PS36, c13-todas: duas cidades numa série).

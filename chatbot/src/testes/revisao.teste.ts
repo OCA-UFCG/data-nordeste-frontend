@@ -3,7 +3,7 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { limparResposta, respostaDaRevisao } from "../chat/acabamento.ts";
+import { limparResposta, respostaDaRevisao, semIntroducaoPendurada } from "../chat/acabamento.ts";
 import type Anthropic from "@anthropic-ai/sdk";
 import { fecharConferencia } from "../chat/motor-api.ts";
 
@@ -62,4 +62,18 @@ test("a conferência da página sai do histórico; fica a resposta que a pessoa 
   assert.equal(mensagens.length, 4);
   assert.deepEqual(mensagens.at(-1), { role: "assistant", content: "Campina Grande tinha 419.379 habitantes e Caruaru, 378.048." });
   assert.doesNotMatch(JSON.stringify(mensagens), /Conferência|"OK"/);
+});
+
+test("\"Por exemplo:\" das sugestões não fica pendurado no fim (gamma, recusa de alterar o banco)", () => {
+  const texto = "Não posso alterar os dados. O assistente só lê informações do portal.\n\nPosso mostrar o PIB de Itabuna de outras formas. Por exemplo:\n» Qual o PIB per capita de Itabuna em 2023?";
+  assert.deepEqual(limparResposta(texto), {
+    resposta: "Não posso alterar os dados. O assistente só lê informações do portal.\n\nPosso mostrar o PIB de Itabuna de outras formas.",
+    sugestoes: ["Qual o PIB per capita de Itabuna em 2023?"],
+  });
+  assert.equal(semIntroducaoPendurada("Trato dos dados da Sudene.\n\nPor exemplo, você pode perguntar:"), "Trato dos dados da Sudene.");
+});
+
+test("dois-pontos no meio ou número com ponto não tiram texto", () => {
+  assert.equal(semIntroducaoPendurada("Fonte: IBGE. A população é 419.379."), "Fonte: IBGE. A população é 419.379.");
+  assert.equal(semIntroducaoPendurada("Eram 1.234 pessoas:"), "Eram 1.234 pessoas:");
 });

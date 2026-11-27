@@ -5,9 +5,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buscarTerritorios, separarUf } from "../ferramentas/territorio.ts";
-import { notasDaConsulta, notasDeClassesDeSeca, notasDeIdsDesconhecidos, notasDeMetas, notasDeRankingDeTaxa, notasDeRessalvas, notasDosRecortes } from "../ferramentas/notas.ts";
+import { notasDaConsulta, notasDeAnoAntigo, notasDosCodigos, notasDeClassesDeSeca, notasDeIdsDesconhecidos, notasDeMetas, notasDeRankingDeTaxa, notasDeRessalvas, notasDosRecortes, periodosPorIndicador } from "../ferramentas/notas.ts";
 import { validarSql } from "../ferramentas/sql.ts";
-import { resumoCalculado } from "../ferramentas/resumo.ts";
+import { extremosPorColuna, resumoCalculado } from "../ferramentas/resumo.ts";
 import { paineisDasConsultas } from "../ferramentas/catalogo.ts";
 import { textoDoHtml } from "../tabelao/portal.ts";
 import { buscarNoPortal } from "../ferramentas/portal.ts";
@@ -216,3 +216,63 @@ test("classes do Monitor de Secas pedem os totais prontos, não a soma (c17-v1, 
   assert.deepEqual(notasDeClassesDeSeca("SELECT valor FROM valores WHERE indicador='idhm'"), []);
 });
 
+// Consultas reais do gamma (25/11/2026): o retrato de Itabuna e a comparação com Ilhéus.
+const RETRATO_DE_ITABUNA =
+  "SELECT v.indicador, v.periodo, v.valor FROM valores v WHERE v.territorio='2914802' AND ((v.indicador='pib' AND v.periodo='2023') OR (v.indicador='idhm' AND v.periodo='2010') OR (v.indicador='mortalidade_infantil' AND v.periodo='2024'))";
+
+test("lê os pares indicador e período da consulta, com = e IN", () => {
+  assert.deepEqual(periodosPorIndicador(RETRATO_DE_ITABUNA), [
+    { id: "pib", periodos: ["2023"] },
+    { id: "idhm", periodos: ["2010"] },
+    { id: "mortalidade_infantil", periodos: ["2024"] },
+  ]);
+  assert.deepEqual(periodosPorIndicador("SELECT valor FROM valores WHERE (indicador='mortalidade_infantil' AND periodo IN ('2020','2024'))"), [
+    { id: "mortalidade_infantil", periodos: ["2020", "2024"] },
+  ]);
+  assert.deepEqual(periodosPorIndicador("SELECT valor FROM valores WHERE indicador='pib' AND territorio='PB' AND periodo='2021'"), [
+    { id: "pib", periodos: ["2021"] },
+  ]);
+});
+
+test("avisa do ano mais recente quando a consulta pega um ano antigo (gamma, Itabuna e Ilhéus)", () => {
+  const nota = notasDeAnoAntigo(RETRATO_DE_ITABUNA).join(" ");
+  assert.match(nota, /mortalidade_infantil vai até 2025 \(a consulta pegou até 2024\)/);
+  assert.doesNotMatch(nota, /pib|idhm/);
+  assert.match(notasDaConsulta(RETRATO_DE_ITABUNA, ["indicador"], [{ indicador: "pib" }], false), /dado mais recente/);
+});
+
+test("não avisa com o ano mais recente, nem por ano em curso parcial ou projeção", () => {
+  assert.deepEqual(notasDeAnoAntigo("SELECT valor FROM valores WHERE indicador='mortalidade_infantil' AND periodo IN ('2020','2025')"), []);
+  // 2026 é parcial: 2025 é o mais recente que vale.
+  assert.deepEqual(notasDeAnoAntigo("SELECT valor FROM valores WHERE indicador='cobertura_vacinal' AND periodo='2025'"), []);
+  // 2030 e 2050 são projeções.
+  assert.deepEqual(notasDeAnoAntigo("SELECT valor FROM valores WHERE indicador='indice_ameaca_escassez_hidrica' AND periodo='2020'"), []);
+  assert.deepEqual(notasDeAnoAntigo("SELECT valor FROM valores WHERE indicador='area_em_seca' AND periodo='2026-08'"), []);
+  // Conta entre dois anos com um alias por ano (c19-v1, GM02): vale o mais recente dos dois.
+  assert.deepEqual(notasDeAnoAntigo("SELECT b.valor - a.valor FROM valores a, valores b WHERE a.indicador='populacao' AND a.periodo='2010' AND b.indicador='populacao' AND b.periodo='2022'"), []);
+});
+
+test("tabela larga traz o maior e o menor de cada coluna (gamma, capitais)", () => {
+  const capitais = [
+    { rotulo: "Recife", pib_per_capita_2023: 44563.38, analfabetismo_2022: 5.476 },
+    { rotulo: "Teresina", pib_per_capita_2023: 33994.07, analfabetismo_2022: 7.12 },
+    { rotulo: "Salvador", pib_per_capita_2023: 31724.15, analfabetismo_2022: 3.45 },
+    { rotulo: "Maceió", pib_per_capita_2023: 35232.29, analfabetismo_2022: 8.42 },
+  ];
+  const saida = extremosPorColuna(["rotulo", "pib_per_capita_2023", "analfabetismo_2022"], capitais);
+  assert.match(saida, /- pib_per_capita_2023: maior Recife; menor Salvador/);
+  assert.match(saida, /- analfabetismo_2022: maior Maceió; menor Salvador/);
+  // Uma coluna só (já tem o resumo de série/ranking) ou rótulo repetido: nada.
+  assert.equal(extremosPorColuna(["rotulo", "pib_per_capita_2023"], capitais), "");
+  assert.equal(extremosPorColuna(["rotulo", "pib_per_capita_2023", "analfabetismo_2022"], [...capitais, capitais[0]]), "");
+});
+
+test("diz o nome de cada código de território da consulta (gamma, Natal virou Ceará-Mirim)", () => {
+  const sql = "SELECT valor FROM valores WHERE territorio IN ('2111300','2402600','9999999','rgi_250004') AND indicador='pib'";
+  const nota = notasDosCodigos(sql).join(" ");
+  assert.match(nota, /2111300 = São Luís \(MA\)/);
+  assert.match(nota, /2402600 = Ceará-Mirim \(RN\)/);
+  assert.match(nota, /9999999 = código que não existe/);
+  assert.match(nota, /rgi_250004 = /);
+  assert.deepEqual(notasDosCodigos("SELECT valor FROM valores WHERE territorio='PB' AND indicador='pib'"), []);
+});

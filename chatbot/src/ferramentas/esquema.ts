@@ -58,6 +58,6 @@ Exemplos:
    GROUP BY t.codigo ORDER BY idhm DESC LIMIT 5;
 12) Posição no grupo ("está entre os piores?"): conte maiores e menores na consulta.
    SELECT SUM(v.valor > x.valor) AS com_valor_maior, SUM(v.valor < x.valor) AS com_valor_menor, COUNT(*) AS total, x.valor FROM valores v JOIN territorios t ON t.codigo=v.territorio,
-   (SELECT valor FROM valores WHERE indicador='mortalidade_infantil' AND periodo='2024' AND territorio='2504009') x
-   WHERE v.indicador='mortalidade_infantil' AND v.periodo='2024' AND t.tipo='municipio' AND t.uf='PB';
+   (SELECT valor FROM valores WHERE indicador='mortalidade_infantil' AND periodo='2025' AND territorio='2504009') x
+   WHERE v.indicador='mortalidade_infantil' AND v.periodo='2025' AND t.tipo='municipio' AND t.uf='PB';
 13) Municípios de uma região: territorios com cd_rgint ou cd_rgi; o valor da região inteira é o território 'rgint_2502'.`;
