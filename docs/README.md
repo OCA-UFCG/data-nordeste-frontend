@@ -106,6 +106,12 @@ outside the repository and rendered through frontend route/component logic.
   `/boletim/[id]` come from the short-text Contentful field `seoDescription`
   on `panels` and `post`. Empty field falls back to the page's rich-text
   description. `buildMetadata` still truncates to 155 characters.
+- Tab icons come only from the Next.js file conventions in `src/app`:
+  `favicon.ico` (16/32/48), `icon.svg` and `apple-icon.png` (180, white
+  background). They are the green "NE" mark cut from the `logo-DNE` symbol in
+  `public/sprite.svg`. Until Nov 2026 the root layout declared
+  `icons: "datane-logo.png"`, a relative URL that 404ed on every nested route.
+  To swap the icon, replace those three files; do not add `icons` to metadata.
 
 ## Integrations And Environment
 

@@ -37,11 +37,12 @@ export const metadata: Metadata = {
     "desenvolvimento regional",
     "dados abertos",
   ],
-  icons: {
-    icon: "datane-logo.png",
-    shortcut: "datane-logo.png",
-    apple: "datane-logo.png",
-  },
+
+  // IMPORTANT: the tab icons come from the file conventions in src/app
+  // (favicon.ico, icon.svg, apple-icon.png), which Next emits with absolute
+  // URLs on every route. Do not reintroduce an `icons` field here: the old
+  // relative "datane-logo.png" resolved to /posts/datane-logo.png and similar
+  // 404s on nested routes.
   robots: {
     index: !IS_BETA,
     follow: !IS_BETA,
@@ -64,7 +65,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
-      <link rel="icon" href="/favicon.ico" sizes="any" />
       <body className={inter.className}>
         {children}
         <VLibras />
