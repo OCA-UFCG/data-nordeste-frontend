@@ -124,6 +124,11 @@ test("resumo conta os empates por extenso e com o valor exato (rodada v2, SC02)"
   assert.match(resumoCalculado("ranking", pontos), /maior 100 \(4 com esse valor: m0, m2, m3 e mais 1\)/);
 });
 
+test("resumo junta no empate o valor com resíduo de ponto flutuante (seca na PB, gamma 25/11/2026)", () => {
+  const pontos = [100.00000000000001, 100, 100, 100.00000000000001, 100, 0].map((v, i) => ({ rotulo: `m${i}`, valor: v }));
+  assert.match(resumoCalculado("ranking", pontos), /maior 100 \(5 com esse valor:/);
+});
+
 test("saídas de ferramenta não mostram o nome interno da base (rodadas v4 e c3-v1)", () => {
   assert.doesNotMatch(RODAPE, /tabel[ãa]o/i);
   assert.match(RODAPE, /fonte original/);

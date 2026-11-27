@@ -216,7 +216,10 @@ só o Haiku. O nginx de entrada encaminha
   só para leitura) e as conversas em `/home/ubuntu/datane-chat/conversas`.
 - **Atualizar o tabelão:** gerar e conferir aqui (`npm run tabelao`,
   `npm run conferir`), copiar `dados/` para a VM com `rsync` e reiniciar o
-  contêiner (`sudo docker restart datane-chat-gamma`).
+  contêiner (`sudo docker restart datane-chat-gamma`). Os valores saem
+  arredondados para 9 casas (`src/tabelao/residuo.ts`): sem isso, 100% da área
+  em seca aparecia como 100,00000000000001 e `valor = 100` não achava. Um
+  tabelão antigo se corrige sem regerar com `npx tsx src/tabelao/residuo.ts`.
 - **Gasto:** os limites do modo equipe (100 perguntas por pessoa por dia, US$ 5
   por dia, US$ 50 por mês) valem para este contêiner. O limite da conta no
   Console da Anthropic vale para a chave toda.

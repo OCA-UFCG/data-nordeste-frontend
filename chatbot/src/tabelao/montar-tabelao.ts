@@ -27,6 +27,7 @@ import {
 } from "./indicadores.ts";
 import { ESQUEMA_SQLITE, INDICES_E_VISOES } from "./esquema.ts";
 import { lerCadastro, nomeSemAcento, type Cadastro } from "./territorios.ts";
+import { tirarResiduo } from "./residuo.ts";
 
 const PACOTE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const DESTINO = process.env.DATANE_TABELAO ?? path.join(PACOTE, "dados/datane.sqlite");
@@ -214,15 +215,16 @@ function gravarValores(db: DatabaseSync, ind: Indicador) {
      WHERE ${valorMunicipal(ind)} IS NOT NULL
        AND (cd_mun = 0 OR CAST(cd_mun AS TEXT) IN (SELECT codigo FROM territorios WHERE tipo = 'municipio'))`,
   );
-  if (ind.agregacao === "municipal") return;
-  db.exec(
-    `INSERT INTO valores SELECT '${ind.id}', c.periodo, MIN(c.ano), MIN(c.mes), m.territorio,
-       ${DIMENSOES.map((d) => `c.${d}`).join(", ")}, ${valorAgregado(ind)}
-     FROM cubo c JOIN membros m ON m.municipio = CAST(c.cd_mun AS TEXT)
-     WHERE c.cd_mun <> 0
-     GROUP BY c.periodo, m.territorio${DIMENSOES.map((d) => `, c.${d}`).join("")}
-     HAVING ${valorAgregado(ind)} IS NOT NULL`,
-  );
+  if (ind.agregacao !== "municipal")
+    db.exec(
+      `INSERT INTO valores SELECT '${ind.id}', c.periodo, MIN(c.ano), MIN(c.mes), m.territorio,
+         ${DIMENSOES.map((d) => `c.${d}`).join(", ")}, ${valorAgregado(ind)}
+       FROM cubo c JOIN membros m ON m.municipio = CAST(c.cd_mun AS TEXT)
+       WHERE c.cd_mun <> 0
+       GROUP BY c.periodo, m.territorio${DIMENSOES.map((d) => `, c.${d}`).join("")}
+       HAVING ${valorAgregado(ind)} IS NOT NULL`,
+    );
+  tirarResiduo(db, ind.id);
 }
 
 function calcularIndicador(db: DatabaseSync, ind: Indicador) {
