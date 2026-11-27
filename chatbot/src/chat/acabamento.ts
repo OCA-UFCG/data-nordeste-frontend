@@ -134,7 +134,21 @@ export function limparResposta(
     )
     .replace(/\n{3,}/gu, "\n\n")
     .trim();
-  return { resposta, sugestoes };
+  return { resposta: semIntroducaoPendurada(resposta), sugestoes };
+}
+
+/**
+ * A última frase terminada em ":" anunciava as perguntas sugeridas, que saem
+ * do texto e viram botões: sobrava "Por exemplo:" no fim, sem nada depois
+ * (gamma, 25/11/2026, na recusa de alterar o banco; 6 de 3.439 respostas das
+ * rodadas, como G04 e NV09). Só a frase final sai; um número com ponto
+ * ("1.234 pessoas:") para a busca, e nada é tirado.
+ *
+ *   semIntroducaoPendurada("Posso mostrar de outras formas. Por exemplo:")
+ *   // "Posso mostrar de outras formas."
+ */
+export function semIntroducaoPendurada(texto: string): string {
+  return texto.replace(/(^|[.!?]\s+|\n)[^.!?\n]*:\s*$/u, "$1").trim();
 }
 
 /** Os links que conteudo_do_portal devolveu neste turno. */
@@ -205,8 +219,11 @@ export function acabar(pedido: Pedido): string | null {
     t.descartarTexto();
     t.rascunho = "";
     t.status("Conferindo a resposta…");
+    // "Mexa só nesses números": sem isso, a correção das medidas de um campo de
+    // futebol (105 × 68 m, de memória) levou junto a conversão em campos, que era
+    // a resposta à pergunta (rodada c17-v1, DE01).
     const numeros = sem.length
-      ? ` Estes números da sua resposta não aparecem nas saídas das ferramentas desta conversa: ${sem.join("; ")}. Confira cada um. Se for uma conta sua (soma, diferença, média) com valores das saídas, refaça a conta com uma consulta ou tire o número. Se veio de memória, tire ou consulte.`
+      ? ` Estes números da sua resposta não aparecem nas saídas das ferramentas desta conversa: ${sem.join("; ")}. Confira cada um. Se for uma conta sua (soma, diferença, média) com valores das saídas, refaça a conta com uma consulta ou tire o número. Se veio de memória, tire ou consulte. Mexa só nesses números: o resto da resposta fica, principalmente a parte que responde à pergunta.`
       : "";
     const idioma = lingua
       ? ` A pergunta foi em ${NOME_DA_LINGUA[lingua]} e a sua resposta saiu em português. Escreva tudo em ${NOME_DA_LINGUA[lingua]}, inclusive as perguntas sugeridas; os nomes dos lugares e das fontes ficam como estão.`

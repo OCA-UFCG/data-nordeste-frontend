@@ -104,7 +104,7 @@ cita cada uma como `INC-n` no lugar onde a contorna.
 | Ferramenta | O que faz |
 |---|---|
 | `buscar_territorio` | Acha município, estado, região ou recorte pelo nome, sem acento, com UF no fim ("Patos - PB"), grafias alternativas (Assú/Açu) e erro de digitação; devolve todos os homônimos. |
-| `consultar_sql` | SELECT no tabelão (até 200 linhas, 10 s). Com `grafico`, a página desenha série, ranking ou mapa, e a saída traz um "Resumo calculado". Avisos vão junto do resultado: id de indicador errado, recorte sem filtro (que dobraria a soma), indicador só municipal, ano em curso, cobertura acima de 100%, mistura de municípios com recortes. |
+| `consultar_sql` | SELECT no tabelão (até 200 linhas, 10 s). Com `grafico`, a página desenha série, ranking ou mapa, e a saída traz um "Resumo calculado"; tabela larga (um lugar por linha, vários indicadores) traz o maior e o menor de cada coluna. Avisos vão junto do resultado: id de indicador errado, recorte sem filtro (que dobraria a soma), indicador só municipal, ano em curso, ano mais antigo que o último disponível, cobertura acima de 100%, mistura de municípios com recortes. |
 | `detalhar_indicador` | Ficha completa do indicador, com as categorias (público-alvo e meta de cada vacina). |
 | `conteudo_do_portal` | Busca nos painéis, boletins, data stories e datasets do portal. É o que responde os temas que o tabelão não tem (comex, CAGED, FNE...), apontando o painel. |
 

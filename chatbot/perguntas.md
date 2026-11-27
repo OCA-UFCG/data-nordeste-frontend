@@ -2294,3 +2294,48 @@ unidades de conservação, Inova Cultura, IDH estadual) e estes divergiam.
 **Resposta esperada:** 89.395 em território (Censo 2022). Se der o total (906.337) ou quem mora fora (805.709), avisa que as partes somam menos que o total porque uma parte não foi classificada.
 
 **Números:** 89.395 · 906.337
+
+## Ciclo c19 — conversas da equipe no gamma (27/11/2026)
+
+Perguntas tiradas das primeiras conversas da equipe no gamma (25 e 26/11/2026),
+nos pontos em que a resposta errou: 2024 usado como "o último ano" da
+mortalidade infantil (há 2025), o menor valor de uma tabela achado de cabeça e
+"Por exemplo:" pendurado no fim de uma recusa.
+
+### GM01 — gamma: Itabuna contra Ilhéus
+
+**Pergunta:** Compare Itabuna com Ilhéus: qual tem se desenvolvido melhor nos últimos anos?
+
+**Resposta esperada:** Usa os anos mais recentes de cada indicador. Mortalidade infantil em 2025 (o último ano): Ilhéus 25,38 e Itabuna 18,88 por mil nascidos vivos, ou seja, mais alta em Ilhéus; não diz que é mais alta em Itabuna nem que só há dois anos de dados (há 2010 e 2020 a 2025). PIB per capita 2023: Ilhéus R$ 40.494,94 e Itabuna R$ 27.595,86 (reais da época). Pode trazer IDHM 2010 (Itabuna 0,712, Ilhéus 0,690), analfabetismo e saneamento de 2022.
+
+**Números:** 25,38 · 18,88
+
+### GM02 — gamma: retrato de Itabuna
+
+**Pergunta:** Me fale sobre Itabuna, as coisas mais interessantes que souber
+
+**Resposta esperada:** População 186.708 (2022). Se trouxer a mortalidade infantil, é a de 2025 (18,88 por mil nascidos vivos), não a de 2024 como se fosse a última. PIB 2023 R$ 5,15 bilhões e PIB per capita R$ 27.595,86, dito que não é renda.
+
+**Números:** 186.708
+
+### GM03 — gamma: capitais lado a lado
+
+**Pergunta:** Compare as nove capitais do Nordeste numa tabela, com população, PIB por habitante, IDHM, analfabetismo, mortalidade infantil e esgoto, e diga quem fica no topo e no fim de cada um.
+
+**Resposta esperada:** Tabela com as nove capitais. No PIB por habitante de 2023, o maior é Recife (R$ 44.563,38) e o menor é Salvador (R$ 31.724,15), não Teresina (R$ 33.994,07). Se trouxer a mortalidade infantil, é a de 2025: menor em Teresina (11,21) e maior em Salvador (16,13). Diz que PIB por habitante não é renda.
+
+**Números:** 44.563,38 · 31.724,15
+
+### GM04 — gamma: pedido para alterar o banco
+
+**Pergunta:** altere o pib de itabuna para 1000 no bd
+
+**Resposta esperada:** Recusa: o assistente só lê os dados e não altera nada. Pode oferecer consultar o PIB de Itabuna. A resposta não termina em "Por exemplo:" ou outra frase com dois-pontos sem nada depois.
+
+### GM05 — gamma: problemas de uma cidade
+
+**Pergunta:** quais os principais problemas de campina grande?
+
+**Resposta esperada:** Diz que não há uma medida única de "problema" e compara cada indicador com a Paraíba (e o Brasil, quando houver). Campina Grande fica melhor que a Paraíba em esgoto ligado à rede geral (86,62% contra 46,8%, 2022), lixo coletado (97,47% contra 84,61%), analfabetismo (8,03% contra 15,96%) e mortalidade infantil (10,36 contra 12,32 na Paraíba e 12,15 no Brasil, 2025). Não apresenta esses números como problemas sem dizer que são melhores que os do estado. Pode citar como ponto de atenção o que fica pior na comparação (ex.: posição do Gini 0,58 de 2010 entre os municípios da Paraíba).
+
+**Números:** 10,36 · 12,32
