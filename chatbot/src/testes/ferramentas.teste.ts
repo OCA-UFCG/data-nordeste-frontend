@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buscarTerritorios, separarUf } from "../ferramentas/territorio.ts";
-import { notasDaConsulta, notasDeIdsDesconhecidos, notasDeMetas, notasDeRankingDeTaxa, notasDeRessalvas, notasDosRecortes } from "../ferramentas/notas.ts";
+import { notasDaConsulta, notasDeClassesDeSeca, notasDeIdsDesconhecidos, notasDeMetas, notasDeRankingDeTaxa, notasDeRessalvas, notasDosRecortes } from "../ferramentas/notas.ts";
 import { validarSql } from "../ferramentas/sql.ts";
 import { resumoCalculado } from "../ferramentas/resumo.ts";
 import { paineisDasConsultas } from "../ferramentas/catalogo.ts";
@@ -186,3 +186,33 @@ test("busca só com 'painel' lista os painéis em vez de voltar vazia (conversa 
 test("busca sem assunto nem tipo diz quantos itens há de cada tipo", () => {
   assert.match(buscarNoPortal("dados"), /O portal tem \d+ painel, \d+ boletim/);
 });
+
+test("nome antigo acha o município de hoje e avisa da troca (c17, NA03)", () => {
+  const saida = buscarTerritorios("Santarém", "PB");
+  assert.match(saida, /2513653/);
+  assert.match(saida, /"Santarém" é o nome antigo de Joca Claudino \(PB\), trocado em 2011/);
+  assert.match(buscarTerritorios("Augusto Severo"), /Campo Grande.*2401305|2401305/s);
+  assert.match(buscarTerritorios("itapage"), /2306306/);
+});
+
+test("nome antigo que é o nome atual de outro município traz os dois (c17, NA03)", () => {
+  const saida = buscarTerritorios("Presidente Juscelino");
+  assert.match(saida, /\| MA \|/);
+  assert.match(saida, /2410306/);
+  assert.match(saida, /nome antigo de Serra Caiada \(RN\)/);
+  assert.doesNotMatch(buscarTerritorios("Santa Luzia"), /nome antigo/);
+});
+
+test("\"Seridó\" fala primeiro da região, não só do nome antigo de São Vicente do Seridó", () => {
+  const saida = buscarTerritorios("Seridó");
+  assert.match(saida, /região do Seridó/);
+  assert.doesNotMatch(saida, /É o mesmo município/);
+});
+
+test("classes do Monitor de Secas pedem os totais prontos, não a soma (c17-v1, TR02)", () => {
+  const sql = "SELECT periodo, categoria, valor FROM valores WHERE indicador='monitor_secas' AND territorio='CE'";
+  assert.match(notasDeClassesDeSeca(sql).join(" "), /area_em_seca/);
+  assert.deepEqual(notasDeClassesDeSeca("SELECT valor FROM valores WHERE indicador IN ('monitor_secas','area_em_seca')"), []);
+  assert.deepEqual(notasDeClassesDeSeca("SELECT valor FROM valores WHERE indicador='idhm'"), []);
+});
+
