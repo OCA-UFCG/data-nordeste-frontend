@@ -1,6 +1,8 @@
 "use client";
 
 import Script from "next/script";
+import { useEffect } from "react";
+import { watchVlibrasIcons } from "@/lib/vlibrasIcons";
 
 const VLIBRAS_URL = "https://vlibras.gov.br/app";
 
@@ -12,7 +14,7 @@ declare global {
 
 // The plugin finds its mount points by these bare attributes (vw, vw-access-button,
 // vw-plugin-wrapper), which JSX has no typed props for, so they go in via spread.
-export const VLibras = () => (
+const VLibrasMarkup = () => (
   <>
     <div {...{ vw: "" }} className="enabled">
       <div {...{ "vw-access-button": "" }} className="active" />
@@ -29,3 +31,9 @@ export const VLibras = () => (
     />
   </>
 );
+
+export const VLibras = () => {
+  useEffect(() => watchVlibrasIcons(document), []);
+
+  return <VLibrasMarkup />;
+};
