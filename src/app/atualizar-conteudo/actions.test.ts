@@ -67,3 +67,58 @@ describe("refreshContentCache", () => {
     expect(cacheMocks.updateTag).not.toHaveBeenCalled();
   });
 });
+
+describe("refreshReportDocsAction", () => {
+  const docsService = {
+    fetch: vi.fn(async (): Promise<Response> => Response.json({ docs: [] })),
+  };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.stubEnv("CONTENT_CACHE_PASSWORD", "segredo");
+    vi.stubEnv("DOCS_ATUALIZAR_TOKEN", "token-do-servico");
+    vi.stubEnv("AUTOMATIC_REPORT_API_URL", "http://automatic-report.test");
+    vi.stubGlobal("fetch", docsService.fetch);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
+  it("calls the report service with its token when the password matches", async () => {
+    const { refreshReportDocsAction } = await import("./actions");
+
+    const outcome = await refreshReportDocsAction(null, formWith("segredo"));
+
+    expect(outcome).toEqual({ kind: "concluido", docs: [] });
+    expect(docsService.fetch).toHaveBeenCalledWith(
+      "http://automatic-report.test/docs/atualizar",
+      expect.objectContaining({
+        headers: { "X-Docs-Token": "token-do-servico" },
+      }),
+    );
+  });
+
+  it("waits and never calls the service on a wrong password", async () => {
+    const { refreshReportDocsAction } = await import("./actions");
+    const outcome = refreshReportDocsAction(null, formWith("errada"));
+
+    await vi.advanceTimersByTimeAsync(1000);
+
+    await expect(outcome).resolves.toEqual({ kind: "senha-incorreta" });
+    expect(docsService.fetch).not.toHaveBeenCalled();
+  });
+
+  it("is unavailable without the service token", async () => {
+    vi.stubEnv("DOCS_ATUALIZAR_TOKEN", "");
+    const { refreshReportDocsAction } = await import("./actions");
+
+    await expect(
+      refreshReportDocsAction(null, formWith("segredo")),
+    ).resolves.toEqual({ kind: "indisponivel" });
+    expect(docsService.fetch).not.toHaveBeenCalled();
+  });
+});

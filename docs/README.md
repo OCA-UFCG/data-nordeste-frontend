@@ -91,6 +91,13 @@ outside the repository and rendered through frontend route/component logic.
   route. Without that env var the page refuses to run. Each server keeps its
   own cache, so production (two origins behind Cloudflare) only refreshes the
   origin that served the request.
+- The same page has an "Atualizar relatórios" form (same password). It calls
+  Automatic-Reporting's `POST /docs/atualizar` server-side with the
+  `DOCS_ATUALIZAR_TOKEN` env var (same value on both services; empty disables
+  it). The service downloads the report Google Docs, checks their "Para
+  quando ...:" rules and caches only the Docs that pass; the page lists the
+  ones that kept the previous text and why. A ready report stays cached for up
+  to 5 min in the service, so the new text can take that long to appear.
 - Beta disables search indexing through Next.js metadata robots settings.
 - Production `robots.txt` (`src/features/seo/robotsRules.ts`) blocks
   `/posts?*` and `/explore?*` because each query-string combination is a
